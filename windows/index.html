@@ -738,6 +738,20 @@
       
         
       
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
     
     
     
@@ -810,6 +824,202 @@
     
   
     Prefetch
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="amcache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Amcache
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="shimcache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shimcache (AppCompatCache)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="registry-keys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry Keys for DFIR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="lnk-jumplists/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LNK Files &amp; Jump Lists
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="mft-usn/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    $MFT, $UsnJrnl &amp; $LogFile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="srum/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SRUM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="event-logs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows Event Logs (EVTX)
   
 
     
@@ -1472,6 +1682,47 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#artifact-map-by-question" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Artifact map — by question
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#artifact-pages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Artifact pages
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#collection-order-when-time-is-short" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Collection order (when time is short)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1504,10 +1755,105 @@
 
 
 <h1 id="windows-forensics">Windows Forensics<a class="headerlink" href="#windows-forensics" title="Permanent link">¶</a></h1>
-<p>Host-based artifacts on Windows — where they live, what they prove, how to parse them.</p>
+<p>Host-based artifacts on Windows — where they live, what they prove, how to parse them. Start from the <strong>question</strong> you need to answer, then open the artifact pages.</p>
+<h2 id="artifact-map-by-question">Artifact map — by question<a class="headerlink" href="#artifact-map-by-question" title="Permanent link">¶</a></h2>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Primary artifacts</th>
+<th>Also check</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Did this program run? When? How often?</strong></td>
+<td><a href="prefetch/">Prefetch</a> · BAM/DAM (<a href="registry-keys/#program-execution-per-user-unless-noted">Registry</a>) · Security <code>4688</code> / Sysmon <code>1</code> (<a href="event-logs/">Event logs</a>)</td>
+<td><a href="shimcache/">Shimcache</a> (existence + order), <a href="amcache/">Amcache</a>, UserAssist, <a href="srum/">SRUM</a> (hourly, with user)</td>
+</tr>
+<tr>
+<td><strong>What <em>was</em> that binary?</strong> (renamed / deleted)</td>
+<td><a href="amcache/">Amcache</a> — SHA-1</td>
+<td><a href="prefetch/">Prefetch</a> file references, <a href="mft-usn/">$MFT</a> resident data, <code>MUICache</code></td>
+</tr>
+<tr>
+<td><strong>Which user ran it?</strong></td>
+<td>BAM/DAM, UserAssist, <a href="srum/">SRUM</a>, <code>4688</code> <code>SubjectUserName</code></td>
+<td><a href="lnk-jumplists/">LNK / Jump Lists</a> under that profile</td>
+</tr>
+<tr>
+<td><strong>Which files/folders did the user open?</strong></td>
+<td><a href="lnk-jumplists/">LNK / Jump Lists</a> · RecentDocs, OpenSavePidlMRU, Office MRU (<a href="registry-keys/#files-folders-opened-per-user">Registry</a>)</td>
+<td>ShellBags (folders), Office Trusted Documents (macro docs)</td>
+</tr>
+<tr>
+<td><strong>What happened to a file — created, renamed, deleted, stomped?</strong></td>
+<td><a href="mft-usn/">$UsnJrnl + $MFT</a></td>
+<td><code>$LogFile</code>, <code>$I30</code> slack, Sysmon <code>11</code>, <code>4663</code></td>
+</tr>
+<tr>
+<td><strong>Where did the file come from?</strong></td>
+<td><code>Zone.Identifier</code> ADS in <a href="mft-usn/">$MFT</a> (URL)</td>
+<td>Browser history, <a href="lnk-jumplists/">LNK</a> volume serial (USB), <code>5145</code> share access</td>
+</tr>
+<tr>
+<td><strong>Was a USB device plugged in? Which one? Who used it?</strong></td>
+<td><code>USBSTOR</code>, <code>MountedDevices</code>, <code>MountPoints2</code> (<a href="registry-keys/#usb-removable-devices-system">Registry</a>)</td>
+<td><code>setupapi.dev.log</code>, <code>Partition/Diagnostic</code> <code>1006</code>, <a href="lnk-jumplists/">LNK</a> to <code>E:\</code></td>
+</tr>
+<tr>
+<td><strong>Did data leave the machine? How much?</strong></td>
+<td><a href="srum/">SRUM</a> Network Usage — bytes per app per hour</td>
+<td><a href="mft-usn/">$UsnJrnl</a> archive creation, Sysmon <code>3</code>, proxy/firewall/Zeek</td>
+</tr>
+<tr>
+<td><strong>How did they get in / move laterally?</strong></td>
+<td><code>4624</code> type 3/10, <code>4648</code>, <code>4778</code>, RDP <code>21/25/1149</code>, <code>7045</code>, <code>5140/5145</code> (<a href="../basics/windows-event-ids/">Event IDs</a>)</td>
+<td>WinRM / WMI-Activity channels, <a href="prefetch/">Prefetch</a> for <code>psexesvc</code>, <code>wsmprovhost</code></td>
+</tr>
+<tr>
+<td><strong>How do they persist?</strong></td>
+<td>Run keys, Services, Scheduled tasks, WMI, COM hijack (<a href="registry-keys/#autostart-persistence-asep">Registry ASEP</a>)</td>
+<td><code>7045</code>, <code>4698</code>, WMI <code>5861</code>, Startup folders, Autoruns offline</td>
+</tr>
+<tr>
+<td><strong>Was logging tampered with?</strong></td>
+<td><code>1102</code>, <code>104</code>, <code>4719</code>, record-ID gaps (<a href="event-logs/#detecting-tampering">Event logs</a>)</td>
+<td>Oldest event per channel, <code>$UsnJrnl</code> vs. empty logs, VSS copies</td>
+</tr>
+<tr>
+<td><strong>What's the system, timezone, users, network?</strong></td>
+<td><code>CurrentVersion</code>, <code>TimeZoneInformation</code>, <code>ProfileList</code>, <code>NetworkList</code>, SAM (<a href="registry-keys/#system-identity-timing">Registry</a>)</td>
+<td><code>setupapi</code>, DHCP lease in <code>Tcpip\Parameters</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="artifact-pages">Artifact pages<a class="headerlink" href="#artifact-pages" title="Permanent link">¶</a></h2>
+<div class="grid cards">
+<ul>
+<li><strong><a href="prefetch/">Prefetch</a></strong> — execution, last 8 run times, files touched</li>
+<li><strong><a href="amcache/">Amcache</a></strong> — SHA-1 of every binary seen</li>
+<li><strong><a href="shimcache/">Shimcache</a></strong> — existence &amp; order; works on servers</li>
+<li><strong><a href="registry-keys/">Registry keys</a></strong> — identity, user activity, USB, persistence</li>
+<li><strong><a href="lnk-jumplists/">LNK &amp; Jump Lists</a></strong> — files/folders opened, USB serials</li>
+<li><strong><a href="mft-usn/">$MFT / $UsnJrnl / $LogFile</a></strong> — file system history, timestomping</li>
+<li><strong><a href="srum/">SRUM</a></strong> — bytes sent per app per hour, with user</li>
+<li><strong><a href="event-logs/">Event logs</a></strong> — channels, retention, parsing, tampering</li>
+</ul>
+</div>
+<h2 id="collection-order-when-time-is-short">Collection order (when time is short)<a class="headerlink" href="#collection-order-when-time-is-short" title="Permanent link">¶</a></h2>
+<ol>
+<li><strong>Memory</strong> (if the box is live and you can) — then everything else.</li>
+<li><code>$MFT</code>, <code>$UsnJrnl:$J</code>, <code>$LogFile</code> — cheap, huge payoff.</li>
+<li>Registry hives + transaction logs (<code>SYSTEM</code>, <code>SOFTWARE</code>, <code>SAM</code>, <code>SECURITY</code>, every <code>NTUSER.DAT</code> + <code>UsrClass.dat</code>), <code>Amcache.hve</code>.</li>
+<li><code>C:\Windows\System32\winevt\Logs\*.evtx</code>.</li>
+<li><code>C:\Windows\Prefetch\</code>, <code>C:\Windows\System32\sru\</code>, users' <code>Recent\</code> (LNK + Jump Lists), PowerShell <code>ConsoleHost_history.txt</code>.</li>
+<li>Browser data, <code>Tasks\</code>, <code>Startup</code> folders, <code>Temp</code> directories, <code>setupapi.dev.log</code>.</li>
+</ol>
+<p>KAPE's <code>!SANS_Triage</code> compound target covers all of the above in a few minutes; Velociraptor's <code>Windows.KapeFiles.Targets</code> does the same remotely.</p>
 <div class="admonition info">
 <p class="admonition-title">Adding a page here</p>
-<p><code>python new.py windows/&lt;name&gt; -t &lt;template&gt;</code> — or just drop a <code>.md</code> file in <code>docs/windows/</code>. It appears in the sidebar automatically.</p>
+<p><code>python new.py windows/&lt;name&gt; -t artifact</code> — or just drop a <code>.md</code> file in <code>docs/windows/</code>. It appears in the sidebar automatically.</p>
 </div>
 
 
