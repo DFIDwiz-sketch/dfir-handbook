@@ -127,10 +127,10 @@ Signature after decompression is `SCCA` at offset 4.
 | Question | Cross-check with |
 |---|---|
 | What exactly was the binary? | [Amcache](amcache.md) (SHA1, publisher), [Shimcache](shimcache.md) (path, existence) |
-| Who ran it? | Security `4688` (if enabled), [UserAssist](registry-keys.md#userassist), BAM/DAM key (per-SID last-execution time) |
+| Who ran it? | Security `4688` (if enabled), [UserAssist](registry-keys.md#program-execution-per-user-unless-noted), BAM/DAM key (per-SID last-execution time) |
 | What did it do next? | Sysmon 1/3/11, [USN journal](mft-usn.md) for files created ±10 s of the run time |
 | Was it launched from USB? | Volume serial in the `.pf` ↔ `SYSTEM\MountedDevices`, `USBSTOR` |
-| Persisted? | [Registry Run keys](registry-keys.md#autostart-asep), Scheduled task `4698`, Service `7045` |
+| Persisted? | [Registry Run keys](registry-keys.md#autostart-persistence-asep), Scheduled task `4698`, Service `7045` |
 
 ## References
 
