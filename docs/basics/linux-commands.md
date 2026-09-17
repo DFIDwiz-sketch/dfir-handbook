@@ -13,7 +13,19 @@ tags:
 </div>
 
 !!! abstract "In one sentence"
-    The Linux commands that come up over and over in an investigation — navigating and reading files, searching text, following pipes, inspecting processes and the network, and handling evidence safely — each with a worked example and the flags that matter. For the *investigative* use of these (which log answers which question), see the [Linux forensics section](../linux/index.md).
+    From the true basics — creating, copying, moving and deleting files and folders, editing, redirection — through the commands that come up over and over in an investigation: navigating, searching, piping, inspecting processes and the network, and handling evidence safely. Each with a worked example and the flags that matter. For the *investigative* use of these (which log answers which question), see the [Linux forensics section](../linux/index.md).
+
+## Command anatomy
+
+A command is `program [options] [arguments]`. Options (flags) start with `-` (short, `-l`) or `--` (long, `--all`); short flags combine (`ls -la` = `ls -l -a`). Some take a value (`-p 2222`, `--output=file`). Arguments are what it acts on (files, paths).
+
+```bash
+ls -la /var/log        # program=ls, options=-la, argument=/var/log
+```
+
+Everyday keys: ++tab++ auto-completes names, ++ctrl+c++ stops a running command, ++ctrl+r++ searches your command history, ++up++/++down++ scroll previous commands, `clear` (or ++ctrl+l++) clears the screen. `history` lists what you've typed; `!!` re-runs the last command (`sudo !!` re-runs it as root).
+
+Paths: `/` is the root, `.` is here, `..` is the parent, `~` is your home, and a leading `/` means absolute (`/etc/passwd`) versus relative (`logs/auth.log`).
 
 ## Navigating & looking around
 
@@ -34,6 +46,85 @@ ls -lat --time-style=full-iso /tmp | head
 ```
 
 `ls -la` is the one you'll type most. Columns: permissions, link count, owner, group, size, mtime, name. A leading `.` in the name = hidden file (attackers love `.` names).
+
+## Creating files & folders
+
+| Command | Does | Example |
+|---|---|---|
+| `mkdir` | Make a directory | `mkdir cases` · `mkdir -p cases/2026/incident1` (`-p` makes parents too) |
+| `touch` | Create an empty file, or update its timestamp | `touch notes.txt` · `touch a.txt b.txt c.txt` (several at once) |
+| `echo >` | Write text into a new file | `echo "first line" > notes.txt` |
+| `printf >` | Like echo, precise formatting | `printf "a\nb\n" > list.txt` |
+| `cat >` | Type content into a file (end with ++ctrl+d++) | `cat > notes.txt` then type, then ++ctrl+d++ |
+| `tee` | Write to a file **and** the screen | `echo hi \| tee notes.txt` |
+
+```bash
+# Make a nested folder structure in one go
+mkdir -p cases/incident-2026-0917/{collected,parsed,report}
+#   -p creates every level; {a,b,c} expands to three siblings → creates all four dirs at once
+
+# Create an empty file (or refresh its modification time if it exists)
+touch cases/incident-2026-0917/report/notes.md
+
+# Create a file with initial content
+echo "# Incident notes" > cases/incident-2026-0917/report/notes.md
+```
+
+!!! warning "`>` overwrites, `>>` appends"
+    `echo "x" > file` **replaces** the file's whole content (and creates it if absent). `echo "x" >> file` **adds** to the end. Mixing these up silently wipes a file — when in doubt, use `>>`.
+
+## Copying, moving, renaming & deleting
+
+| Command | Does | Example |
+|---|---|---|
+| `cp` | Copy a file | `cp a.txt b.txt` · `cp -r dir/ backup/` (recursive, for folders) · `cp -a` (preserve all metadata) |
+| `mv` | Move **or** rename (same command) | `mv old.txt new.txt` (rename) · `mv file.txt /tmp/` (move) |
+| `rm` | Delete a file | `rm file.txt` · `rm -r dir/` (recursive) · `rm -i file` (ask first) |
+| `rmdir` | Delete an **empty** directory | `rmdir emptydir` |
+| `ln -s` | Create a symbolic link (shortcut) | `ln -s /var/log/auth.log here.log` |
+
+```bash
+# Copy a whole folder, keeping timestamps/permissions (use -a for evidence)
+cp -a /var/log/ ./log-backup/
+
+# Rename is just "move to a new name in the same folder"
+mv report-draft.md report-final.md
+
+# Move several files into a directory
+mv *.log logs/
+
+# Delete — there is no recycle bin, deletion is immediate
+rm scratch.txt
+rm -r old-case/          # -r removes a directory and everything inside
+```
+
+!!! danger "`rm` is permanent — no undo, no trash"
+    There is no recycle bin on the command line. `rm -rf` deletes a directory tree instantly and irreversibly, and `rm -rf /` (or a stray space, `rm -rf / tmp`) can wipe the system. Habits that save you: use `rm -i` (prompts before each delete), double-check the path before pressing ++enter++, and never run `rm -rf` with a variable path (`rm -rf "$DIR/"`) without confirming `$DIR` is set. On evidence, don't delete — **move** to a quarantine folder instead (`mv suspect /quarantine/`).
+
+## Editing files
+
+Two editors are on almost every system. **nano** is the beginner-friendly one:
+
+```bash
+nano notes.txt
+#   Ctrl+O then Enter = save (write Out) ; Ctrl+X = exit ; Ctrl+W = search ; Ctrl+K = cut line
+```
+
+**vim** is everywhere and worth knowing the survival subset (you *will* land in it by accident):
+
+```bash
+vim notes.txt
+#   i        enter insert mode (now you can type)
+#   Esc      leave insert mode (back to command mode)
+#   :w       save        :q   quit        :wq  save & quit        :q!  quit WITHOUT saving
+#   /word    search      dd   delete line      u   undo
+```
+
+For quick edits without opening an editor, `sed` does find-and-replace in place:
+
+```bash
+sed -i 's/old/new/g' file.txt      # -i edits the file directly; s/old/new/g replaces all occurrences
+```
 
 ## Reading files
 
@@ -88,6 +179,36 @@ find / -xdev -name ".*" -type f 2>/dev/null    # hidden files, stay on one files
 `2>/dev/null` throws away the "permission denied" noise so you see only results. `-xdev` keeps `find` from wandering into `/proc`, `/sys`, or network mounts.
 
 Related: `awk` (field processing), `sed` (stream edit), `sort`, `uniq`, `cut`, `wc` — covered under pipes below.
+
+## Redirection & chaining
+
+Every command has three streams: **stdin** (input), **stdout** (normal output), **stderr** (errors). You redirect them with these operators:
+
+| Operator | Does | Example |
+|---|---|---|
+| `>` | stdout → file (**overwrite**) | `ls > files.txt` |
+| `>>` | stdout → file (**append**) | `echo done >> log.txt` |
+| `2>` | stderr → file | `find / 2> errors.txt` |
+| `2>/dev/null` | discard errors | `find / -name x 2>/dev/null` (hide "permission denied") |
+| `&>` | both stdout+stderr → file | `command &> all.txt` |
+| `<` | file → stdin | `sort < names.txt` |
+| `\|` | stdout of one → stdin of next (a "pipe") | `ps aux \| grep ssh` |
+
+Chaining commands on one line:
+
+| Operator | Does | Example |
+|---|---|---|
+| `;` | run in sequence regardless | `cd /tmp ; ls` |
+| `&&` | run next **only if** previous succeeded | `mkdir out && cd out` |
+| `\|\|` | run next **only if** previous failed | `ping -c1 host \|\| echo "down"` |
+| `&` | run in the background | `long-job &` |
+
+```bash
+# Save results and errors separately
+find / -name "*.conf" > found.txt 2> denied.txt
+# Only continue if the first step worked
+tar czf backup.tgz /data && echo "backup ok"
+```
 
 ## Pipes & text processing — the real power
 
