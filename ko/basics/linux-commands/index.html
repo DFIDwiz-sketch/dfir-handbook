@@ -1,0 +1,4644 @@
+<!DOCTYPE html><html lang="ko" class="no-js"><head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="개인 디지털 포렌식·침해사고 대응(DFIR) 레퍼런스">
+      
+      
+        <meta name="author" content="Comwhiz">
+      
+      
+        <link rel="canonical" href="https://DFIDwiz-sketch.github.io/dfir-handbook/ko/basics/linux-commands/">
+      
+      
+        <link rel="prev" href="../http-status-codes/">
+      
+      
+        <link rel="next" href="../well-known-ports/">
+      
+      
+        
+          <link rel="alternate" href="/dfir-handbook/" hreflang="en">
+        
+          <link rel="alternate" href="/dfir-handbook/ko/" hreflang="ko">
+        
+      
+      
+      <link rel="icon" href="../../assets/favicon.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>필수 Linux 명령어 - DFIR 핸드북</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+            html.glightbox-open { overflow: initial; height: 100%; }
+            .gslide-title { margin-top: 0px; user-select: text; }
+            .gslide-desc { color: #666; user-select: text; }
+            .gslide-image img { background: white; }
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
+        </style></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#essential-linux-commands" class="md-skip">
+          콘텐츠로 이동
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="상단/헤더">
+    <a href="../.." title="DFIR 핸드북" class="md-header__button md-logo" aria-label="DFIR 핸드북" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 9a3 3 0 0 1 3 3 3 3 0 0 1-3 3 3 3 0 0 1-3-3 3 3 0 0 1 3-3m5.86 10.31C16.23 21.22 14.28 22.45 12 23c-2.56-.61-4.7-2.07-6.42-4.37C3.86 16.34 3 13.8 3 11V5l9-4 9 4v6c0 2.39-.64 4.61-1.92 6.67l-2.91-2.91c.52-.79.83-1.76.83-2.76a5 5 0 0 0-5-5 5 5 0 0 0-5 5 5 5 0 0 0 5 5c1 0 1.97-.31 2.76-.83z"></path></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            DFIR 핸드북
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              필수 Linux 명령어
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo" aria-label="Switch to light mode" type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo" aria-label="Switch to dark mode" type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo" aria-label="Switch to system preference" type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="언어설정">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"></path></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/dfir-handbook/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/dfir-handbook/ko/" hreflang="ko" class="md-select__link">
+              한국어
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="검색" placeholder="검색" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required="">
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+      </label>
+      <nav class="md-search__options" aria-label="검색">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="공유" aria-label="공유" data-clipboard="" data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"></path></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="지우기" aria-label="지우기" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix="">
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            검색 초기화
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/DFIDwiz-sketch/dfir-handbook" title="저장소로 이동" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    dfir-handbook
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="탭" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  홈
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  기초
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../windows/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Windows
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../linux/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../network/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  네트워크
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../memory/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  메모리
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../splunk/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Splunk
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../adversary/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  공격 기법
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../tools/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  도구
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../playbooks/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  플레이북
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tags/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  태그
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="네비게이션" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="DFIR 핸드북" class="md-nav__button md-logo" aria-label="DFIR 핸드북" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 9a3 3 0 0 1 3 3 3 3 0 0 1-3 3 3 3 0 0 1-3-3 3 3 0 0 1 3-3m5.86 10.31C16.23 21.22 14.28 22.45 12 23c-2.56-.61-4.7-2.07-6.42-4.37C3.86 16.34 3 13.8 3 11V5l9-4 9 4v6c0 2.39-.64 4.61-1.92 6.67l-2.91-2.91c.52-.79.83-1.76.83-2.76a5 5 0 0 0-5-5 5 5 0 0 0-5 5 5 5 0 0 0 5 5c1 0 1.97-.31 2.76-.83z"></path></svg>
+
+    </a>
+    DFIR 핸드북
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/DFIDwiz-sketch/dfir-handbook" title="저장소로 이동" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    dfir-handbook
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix="">
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    홈
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked="">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    기초
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    기초
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../http-status-codes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP 상태 코드
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    필수 Linux 명령어
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    필수 Linux 명령어
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="목차">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      목차
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#command-anatomy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        명령어의 구조
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#navigating-looking-around" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        이동하고 둘러보기
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creating-files-folders" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        파일과 폴더 만들기
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#copying-moving-renaming-deleting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        복사, 이동, 이름 바꾸기, 삭제
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#editing-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        파일 편집하기
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reading-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        파일 읽기
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#searching-grep-find-and-friends" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        검색 — grep, find와 친구들
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#redirection-chaining" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        리다이렉션과 명령 연결
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pipes-text-processing-the-real-power" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        파이프와 텍스트 처리 — 진짜 힘
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#processes-the-network" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        프로세스와 네트워크
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#permissions-ownership" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        권한과 소유권
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#handling-evidence-safely" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        증거를 안전하게 다루기
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ssh-remote-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SSH와 원격 작업
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        도움말 보기
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-commands-youll-actually-reach-for-first" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        실제로 가장 먼저 쓰게 되는 명령들
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        참고 자료
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../well-known-ports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    잘 알려진 포트
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../windows-event-ids/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows 이벤트 ID
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../windows/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Windows
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../windows/prefetch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Prefetch
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../windows/amcache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Amcache
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../windows/shimcache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shimcache (AppCompatCache)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../windows/registry-keys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DFIR용 레지스트리 키
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../windows/lnk-jumplists/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LNK 파일과 Jump Lists
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../windows/mft-usn/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    $MFT, $UsnJrnl, $LogFile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../windows/srum/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SRUM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../windows/event-logs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows 이벤트 로그 (EVTX)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../linux/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linux
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Linux
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../linux/auth-and-history/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    인증과 셸 히스토리
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../linux/persistence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linux 지속성
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../linux/filesystem-timestamps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    파일시스템과 타임스탬프
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../linux/logs-and-triage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    로그, 프로세스, 라이브 트리아지
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../network/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    네트워크
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    네트워크
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_2">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../network/zeek/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Zeek
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Zeek
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/zeek/conn-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    conn.log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/zeek/dns-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    dns.log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/zeek/http-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    http.log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/zeek/ssl-x509/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ssl.log와 x509.log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/zeek/files-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    files.log와 pe.log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_3">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../network/arkime/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arkime
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Arkime
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/arkime/search-syntax/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arkime 검색 문법
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/arkime/hunting-workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arkime로 침입 탐지
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/wireshark-tshark/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wireshark와 tshark
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/beaconing-c2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    비코닝과 C2 탐지
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../memory/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    메모리
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    메모리
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../memory/volatility-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Volatility 3 워크플로
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../memory/processes-injection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    프로세스와 코드 인젝션
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../memory/credentials-registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    자격증명, 레지스트리, 루트킷
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../splunk/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Splunk
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Splunk
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../splunk/spl-cheatsheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SPL 치트시트
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../splunk/data-discovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    데이터 탐색과 시간
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../splunk/rex-and-fields/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    rex, 필드 추출, eval
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../splunk/security-searches/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    질문별 보안 검색
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../splunk/hunting-patterns/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SPL 헌팅 패턴
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../splunk/botsv3-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    BOTSv3 조사 워크플로
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../adversary/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    공격 기법
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    공격 기법
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/hardening-by-version/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows 버전별 강화
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/phishing-delivery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    피싱 전달과 최초 실행
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/powershell-cradles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PowerShell 다운로드 크래들과 인코딩된 명령
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/lolbins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LOLBins — 서명된 바이너리를 통한 프록시 실행
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/lsass-dumping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LSASS 자격증명 덤프
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/sam-ntds-extraction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SAM, LSA Secrets 및 NTDS.dit 추출
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/dcsync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DCSync
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/kerberoasting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kerberoasting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/asrep-roasting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AS-REP Roasting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/golden-silver-tickets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Golden, Silver 티켓과 Pass-the-Ticket
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/llmnr-ntlm-relay/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLMNR/NBT-NS 포이즈닝과 NTLM 릴레이
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/adcs-abuse/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AD 인증서 서비스 악용 (ESC1 / ESC8)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/pass-the-hash/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pass-the-Hash
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/psexec-smb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PsExec와 SMB 횡적 이동
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/wmi-winrm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WMI와 WinRM 실행
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/rdp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RDP — 원격 데스크톱 악용
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/uac-bypass/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UAC 우회
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/token-impersonation-potato/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    토큰 가장과 Potato 공격
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/process-injection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    프로세스 인젝션
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/impair-defenses-log-clearing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    방어 무력화와 로그 삭제
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/persistence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    지속성 — 서비스, 작업, Run 키
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/eternalblue-smbv1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EternalBlue와 SMBv1 익스플로잇
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/printnightmare/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PrintNightmare와 Print Spooler 악용
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../tools/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    도구
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    도구
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/imaging-collection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    디스크와 메모리 이미징
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/kape/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    KAPE
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/velociraptor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Velociraptor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/zimmerman-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eric Zimmerman 도구
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/plaso-timelines/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plaso와 슈퍼 타임라인
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../playbooks/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    플레이북
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    플레이북
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../playbooks/ransomware/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    랜섬웨어
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../playbooks/compromised-workstation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    침해된 워크스테이션
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../playbooks/account-compromise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    계정 탈취와 BEC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../playbooks/lateral-domain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    횡적 이동과 도메인 침해
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../playbooks/data-exfiltration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    데이터 유출
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../playbooks/webshell-server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    웹셸과 서버 침해
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    태그
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="목차">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      목차
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#command-anatomy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        명령어의 구조
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#navigating-looking-around" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        이동하고 둘러보기
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creating-files-folders" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        파일과 폴더 만들기
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#copying-moving-renaming-deleting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        복사, 이동, 이름 바꾸기, 삭제
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#editing-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        파일 편집하기
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reading-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        파일 읽기
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#searching-grep-find-and-friends" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        검색 — grep, find와 친구들
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#redirection-chaining" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        리다이렉션과 명령 연결
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pipes-text-processing-the-real-power" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        파이프와 텍스트 처리 — 진짜 힘
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#processes-the-network" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        프로세스와 네트워크
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#permissions-ownership" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        권한과 소유권
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#handling-evidence-safely" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        증거를 안전하게 다루기
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ssh-remote-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SSH와 원격 작업
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        도움말 보기
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-commands-youll-actually-reach-for-first" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        실제로 가장 먼저 쓰게 되는 명령들
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        참고 자료
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  <nav class="md-tags">
+    
+      
+      
+      
+      
+        <a href="../../tags/#tag:basics" class="md-tag">basics</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../tags/#tag:concept" class="md-tag">concept</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../tags/#tag:linux" class="md-tag">linux</a>
+      
+    
+  </nav>
+
+
+  
+    <a href="https://github.com/DFIDwiz-sketch/dfir-handbook/edit/main/docs-ko/basics/linux-commands.md" title="이 페이지를 편집" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75z"></path></svg>
+    </a>
+  
+  
+    
+      
+    
+    <a href="https://github.com/DFIDwiz-sketch/dfir-handbook/raw/main/docs-ko/basics/linux-commands.md" title="페이지소스 보기" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5 5 5 0 0 1 5-5 5 5 0 0 1 5 5 5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5"></path></svg>
+    </a>
+  
+
+
+<h1 id="essential-linux-commands">필수 Linux 명령어<a class="headerlink" href="#essential-linux-commands" title="Permanent link">¶</a></h1>
+<div class="dfir-meta">
+<p><strong>분류:</strong> 기초 · <strong>초점:</strong> DFIR 분석가가 매일 쓰는 명령어 · <strong>최종 수정:</strong> 2026-09-17</p>
+</div>
+<div class="admonition abstract">
+<p class="admonition-title">한 줄 요약</p>
+<p>정말 기초인 파일·폴더 만들기, 복사, 이동, 삭제, 편집, 리다이렉션부터 조사 중에 계속 쓰는 명령어(이동, 검색, 파이프, 프로세스·네트워크 확인, 증거를 안전하게 다루기)까지 정리했습니다. 각각 실제 예시와 중요한 옵션을 붙였습니다. 이 명령어들을 <em>조사에</em> 어떻게 쓰는지(어떤 로그가 어떤 질문에 답하는지)는 <a href="../../linux/">Linux 포렌식 섹션</a>을 보세요.</p>
+</div>
+<h2 id="command-anatomy">명령어의 구조<a class="headerlink" href="#command-anatomy" title="Permanent link">¶</a></h2>
+<p>명령어는 <code>program [options] [arguments]</code> 형태입니다. 옵션(플래그)은 <code>-</code>(짧은 형태, <code>-l</code>)나 <code>--</code>(긴 형태, <code>--all</code>)로 시작하고, 짧은 플래그는 합쳐 쓸 수 있습니다(<code>ls -la</code> = <code>ls -l -a</code>). 어떤 옵션은 값을 받습니다(<code>-p 2222</code>, <code>--output=file</code>). 인수(argument)는 명령이 작업할 대상(파일, 경로)입니다.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>ls<span class="w"> </span>-la<span class="w"> </span>/var/log<span class="w">        </span><span class="c1"># program=ls, options=-la, argument=/var/log</span>
+</span></code></pre></div>
+<p>자주 쓰는 키: <span class="keys"><kbd class="key-tab">Tab</kbd></span> 이름 자동 완성, <span class="keys"><kbd class="key-control">Ctrl</kbd><span>+</span><kbd class="key-c">C</kbd></span> 실행 중인 명령 중지, <span class="keys"><kbd class="key-control">Ctrl</kbd><span>+</span><kbd class="key-r">R</kbd></span> 명령 기록 검색, <span class="keys"><kbd class="key-arrow-up">Up</kbd></span>/<span class="keys"><kbd class="key-arrow-down">Down</kbd></span> 이전 명령 넘기기, <code>clear</code>(또는 <span class="keys"><kbd class="key-control">Ctrl</kbd><span>+</span><kbd class="key-l">L</kbd></span>) 화면 지우기. <code>history</code>는 입력했던 명령 목록을 보여 주고, <code>!!</code>는 마지막 명령을 다시 실행합니다(<code>sudo !!</code>는 root로 다시 실행).</p>
+<p>경로: <code>/</code>는 루트, <code>.</code>는 현재 위치, <code>..</code>는 상위 폴더, <code>~</code>는 홈 폴더입니다. 맨 앞에 <code>/</code>가 있으면 절대 경로(<code>/etc/passwd</code>), 없으면 상대 경로(<code>logs/auth.log</code>)입니다.</p>
+<h2 id="navigating-looking-around">이동하고 둘러보기<a class="headerlink" href="#navigating-looking-around" title="Permanent link">¶</a></h2>
+<table>
+<thead>
+<tr>
+<th>명령어</th>
+<th>하는 일</th>
+<th>예시</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pwd</code></td>
+<td>현재 폴더 출력</td>
+<td><code>pwd</code> → <code>/var/log</code></td>
+</tr>
+<tr>
+<td><code>ls</code></td>
+<td>파일 목록</td>
+<td><code>ls -la</code> (전부, 자세히) · <code>ls -lat</code> (최신순) · <code>ls -laR</code> (하위 폴더까지) · <code>ls -li</code> (inode)</td>
+</tr>
+<tr>
+<td><code>cd</code></td>
+<td>폴더 이동</td>
+<td><code>cd /var/log</code> · <code>cd -</code> (직전 폴더) · <code>cd</code> (홈)</td>
+</tr>
+<tr>
+<td><code>tree</code></td>
+<td>폴더를 트리로 보기</td>
+<td><code>tree -a -L 2 /etc</code> (모든 파일, 2단계 깊이)</td>
+</tr>
+<tr>
+<td><code>stat</code></td>
+<td>파일 메타데이터와 타임스탬프</td>
+<td><code>stat auth.log</code> (M/A/C, 지원하면 Birth도 표시)</td>
+</tr>
+<tr>
+<td><code>file</code></td>
+<td>내용으로 파일 종류 판별</td>
+<td><code>file /tmp/x</code> → <code>ELF 64-bit executable</code> (사실은 ELF인 "PNG" = 수상함)</td>
+</tr>
+<tr>
+<td><code>du</code> / <code>df</code></td>
+<td>파일별 / 파일시스템별 사용량</td>
+<td><code>du -sh /var/log/*</code> (항목별 크기) · <code>df -h</code> (남은 공간)</td>
+</tr>
+</tbody>
+</table>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Newest files in a directory (recently touched = interesting during an incident)</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>ls<span class="w"> </span>-lat<span class="w"> </span>--time-style<span class="o">=</span>full-iso<span class="w"> </span>/tmp<span class="w"> </span><span class="p">|</span><span class="w"> </span>head
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1"># Long listing explained: -l long, -a hidden(dot) files, -t sort by mtime, --time-style full timestamp</span>
+</span></code></pre></div>
+<p><code>ls -la</code>가 가장 많이 치게 될 명령입니다. 열 순서: 권한, 링크 수, 소유자, 그룹, 크기, mtime, 이름. 이름이 <code>.</code>로 시작하면 숨김 파일입니다(공격자는 <code>.</code> 이름을 좋아합니다).</p>
+<h2 id="creating-files-folders">파일과 폴더 만들기<a class="headerlink" href="#creating-files-folders" title="Permanent link">¶</a></h2>
+<table>
+<thead>
+<tr>
+<th>명령어</th>
+<th>하는 일</th>
+<th>예시</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mkdir</code></td>
+<td>폴더 만들기</td>
+<td><code>mkdir cases</code> · <code>mkdir -p cases/2026/incident1</code> (<code>-p</code>는 상위 폴더도 같이 만듦)</td>
+</tr>
+<tr>
+<td><code>touch</code></td>
+<td>빈 파일 만들기, 또는 타임스탬프 갱신</td>
+<td><code>touch notes.txt</code> · <code>touch a.txt b.txt c.txt</code> (한 번에 여러 개)</td>
+</tr>
+<tr>
+<td><code>echo &gt;</code></td>
+<td>새 파일에 텍스트 쓰기</td>
+<td><code>echo "first line" &gt; notes.txt</code></td>
+</tr>
+<tr>
+<td><code>printf &gt;</code></td>
+<td>echo와 비슷하지만 형식을 정확히 지정</td>
+<td><code>printf "a\nb\n" &gt; list.txt</code></td>
+</tr>
+<tr>
+<td><code>cat &gt;</code></td>
+<td>파일에 직접 내용 입력 (<span class="keys"><kbd class="key-control">Ctrl</kbd><span>+</span><kbd class="key-d">D</kbd></span>로 끝냄)</td>
+<td><code>cat &gt; notes.txt</code> 입력 후 <span class="keys"><kbd class="key-control">Ctrl</kbd><span>+</span><kbd class="key-d">D</kbd></span></td>
+</tr>
+<tr>
+<td><code>tee</code></td>
+<td>파일<strong>과</strong> 화면에 동시에 쓰기</td>
+<td><code>echo hi \| tee notes.txt</code></td>
+</tr>
+</tbody>
+</table>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Make a nested folder structure in one go</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>mkdir<span class="w"> </span>-p<span class="w"> </span>cases/incident-2026-0917/<span class="o">{</span>collected,parsed,report<span class="o">}</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1">#   -p creates every level; {a,b,c} expands to three siblings → creates all four dirs at once</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># Create an empty file (or refresh its modification time if it exists)</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>touch<span class="w"> </span>cases/incident-2026-0917/report/notes.md
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="c1"># Create a file with initial content</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">"# Incident notes"</span><span class="w"> </span>&gt;<span class="w"> </span>cases/incident-2026-0917/report/notes.md
+</span></code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title"><code>&gt;</code>는 덮어쓰고, <code>&gt;&gt;</code>는 덧붙입니다</p>
+<p><code>echo "x" &gt; file</code>은 파일 내용 전체를 <strong>바꿉니다</strong>(없으면 새로 만듦). <code>echo "x" &gt;&gt; file</code>은 끝에 <strong>추가</strong>합니다. 둘을 헷갈리면 파일이 조용히 지워집니다 — 확실하지 않으면 <code>&gt;&gt;</code>를 쓰세요.</p>
+</div>
+<h2 id="copying-moving-renaming-deleting">복사, 이동, 이름 바꾸기, 삭제<a class="headerlink" href="#copying-moving-renaming-deleting" title="Permanent link">¶</a></h2>
+<table>
+<thead>
+<tr>
+<th>명령어</th>
+<th>하는 일</th>
+<th>예시</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cp</code></td>
+<td>파일 복사</td>
+<td><code>cp a.txt b.txt</code> · <code>cp -r dir/ backup/</code> (폴더는 재귀) · <code>cp -a</code> (메타데이터 모두 보존)</td>
+</tr>
+<tr>
+<td><code>mv</code></td>
+<td>이동 <strong>또는</strong> 이름 변경 (같은 명령)</td>
+<td><code>mv old.txt new.txt</code> (이름 변경) · <code>mv file.txt /tmp/</code> (이동)</td>
+</tr>
+<tr>
+<td><code>rm</code></td>
+<td>파일 삭제</td>
+<td><code>rm file.txt</code> · <code>rm -r dir/</code> (재귀) · <code>rm -i file</code> (먼저 물어봄)</td>
+</tr>
+<tr>
+<td><code>rmdir</code></td>
+<td><strong>빈</strong> 폴더 삭제</td>
+<td><code>rmdir emptydir</code></td>
+</tr>
+<tr>
+<td><code>ln -s</code></td>
+<td>심볼릭 링크(바로가기) 만들기</td>
+<td><code>ln -s /var/log/auth.log here.log</code></td>
+</tr>
+</tbody>
+</table>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Copy a whole folder, keeping timestamps/permissions (use -a for evidence)</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>cp<span class="w"> </span>-a<span class="w"> </span>/var/log/<span class="w"> </span>./log-backup/
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Rename is just "move to a new name in the same folder"</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>mv<span class="w"> </span>report-draft.md<span class="w"> </span>report-final.md
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># Move several files into a directory</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>mv<span class="w"> </span>*.log<span class="w"> </span>logs/
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="c1"># Delete — there is no recycle bin, deletion is immediate</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>rm<span class="w"> </span>scratch.txt
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>rm<span class="w"> </span>-r<span class="w"> </span>old-case/<span class="w">          </span><span class="c1"># -r removes a directory and everything inside</span>
+</span></code></pre></div>
+<div class="admonition danger">
+<p class="admonition-title"><code>rm</code>은 영구 삭제입니다 — 되돌리기도, 휴지통도 없습니다</p>
+<p>명령줄에는 휴지통이 없습니다. <code>rm -rf</code>는 폴더 트리를 즉시, 되돌릴 수 없게 지우고, <code>rm -rf /</code>(또는 공백 하나 실수한 <code>rm -rf / tmp</code>)는 시스템 전체를 지울 수 있습니다. 도움이 되는 습관: <code>rm -i</code>(삭제 전마다 물어봄)를 쓰고, <span class="keys"><kbd class="key-enter">Enter</kbd></span> 전에 경로를 다시 확인하고, 변수가 들어간 경로(<code>rm -rf "$DIR/"</code>)는 <code>$DIR</code>가 설정됐는지 확인하기 전에 절대 실행하지 마세요. 증거는 지우지 말고 격리 폴더로 <strong>옮기세요</strong>(<code>mv suspect /quarantine/</code>).</p>
+</div>
+<h2 id="editing-files">파일 편집하기<a class="headerlink" href="#editing-files" title="Permanent link">¶</a></h2>
+<p>거의 모든 시스템에 편집기 두 개가 있습니다. <strong>nano</strong>가 초보자에게 쉽습니다:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>nano<span class="w"> </span>notes.txt
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="c1">#   Ctrl+O then Enter = save (write Out) ; Ctrl+X = exit ; Ctrl+W = search ; Ctrl+K = cut line</span>
+</span></code></pre></div>
+<p><strong>vim</strong>은 어디에나 있으니 살아남는 데 필요한 정도는 알아 두세요(실수로 들어가게 될 일이 <em>반드시</em> 생깁니다):</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>vim<span class="w"> </span>notes.txt
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="c1">#   i        enter insert mode (now you can type)</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="c1">#   Esc      leave insert mode (back to command mode)</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1">#   :w       save        :q   quit        :wq  save &amp; quit        :q!  quit WITHOUT saving</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="c1">#   /word    search      dd   delete line      u   undo</span>
+</span></code></pre></div>
+<p>편집기를 열지 않고 빠르게 고칠 때는 <code>sed</code>가 파일 안에서 바로 찾아 바꾸기를 합니다:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>sed<span class="w"> </span>-i<span class="w"> </span><span class="s1">'s/old/new/g'</span><span class="w"> </span>file.txt<span class="w">      </span><span class="c1"># -i edits the file directly; s/old/new/g replaces all occurrences</span>
+</span></code></pre></div>
+<h2 id="reading-files">파일 읽기<a class="headerlink" href="#reading-files" title="Permanent link">¶</a></h2>
+<table>
+<thead>
+<tr>
+<th>명령어</th>
+<th>하는 일</th>
+<th>예시</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cat</code></td>
+<td>파일 전체 출력</td>
+<td><code>cat /etc/passwd</code></td>
+</tr>
+<tr>
+<td><code>less</code></td>
+<td>페이지 단위로 보기 (검색 가능)</td>
+<td><code>less /var/log/auth.log</code> — <code>/pattern</code> 검색, <code>q</code> 종료, <code>G</code> 끝, <code>g</code> 처음</td>
+</tr>
+<tr>
+<td><code>head</code> / <code>tail</code></td>
+<td>처음 / 마지막 N줄</td>
+<td><code>head -50 file</code> · <code>tail -100 file</code> · <code>tail -f file</code> (실시간 따라가기)</td>
+</tr>
+<tr>
+<td><code>nl</code></td>
+<td>줄 번호 붙이기</td>
+<td><code>nl script.sh</code></td>
+</tr>
+<tr>
+<td><code>strings</code></td>
+<td>바이너리에서 출력 가능한 문자열 추출</td>
+<td><code>strings -a malware.bin \| grep -iE "http\|cmd\|\.dll"</code></td>
+</tr>
+<tr>
+<td><code>xxd</code> / <code>hexdump</code></td>
+<td>16진수 보기</td>
+<td><code>xxd file \| head</code> · <code>xxd -s 0 -l 64 file</code> (오프셋 0부터 64바이트)</td>
+</tr>
+<tr>
+<td><code>zcat</code> / <code>zless</code> / <code>zgrep</code></td>
+<td>gzip 로그를 압축 풀지 않고 읽기</td>
+<td><code>zgrep "Failed" /var/log/auth.log.*.gz</code></td>
+</tr>
+</tbody>
+</table>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Follow a log live during response (Ctrl+C to stop)</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>tail<span class="w"> </span>-f<span class="w"> </span>/var/log/auth.log
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="c1"># Read a rotated, compressed log</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>zcat<span class="w"> </span>/var/log/syslog.2.gz<span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w"> </span>-50
+</span></code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">증거에는 읽기 전용 도구를 쓰세요</p>
+<p><code>cat</code>/<code>less</code>/<code>grep</code>은 내용을 바꾸지 않지만, 라이브 시스템에서는 파일의 <strong>atime</strong>(접근 시간)을 갱신합니다. 증거를 볼 때는 <strong>복사본</strong>이나 <strong>읽기 전용 마운트</strong>에서 작업해 타임스탬프를 건드리지 마세요 — 그리고 <code>atime</code>은 원래 꺼져 있는 경우가 많다는 점도 기억하세요(<a href="../../linux/filesystem-timestamps/">타임스탬프</a>).</p>
+</div>
+<h2 id="searching-grep-find-and-friends">검색 — grep, find와 친구들<a class="headerlink" href="#searching-grep-find-and-friends" title="Permanent link">¶</a></h2>
+<p><code>grep</code>(텍스트 검색)과 <code>find</code>(파일시스템 검색)는 없으면 일을 못 하는 두 명령입니다.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># grep: search inside files</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>grep<span class="w"> </span><span class="s2">"Failed password"</span><span class="w"> </span>auth.log<span class="w">            </span><span class="c1"># lines containing the phrase</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>grep<span class="w"> </span>-i<span class="w"> </span><span class="s2">"error"</span><span class="w"> </span>log<span class="w">                         </span><span class="c1"># -i case-insensitive</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>grep<span class="w"> </span>-r<span class="w"> </span><span class="s2">"password"</span><span class="w"> </span>/etc/<span class="w">                     </span><span class="c1"># -r recursive through a directory</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>grep<span class="w"> </span>-n<span class="w"> </span><span class="s2">"root"</span><span class="w"> </span>/etc/passwd<span class="w">                   </span><span class="c1"># -n show line numbers</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>grep<span class="w"> </span>-v<span class="w"> </span><span class="s2">"^#"</span><span class="w"> </span>sshd_config<span class="w">                     </span><span class="c1"># -v invert: lines NOT matching (drop comments)</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>grep<span class="w"> </span>-c<span class="w"> </span><span class="s2">"Accepted"</span><span class="w"> </span>auth.log<span class="w">                  </span><span class="c1"># -c count matches</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>grep<span class="w"> </span>-E<span class="w"> </span><span class="s2">"Failed|Invalid"</span><span class="w"> </span>auth.log<span class="w">            </span><span class="c1"># -E extended regex (OR)</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>grep<span class="w"> </span>-A3<span class="w"> </span>-B1<span class="w"> </span><span class="s2">"segfault"</span><span class="w"> </span>kern.log<span class="w">             </span><span class="c1"># -A/-B lines After/Before context</span>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>grep<span class="w"> </span>-oE<span class="w"> </span><span class="s2">"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"</span><span class="w"> </span>access.log<span class="w">   </span><span class="c1"># -o only the match (extract IPs)</span>
+</span></code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># find: locate files by criteria</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>find<span class="w"> </span>/home<span class="w"> </span>-name<span class="w"> </span><span class="s2">"*.sh"</span><span class="w">                       </span><span class="c1"># by name</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>find<span class="w"> </span>/<span class="w"> </span>-type<span class="w"> </span>f<span class="w"> </span>-newermt<span class="w"> </span><span class="s2">"2026-08-20"</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w">   </span><span class="c1"># modified after a date</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>find<span class="w"> </span>/<span class="w"> </span>-perm<span class="w"> </span>-4000<span class="w"> </span>-type<span class="w"> </span>f<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w">        </span><span class="c1"># setuid binaries (privilege persistence)</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>find<span class="w"> </span>/tmp<span class="w"> </span>-type<span class="w"> </span>f<span class="w"> </span>-mmin<span class="w"> </span>-60<span class="w">                    </span><span class="c1"># modified in the last 60 minutes</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>find<span class="w"> </span>/<span class="w"> </span>-user<span class="w"> </span>www-data<span class="w"> </span>-type<span class="w"> </span>f<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w">      </span><span class="c1"># owned by a user</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>find<span class="w"> </span>.<span class="w"> </span>-size<span class="w"> </span>+100M<span class="w">                             </span><span class="c1"># larger than 100 MB (staged archives?)</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>find<span class="w"> </span>/<span class="w"> </span>-xdev<span class="w"> </span>-name<span class="w"> </span><span class="s2">".*"</span><span class="w"> </span>-type<span class="w"> </span>f<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w">    </span><span class="c1"># hidden files, stay on one filesystem</span>
+</span></code></pre></div>
+<p><code>2&gt;/dev/null</code>은 "permission denied" 잡음을 버려서 결과만 보이게 합니다. <code>-xdev</code>는 <code>find</code>가 <code>/proc</code>, <code>/sys</code>, 네트워크 마운트로 헤매지 않게 합니다.</p>
+<p>관련 명령: <code>awk</code>(필드 처리), <code>sed</code>(스트림 편집), <code>sort</code>, <code>uniq</code>, <code>cut</code>, <code>wc</code> — 아래 파이프 부분에서 다룹니다.</p>
+<h2 id="redirection-chaining">리다이렉션과 명령 연결<a class="headerlink" href="#redirection-chaining" title="Permanent link">¶</a></h2>
+<p>모든 명령에는 스트림이 세 개 있습니다: <strong>stdin</strong>(입력), <strong>stdout</strong>(정상 출력), <strong>stderr</strong>(오류). 아래 연산자로 방향을 바꿉니다:</p>
+<table>
+<thead>
+<tr>
+<th>연산자</th>
+<th>하는 일</th>
+<th>예시</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&gt;</code></td>
+<td>stdout → 파일 (<strong>덮어쓰기</strong>)</td>
+<td><code>ls &gt; files.txt</code></td>
+</tr>
+<tr>
+<td><code>&gt;&gt;</code></td>
+<td>stdout → 파일 (<strong>덧붙이기</strong>)</td>
+<td><code>echo done &gt;&gt; log.txt</code></td>
+</tr>
+<tr>
+<td><code>2&gt;</code></td>
+<td>stderr → 파일</td>
+<td><code>find / 2&gt; errors.txt</code></td>
+</tr>
+<tr>
+<td><code>2&gt;/dev/null</code></td>
+<td>오류 버리기</td>
+<td><code>find / -name x 2&gt;/dev/null</code> ("permission denied" 숨기기)</td>
+</tr>
+<tr>
+<td><code>&amp;&gt;</code></td>
+<td>stdout+stderr 둘 다 → 파일</td>
+<td><code>command &amp;&gt; all.txt</code></td>
+</tr>
+<tr>
+<td><code>&lt;</code></td>
+<td>파일 → stdin</td>
+<td><code>sort &lt; names.txt</code></td>
+</tr>
+<tr>
+<td><code>\|</code></td>
+<td>앞 명령의 stdout → 다음 명령의 stdin ("파이프")</td>
+<td><code>ps aux \| grep ssh</code></td>
+</tr>
+</tbody>
+</table>
+<p>한 줄에서 명령 연결하기:</p>
+<table>
+<thead>
+<tr>
+<th>연산자</th>
+<th>하는 일</th>
+<th>예시</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>;</code></td>
+<td>결과와 상관없이 순서대로 실행</td>
+<td><code>cd /tmp ; ls</code></td>
+</tr>
+<tr>
+<td><code>&amp;&amp;</code></td>
+<td>앞 명령이 성공했을 <strong>때만</strong> 다음 실행</td>
+<td><code>mkdir out &amp;&amp; cd out</code></td>
+</tr>
+<tr>
+<td><code>\|\|</code></td>
+<td>앞 명령이 실패했을 <strong>때만</strong> 다음 실행</td>
+<td><code>ping -c1 host \|\| echo "down"</code></td>
+</tr>
+<tr>
+<td><code>&amp;</code></td>
+<td>백그라운드 실행</td>
+<td><code>long-job &amp;</code></td>
+</tr>
+</tbody>
+</table>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Save results and errors separately</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>find<span class="w"> </span>/<span class="w"> </span>-name<span class="w"> </span><span class="s2">"*.conf"</span><span class="w"> </span>&gt;<span class="w"> </span>found.txt<span class="w"> </span><span class="m">2</span>&gt;<span class="w"> </span>denied.txt
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="c1"># Only continue if the first step worked</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>tar<span class="w"> </span>czf<span class="w"> </span>backup.tgz<span class="w"> </span>/data<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"backup ok"</span>
+</span></code></pre></div>
+<h2 id="pipes-text-processing-the-real-power">파이프와 텍스트 처리 — 진짜 힘<a class="headerlink" href="#pipes-text-processing-the-real-power" title="Permanent link">¶</a></h2>
+<p>파이프 <code>|</code>는 한 명령의 출력을 다음 명령으로 보냅니다. 원시 로그를 답으로 바꾸는 방법이 바로 이것입니다.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Top 10 source IPs of failed SSH logins</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>grep<span class="w"> </span><span class="s2">"Failed password"</span><span class="w"> </span>auth.log<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-oE<span class="w"> </span><span class="s2">"from [0-9.]+"</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span><span class="s1">'{print $2}'</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">  </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span><span class="p">|</span><span class="w"> </span>uniq<span class="w"> </span>-c<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-rn<span class="w"> </span><span class="p">|</span><span class="w"> </span>head
+</span></code></pre></div>
+<p>읽는 법: <code>grep</code>이 실패 줄을 찾고 → <code>grep -oE</code>가 <code>from &lt;IP&gt;</code>를 뽑고 → <code>awk '{print $2}'</code>가 두 번째 단어(IP)를 출력하고 → <code>sort</code>가 같은 IP끼리 모으고 → <code>uniq -c</code>가 중복을 합치며 <strong>개수를 세고</strong> → <code>sort -rn</code>이 그 개수로 큰 순서대로 정렬하고 → <code>head</code>가 상위 10개를 보여 줍니다. 결과는 무차별 대입 출발지 순위표입니다.</p>
+<p>기본 블록:</p>
+<table>
+<thead>
+<tr>
+<th>명령어</th>
+<th>하는 일</th>
+<th>예시</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>awk</code></td>
+<td>필드 기반 처리</td>
+<td><code>awk -F: '{print $1}' /etc/passwd</code> (<code>:</code>로 나눈 첫 번째 필드)</td>
+</tr>
+<tr>
+<td><code>sed</code></td>
+<td>찾아 바꾸기, 스트림 편집</td>
+<td><code>sed 's/old/new/g' file</code> · <code>sed -n '10,20p' file</code> (10–20번째 줄)</td>
+</tr>
+<tr>
+<td><code>sort</code></td>
+<td>줄 정렬</td>
+<td><code>sort -rn</code> (숫자 역순) · <code>sort -u</code> (중복 제거) · <code>sort -t: -k3 -n</code> (<code>:</code> 기준 3번째 필드로)</td>
+</tr>
+<tr>
+<td><code>uniq</code></td>
+<td>붙어 있는 중복 합치기</td>
+<td><code>uniq -c</code> (개수) — <strong>먼저 <code>sort</code> 필수</strong></td>
+</tr>
+<tr>
+<td><code>cut</code></td>
+<td>열 추출</td>
+<td><code>cut -d: -f1,3 /etc/passwd</code> (1, 3번째 필드)</td>
+</tr>
+<tr>
+<td><code>wc</code></td>
+<td>세기</td>
+<td><code>wc -l file</code> (줄 수) · <code>wc -c</code> (바이트)</td>
+</tr>
+<tr>
+<td><code>tr</code></td>
+<td>문자 바꾸기/지우기</td>
+<td><code>tr 'A-Z' 'a-z'</code> · <code>tr -d '\0'</code> (널 제거) · <code>tr '\0' '\n'</code></td>
+</tr>
+<tr>
+<td><code>tee</code></td>
+<td>파일<strong>과</strong> 화면에 쓰기</td>
+<td><code>... | tee out.txt</code></td>
+</tr>
+<tr>
+<td><code>xargs</code></td>
+<td>입력을 인수로 바꾸기</td>
+<td><code>find . -name "*.log" | xargs grep "error"</code></td>
+</tr>
+</tbody>
+</table>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># awk is a mini-language: filter + compute</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>awk<span class="w"> </span>-F:<span class="w"> </span><span class="s1">'$3 == 0 {print $1}'</span><span class="w"> </span>/etc/passwd<span class="w">        </span><span class="c1"># users with UID 0 (should be only root)</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>awk<span class="w"> </span>-F:<span class="w"> </span><span class="s1">'$3 &gt;= 1000 {print $1}'</span><span class="w"> </span>/etc/passwd<span class="w">      </span><span class="c1"># regular (human) accounts</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>awk<span class="w"> </span><span class="s1">'{sum+=$1} END {print sum}'</span><span class="w"> </span>numbers<span class="w">          </span><span class="c1"># sum a column</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>awk<span class="w"> </span><span class="s1">'$9 == 404 {print $7}'</span><span class="w"> </span>access.log<span class="w">            </span><span class="c1"># requested paths that returned 404</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="c1"># Unique-and-count pattern (memorise this one)</span>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>cut<span class="w"> </span>-d<span class="s1">' '</span><span class="w"> </span>-f1<span class="w"> </span>access.log<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span><span class="p">|</span><span class="w"> </span>uniq<span class="w"> </span>-c<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-rn<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w">   </span><span class="c1"># top client IPs in a web log</span>
+</span></code></pre></div>
+<h2 id="processes-the-network">프로세스와 네트워크<a class="headerlink" href="#processes-the-network" title="Permanent link">¶</a></h2>
+<table>
+<thead>
+<tr>
+<th>명령어</th>
+<th>하는 일</th>
+<th>예시</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ps</code></td>
+<td>프로세스 스냅샷</td>
+<td><code>ps auxfww</code> (전부, 전체, 트리) · <code>ps -eo pid,ppid,user,cmd</code></td>
+</tr>
+<tr>
+<td><code>top</code> / <code>htop</code></td>
+<td>실시간 프로세스 보기</td>
+<td><code>top</code> — <code>P</code> CPU순, <code>M</code> 메모리순, <code>q</code> 종료</td>
+</tr>
+<tr>
+<td><code>ss</code></td>
+<td>소켓/연결</td>
+<td><code>ss -tunap</code> (TCP+UDP, 숫자, 전부, 프로세스) · <code>ss -tlnp</code> (리스닝)</td>
+</tr>
+<tr>
+<td><code>lsof</code></td>
+<td>열린 파일/소켓</td>
+<td><code>lsof -nP -iTCP -sTCP:LISTEN</code> (리스닝 포트) · <code>lsof +L1</code> (삭제됐지만 열려 있는 파일)</td>
+</tr>
+<tr>
+<td><code>kill</code></td>
+<td>프로세스에 시그널 보내기</td>
+<td><code>kill -9 &lt;pid&gt;</code> (강제) — <strong>증거부터 수집할 것</strong></td>
+</tr>
+<tr>
+<td><code>pgrep</code> / <code>pkill</code></td>
+<td>이름으로 찾기/종료</td>
+<td><code>pgrep -a nginx</code> (인수와 함께 목록)</td>
+</tr>
+</tbody>
+</table>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># Full process tree with command lines (read this to spot bad parent→child)</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>ps<span class="w"> </span>auxfww
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="c1"># Network connections with the owning process — the key pivot in live response</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>ss<span class="w"> </span>-tunap
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="c1"># What is listening (backdoor listeners show here)</span>
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>ss<span class="w"> </span>-tlnp
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="c1"># A process's details via /proc</span>
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>cat<span class="w"> </span>/proc/&lt;pid&gt;/cmdline<span class="w"> </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span><span class="s1">'\0'</span><span class="w"> </span><span class="s1">' '</span><span class="p">;</span><span class="w"> </span><span class="nb">echo</span><span class="w">      </span><span class="c1"># full command line</span>
+</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>readlink<span class="w"> </span>/proc/&lt;pid&gt;/exe<span class="w">                          </span><span class="c1"># the actual binary (may say "(deleted)")</span>
+</span></code></pre></div>
+<p>사고 중에 이것들을 어떻게 읽는지는 <a href="../../linux/logs-and-triage/">Linux 로그와 트리아지</a>를 보세요.</p>
+<h2 id="permissions-ownership">권한과 소유권<a class="headerlink" href="#permissions-ownership" title="Permanent link">¶</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>ls<span class="w"> </span>-l<span class="w"> </span>file<span class="w">            </span><span class="c1"># -rwxr-xr-- : owner rwx, group r-x, others r--</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>chmod<span class="w"> </span><span class="m">640</span><span class="w"> </span>file<span class="w">        </span><span class="c1"># rw- r-- --- (owner read/write, group read, others none)</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>chmod<span class="w"> </span>+x<span class="w"> </span>script.sh<span class="w">    </span><span class="c1"># add execute</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>chown<span class="w"> </span>user:group<span class="w"> </span>file<span class="w"> </span><span class="c1"># change owner and group</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>id<span class="w">                    </span><span class="c1"># your uid/gid/groups</span>
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>sudo<span class="w"> </span>-l<span class="w">               </span><span class="c1"># what you're allowed to run as root</span>
+</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>lsattr<span class="w"> </span>file<span class="w">           </span><span class="c1"># extended attrs — 'i' = immutable (attacker anti-delete trick)</span>
+</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>chattr<span class="w"> </span>-i<span class="w"> </span>file<span class="w">        </span><span class="c1"># remove immutable so you can delete/quarantine</span>
+</span></code></pre></div>
+<p>권한 표기: <code>rwx</code> 세 묶음(소유자, 그룹, 그 외). 숫자로는 <code>r=4, w=2, x=1</code>을 묶음마다 더해서 <code>750</code> = <code>rwxr-x---</code>입니다. 누구나 쓸 수 있는 파일(<code>chmod 777</code>)이나 예상치 못한 setuid 비트(소유자 실행 자리에 <code>s</code>)는 다시 볼 가치가 있습니다.</p>
+<h2 id="handling-evidence-safely">증거를 안전하게 다루기<a class="headerlink" href="#handling-evidence-safely" title="Permanent link">¶</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># Hash a file (integrity — do this to every piece of evidence)</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>sha256sum<span class="w"> </span>evidence.raw<span class="w"> </span>&gt;<span class="w"> </span>evidence.raw.sha256
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>sha256sum<span class="w"> </span>-c<span class="w"> </span>evidence.raw.sha256<span class="w">                  </span><span class="c1"># verify later (prints OK/FAILED)</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>md5sum<span class="w"> </span>file<span class="w">                                        </span><span class="c1"># legacy tools still want md5</span>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="c1"># Copy preserving all metadata (timestamps, perms, owner)</span>
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>cp<span class="w"> </span>-a<span class="w"> </span><span class="nb">source</span><span class="w"> </span>dest<span class="w">                                  </span><span class="c1"># -a = archive (preserve everything)</span>
+</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>rsync<span class="w"> </span>-a<span class="w"> </span>--progress<span class="w"> </span>src/<span class="w"> </span>dest/<span class="w">                     </span><span class="c1"># large trees, resumable</span>
+</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>
+</span><span id="__span-15-10"><a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="c1"># Mount a disk image read-only (never write to evidence)</span>
+</span><span id="__span-15-11"><a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>mount<span class="w"> </span>-o<span class="w"> </span>ro,loop,noexec<span class="w"> </span>image.dd<span class="w"> </span>/mnt/evidence
+</span><span id="__span-15-12"><a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a>mount<span class="w"> </span>-o<span class="w"> </span>ro,loop,offset<span class="o">=</span><span class="k">$((</span><span class="m">2048</span><span class="o">*</span><span class="m">512</span><span class="k">))</span><span class="w"> </span>image.dd<span class="w"> </span>/mnt/evidence<span class="w">   </span><span class="c1"># partition at sector 2048</span>
+</span><span id="__span-15-13"><a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>
+</span><span id="__span-15-14"><a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a><span class="c1"># Compress/extract collections</span>
+</span><span id="__span-15-15"><a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a>tar<span class="w"> </span>czf<span class="w"> </span>triage.tar.gz<span class="w"> </span>/path/to/collect<span class="w">            </span><span class="c1"># create gzip archive</span>
+</span><span id="__span-15-16"><a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>tar<span class="w"> </span>xzf<span class="w"> </span>triage.tar.gz<span class="w">                              </span><span class="c1"># extract</span>
+</span><span id="__span-15-17"><a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a>gzip<span class="w"> </span>-d<span class="w"> </span>file.gz<span class="w"> </span><span class="p">;</span><span class="w"> </span>zcat<span class="w"> </span>file.gz<span class="w">                     </span><span class="c1"># single-file gzip</span>
+</span></code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">전후로 해시하고, 읽기 전용으로 마운트하세요</p>
+<p>모든 증거 파일은 <strong>손대기 전에 SHA-256</strong>을 구하고 작업 후에 다시 구해서 일치해야 합니다 — 그래야 바뀌지 않았다는 걸 증명할 수 있습니다(<a href="../../tools/imaging-collection/">이미징과 수집</a>). 이미지는 항상 <strong><code>ro</code></strong>(읽기 전용)로 마운트하세요. 실수로 한 번 쓰면 증거가 훼손되고 해시가 깨집니다.</p>
+</div>
+<h2 id="ssh-remote-work">SSH와 원격 작업<a class="headerlink" href="#ssh-remote-work" title="Permanent link">¶</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>ssh<span class="w"> </span>user@host<span class="w">                                      </span><span class="c1"># connect</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>ssh<span class="w"> </span>-i<span class="w"> </span>key.pem<span class="w"> </span>user@host<span class="w">                            </span><span class="c1"># with a specific key</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>ssh<span class="w"> </span>-p<span class="w"> </span><span class="m">2222</span><span class="w"> </span>user@host<span class="w">                               </span><span class="c1"># non-standard port</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>scp<span class="w"> </span>file<span class="w"> </span>user@host:/path/<span class="w">                           </span><span class="c1"># copy a file over SSH</span>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>scp<span class="w"> </span>-r<span class="w"> </span>dir<span class="w"> </span>user@host:/path/<span class="w">                          </span><span class="c1"># recursive</span>
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>scp<span class="w"> </span>user@host:/var/log/auth.log<span class="w"> </span>./<span class="w">                  </span><span class="c1"># pull a log from a remote box</span>
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>sftp<span class="w"> </span>user@host<span class="w">                                       </span><span class="c1"># interactive file transfer</span>
+</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="c1"># Check what keys grant access to an account you're investigating</span>
+</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>cat<span class="w"> </span>~/.ssh/authorized_keys
+</span></code></pre></div>
+<h2 id="getting-help">도움말 보기<a class="headerlink" href="#getting-help" title="Permanent link">¶</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>man<span class="w"> </span>ss<span class="w">              </span><span class="c1"># full manual (q to quit, /pattern to search)</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>ss<span class="w"> </span>--help<span class="w">           </span><span class="c1"># quick option summary</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>tldr<span class="w"> </span>find<span class="w">           </span><span class="c1"># community examples (if tldr installed) — faster than man</span>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>which<span class="w"> </span>volatility3<span class="w">   </span><span class="c1"># where is this binary?</span>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>apropos<span class="w"> </span>network<span class="w">     </span><span class="c1"># find commands related to a keyword</span>
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="nb">type</span><span class="w"> </span>-a<span class="w"> </span>ls<span class="w">          </span><span class="c1"># is it a binary, alias, or function?</span>
+</span></code></pre></div>
+<h2 id="the-commands-youll-actually-reach-for-first">실제로 가장 먼저 쓰게 되는 명령들<a class="headerlink" href="#the-commands-youll-actually-reach-for-first" title="Permanent link">¶</a></h2>
+<p>라이브 대응 순간에는 이 몇 개로 대부분 해결됩니다:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>w<span class="p">;</span><span class="w"> </span>who<span class="w"> </span>-a<span class="w">                                    </span><span class="c1"># who's logged in now</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>ps<span class="w"> </span>auxfww<span class="w">                                     </span><span class="c1"># what's running</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>ss<span class="w"> </span>-tunap<span class="w">                                     </span><span class="c1"># what's connected / listening</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>ls<span class="w"> </span>-lat<span class="w"> </span>/tmp<span class="w"> </span>/dev/shm<span class="w"> </span>/var/tmp<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w">         </span><span class="c1"># recent drops</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>grep<span class="w"> </span>-Ei<span class="w"> </span><span class="s2">"accepted|failed|sudo"</span><span class="w"> </span>/var/log/auth.log<span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w">   </span><span class="c1"># recent auth</span>
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>find<span class="w"> </span>/<span class="w"> </span>-xdev<span class="w"> </span>-mmin<span class="w"> </span>-120<span class="w"> </span>-type<span class="w"> </span>f<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w">    </span><span class="c1"># changed in last 2 hours</span>
+</span></code></pre></div>
+<h2 id="references">참고 자료<a class="headerlink" href="#references" title="Permanent link">¶</a></h2>
+<ul>
+<li><a href="https://linuxcommand.org/tlcl.php">The Linux Command Line (무료 책, W. Shotts)</a></li>
+<li><a href="https://explainshell.com/">explainshell.com — 명령을 붙여 넣으면 플래그마다 설명</a></li>
+<li><a href="https://gtfobins.github.io/">GTFOBins — Unix 바이너리가 LOLBin처럼 악용되는 방법</a></li>
+<li>관련 페이지: <a href="../../linux/">Linux 포렌식</a> — 이 명령어들의 조사 활용 · <a href="../well-known-ports/">잘 알려진 포트</a></li>
+</ul>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden="">
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"></path></svg>
+  맨위로
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="하단/푸터">
+        
+          
+          <a href="../http-status-codes/" class="md-footer__link md-footer__link--prev" aria-label="이전: HTTP 상태 코드">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                이전
+              </span>
+              <div class="md-ellipsis">
+                HTTP 상태 코드
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../well-known-ports/" class="md-footer__link md-footer__link--next" aria-label="다음: 잘 알려진 포트">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                다음
+              </span>
+              <div class="md-ellipsis">
+                잘 알려진 포트
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"></path></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      개인 학습 노트입니다. 어떤 기관의 공식 지침도 아닙니다.
+    </div>
+  
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/DFIDwiz-sketch" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.footer", "search.suggest", "search.highlight", "search.share", "toc.follow", "content.code.copy", "content.code.annotate", "content.action.edit", "content.action.view", "content.tabs.link", "content.tooltips"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\ud074\ub9bd\ubcf4\ub4dc\uc5d0 \ubcf5\uc0ac\ub428", "clipboard.copy": "\ud074\ub9bd\ubcf4\ub4dc\ub85c \ubcf5\uc0ac", "search.result.more.one": "\uc774 \ubb38\uc11c\uc5d0\uc11c 1\uac1c\uc758 \uac80\uc0c9 \uacb0\uacfc \ub354 \ubcf4\uae30", "search.result.more.other": "\uc774 \ubb38\uc11c\uc5d0\uc11c #\uac1c\uc758 \uac80\uc0c9 \uacb0\uacfc \ub354 \ubcf4\uae30", "search.result.none": "\uac80\uc0c9\uc5b4\uc640 \uc77c\uce58\ud558\ub294 \ubb38\uc11c\uac00 \uc5c6\uc2b5\ub2c8\ub2e4", "search.result.one": "1\uac1c\uc758 \uc77c\uce58\ud558\ub294 \ubb38\uc11c", "search.result.other": "#\uac1c\uc758 \uc77c\uce58\ud558\ub294 \ubb38\uc11c", "search.result.placeholder": "\uac80\uc0c9\uc5b4\ub97c \uc785\ub825\ud558\uc138\uc694", "search.result.term.missing": "\ud3ec\ud568\ub418\uc9c0 \uc54a\uc740 \uac80\uc0c9\uc5b4", "select.version": "\ubc84\uc804 \uc120\ud0dd"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../assets/lang-switch.js"></script>
+      
+    
+  
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(()=>{ lightbox.reload(); });
+</script></body></html>

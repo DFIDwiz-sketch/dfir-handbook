@@ -1,0 +1,4258 @@
+<!DOCTYPE html><html lang="ko" class="no-js"><head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="개인 디지털 포렌식·침해사고 대응(DFIR) 레퍼런스">
+      
+      
+        <meta name="author" content="Comwhiz">
+      
+      
+        <link rel="canonical" href="https://DFIDwiz-sketch.github.io/dfir-handbook/ko/windows/event-logs/">
+      
+      
+        <link rel="prev" href="../srum/">
+      
+      
+        <link rel="next" href="../../linux/">
+      
+      
+        
+          <link rel="alternate" href="/dfir-handbook/" hreflang="en">
+        
+          <link rel="alternate" href="/dfir-handbook/ko/" hreflang="ko">
+        
+      
+      
+      <link rel="icon" href="../../assets/favicon.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Windows 이벤트 로그 (EVTX) - DFIR 핸드북</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+            html.glightbox-open { overflow: initial; height: 100%; }
+            .gslide-title { margin-top: 0px; user-select: text; }
+            .gslide-desc { color: #666; user-select: text; }
+            .gslide-image img { background: white; }
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
+        </style></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#windows-event-logs-evtx" class="md-skip">
+          콘텐츠로 이동
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="상단/헤더">
+    <a href="../.." title="DFIR 핸드북" class="md-header__button md-logo" aria-label="DFIR 핸드북" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 9a3 3 0 0 1 3 3 3 3 0 0 1-3 3 3 3 0 0 1-3-3 3 3 0 0 1 3-3m5.86 10.31C16.23 21.22 14.28 22.45 12 23c-2.56-.61-4.7-2.07-6.42-4.37C3.86 16.34 3 13.8 3 11V5l9-4 9 4v6c0 2.39-.64 4.61-1.92 6.67l-2.91-2.91c.52-.79.83-1.76.83-2.76a5 5 0 0 0-5-5 5 5 0 0 0-5 5 5 5 0 0 0 5 5c1 0 1.97-.31 2.76-.83z"></path></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            DFIR 핸드북
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Windows 이벤트 로그 (EVTX)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo" aria-label="Switch to light mode" type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo" aria-label="Switch to dark mode" type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo" aria-label="Switch to system preference" type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="언어설정">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"></path></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/dfir-handbook/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/dfir-handbook/ko/" hreflang="ko" class="md-select__link">
+              한국어
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="검색" placeholder="검색" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required="">
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+      </label>
+      <nav class="md-search__options" aria-label="검색">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="공유" aria-label="공유" data-clipboard="" data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"></path></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="지우기" aria-label="지우기" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix="">
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            검색 초기화
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/DFIDwiz-sketch/dfir-handbook" title="저장소로 이동" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    dfir-handbook
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="탭" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  홈
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../basics/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  기초
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Windows
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../linux/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../network/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  네트워크
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../memory/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  메모리
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../splunk/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Splunk
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../adversary/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  공격 기법
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../tools/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  도구
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../playbooks/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  플레이북
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tags/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  태그
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="네비게이션" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="DFIR 핸드북" class="md-nav__button md-logo" aria-label="DFIR 핸드북" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 9a3 3 0 0 1 3 3 3 3 0 0 1-3 3 3 3 0 0 1-3-3 3 3 0 0 1 3-3m5.86 10.31C16.23 21.22 14.28 22.45 12 23c-2.56-.61-4.7-2.07-6.42-4.37C3.86 16.34 3 13.8 3 11V5l9-4 9 4v6c0 2.39-.64 4.61-1.92 6.67l-2.91-2.91c.52-.79.83-1.76.83-2.76a5 5 0 0 0-5-5 5 5 0 0 0-5 5 5 5 0 0 0 5 5c1 0 1.97-.31 2.76-.83z"></path></svg>
+
+    </a>
+    DFIR 핸드북
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/DFIDwiz-sketch/dfir-handbook" title="저장소로 이동" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    dfir-handbook
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix="">
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    홈
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../basics/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    기초
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    기초
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/http-status-codes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP 상태 코드
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/linux-commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    필수 Linux 명령어
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/well-known-ports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    잘 알려진 포트
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/windows-event-ids/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows 이벤트 ID
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked="">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Windows
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../prefetch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Prefetch
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../amcache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Amcache
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shimcache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shimcache (AppCompatCache)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../registry-keys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DFIR용 레지스트리 키
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lnk-jumplists/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LNK 파일과 Jump Lists
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mft-usn/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    $MFT, $UsnJrnl, $LogFile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../srum/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SRUM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows 이벤트 로그 (EVTX)
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows 이벤트 로그 (EVTX)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="목차">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      목차
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#location-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        위치와 포맷
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="위치와 포맷">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#default-sizes-why-the-security-log-only-goes-back-a-few-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        기본 크기 (Security 로그가 며칠 전까지만 남는 이유)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#channels-worth-grabbing-beyond-securitysystemapplication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        수집할 만한 채널 (Security/System/Application 외)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-collect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        수집 방법
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-parse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        파싱 방법
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#detecting-tampering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        변조 탐지
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#analysis-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        분석 팁
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        참고 자료
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../linux/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linux
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Linux
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../linux/auth-and-history/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    인증과 셸 히스토리
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../linux/persistence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linux 지속성
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../linux/filesystem-timestamps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    파일시스템과 타임스탬프
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../linux/logs-and-triage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    로그, 프로세스, 라이브 트리아지
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../network/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    네트워크
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    네트워크
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_2">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../network/zeek/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Zeek
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Zeek
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/zeek/conn-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    conn.log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/zeek/dns-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    dns.log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/zeek/http-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    http.log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/zeek/ssl-x509/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ssl.log와 x509.log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/zeek/files-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    files.log와 pe.log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_3">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../network/arkime/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arkime
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Arkime
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/arkime/search-syntax/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arkime 검색 문법
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/arkime/hunting-workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arkime로 침입 탐지
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/wireshark-tshark/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wireshark와 tshark
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/beaconing-c2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    비코닝과 C2 탐지
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../memory/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    메모리
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    메모리
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../memory/volatility-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Volatility 3 워크플로
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../memory/processes-injection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    프로세스와 코드 인젝션
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../memory/credentials-registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    자격증명, 레지스트리, 루트킷
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../splunk/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Splunk
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Splunk
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../splunk/spl-cheatsheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SPL 치트시트
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../splunk/data-discovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    데이터 탐색과 시간
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../splunk/rex-and-fields/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    rex, 필드 추출, eval
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../splunk/security-searches/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    질문별 보안 검색
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../splunk/hunting-patterns/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SPL 헌팅 패턴
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../splunk/botsv3-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    BOTSv3 조사 워크플로
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../adversary/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    공격 기법
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    공격 기법
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/hardening-by-version/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows 버전별 강화
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/phishing-delivery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    피싱 전달과 최초 실행
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/powershell-cradles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PowerShell 다운로드 크래들과 인코딩된 명령
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/lolbins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LOLBins — 서명된 바이너리를 통한 프록시 실행
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/lsass-dumping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LSASS 자격증명 덤프
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/sam-ntds-extraction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SAM, LSA Secrets 및 NTDS.dit 추출
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/dcsync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DCSync
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/kerberoasting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kerberoasting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/asrep-roasting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AS-REP Roasting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/golden-silver-tickets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Golden, Silver 티켓과 Pass-the-Ticket
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/llmnr-ntlm-relay/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLMNR/NBT-NS 포이즈닝과 NTLM 릴레이
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/adcs-abuse/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AD 인증서 서비스 악용 (ESC1 / ESC8)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/pass-the-hash/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pass-the-Hash
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/psexec-smb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PsExec와 SMB 횡적 이동
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/wmi-winrm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WMI와 WinRM 실행
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/rdp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RDP — 원격 데스크톱 악용
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/uac-bypass/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UAC 우회
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/token-impersonation-potato/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    토큰 가장과 Potato 공격
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/process-injection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    프로세스 인젝션
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/impair-defenses-log-clearing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    방어 무력화와 로그 삭제
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/persistence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    지속성 — 서비스, 작업, Run 키
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/eternalblue-smbv1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EternalBlue와 SMBv1 익스플로잇
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/printnightmare/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PrintNightmare와 Print Spooler 악용
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../tools/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    도구
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    도구
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/imaging-collection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    디스크와 메모리 이미징
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/kape/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    KAPE
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/velociraptor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Velociraptor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/zimmerman-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eric Zimmerman 도구
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/plaso-timelines/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plaso와 슈퍼 타임라인
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../playbooks/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    플레이북
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    플레이북
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../playbooks/ransomware/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    랜섬웨어
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../playbooks/compromised-workstation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    침해된 워크스테이션
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../playbooks/account-compromise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    계정 탈취와 BEC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../playbooks/lateral-domain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    횡적 이동과 도메인 침해
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../playbooks/data-exfiltration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    데이터 유출
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../playbooks/webshell-server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    웹셸과 서버 침해
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    태그
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="목차">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      목차
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#location-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        위치와 포맷
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="위치와 포맷">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#default-sizes-why-the-security-log-only-goes-back-a-few-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        기본 크기 (Security 로그가 며칠 전까지만 남는 이유)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#channels-worth-grabbing-beyond-securitysystemapplication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        수집할 만한 채널 (Security/System/Application 외)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-collect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        수집 방법
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-parse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        파싱 방법
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#detecting-tampering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        변조 탐지
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#analysis-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        분석 팁
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        참고 자료
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  <nav class="md-tags">
+    
+      
+      
+      
+      
+        <a href="../../tags/#tag:artifact" class="md-tag">artifact</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../tags/#tag:logs" class="md-tag">logs</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../tags/#tag:windows" class="md-tag">windows</a>
+      
+    
+  </nav>
+
+
+  
+    <a href="https://github.com/DFIDwiz-sketch/dfir-handbook/edit/main/docs-ko/windows/event-logs.md" title="이 페이지를 편집" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75z"></path></svg>
+    </a>
+  
+  
+    
+      
+    
+    <a href="https://github.com/DFIDwiz-sketch/dfir-handbook/raw/main/docs-ko/windows/event-logs.md" title="페이지소스 보기" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5 5 5 0 0 1 5-5 5 5 0 0 1 5 5 5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5"></path></svg>
+    </a>
+  
+
+
+<h1 id="windows-event-logs-evtx">Windows 이벤트 로그 (EVTX)<a class="headerlink" href="#windows-event-logs-evtx" title="Permanent link">¶</a></h1>
+<div class="dfir-meta">
+<p><strong>분류:</strong> 로그 · <strong>OS:</strong> Vista → 11 / Server 2008 → 2025 · <strong>최종 수정:</strong> 2026-09-16</p>
+</div>
+<div class="admonition abstract">
+<p class="admonition-title">한 줄 요약</p>
+<p>로그가 <em>어디에</em> 있는지, 어떤 채널이 중요한지, 덮어쓰기 전에 얼마나 커지는지, 대량으로 수집하고 파싱하는 방법, 누군가 지우거나 변조했는지 알아내는 방법을 모두 다룹니다 — <strong>이벤트 ID</strong>의 의미는 <a href="../../basics/windows-event-ids/">Windows 이벤트 ID</a> 페이지에 있습니다.</p>
+</div>
+<h2 id="location-format">위치와 포맷<a class="headerlink" href="#location-format" title="Permanent link">¶</a></h2>
+<table>
+<thead>
+<tr>
+<th>항목</th>
+<th>내용</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>폴더</td>
+<td><code>C:\Windows\System32\winevt\Logs\</code></td>
+</tr>
+<tr>
+<td>파일 이름</td>
+<td><code>Security.evtx</code>, <code>System.evtx</code>, <code>Application.evtx</code>, 그리고 <code>Microsoft-Windows-&lt;Provider&gt;%4&lt;Channel&gt;.evtx</code> (<code>%4</code>는 인코딩된 <code>/</code>)</td>
+</tr>
+<tr>
+<td>포맷</td>
+<td>64 KB 청크 단위의 바이너리 XML, 청크마다 자체 CRC와 레코드 범위; 시그니처 <code>ElfFile</code> (파일 헤더), <code>ElfChnk</code> (청크)</td>
+</tr>
+<tr>
+<td>시간</td>
+<td><strong>UTC</strong>로 저장 (<code>TimeCreated SystemTime</code>) — 이벤트 뷰어는 로컬 시간으로 표시</td>
+</tr>
+<tr>
+<td>레코드 ID</td>
+<td><code>EventRecordID</code>는 채널마다 증가 — 순서에 <strong>공백</strong>이 있으면 레코드가 사라졌거나/지워졌거나/덮어써진 것</td>
+</tr>
+<tr>
+<td>레지스트리 (채널 설정)</td>
+<td><code>HKLM\SYSTEM\CurrentControlSet\Services\EventLog\&lt;Log&gt;</code> (클래식)와 <code>HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WINEVT\Channels\&lt;Channel&gt;</code> (<code>Enabled</code>, <code>MaxSize</code>, <code>File</code>)</td>
+</tr>
+<tr>
+<td>전달된 로그</td>
+<td>WEC 수집기의 <code>ForwardedEvents.evtx</code>; SIEM (Splunk UF / Winlogbeat / Sysmon → 에이전트)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="default-sizes-why-the-security-log-only-goes-back-a-few-days">기본 크기 (Security 로그가 며칠 전까지만 남는 이유)<a class="headerlink" href="#default-sizes-why-the-security-log-only-goes-back-a-few-days" title="Permanent link">¶</a></h3>
+<table>
+<thead>
+<tr>
+<th>로그</th>
+<th>기본 최대 크기</th>
+<th>바쁜 시스템에서의 일반적인 보존 기간</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Security</td>
+<td>20 MB (Win7/8); 최신 빌드는 GPO / Server 기본값으로 <strong>최대 128 MB</strong> 이상</td>
+<td>몇 시간 ~ 며칠 — <strong>가장 먼저 확인할 것</strong></td>
+</tr>
+<tr>
+<td>System / Application</td>
+<td>20 MB</td>
+<td>몇 주</td>
+</tr>
+<tr>
+<td>PowerShell/Operational</td>
+<td>15 MB</td>
+<td>스크립트 블록 로깅이 켜져 있으면 며칠</td>
+</tr>
+<tr>
+<td>Sysmon/Operational</td>
+<td>64 MB (설정 기본값)</td>
+<td>몇 시간 ~ 며칠</td>
+</tr>
+<tr>
+<td>대부분의 <code>*Operational</code> 채널</td>
+<td>1 MB (!)</td>
+<td>아주 짧음 — 예: TaskScheduler, WMI-Activity</td>
+</tr>
+</tbody>
+</table>
+<p>보존 모드는 거의 항상 **"필요하면 이벤트 덮어쓰기"**라서 오래된 레코드는 조용히 사라집니다. <strong>볼륨 섀도 복사본</strong>에는 더 오래된 <code>Security.evtx</code>가 들어 있는 경우가 많으니 항상 <code>vssadmin list shadows</code> / KAPE <code>--vss</code>로 확인하세요.</p>
+<h2 id="channels-worth-grabbing-beyond-securitysystemapplication">수집할 만한 채널 (Security/System/Application 외)<a class="headerlink" href="#channels-worth-grabbing-beyond-securitysystemapplication" title="Permanent link">¶</a></h2>
+<table>
+<thead>
+<tr>
+<th>채널 파일</th>
+<th>이유</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Microsoft-Windows-PowerShell%4Operational.evtx</code></td>
+<td>스크립트 블록 로깅 <code>4104</code>, 모듈 <code>4103</code></td>
+</tr>
+<tr>
+<td><code>Windows PowerShell.evtx</code></td>
+<td>구식 PS 엔진 <code>400/403/600</code> — <code>HostApplication</code> 명령줄 포함</td>
+</tr>
+<tr>
+<td><code>Microsoft-Windows-Sysmon%4Operational.evtx</code></td>
+<td>Sysmon (설치돼 있다면) — 프로세스, 네트워크, 파일, 레지스트리, DNS</td>
+</tr>
+<tr>
+<td><code>Microsoft-Windows-TaskScheduler%4Operational.evtx</code></td>
+<td>작업 등록/실행 (꺼져 있는 경우가 많음 — <code>Enabled</code> 확인)</td>
+</tr>
+<tr>
+<td><code>Microsoft-Windows-TerminalServices-LocalSessionManager%4Operational.evtx</code></td>
+<td>RDP <code>21/22/24/25</code>, 출발지 IP 포함</td>
+</tr>
+<tr>
+<td><code>Microsoft-Windows-TerminalServices-RemoteConnectionManager%4Operational.evtx</code></td>
+<td>RDP <code>1149</code></td>
+</tr>
+<tr>
+<td><code>Microsoft-Windows-RemoteDesktopServices-RdpCoreTS%4Operational.evtx</code></td>
+<td>RDP <code>131</code>, <code>98</code></td>
+</tr>
+<tr>
+<td><code>Microsoft-Windows-WinRM%4Operational.evtx</code></td>
+<td>PowerShell remoting 클라이언트/서버 <code>6/91/168/169</code></td>
+</tr>
+<tr>
+<td><code>Microsoft-Windows-WMI-Activity%4Operational.evtx</code></td>
+<td>WMI 지속성 <code>5857–5861</code>, 원격 WMI 실행 쿼리</td>
+</tr>
+<tr>
+<td><code>Microsoft-Windows-Windows Defender%4Operational.evtx</code></td>
+<td>탐지 <code>1116/1117</code>, 변조 <code>5001/5007</code>, 예외</td>
+</tr>
+<tr>
+<td><code>Microsoft-Windows-Bits-Client%4Operational.evtx</code></td>
+<td>BITS 다운로드 (<code>59/60/61</code>) — LOLBin 다운로드/지속성</td>
+</tr>
+<tr>
+<td><code>Microsoft-Windows-DNS-Client%4Operational.evtx</code></td>
+<td>클라이언트 DNS (보통 꺼져 있음; 대신 Sysmon 22)</td>
+</tr>
+<tr>
+<td><code>Microsoft-Windows-SMBServer%4Security.evtx</code>, <code>SMBClient%4Connectivity/Security</code></td>
+<td>공유 접근 오류, 횡적 이동의 부산물</td>
+</tr>
+<tr>
+<td><code>Microsoft-Windows-NTLM%4Operational.evtx</code></td>
+<td>감사가 켜져 있을 때 NTLM 인증 상세</td>
+</tr>
+<tr>
+<td><code>Microsoft-Windows-Kernel-PnP%4Configuration.evtx</code>, <code>DriverFrameworks-UserMode%4Operational.evtx</code>, <code>Partition%4Diagnostic.evtx</code></td>
+<td>USB 장치 연결/분리</td>
+</tr>
+<tr>
+<td><code>Microsoft-Windows-CodeIntegrity%4Operational.evtx</code></td>
+<td>서명 없는/차단된 드라이버 (<code>3033/3077</code>)</td>
+</tr>
+<tr>
+<td><code>Microsoft-Windows-AppLocker%4EXE and DLL.evtx</code> 등</td>
+<td>AppLocker 차단/감사 <code>8002–8007</code></td>
+</tr>
+<tr>
+<td><code>Microsoft-Windows-Shell-Core%4Operational.evtx</code></td>
+<td>Run 키 실행 <code>9707/9708</code> — Run 키의 명령이 보임</td>
+</tr>
+<tr>
+<td><code>Microsoft-Windows-Storage-ClassPnP%4Operational.evtx</code>, <code>Ntfs%4Operational.evtx</code></td>
+<td>볼륨/디스크 이벤트</td>
+</tr>
+<tr>
+<td><code>Microsoft-Windows-Diagnosis-Scripted%4Operational.evtx</code>, <code>Windows-Kernel-Boot%4Operational.evtx</code></td>
+<td>부팅 시각 — 가동 시간과 종료/삭제 시점 뒷받침</td>
+</tr>
+<tr>
+<td><code>OpenSSH%4Operational.evtx</code></td>
+<td>Win32-OpenSSH 서버 로그인</td>
+</tr>
+<tr>
+<td><code>Microsoft-Windows-Security-Mitigations%4KernelMode.evtx</code></td>
+<td>익스플로잇 보호</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-collect">수집 방법<a class="headerlink" href="#how-to-collect" title="Permanent link">¶</a></h2>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio"><input id="__tabbed_1_2" name="__tabbed_1" type="radio"><input id="__tabbed_1_3" name="__tabbed_1" type="radio"><div class="tabbed-labels"><label for="__tabbed_1_1">KAPE</label><label for="__tabbed_1_2">Velociraptor</label><label for="__tabbed_1_3">라이브 복사</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c"># All EVTX + parse to CSV with EvtxECmd (uses community maps to flatten fields)</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">kape</span><span class="p">.</span><span class="n">exe</span> <span class="p">-</span><span class="n">-tsource</span> <span class="n">C</span><span class="p">:</span> <span class="p">-</span><span class="n">-tdest</span> <span class="n">C</span><span class="p">:\</span><span class="n">Case</span><span class="p">\</span><span class="n">out</span> <span class="p">-</span><span class="n">-target</span> <span class="n">EventLogs</span> <span class="p">-</span><span class="n">-mdest</span> <span class="n">C</span><span class="p">:\</span><span class="n">Case</span><span class="p">\</span><span class="n">mod</span> <span class="p">-</span><span class="n">-module</span> <span class="n">EvtxECmd</span> <span class="p">-</span><span class="n">-vss</span>
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<p><code>Windows.EventLogs.Evtx</code> (채널 / ID로 필터), <code>Windows.EventLogs.EvtxHunter</code> (모든 로그에 정규식 헌트), 그리고 자주 묻는 질문용 <code>Windows.EventLogs.RDPAuth</code>, <code>Windows.EventLogs.PowershellScriptblock</code>.</p>
+</div>
+<div class="tabbed-block">
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c"># Locked by the EventLog service but readable; wevtutil exports cleanly</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">wevtutil</span> <span class="n">epl</span> <span class="n">Security</span> <span class="n">C</span><span class="p">:\</span><span class="n">Case</span><span class="p">\</span><span class="n">Security</span><span class="p">.</span><span class="n">evtx</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">wevtutil</span> <span class="n">el</span> <span class="p">|</span> <span class="k">ForEach</span><span class="n">-Object</span> <span class="p">{</span> <span class="n">wevtutil</span> <span class="n">epl</span> <span class="nv">$_</span> <span class="p">(</span><span class="s2">"C:\Case\"</span> <span class="p">+</span> <span class="p">(</span><span class="nv">$_</span> <span class="o">-replace</span> <span class="s1">'[\\/]'</span><span class="p">,</span><span class="s1">'%4'</span><span class="p">)</span> <span class="p">+</span> <span class="s2">".evtx"</span><span class="p">)</span> <span class="p">}</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c"># Or raw copy the directory (fine — files are consistent per chunk)</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">robocopy</span> <span class="n">C</span><span class="p">:\</span><span class="n">Windows</span><span class="p">\</span><span class="n">System32</span><span class="p">\</span><span class="n">winevt</span><span class="p">\</span><span class="n">Logs</span> <span class="n">C</span><span class="p">:\</span><span class="n">Case</span><span class="p">\</span><span class="n">Logs</span> <span class="p">*.</span><span class="n">evtx</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<h2 id="how-to-parse">파싱 방법<a class="headerlink" href="#how-to-parse" title="Permanent link">¶</a></h2>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:4"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio"><input id="__tabbed_2_2" name="__tabbed_2" type="radio"><input id="__tabbed_2_3" name="__tabbed_2" type="radio"><input id="__tabbed_2_4" name="__tabbed_2" type="radio"><div class="tabbed-labels"><label for="__tabbed_2_1">EvtxECmd (Eric Zimmerman)</label><label for="__tabbed_2_2">Chainsaw + Sigma (빠른 트리아지)</label><label for="__tabbed_2_3">PowerShell</label><label for="__tabbed_2_4">Plaso / Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c"># Everything → one CSV, with maps applied (PayloadData1..6 columns become meaningful)</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">EvtxECmd</span><span class="p">.</span><span class="n">exe</span> <span class="n">-d</span> <span class="n">C</span><span class="p">:\</span><span class="n">Case</span><span class="p">\</span><span class="n">Logs</span> <span class="p">-</span><span class="n">-csv</span> <span class="n">C</span><span class="p">:\</span><span class="n">Case</span><span class="p">\</span><span class="n">out</span> <span class="p">-</span><span class="n">-csvf</span> <span class="n">evtx</span><span class="p">.</span><span class="n">csv</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c"># Only chosen IDs, time-bounded</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">EvtxECmd</span><span class="p">.</span><span class="n">exe</span> <span class="n">-d</span> <span class="n">C</span><span class="p">:\</span><span class="n">Case</span><span class="p">\</span><span class="n">Logs</span> <span class="p">-</span><span class="n">-csv</span> <span class="n">C</span><span class="p">:\</span><span class="n">Case</span><span class="p">\</span><span class="n">out</span> <span class="p">-</span><span class="n">-inc</span> <span class="n">4624</span><span class="p">,</span><span class="n">4625</span><span class="p">,</span><span class="n">4648</span><span class="p">,</span><span class="n">4672</span><span class="p">,</span><span class="n">4688</span><span class="p">,</span><span class="n">4698</span><span class="p">,</span><span class="n">4720</span><span class="p">,</span><span class="n">7045</span><span class="p">,</span><span class="n">1102</span> <span class="p">-</span><span class="n">-sd</span> <span class="s2">"2026-09-01 00:00"</span> <span class="p">-</span><span class="n">-ed</span> <span class="s2">"2026-09-16 00:00"</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c"># Exclude the noisy ones</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="n">EvtxECmd</span><span class="p">.</span><span class="n">exe</span> <span class="n">-d</span> <span class="n">C</span><span class="p">:\</span><span class="n">Case</span><span class="p">\</span><span class="n">Logs</span> <span class="p">-</span><span class="n">-csv</span> <span class="n">C</span><span class="p">:\</span><span class="n">Case</span><span class="p">\</span><span class="n">out</span> <span class="p">-</span><span class="n">-exc</span> <span class="n">5156</span><span class="p">,</span><span class="n">5158</span><span class="p">,</span><span class="n">4658</span><span class="p">,</span><span class="n">4690</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="c"># JSON for Splunk / jq</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="n">EvtxECmd</span><span class="p">.</span><span class="n">exe</span> <span class="o">-f</span> <span class="n">C</span><span class="p">:\</span><span class="n">Case</span><span class="p">\</span><span class="n">Logs</span><span class="p">\</span><span class="n">Security</span><span class="p">.</span><span class="n">evtx</span> <span class="p">-</span><span class="n">-json</span> <span class="n">C</span><span class="p">:\</span><span class="n">Case</span><span class="p">\</span><span class="n">out</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="c"># Update the map files first (they define how each provider/ID is flattened)</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="n">EvtxECmd</span><span class="p">.</span><span class="n">exe</span> <span class="p">-</span><span class="n">-sync</span>
+</span></code></pre></div>
+<p>CSV는 <strong>Timeline Explorer</strong>로 여세요. <code>MapDescription</code>, <code>UserName</code>, <code>RemoteHost</code>, <code>PayloadData*</code>, <code>ExecutableInfo</code> 열이 맵 덕분에 의미를 갖게 됩니다.</p>
+</div>
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Hunt with Sigma rules across a folder of EVTX; outputs a table of detections</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>chainsaw<span class="w"> </span>hunt<span class="w"> </span>C:<span class="se">\C</span>ase<span class="se">\L</span>ogs<span class="w"> </span>-s<span class="w"> </span>sigma/<span class="w"> </span>--mapping<span class="w"> </span>mappings/sigma-event-logs-all.yml<span class="w"> </span>-o<span class="w"> </span>hits.csv<span class="w"> </span>--csv
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Quick searches</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>chainsaw<span class="w"> </span>search<span class="w"> </span>-t<span class="w"> </span><span class="s1">'Event.System.EventID: =4624'</span><span class="w"> </span>-t<span class="w"> </span><span class="s1">'Event.EventData.LogonType: =10'</span><span class="w"> </span>C:<span class="se">\C</span>ase<span class="se">\L</span>ogs
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>chainsaw<span class="w"> </span>search<span class="w"> </span><span class="s2">"mimikatz"</span><span class="w"> </span>-i<span class="w"> </span>C:<span class="se">\C</span>ase<span class="se">\L</span>ogs
+</span></code></pre></div>
+<p><strong>Hayabusa</strong>가 대안입니다 (<code>hayabusa csv-timeline -d Logs -o out.csv</code>) — 매우 빠르고 Sigma 기반이며 심각도별 색상 표시, 타임라인 <code>logon-summary</code>와 <code>metrics</code> 모드가 있습니다.</p>
+</div>
+<div class="tabbed-block">
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c"># From saved evtx files</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nb">Get-WinEvent</span> <span class="n">-Path</span> <span class="n">C</span><span class="p">:\</span><span class="n">Case</span><span class="p">\</span><span class="n">Logs</span><span class="p">\</span><span class="n">Security</span><span class="p">.</span><span class="n">evtx</span> <span class="n">-FilterXPath</span> <span class="s2">"*[System[(EventID=4624)] and EventData[Data[@Name='LogonType']='10']]"</span> <span class="p">|</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>  <span class="nb">Select </span><span class="n">TimeCreated</span><span class="p">,</span> <span class="p">@{</span><span class="n">n</span><span class="p">=</span><span class="s1">'User'</span><span class="p">;</span><span class="n">e</span><span class="p">={</span><span class="nv">$_</span><span class="p">.</span><span class="n">Properties</span><span class="p">[</span><span class="n">5</span><span class="p">].</span><span class="n">Value</span><span class="p">}},</span> <span class="p">@{</span><span class="n">n</span><span class="p">=</span><span class="s1">'IP'</span><span class="p">;</span><span class="n">e</span><span class="p">={</span><span class="nv">$_</span><span class="p">.</span><span class="n">Properties</span><span class="p">[</span><span class="n">18</span><span class="p">].</span><span class="n">Value</span><span class="p">}}</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="c"># Find the *oldest* record per log — tells you how far back you can see</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="nb">Get-ChildItem</span> <span class="n">C</span><span class="p">:\</span><span class="n">Case</span><span class="p">\</span><span class="n">Logs</span><span class="p">\*.</span><span class="n">evtx</span> <span class="p">|</span> <span class="k">ForEach</span><span class="n">-Object</span> <span class="p">{</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>  <span class="nv">$e</span> <span class="p">=</span> <span class="nb">Get-WinEvent</span> <span class="n">-Path</span> <span class="nv">$_</span><span class="p">.</span><span class="n">FullName</span> <span class="n">-Oldest</span> <span class="n">-MaxEvents</span> <span class="n">1</span> <span class="n">-ErrorAction</span> <span class="n">SilentlyContinue</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>  <span class="no">[pscustomobject]</span><span class="p">@{</span><span class="n">Log</span><span class="p">=</span><span class="nv">$_</span><span class="p">.</span><span class="n">Name</span><span class="p">;</span> <span class="n">Oldest</span><span class="p">=</span><span class="nv">$e</span><span class="p">.</span><span class="n">TimeCreated</span><span class="p">;</span> <span class="n">SizeMB</span><span class="p">=</span><span class="no">[math]</span><span class="p">::</span><span class="n">Round</span><span class="p">(</span><span class="nv">$_</span><span class="p">.</span><span class="n">Length</span><span class="p">/</span><span class="n">1MB</span><span class="p">,</span><span class="n">1</span><span class="p">)}</span> <span class="p">}</span>
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>log2timeline.py<span class="w"> </span>--parsers<span class="w"> </span>winevtx<span class="w"> </span>out.plaso<span class="w"> </span>/evidence/Logs/
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="c1"># python-evtx (low level)</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>evtx_dump.py<span class="w"> </span>Security.evtx<span class="w"> </span>&gt;<span class="w"> </span>Security.xml
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<h2 id="detecting-tampering">변조 탐지<a class="headerlink" href="#detecting-tampering" title="Permanent link">¶</a></h2>
+<table>
+<thead>
+<tr>
+<th>징후</th>
+<th>의미 / 확인할 곳</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Security <strong><code>1102</code></strong> "감사 로그가 지워졌습니다" (계정 포함)</td>
+<td><code>wevtutil cl Security</code>, 이벤트 뷰어 "로그 지우기", Mimikatz <code>event::clear</code></td>
+</tr>
+<tr>
+<td>System <strong><code>104</code></strong> "&lt;이름&gt; 로그 파일이 지워졌습니다"</td>
+<td>Security 이외의 채널 삭제</td>
+</tr>
+<tr>
+<td>오래 켜져 있던 시스템인데 Security의 가장 오래된 레코드가 <em>몇 분</em> 전</td>
+<td>삭제됨 (1102 자체가 유일하게 남은 레코드였거나, 곧바로 다시 지워짐)</td>
+</tr>
+<tr>
+<td>채널 안의 <strong><code>EventRecordID</code> 공백</strong></td>
+<td>레코드가 빠짐 (로그 덮어쓰기) 또는 선택적으로 삭제됨 (예: <strong>DanderSpritz <code>eventlogedit</code></strong> 방식 — "참조되지 않은" 레코드를 남겨 청크 카빙으로 복구 가능)</td>
+</tr>
+<tr>
+<td>Security <code>4719</code> 감사 정책 변경 / <code>4907</code> SACL 변경 / <code>4912</code> 사용자별 감사 정책</td>
+<td>공격자가 다음 행동을 위해 로깅을 끔</td>
+</tr>
+<tr>
+<td>있어야 할 <code>4688</code> / <code>4104</code>가 아예 없음</td>
+<td>정책이 처음부터 꺼져 있었음 — <code>auditpol /get /category:*</code>와 PowerShell GPO 키 <code>HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging</code> 확인</td>
+</tr>
+<tr>
+<td>System <code>7036</code> EventLog 서비스 중지/시작; <code>7040</code> 시작 유형 변경</td>
+<td>로그 파일을 직접 쓰거나 로깅을 멈추려고 서비스를 중지함 (<strong>Phant0m</strong> 방식의 스레드 종료는 중지 이벤트를 <em>남기지 않고</em> 서비스도 실행 중으로 보이지만 아무것도 기록되지 않음 — <code>$J</code>는 바쁜데 몇 시간 동안 이벤트가 0개인 평평한 구간을 찾을 것)</td>
+</tr>
+<tr>
+<td>시간 변경: Security <code>4616</code> (시스템 시간 변경), Kernel-General <code>1</code></td>
+<td>타임라인을 헷갈리게 하려는 시간 조작</td>
+</tr>
+<tr>
+<td>다른 파일은 오래됐는데 <code>.evtx</code> 파일의 <code>$SI</code> 생성 시각만 최근</td>
+<td>파일이 삭제되고 서비스가 다시 만듦</td>
+</tr>
+<tr>
+<td><code>WINEVT\Channels</code> 레지스트리에서 채널 <code>Enabled = 0</code></td>
+<td>누군가 채널을 끔 (예: TaskScheduler)</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition tip">
+<p class="admonition-title">로그 이외의 증거로 뒷받침하세요</p>
+<p>로그가 없을 때: <a href="../mft-usn/">$UsnJrnl</a>은 여전히 파일 활동을, <a href="../prefetch/">Prefetch</a>/<a href="../amcache/">Amcache</a>는 실행을, <a href="../srum/">SRUM</a>은 앱별·시간별 네트워크 바이트를 보여 줍니다. 그리고 <code>1102</code>는 <em>누가</em> <em>언제</em> 로그를 지웠는지 알려 주므로 — 그 직전 10분 동안 다른 모든 아티팩트에서 무슨 일이 있었는지 보세요.</p>
+</div>
+<p><strong>카빙</strong>: 지워진 로그는 <strong>EVTXtract</strong>(<code>evtxtract image.dd &gt; recovered.xml</code>)나 <code>ElfChnk</code> 청크 카빙(64 KB 청크 하나하나가 독립적으로 파싱 가능)으로 할당되지 않은 공간과 VSS에서 일부 복구할 수 있는 경우가 많습니다.</p>
+<h2 id="analysis-tips">분석 팁<a class="headerlink" href="#analysis-tips" title="Permanent link">¶</a></h2>
+<ul>
+<li><strong>범위부터 확인</strong>: 채널별 가장 오래된 이벤트, 최대 크기, <code>1102/104</code>, <code>4719</code>, <code>auditpol</code>. 보고서에 적으세요 — "Security 로그는 2026-09-14 03:12부터 2026-09-16 09:40까지만 존재했음".</li>
+<li><strong>시간대</strong>: EVTX는 UTC입니다. Timeline Explorer / EvtxECmd 출력은 UTC이고 이벤트 뷰어는 로컬 시간입니다. 어느 쪽을 인용하는지 밝히세요.</li>
+<li><strong>Logon ID가 결합 키입니다</strong>: <code>4624</code> → <code>4672</code> (관리자?) → <code>4634/4647</code> (세션 길이) → 같은 <code>SubjectLogonId</code>의 <code>4688</code> (그 세션에서 무엇이 실행됐나).</li>
+<li><strong>맵이 중요합니다</strong>: EvtxECmd 맵(또는 SIEM의 필드 추출)이 없으면 <code>PayloadData3</code>만 쳐다보게 됩니다. 맵을 최신으로 유지하고, 사내 앱용 맵은 직접 만드세요.</li>
+<li><strong>Sysmon이 있으면 모든 게 달라집니다</strong> — 있다면 거기서 시작하세요 (<code>1</code>, <code>3</code>, <code>7</code>, <code>8</code>, <code>10</code>, <code>11</code>, <code>12–14</code>, <code>22</code>).</li>
+<li><strong>서버 vs. 워크스테이션</strong>: DC에는 <code>4768/4769/4776</code>(도메인 전체의 Kerberos/NTLM)이 있어서 Kerberoasting, 스프레이, 골든 티켓을 여기서 찾고, 워크스테이션에는 <code>4624 type 2/10</code>과 프로세스 이벤트가 있습니다.</li>
+<li><strong><code>Computer</code> 필드를 무조건 믿지 마세요</strong>: 전달/가져온 로그는 원래 호스트명을 유지합니다 — 좋은 점이지만 공격자가 호스트 이름을 바꾸면 헷갈릴 수 있습니다.</li>
+</ul>
+<h2 id="references">참고 자료<a class="headerlink" href="#references" title="Permanent link">¶</a></h2>
+<ul>
+<li><a href="https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/wevtutil">Microsoft — Windows Event Log (EVTX) &amp; wevtutil</a></li>
+<li><a href="https://github.com/libyal/libevtx/blob/main/documentation/Windows%20XML%20Event%20Log%20(EVTX).asciidoc">libevtx — Windows XML Event Log format</a></li>
+<li><a href="https://github.com/EricZimmerman/evtx">EvtxECmd + maps</a></li>
+<li><a href="https://github.com/WithSecureLabs/chainsaw">Chainsaw</a> · <a href="https://github.com/Yamato-Security/hayabusa">Hayabusa</a> · <a href="https://github.com/williballenthin/EVTXtract">EVTXtract</a></li>
+<li><a href="https://jpcertcc.github.io/ToolAnalysisResultSheet/">JPCERT — Tool Analysis Result Sheet (공격 도구별로 생성되는 이벤트)</a></li>
+<li><a href="../../basics/windows-event-ids/">Windows 이벤트 ID 치트 페이지</a></li>
+</ul>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden="">
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"></path></svg>
+  맨위로
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="하단/푸터">
+        
+          
+          <a href="../srum/" class="md-footer__link md-footer__link--prev" aria-label="이전: SRUM">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                이전
+              </span>
+              <div class="md-ellipsis">
+                SRUM
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../linux/" class="md-footer__link md-footer__link--next" aria-label="다음: Linux 포렌식">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                다음
+              </span>
+              <div class="md-ellipsis">
+                Linux 포렌식
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"></path></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      개인 학습 노트입니다. 어떤 기관의 공식 지침도 아닙니다.
+    </div>
+  
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/DFIDwiz-sketch" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.footer", "search.suggest", "search.highlight", "search.share", "toc.follow", "content.code.copy", "content.code.annotate", "content.action.edit", "content.action.view", "content.tabs.link", "content.tooltips"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\ud074\ub9bd\ubcf4\ub4dc\uc5d0 \ubcf5\uc0ac\ub428", "clipboard.copy": "\ud074\ub9bd\ubcf4\ub4dc\ub85c \ubcf5\uc0ac", "search.result.more.one": "\uc774 \ubb38\uc11c\uc5d0\uc11c 1\uac1c\uc758 \uac80\uc0c9 \uacb0\uacfc \ub354 \ubcf4\uae30", "search.result.more.other": "\uc774 \ubb38\uc11c\uc5d0\uc11c #\uac1c\uc758 \uac80\uc0c9 \uacb0\uacfc \ub354 \ubcf4\uae30", "search.result.none": "\uac80\uc0c9\uc5b4\uc640 \uc77c\uce58\ud558\ub294 \ubb38\uc11c\uac00 \uc5c6\uc2b5\ub2c8\ub2e4", "search.result.one": "1\uac1c\uc758 \uc77c\uce58\ud558\ub294 \ubb38\uc11c", "search.result.other": "#\uac1c\uc758 \uc77c\uce58\ud558\ub294 \ubb38\uc11c", "search.result.placeholder": "\uac80\uc0c9\uc5b4\ub97c \uc785\ub825\ud558\uc138\uc694", "search.result.term.missing": "\ud3ec\ud568\ub418\uc9c0 \uc54a\uc740 \uac80\uc0c9\uc5b4", "select.version": "\ubc84\uc804 \uc120\ud0dd"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../assets/lang-switch.js"></script>
+      
+    
+  
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(()=>{ lightbox.reload(); });
+</script></body></html>
