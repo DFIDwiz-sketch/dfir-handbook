@@ -30,6 +30,17 @@ sequenceDiagram
 # example of what an attacker runs (for recognition, not replication)
 ```
 
+## Affected Windows versions
+
+| Version | Exposure | Version-specific notes |
+|---|---|---|
+| **XP / Server 2003** |  |  |
+| **Vista / 2008** |  |  |
+| **7 / 2008 R2** |  |  |
+| **8.1 / 2012 R2** |  |  |
+| **10 / 2016 / 2019** |  |  |
+| **11 / 2022 / 2025** |  |  |
+
 ## Artifacts left behind
 
 | Where | Artifact | What to look for |
@@ -57,6 +68,13 @@ sequenceDiagram
 
 What to contain, what to collect, what to check next.
 
+### Remediation by Windows version
+
+| Control | What it stops | Available on |
+|---|---|---|
+|  |  |  |
+
 ## References
 
 - [MITRE](https://attack.mitre.org/techniques/Txxxx/)
+- Pages: [Hardening by version](../adversary/hardening-by-version.md)
