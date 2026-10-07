@@ -12,6 +12,7 @@
 
 템플릿 종류: concept(기본) / artifact / tool / technique / playbook
 폴더가 없으면 자동으로 만들고, 그 폴더용 index.md도 같이 만들어 줍니다.
+한국어 사이트용 docs-ko/ 에도 같은 경로로 짝 파일을 만들어 줍니다 (번역은 직접).
 """
 import argparse
 import datetime as dt
@@ -21,6 +22,7 @@ import sys
 
 ROOT = pathlib.Path(__file__).parent
 DOCS = ROOT / "docs"
+DOCS_KO = ROOT / "docs-ko"   # 한국어 사이트 (같은 구조)
 TEMPLATES = ROOT / "templates"
 
 
@@ -34,17 +36,15 @@ def pretty(slug: str) -> str:
     return slug.replace("-", " ").replace("_", " ").title()
 
 
-def ensure_index(folder: pathlib.Path) -> None:
+def ensure_index(folder: pathlib.Path, ko: bool = False) -> None:
     """폴더에 index.md가 없으면 만들어 준다 (섹션 첫 페이지)."""
     idx = folder / "index.md"
     if idx.exists():
         return
     name = pretty(folder.name)
-    idx.write_text(
-        f"# {name}\n\n"
-        f"Pages in this section are listed in the sidebar.\n",
-        encoding="utf-8",
-    )
+    note = ("이 섹션의 페이지는 왼쪽 메뉴에 표시됩니다." if ko
+            else "Pages in this section are listed in the sidebar.")
+    idx.write_text(f"# {name}\n\n{note}\n", encoding="utf-8")
     pages = folder / ".pages"
     if not pages.exists():
         pages.write_text("nav:\n  - index.md\n  - ...\n", encoding="utf-8")
@@ -72,20 +72,30 @@ def main() -> int:
     section = parts[0]
     title = a.title or pretty(target.stem)
 
-    # 중간 폴더들 모두 만들고 index.md 채우기
-    folder = DOCS
-    for part in parts[:-1]:
-        folder = folder / part
-        folder.mkdir(exist_ok=True)
-        ensure_index(folder)
-
     body = (TEMPLATES / f"{a.template}.md").read_text(encoding="utf-8")
     body = (body.replace("{{TITLE}}", title)
                 .replace("{{SECTION}}", section)
                 .replace("{{DATE}}", dt.date.today().isoformat()))
-    target.write_text(body, encoding="utf-8")
-    print(f"  + {target.relative_to(ROOT)}  ({a.template} template)")
-    print("\n이제 그 파일을 열어 내용을 채우고, git add/commit/push 하면 배포돼요.")
+
+    # 영어(docs/)와 한국어(docs-ko/) 양쪽에 같은 경로로 만든다.
+    # 한쪽에만 있으면 언어 버튼을 눌렀을 때 404가 나고, .pages 에 적힌 파일이 없으면 빌드가 실패해요.
+    for root, ko in ((DOCS, False), (DOCS_KO, True)):
+        folder = root
+        for part in parts[:-1]:
+            folder = folder / part
+            folder.mkdir(exist_ok=True)
+            ensure_index(folder, ko)
+        out = root / f"{rel}.md"
+        if out.exists() and not a.force:
+            print(f"  = {out.relative_to(ROOT)}  (이미 있어서 건너뜀)")
+            continue
+        text = body
+        if ko:
+            text += ('\n!!! note "번역 예정"\n'
+                     '    이 페이지는 아직 번역되지 않았습니다. 영어 페이지를 번역해서 채워 주세요.\n')
+        out.write_text(text, encoding="utf-8")
+        print(f"  + {out.relative_to(ROOT)}  ({a.template} template)")
+    print("\n영어 파일을 채운 뒤, docs-ko/ 쪽 짝 파일에 한국어 번역을 넣고 git add/commit/push 하면 배포돼요.")
     return 0
 
 

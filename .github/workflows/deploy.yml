@@ -23,7 +23,14 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      - run: mkdocs gh-deploy --force --clean
+      # 영어 사이트 → site/,  한국어 사이트 → site/ko/  를 만든 뒤 한 번에 gh-pages 로 올립니다.
+      - run: mkdocs build -d site
+      - run: mkdocs build -f mkdocs.ko.yml -d site/ko
+
+      - run: |
+          git config user.name  "$GIT_COMMITTER_NAME"
+          git config user.email "$GIT_COMMITTER_EMAIL"
+          ghp-import --no-jekyll --push --force --branch gh-pages site
         env:
           GIT_COMMITTER_NAME: github-actions[bot]
           GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
