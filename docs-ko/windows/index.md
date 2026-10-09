@@ -35,6 +35,7 @@ Windows의 호스트 기반 아티팩트 — 어디에 있고, 무엇을 증명�
 -   **[$MFT / $UsnJrnl / $LogFile](mft-usn.md)** — 파일시스템 이력, 타임스톰핑
 -   **[SRUM](srum.md)** — 앱별·시간별 전송 바이트, 사용자 포함
 -   **[이벤트 로그](event-logs.md)** — 채널, 보존, 파싱, 변조
+-   **[시나리오별 아티팩트 식별](artefact-identification.md)** — 정상/의심 판단, 물어볼 Context, 다음 아티팩트
 
 </div>
 

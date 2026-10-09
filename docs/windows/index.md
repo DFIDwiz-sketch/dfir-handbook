@@ -35,6 +35,7 @@ Host-based artifacts on Windows — where they live, what they prove, how to par
 -   **[$MFT / $UsnJrnl / $LogFile](mft-usn.md)** — file system history, timestomping
 -   **[SRUM](srum.md)** — bytes sent per app per hour, with user
 -   **[Event logs](event-logs.md)** — channels, retention, parsing, tampering
+-   **[Identifying artefacts by scenario](artefact-identification.md)** — normal vs suspicious, what context to ask, which artefact next
 
 </div>
 
