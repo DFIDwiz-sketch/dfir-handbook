@@ -69,6 +69,22 @@ hide:
 
     [:octicons-arrow-right-24: 공격 기법](adversary/index.md)
 
+-   :material-account-search:{ .lg .middle } **위협 인텔리전스**
+
+    ---
+
+    공격 기법 뒤에 누가 있는가 — 북한 그룹(Lazarus, APT38, TraderTraitor, Kimsuky), 주요 사건, TTP와 헌팅 쿼리.
+
+    [:octicons-arrow-right-24: 위협 인텔리전스](threat-intel/index.md)
+
+-   :material-radar:{ .lg .middle } **펜테스팅**
+
+    ---
+
+    HTB CPTS 공부에서 나온 공격자 측 노트. 우선 정찰(Nmap)부터, 앞으로 계속 추가합니다. 각 페이지는 로그에 남는 흔적과도 연결됩니다.
+
+    [:octicons-arrow-right-24: 펜테스팅](pentesting/index.md)
+
 -   :material-toolbox:{ .lg .middle } **도구**
 
     ---
@@ -84,6 +100,14 @@ hide:
     자주 만나는 상황별 단계적 대응 절차.
 
     [:octicons-arrow-right-24: 플레이북](playbooks/index.md)
+
+-   :material-school:{ .lg .middle } **학습**
+
+    ---
+
+    학습 로드맵, 매주 기법 하나씩 공부하는 퍼플팀 루프, 24개월 커리큘럼, 학습 자료.
+
+    [:octicons-arrow-right-24: 학습](learning/index.md)
 
 </div>
 

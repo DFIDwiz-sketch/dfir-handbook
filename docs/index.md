@@ -69,6 +69,22 @@ Use the **search bar** (press ++slash++ or ++s++) — it is usually faster than 
 
     [:octicons-arrow-right-24: Adversary](adversary/index.md)
 
+-   :material-account-search:{ .lg .middle } **Threat Intel**
+
+    ---
+
+    Who is behind the techniques — North Korean groups (Lazarus, APT38, TraderTraitor, Kimsuky), major incidents, TTPs and hunts.
+
+    [:octicons-arrow-right-24: Threat Intel](threat-intel/index.md)
+
+-   :material-radar:{ .lg .middle } **Pentesting**
+
+    ---
+
+    Offensive-side notes from HTB CPTS study — recon first (Nmap), more to come. Each page links back to what it leaves in the logs.
+
+    [:octicons-arrow-right-24: Pentesting](pentesting/index.md)
+
 -   :material-toolbox:{ .lg .middle } **Tools**
 
     ---
@@ -84,6 +100,14 @@ Use the **search bar** (press ++slash++ or ++s++) — it is usually faster than 
     Step-by-step response procedures for common scenarios.
 
     [:octicons-arrow-right-24: Playbooks](playbooks/index.md)
+
+-   :material-school:{ .lg .middle } **Learning**
+
+    ---
+
+    Roadmap, the one-technique-a-week purple-team loop, a 24-month curriculum and training resources.
+
+    [:octicons-arrow-right-24: Learning](learning/index.md)
 
 </div>
 
