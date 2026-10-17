@@ -37,7 +37,13 @@ title: Information Security Core Skills
 
     컴플라이언스(CIS 매핑), 애플리케이션 허용 목록과 AppLocker, 백신 우회 원리(고스트 라이팅·LOLBins), 패스워드 스프레이, MFA 우회, 커버로스팅, 네트워크 인증 가로채기, 패스워드 크래킹(Hashcat).
 
+-   **[Day 2 — 나가는 트래픽 분석](day-2.md)** *(진행 중)*
+
+    ---
+
+    Egress 트래픽 분석, NetFlow, 방화벽 로그 수동 분석, AI로 로그 분석, Zeek, 비컨(beaconing)·지터·롱 커넥션, RITA. (AC-Hunter·ASN·UEBA·Sysmon은 이어서 추가)
+
 </div>
 
-!!! info "2~4일차는 추후 추가"
-    2일차(나가는 트래픽 분석·Zeek·RITA·UEBA·Sysmon), 3일차(EDR·Atomic Red Team·BloodHound·Pass-the-Hash), 4일차(인터넷 허용 목록·취약점 관리·웹 테스트·Ping Castle)는 순차적으로 정리해 추가합니다.
+!!! info "3~4일차는 추후 추가"
+    3일차(EDR·Atomic Red Team·BloodHound·Pass-the-Hash), 4일차(인터넷 허용 목록·취약점 관리·웹 테스트·Ping Castle)는 순차적으로 정리해 추가합니다.

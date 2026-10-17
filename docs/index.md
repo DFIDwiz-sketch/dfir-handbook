@@ -109,6 +109,14 @@ Use the **search bar** (press ++slash++ or ++s++) — it is usually faster than 
 
     [:octicons-arrow-right-24: Learning](learning/index.md)
 
+-   :material-presentation:{ .lg .middle } **Training**
+
+    ---
+
+    Notes from courses I've taken — Antisyphon's Information Security Core Skills (John Strand) and more — cross-linked back to the reference sections.
+
+    [:octicons-arrow-right-24: Training](training/index.md)
+
 </div>
 
 ---
