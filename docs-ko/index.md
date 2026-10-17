@@ -109,6 +109,14 @@ hide:
 
     [:octicons-arrow-right-24: 학습](learning/index.md)
 
+-   :material-presentation:{ .lg .middle } **트레이닝**
+
+    ---
+
+    수강한 강의 노트 — Antisyphon의 Information Security Core Skills(John Strand) 등. 강의 내용을 한국어로 풀고 다른 섹션의 레퍼런스로 연결.
+
+    [:octicons-arrow-right-24: 트레이닝](training/index.md)
+
 </div>
 
 ---
