@@ -31,6 +31,12 @@ Backup & recovery is "something you should just be doing," so it isn't covered s
 
 <div class="grid cards" markdown>
 
+-   **[Day 1 — Allow Listing and Password Attacks](day-1.md)**
+
+    ---
+
+    Compliance (CIS mapping), application allow listing and AppLocker, AV-bypass theory (ghostwriting, LOLBins), password spraying, MFA gaps, Kerberoasting, network credential interception, password cracking (Hashcat).
+
 -   **[Day 2 — Egress Traffic Analysis](day-2.md)** *(in progress)*
 
     ---
@@ -39,5 +45,5 @@ Backup & recovery is "something you should just be doing," so it isn't covered s
 
 </div>
 
-!!! info "Day 1 (and Days 3–4) to follow"
-    Day 1 (application allow listing, AppLocker, AV-bypass theory, password spraying, Kerberoasting, cracking) is currently written up in the [Korean version](https://DFIDwiz-sketch.github.io/dfir-handbook/ko/training/antisyphon/iscs/day-1/); an English page is pending. Days 3–4 (EDR / Atomic Red Team / BloodHound; internet allow listing / vuln management / web testing / Ping Castle) will be added in sequence.
+!!! info "Days 3–4 to follow"
+    Day 3 (EDR / Atomic Red Team / BloodHound / Pass-the-Hash) and Day 4 (internet allow listing / vulnerability management / web testing / Ping Castle) will be added in sequence.
