@@ -37,11 +37,11 @@ Backup & recovery is "something you should just be doing," so it isn't covered s
 
     Compliance (CIS mapping), application allow listing and AppLocker, AV-bypass theory (ghostwriting, LOLBins), password spraying, MFA gaps, Kerberoasting, network credential interception, password cracking (Hashcat).
 
--   **[Day 2 — Egress Traffic Analysis](day-2.md)** *(in progress)*
+-   **[Day 2 — Egress Traffic Analysis and Logging](day-2.md)**
 
     ---
 
-    Egress traffic analysis, NetFlow, manual firewall-log analysis, using AI on logs, Zeek, beaconing / jitter / long connections, RITA. (AC-Hunter, ASN deny-lists, UEBA and Sysmon still to be added.)
+    Egress traffic analysis, NetFlow, manual firewall-log analysis, using AI on logs, Zeek, beaconing / jitter / long connections, RITA, ASN deny-lists, the AC-Hunter lab, UEBA, Deep Blue CLI, Windows logging limits and Sysmon.
 
 </div>
 
