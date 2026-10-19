@@ -2,7 +2,6 @@
 title: "암호화 DNS — DoT·DoH·DoQ·DNSSEC와 수집 전략"
 tags:
   - training
-  - sec450
   - blue-team
   - dns
   - concept
@@ -12,17 +11,13 @@ tags:
 
 # 암호화 DNS — DoT·DoH·DoQ·DNSSEC와 수집 전략
 
-<div class="dfir-meta" markdown>
-**교재:** SANS SEC450 (2022) Book 2 · **모듈:** DNS Analysis and Attacks · **범위:** p.80~85
-</div>
-
 !!! abstract "이 페이지에서 다루는 것"
     DoT·DoH·DNSSEC이 각각 무엇을 지키는지, DoH가 블루팀 시야를 어떻게 가리는지와 네 가지 대응, Wireshark에서 본 DoH, 그리고 암호화가 기본이 된 2026년에 DNS 기록을 어디서 모아야 하는지.
 
 !!! note "표기"
-    **[보충]** = 교재에 없는 실무 보충, **[정정]** = 교재 오류 정정, **[변경됨]**/**[주의]** = 2022년 이후 바뀐 점과 지금 그대로 하면 위험한 점. 전체 흐름은 [DNS 개요](index.md)에서, 기록 한 줄을 판별하는 순서는 [판별표](triage-sheet.md)에서 볼 수 있습니다.
+    **[보충]** = 꼭 알아야 할 실무 보충, **[정정]** = 흔히 잘못 알려진 내용 정정, **[변경됨]**/**[주의]** = 최근 바뀐 점과 옛 방식대로 하면 위험한 점. 전체 흐름은 [DNS 개요](index.md)에서, 기록 한 줄을 판별하는 순서는 [판별표](triage-sheet.md)에서 볼 수 있습니다.
 
-## DNS의 미래: DoT·DoH·DNSSEC (p.80~81) { #dot-doh-dnssec }
+## DNS의 미래: DoT·DoH·DNSSEC { #dot-doh-dnssec }
 
 세 기술은 지키는 대상이 다릅니다. DoT·DoH는 **기밀성**(엿보기 방지), DNSSEC은 **진위·무결성**(위조 방지)입니다. 사용자를 지키지만 블루팀 시야를 가립니다.
 
@@ -37,7 +32,7 @@ tags:
 ### 핵심
 
 - DoT: 전용 포트라 "easy to block". Android "비공개 DNS"가 DoT → 회사 와이파이에서 853 트래픽이 흔함, MDM으로 통제
-- DoH: 443을 막을 수 없어 "이기는" 표준. **[정정] 교재의 "JSON encoded"는 부정확** — 표준 DoH(RFC 8484)는 DNS 이진 형식 `application/dns-message`, JSON(`application/dns-json`)은 Google·Cloudflare 비표준 API
+- DoH: 443을 막을 수 없어 "이기는" 표준. **[정정] "DoH는 JSON으로 인코딩된다"는 흔한 설명은 부정확** — 표준 DoH(RFC 8484)는 DNS 이진 형식 `application/dns-message`, JSON(`application/dns-json`)은 Google·Cloudflare 비표준 API
 - DoH는 **PC ↔ 재귀 서버 구간만** 암호화. 재귀 서버 → 권한 서버는 대개 평문, DoH 업체는 전부 봄 → 외부 DoH 사용 = 회사는 못 보고 외부 업체는 봄
 - DNSSEC 신뢰의 사슬: 루트 키(출발점) → 위층의 **DS**(아래층 도장 보증서) → 도메인의 **DNSKEY**(공개키) → 답의 **RRSIG**(서명). `dig +dnssec`의 플래그 **`ad`** = 검증 통과, 서명 불일치 시 SERVFAIL
 - DNSSEC 한계: 대개 재귀 서버까지만 검증(PC는 `ad`를 믿음), **계정 탈취·레코드 바꿔치기는 못 막음**(진짜 열쇠로 서명됨), 서명 안 된 도메인 많음, 공격자 자기 도메인도 "진짜"로 검증(인증 ≠ 선의)
@@ -53,29 +48,29 @@ tags:
     - DoQ(RFC 9250, UDP 853), HTTP/3 기반 DoH(UDP 443) 추가
     - DDR(RFC 9462): PC가 지금 DNS 서버의 암호화 지원을 발견해 같은 서버로 암호화 연결 → 회사 DNS가 DoH를 지원하면 "암호화는 하되 기록은 회사가"(제품별 지원 수준은 확인 필요)
     - ODoH(RFC 9230): DoH 업체도 "누가" 물었는지 모르게
-    - Windows 11 운영체제 수준 DoH(교재의 "곧"이 현실화)
+    - Windows 11 운영체제 수준 DoH("곧 온다"던 것이 현실화)
     - [주의] 탐지·프록시 정책에서 JSON 형식만 찾으면 표준 DoH를 놓침. "DNSSEC = DNS 보안 해결책"은 오해
 
-## DoH 대응과 Wireshark에서 본 DoH (p.82~84) { #doh-response }
+## DoH 대응과 Wireshark에서 본 DoH { #doh-response }
 
 DoH를 쓰면 DNS가 HTTP가 되어 ① 질문이 안 보이고 ② 사실상 허가되지 않은 외부 DNS가 됩니다. 큰 방향은 **외부 DoH는 막고, 내부 DoH를 제공하거나 끄는 것**입니다.
 
-### 네 가지 대응 (p.82)
+### 네 가지 대응
 
 | 대응 | 무엇을 하나 | 잡는 범위 | 한계 |
 | --- | --- | --- | --- |
-| ① 복호화(교재: 최선) | 회사 프록시가 TLS를 풀어 봄(회사 인증서를 PC에 설치) | 알려진·자체 DoH 모두 | 비용·성능, 인증서 고정 프로그램, 개인정보·법적 부담, 관리 PC만 |
+| ① 복호화(전통적 최선책) | 회사 프록시가 TLS를 풀어 봄(회사 인증서를 PC에 설치) | 알려진·자체 DoH 모두 | 비용·성능, 인증서 고정 프로그램, 개인정보·법적 부담, 관리 PC만 |
 | ② 신호 도메인 | 회사 DNS가 `use-application-dns.net`에 NXDOMAIN | Firefox **자동** DoH만 | 수동 설정·Chrome·Edge·OS DoH·악성코드엔 무력 |
 | ③ 내부 DoH 서버 | 회사가 DoH 서버 운영 | 회사 서버로 오는 것(암호화 + 회사 기록·차단) | 외부 DoH는 따로 막아야 |
 | ④ 클라이언트 기록 | Firefox `MOZ_LOG=nsHostResolver:5` + `MOZ_LOG_FILE`, `about:networking` | 그 PC·그 앱만 | 상시 운영 어려움, 조사용 |
 
-### Wireshark (p.83~84)
+### Wireshark
 
 - 암호화 상태: `Application Data`뿐. 단서는 목적지 IP(`104.16.248.249` = Cloudflare)·SNI. 공격자 자체 DoH 서버면 DNS인지도, 무슨 이름인지도 모름
 - 복호화 상태: **TLS → HTTP/2 → DNS**, `POST /dns-query`, `content-type: application/dns-message`, 질문 이름이 보임
 - **Transaction ID 0x0000**: DoH 표준(RFC 8484)이 웹 캐시 효율을 위해 0을 권장 → 짝짓기는 **TCP 연결 + HTTP/2 Stream ID**. HTTP/2는 HEADERS와 DATA 프레임을 따로 보냄
 - 홈 랩 실습: `SSLKEYLOGFILE` 환경 변수 → Wireshark TLS 설정에 열쇠 파일 지정 → 필터 `dns` 또는 `http2.header.value == "application/dns-message"`. 끝나면 파일 삭제·변수 해제. **업무 PC에 `SSLKEYLOGFILE`이 설정돼 있으면 조사 대상**
-- 교재 숙제: 1.1.1.1·8.8.8.8·9.9.9.9로 가는 443 찾기. Zeek: `cat ssl.log | zeek-cut id.orig_h id.resp_h server_name`
+- 연습: 1.1.1.1·8.8.8.8·9.9.9.9로 가는 443 찾기. Zeek: `cat ssl.log | zeek-cut id.orig_h id.resp_h server_name`
 
 ??? question "복습 Q&A"
 
@@ -88,9 +83,9 @@ DoH를 쓰면 DNS가 HTTP가 되어 ① 질문이 안 보이고 ② 사실상 �
     - 복호화보다 우선순위: ① 정책으로 DoH를 회사 서버로 고정·끄기(Chrome·Edge `DnsOverHttpsMode`/`DnsOverHttpsTemplates`, Firefox `DNSOverHTTPS`, Windows 그룹 정책) ② 내부 DoH·DDR ③ 공개 DoH·853 차단 ④ EDR로 브라우저 아닌 프로그램의 DoH 접속 탐지 ⑤ 선택적 복호화
     - [주의] 신호 도메인은 보조 장치일 뿐 "DoH 차단 완료"가 아님
 
-## DNS Summary — 기록은 어디서 모을 것인가 (p.85) { #summary }
+## DNS Summary — 기록은 어디서 모을 것인가 { #summary }
 
-교재의 결론: DNS 기록만 잘 걸러내고 덧붙이면 **도메인 이름만으로도 악을 잡을 수 있다.** 신호 8가지 총정리는 [도메인 신호](domain-signals.md#signals-summary) 페이지에 있습니다.
+결론: DNS 기록만 잘 걸러내고 덧붙이면 **도메인 이름만으로도 악을 잡을 수 있다.** 신호 8가지 총정리는 [도메인 신호](domain-signals.md#signals-summary) 페이지에 있습니다.
 
 ### 수집 고려사항
 
@@ -100,7 +95,7 @@ DoH를 쓰면 DNS가 HTTP가 되어 ① 질문이 안 보이고 ② 사실상 �
 
 !!! info "2026년 관점"
 
-    - [변경됨] 교재가 말한 "미래"는 현실이 됨: DoH·DoT·DoQ + ECH(SNI도 숨김) → 네트워크에서는 목적지 IP 정도만 남음
+    - [변경됨] 몇 년 전 "미래"라던 것이 현실이 됨: DoH·DoT·DoQ + ECH(SNI도 숨김) → 네트워크에서는 목적지 IP 정도만 남음
     - 수집 우선순위: ① 회사 DNS 서버 기록(Windows DNS Analytical 로그 256/257/258·260/261, BIND/Unbound query log) ② PC 기록(Sysmon 22 = 프로세스별 DNS, EDR) ③ Protective DNS(차단+기록을 같이) ④ 네트워크 추출은 보조
     - [변경됨] 순위 목록: Alexa Top 1M은 2022년 서비스 종료 → Tranco, Cisco Umbrella, Cloudflare Radar 등 사용
     - [주의] 신호 하나로 단정 금지. 여러 신호를 겹치고 맥락(누가·무엇을·어디로·그다음)을 붙여서 판단

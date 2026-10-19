@@ -22,7 +22,7 @@ Notes from courses and training I've taken, re-worked into my own reference and 
 
     ---
 
-    SOC fundamentals built on SANS SEC450 (Blue Team Fundamentals, 2022), re-worked into study notes with 2026 corrections and additions. First topic: DNS.
+    Blue-team / SOC fundamentals as study notes, with 2026 corrections and additions. First topic: DNS.
 
     [:octicons-arrow-right-24: Blue Team Essentials](blue-team-essentials/index.md)
 

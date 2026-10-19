@@ -2,7 +2,6 @@
 title: "Understanding DNS — Structure and Records"
 tags:
   - training
-  - sec450
   - blue-team
   - dns
   - concept
@@ -10,15 +9,11 @@ tags:
 
 # Understanding DNS — Structure and Records
 
-<div class="dfir-meta" markdown>
-**Course:** SANS SEC450 (2022) Book 2 · **Module:** Understanding DNS · **Pages:** p.31–50
-</div>
-
 !!! abstract "What this page covers"
     The four DNS server roles and the recursive lookup path, TTL and caching, record types (A, AAAA, PTR, TXT, CNAME, MX, SRV, NS, HTTPS), the security risk attached to each (subdomain takeover, domain hijacking), and how to read DNS packets in Wireshark.
 
 !!! note "Conventions"
-    **[Added]** = practical material not in the course, **[Correction]** = an error in the course, **[Changed]** / **[Caution]** = what changed since 2022 and what is risky if done the old way. See the [DNS overview](index.md) for the whole path and the [triage sheet](triage-sheet.md) for the per-log-line checklist.
+    **[Added]** = practical must-knows, **[Correction]** = a commonly repeated mistake, **[Changed]** / **[Caution]** = what changed recently and what is risky if done the old way. See the [DNS overview](index.md) for the whole path and the [triage sheet](triage-sheet.md) for the per-log-line checklist.
 
 ## Ten key points { #key-points }
 
@@ -33,7 +28,7 @@ tags:
 9. The canonical name in a CNAME is the name in the *answer*. An orphaned CNAME leads to subdomain takeover.
 10. Lose your NS and you lose the whole domain — web, mail and certificates.
 
-## DNS basics — four server roles and the lookup path (p.32–35) { #servers }
+## DNS basics — four server roles and the lookup path { #servers }
 
 DNS turns names into IPs, and in almost every investigation you end up recording "the IP + the domain that pointed to it".
 
@@ -75,7 +70,7 @@ TTL is "how many seconds you may trust this answer", set by the domain owner. Hi
 
 Default is UDP 53; if the answer is too big the TC flag is set and the client retries over TCP 53. Today there is also DoH (TCP 443), DoT (TCP 853), DoQ (UDP 853) and DoH over HTTP/3 (UDP 443), so watching port 53 alone misses things. There are 13 root server names but, thanks to anycast, thousands of physical machines worldwide.
 
-## Record types and A/AAAA (p.36–38) { #records }
+## Record types and A/AAAA { #records }
 
 The record type is "the kind of question you ask DNS". Ask the same name for A and you get an IP; ask for MX and you get mail servers.
 
@@ -92,8 +87,8 @@ The record type is "the kind of question you ask DNS". Ask the same name for A a
 | MX | 15 | Mail server | |
 | TXT | 16 | Arbitrary text | |
 | SRV | 33 | Service location + port | |
-| SVCB | 64 | Service binding info | Added after the course (RFC 9460, 2023) |
-| HTTPS | 65 | HTTPS connection info | Added after the course; now very common |
+| SVCB | 64 | Service binding info | Relatively recent (RFC 9460, 2023) |
+| HTTPS | 65 | HTTPS connection info | Relatively recent; now very common |
 
 Some logs store only the number, so know 1, 28, 5, 12, 16 and 65 by number too.
 
@@ -107,7 +102,7 @@ Some logs store only the number, so know 1, 28, 5, 12, 16 and 65 by number too.
 
 ### Practical points
 
-- One page visit triggers dozens to hundreds of lookups (course example: visiting aol.com → 60 A + 95 AAAA). When one lookup looks suspicious, lay out the same PC's lookups a few seconds either side to find where it started.
+- One page visit triggers dozens to hundreds of lookups (e.g. one visit to a large portal → 60 A + 95 AAAA). When one lookup looks suspicious, lay out the same PC's lookups a few seconds either side to find where it started.
 - "40 lookups a second" alone does not mean infection. Random-string names + NXDOMAIN spikes + no originating site + 3 a.m. + an odd process, together, look like DGA.
 - A and AAAA in pairs are normal.
 - Cache-poisoning defence is Transaction ID **plus** source-port randomisation. A resolver with a fixed source port is a vulnerability.
@@ -120,7 +115,7 @@ Example: `dig -t HTTPS cloudflare.com +short` → `1 . alpn="h3,h2" ipv4hint=104
 - `ipv4hint` means a connection can happen with no A lookup at all — the "connection without DNS = suspicious" rule weakens.
 - `ech=` is the ECH public key. With ECH the site name (SNI) disappears from the wire, which makes DNS logs more valuable.
 
-## PTR — reverse lookups (p.39, 42) { #ptr }
+## PTR — reverse lookups { #ptr }
 
 PTR asks IP → name (a reverse phone-book lookup). Two traps: the address is written backwards, and the result cannot be trusted.
 
@@ -137,7 +132,7 @@ PTR asks IP → name (a reverse phone-book lookup). Two traps: the address is wr
 
 ### Trap 2: don't trust it
 
-The course conclusion: "Do not rely on what a PTR record says!"
+Conclusion: don't rely on what a PTR record says.
 
 - The **domain owner** sets A; the **IP owner** sets PTR. They can be different people.
 - The IP owner can put someone else's domain in the PTR.
@@ -158,9 +153,9 @@ If it does, the domain owner has also claimed that IP — an attacker cannot cha
 - Decide with WHOIS/RDAP (registered owner), ASN (network operator) and passive DNS (domains that IP has served).
 - [Caution] A PTR lookup on an attacker IP goes to the attacker's DNS server and leaves a trace. Check tools for automatic reverse resolution too.
 - [Caution] An internal PC doing PTR lookups in sequence (`1.5.0.10`, `2.5.0.10`, …) is internal scanning; nmap does PTR lookups by default.
-- The course example `8.8.4.4` → `google-public-dns-b.google.com` has, as far as I know, since become `dns.google` — a live example of PTRs changing.
+- The old `8.8.4.4` → `google-public-dns-b.google.com` has, as far as I know, since become `dns.google` — a live example of PTRs changing.
 
-## Many-to-many mapping and the IP-block accident (p.40–41) { #many-to-many }
+## Many-to-many mapping and the IP-block accident { #many-to-many }
 
 Domains and IPs are two separate maps kept by different people, and each changes independently at any time.
 
@@ -171,9 +166,9 @@ Domains and IPs are two separate maps kept by different people, and each changes
 3. IP → any name (PTR is up to the IP owner).
 4. All of the above can change at any time.
 
-### The course scenario
+### The classic accident
 
-`c703[.]info` (malicious) points at a Google IP → the analyst blocks that IP at the firewall → the whole company loses Google. The intel wasn't wrong; the mistake was assuming "that IP belongs only to that domain". The course's fix: "When you block an IP or domain, make sure you check your logs first!"
+`c703[.]info` (malicious) points at a Google IP → the analyst blocks that IP at the firewall → the whole company loses Google. The intel wasn't wrong; the mistake was assuming "that IP belongs only to that domain". The fix: before you block an IP or domain, check your logs first.
 
 - `[.]` is the "defang" convention so nobody clicks by accident — use it when writing malicious domains in reports.
 - A malicious domain pointing at `127.0.0.1` or `0.0.0.0` is not harmless — it may be **parked** (dormant) or sinkholed. An internal PC still looking it up is still infected.
@@ -195,7 +190,7 @@ Domains and IPs are two separate maps kept by different people, and each changes
     - An IP block with no expiry breaks things six months later when the IP is reassigned to a partner.
     - Before feed-driven auto-blocking (SOAR), add an allow list of major cloud/CDN ranges and an automatic "how many internal hosts talk to this" check.
 
-## TXT — a box for text (p.43) { #txt }
+## TXT — a box for text { #txt }
 
 TXT attaches arbitrary text to a domain. It is central to mail anti-spoofing and domain-ownership proof — and also a covert channel for attackers.
 
@@ -215,8 +210,8 @@ TXT attaches arbitrary text to a domain. It is central to mail anti-spoofing and
 
 - SPF terminators: `-all` reject, `~all` soft-fail, `?all` neutral, `+all` anyone (worst).
 - DMARC policy: `none` report only, `quarantine` spam folder, `reject` reject. `rua` reports show who is spoofing your domain.
-- [Correction] The course's "SPF records start with spf=" is wrong — SPF starts with `v=spf1`.
-- [Added] The course doesn't cover DMARC. In February 2024 Google and Yahoo made SPF + DKIM + DMARC mandatory for bulk senders, and Microsoft followed for Outlook.com in 2025.
+- [Correction] "SPF records start with spf=" is a common mistake — SPF starts with `v=spf1`.
+- [Added] DMARC is just as essential. In February 2024 Google and Yahoo made SPF + DKIM + DMARC mandatory for bulk senders, and Microsoft followed for Outlook.com in 2025.
 
 ### Reading an SPF/DKIM pass
 
@@ -234,7 +229,7 @@ Services hand you a string to publish as TXT (`facebook-domain-verification=...`
 
 It can hold anything, DNS is almost always open, and mail servers make TXT lookups common enough not to stand out. An infected PC asks for the TXT of `cmd.evil-c2.xyz` and gets a base64 command back. Many TXT lookups from an ordinary (non-mail) PC are suspicious — detection is covered in [DNS abuse](dns-abuse.md).
 
-## CNAME and subdomain takeover (p.44) { #cname }
+## CNAME and subdomain takeover { #cname }
 
 CNAME says "this name is an alias — go and ask that name instead". Neglect it and an attacker can take over a company address.
 
@@ -266,11 +261,11 @@ Training users to "check the domain in the address bar" does not help, because t
 Cloud providers have added protections such as TXT-based ownership checks, but I'm not certain they cover every service and setting, so cleaning up on our side is the dependable defence. Products that automate this audit are called EASM (external attack surface management).
 
 !!! info "2026 view"
-    - With cloud and SaaS everywhere, subdomain takeover is much more common than when the course was written.
+    - With cloud and SaaS everywhere, subdomain takeover is much more common than a few years ago.
     - CNAME can't be used at the zone apex (`mycompany.com`); the HTTPS/SVCB record's AliasMode fills that gap.
     - CNAME cloaking: ad/tracking vendors hide behind first-party names like `metrics.mycompany.com` that CNAME to them. "Company address" may not mean "company server".
 
-## MX, SRV, NS (p.45–47) { #mx-srv-ns }
+## MX, SRV, NS { #mx-srv-ns }
 
 Simple concepts, each with one security risk attached: MX — mail interception, SRV — internal recon, NS — full domain takeover.
 
@@ -279,7 +274,7 @@ Simple concepts, each with one security risk attached: MX — mail interception,
 - Mail delivery in three steps: look up the recipient domain's MX → look up that name's A → SMTP to port 25 on that IP.
 - The number in front is preference — **lower goes first**; equal numbers load-balance.
 - MX must point at an FQDN with A/AAAA. No bare IPs, no CNAMEs.
-- [Correction] RFC 974 cited by the course is superseded by RFC 5321 (same rule).
+- [Correction] The often-cited RFC 974 is superseded by RFC 5321 (same rule).
 - Security clues: mass MX lookups from an ordinary PC = spambot; a phishing domain's MX shows intent (none = click-only, Gmail/Outlook = wants replies, self-hosted = infrastructure lead); a change to *our* MX = mail-interception emergency.
 - [Added] For domains that never send mail: Null MX (`MX 0 .`, RFC 7505) + `v=spf1 -all` + DMARC `p=reject` stops spoofing.
 
@@ -288,7 +283,7 @@ Simple concepts, each with one security risk attached: MX — mail interception,
 - Format `_service._proto.name` (underscores separate it from host names).
 - Answer: `priority weight port target`, e.g. `0 100 389 dc01.corp.local.` — it even gives you the **port**.
 - Key AD queries: `_ldap._tcp.dc._msdcs.<domain>` (domain controllers), `_kerberos._tcp.<domain>` (authentication), `_gc._tcp.<domain>` (Global Catalog).
-- Course: "Should only be visible to internal network" → if they leave, your internal domain name leaks.
+- SRV lookups should only be visible on the internal network → if they leave, your internal domain name leaks.
 - Recon signals: many SRV types in a short burst, at night, from a device that never does it (printer, server), from an odd process. But an MFP may legitimately use LDAP for scan-to-email address books, so **compare to baseline**.
 - MFPs and IP cameras patch slowly and have no EDR, making them attacker footholds.
 
@@ -312,14 +307,14 @@ Response order after an incident:
 
 Prevention: registrar MFA, Registry Lock, change alerts on NS/MX/SPF, DNSSEC (useless on its own if the account is taken). When retiring a service, clean up DNS first. **Before an incident the first control is MFA; after an incident the first action is recovery.**
 
-## Reading packets — DNS on the wire (p.48–49) { #on-the-wire }
+## Reading packets — DNS on the wire { #on-the-wire }
 
-The course quiz has a capture mixing A, CNAME and PTR query/response pairs. Below is a reconstruction from the course's answer page (client IP and transaction IDs are illustrative).
+A capture mixing A, CNAME and PTR query/response pairs (client IP and transaction IDs are illustrative).
 
 ```
 No. Source         Destination    Info
-1   192.168.1.156  1.1.1.1        Standard query 0x1a2b A sec450.com
-2   1.1.1.1        192.168.1.156  Standard query response 0x1a2b A sec450.com A 1.2.3.4 A 162.255.119.240
+1   192.168.1.156  1.1.1.1        Standard query 0x1a2b A example.com
+2   1.1.1.1        192.168.1.156  Standard query response 0x1a2b A example.com A 1.2.3.4 A 162.255.119.240
 3   192.168.1.156  1.1.1.1        Standard query 0x3c4d CNAME mail.google.com
 4   1.1.1.1        192.168.1.156  Standard query response 0x3c4d CNAME mail.google.com CNAME googlemail.l.google.com
 5   192.168.1.156  1.1.1.1        Standard query 0x5e6f PTR 27.208.194.173.in-addr.arpa
@@ -333,11 +328,11 @@ No. Source         Destination    Info
 - In a response line, each type label starts one answer (three `A`s on line 2 = the question + two answers).
 - Wireshark filters: `dns`, `dns.flags.response == 0` (questions only), `dns.qry.type == 12` (PTR only).
 
-### Answers
+### Questions and answers
 
 | Question | Answer | Point |
 | --- | --- | --- |
-| 1. Domain looked up with A | `sec450.com` | Right after the type label in the query |
+| 1. Domain looked up with A | `example.com` | Right after the type label in the query |
 | 2. Resolved IPs | `1.2.3.4`, `162.255.119.240` | Two — one alone is wrong. `1.2.3.4` is a placeholder → a domain owner can publish any IP |
 | 3. Canonical name of Google's mail host | `googlemail.l.google.com` | Canonical = the name in the answer |
 | 4. IP looked up via PTR | `173.194.208.27` | Reverse the octets |

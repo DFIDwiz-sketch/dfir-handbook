@@ -2,31 +2,26 @@
 title: DNS
 tags:
   - training
-  - sec450
   - blue-team
   - dns
 ---
 
 # DNS
 
-<div class="dfir-meta" markdown>
-**Course:** SANS SEC450 (2022) Book 2 · **Modules:** Understanding DNS (p.31–50) → DNS Analysis and Attacks (p.51–85)
-</div>
-
 !!! abstract "In one line"
     Almost every attack passes through DNS at least once, and a well-filtered, well-enriched DNS log catches a surprising amount of evil from the domain name alone. In 2026, though, encrypted DNS (DoH/DoT/DoQ) and ECH mean the network shows less and less — **company DNS server logs + endpoint logs (Sysmon 22, EDR)** are now the centre of gravity.
 
 ## Reading order
 
-| # | Page | Course | Key points |
-| --- | --- | --- | --- |
-| 1 | [Understanding DNS — structure and records](understanding-dns.md) | p.31–50 | Four server roles, recursion, TTL, A/AAAA/PTR/TXT/CNAME/MX/SRV/NS/HTTPS, subdomain takeover, domain hijacking, reading packets |
-| 2 | [DNS log collection and safe investigation](collection-and-investigation.md) | p.51–56 | Sensor placement, pivoting to firewall logs, OPSEC-ordered lookups, the four detection steps |
-| 3 | [Domain signals](domain-signals.md) | p.57–62, 85 | TLD, reputation, age, randomness (DGA), ASN, geolocation, rank |
-| 4 | [DNS abuse](dns-abuse.md) | p.63–73 | Unauthorised DNS and its six traces, shared hosting, record tampering, DNS tunnelling |
-| 5 | [Blockchain DNS and IDNs](blockchain-dns-and-idn.md) | p.74–79 | EmerDNS, ENS, gateways, EtherHiding, Punycode, homoglyphs, IDNs inside apps |
-| 6 | [Encrypted DNS](encrypted-dns.md) | p.80–85 | DoT/DoH/DoQ/DNSSEC, responding to DoH, DoH in Wireshark, 2026 collection strategy |
-| 7 | [Suspicious DNS triage sheet](triage-sheet.md) | All | Principles, per-field signals, workflow, false positives, course corrections, common confusions |
+| # | Page | Key points |
+| --- | --- | --- |
+| 1 | [Understanding DNS — structure and records](understanding-dns.md) | Four server roles, recursion, TTL, A/AAAA/PTR/TXT/CNAME/MX/SRV/NS/HTTPS, subdomain takeover, domain hijacking, reading packets |
+| 2 | [DNS log collection and safe investigation](collection-and-investigation.md) | Sensor placement, pivoting to firewall logs, OPSEC-ordered lookups, the four detection steps |
+| 3 | [Domain signals](domain-signals.md) | TLD, reputation, age, randomness (DGA), ASN, geolocation, rank |
+| 4 | [DNS abuse](dns-abuse.md) | Unauthorised DNS and its six traces, shared hosting, record tampering, DNS tunnelling |
+| 5 | [Blockchain DNS and IDNs](blockchain-dns-and-idn.md) | EmerDNS, ENS, gateways, EtherHiding, Punycode, homoglyphs, IDNs inside apps |
+| 6 | [Encrypted DNS](encrypted-dns.md) | DoT/DoH/DoQ/DNSSEC, responding to DoH, DoH in Wireshark, 2026 collection strategy |
+| 7 | [Suspicious DNS triage sheet](triage-sheet.md) | Principles, per-field signals, workflow, false positives, corrections, common confusions |
 
 ## Ten things to remember
 

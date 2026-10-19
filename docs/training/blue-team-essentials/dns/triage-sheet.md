@@ -1,26 +1,21 @@
 ---
-title: "Suspicious DNS Triage Sheet · Course Corrections · Common Confusions"
+title: "Suspicious DNS Triage Sheet · Corrections · Common Confusions"
 tags:
   - training
-  - sec450
   - blue-team
   - dns
   - cheatsheet
 ---
 
-# Suspicious DNS Triage Sheet · Course Corrections · Common Confusions
-
-<div class="dfir-meta" markdown>
-**Course:** SANS SEC450 (2022) Book 2 · **Pages:** p.31–85 combined
-</div>
+# Suspicious DNS Triage Sheet · Corrections · Common Confusions
 
 !!! abstract "What this page covers"
-    A practical reference for what to check, in what order, when you are handed one DNS log line; the parts of the 2022 course that are wrong or have changed; and the points that actually caused confusion during review.
+    A practical reference for what to check, in what order, when you are handed one DNS log line; things that are commonly stated wrongly or have changed recently; and the points that actually caused confusion during review.
 
 !!! note "Conventions"
-    **[Added]** = not in the course, **[Correction]** = course error, **[Changed]** / **[Caution]** = changed since 2022 / risky if done the old way. See the [DNS overview](index.md) for the full reading order.
+    **[Added]** = practical must-knows, **[Correction]** = a commonly repeated mistake, **[Changed]** / **[Caution]** = changed recently / risky if done the old way. See the [DNS overview](index.md) for the full reading order.
 
-## Suspicious DNS triage sheet (p.31–85 combined) { #triage }
+## Suspicious DNS triage sheet { #triage }
 
 ### 0. Before judging: can you trust the log?
 
@@ -61,9 +56,9 @@ tags:
 | Reputation safe | Not evidence | Flip, compromise, platform, expired re-buy, cloaking |
 | Abnormally long name | Weak | Exceptions exist (the Welsh village) |
 
-A additions (p.74): a lookup of a **TLD not on the IANA list** (`.bazar`, `.emc`, `.lib`, `.eth` …) is a strong signal — even NXDOMAIN proves malware on the host. Exceptions: internal names (`.local`, `.corp`, `.lan`), typos, dot-less single words. Blockchain **gateway domains** (`eth.limo`, `ipfs.io`, `dweb.link` …) are on official TLDs, so watch or block them from a separate list. E addition: a host or program with no business reason querying blockchain node APIs, then connecting to an IP with no DNS = suspect EtherHiding.
+A additions: a lookup of a **TLD not on the IANA list** (`.bazar`, `.emc`, `.lib`, `.eth` …) is a strong signal — even NXDOMAIN proves malware on the host. Exceptions: internal names (`.local`, `.corp`, `.lan`), typos, dot-less single words. Blockchain **gateway domains** (`eth.limo`, `ipfs.io`, `dweb.link` …) are on official TLDs, so watch or block them from a separate list. E addition: a host or program with no business reason querying blockchain node APIs, then connecting to an IP with no DNS = suspect EtherHiding.
 
-A additions (p.75–77): any label starting `xn--` is an IDN → **always decode it**. Mixed scripts (Latin + Cyrillic, Greek, Cherokee …) = strong signal; decoded name resembling a famous brand or our domain = strong signal (same-script letters like `ɡ`, `ḟ` exist, so brand comparison is mandatory). Compare the Punycode second part with the brand: the missing letter = the swapped position. A natural single-script name (`한국.kr`) is usually fine.
+A additions: any label starting `xn--` is an IDN → **always decode it**. Mixed scripts (Latin + Cyrillic, Greek, Cherokee …) = strong signal; decoded name resembling a famous brand or our domain = strong signal (same-script letters like `ɡ`, `ḟ` exist, so brand comparison is mandatory). Compare the Punycode second part with the brand: the missing letter = the swapped position. A natural single-script name (`한국.kr`) is usually fine.
 
 **B. Query type (record type)**
 
@@ -76,7 +71,7 @@ A additions (p.75–77): any label starting `xn--` is an IDN → **always decode
 | Direct CNAME-type query | A human using a lookup tool | Admin work |
 | A/AAAA pairs, HTTPS (65) / SVCB (64) | Normal | Parsers that don't know 65 cause false positives |
 
-B additions (p.71–73): **NULL (10)** is almost never used by legitimate software, so its appearance alone is a strong tunnelling signal (iodine's default). Judge tunnelling by **unique subdomain count and volume** per "one source × one registered domain", accumulated over days to weeks. False positives: AV lookups (`sophosxl.net`), DNSBLs (`zen.spamhaus.org`), CDNs, Chrome's hijacking test (random dot-less single word + NXDOMAIN).
+B additions: **NULL (10)** is almost never used by legitimate software, so its appearance alone is a strong tunnelling signal (iodine's default). Judge tunnelling by **unique subdomain count and volume** per "one source × one registered domain", accumulated over days to weeks. False positives: AV lookups (`sophosxl.net`), DNSBLs (`zen.spamhaus.org`), CDNs, Chrome's hijacking test (random dot-less single word + NXDOMAIN).
 
 **C. Response content**
 
@@ -137,7 +132,7 @@ Caution: list legitimate exceptions (IoT and streaming devices with hard-coded D
 | External CNAME target returns NXDOMAIN | Subdomain takeover imminent | Delete the CNAME, audit them all |
 | Verification TXT for services no longer used | SaaS exposure | Clean up |
 
-Addition (p.68): anomalies when the DNS admin account is compromised
+Addition: anomalies when the DNS admin account is compromised
 
 | Anomaly | Meaning | Response |
 | --- | --- | --- |
@@ -175,30 +170,30 @@ Addition (p.68): anomalies when the DNS admin account is compromised
 | Residential proxies | Location and ASN look normal | Phishing-resistant MFA, managed-device conditions |
 | Endpoint logs matter more | More is invisible to the network | Sysmon 22, EDR (browser-native DoH may not show in Sysmon 22) |
 
-## Course corrections and 2026 updates { #corrections }
+## Common misstatements and 2026 updates { #corrections }
 
-None of the course's principles are out of date. Below are only the places where the wording was wrong or the environment has changed.
+None of the DNS principles are out of date. Below are only the places that are often explained wrongly or where the environment has changed.
 
-| Kind | Course (2022) | 2026 |
+| Kind | Common claim / older situation | 2026 |
 | --- | --- | --- |
 | Correction | "Linux does not cache answers by default" | `systemd-resolved` caches (`resolvectl show-cache`). macOS caches too. All three major OSes cache |
 | Correction | "SPF TXT records start with spf=" | They start with `v=spf1` |
 | Correction | TXT "255-character limit" | Per character-string; several strings are concatenated |
 | Correction | MX rules cite RFC 974 | Superseded by RFC 5321 (same rule) |
-| Correction | Example `8.8.4.4` → `google-public-dns-b.google.com` | As far as I know now `dns.google` (a live example of PTRs changing) |
+| Correction | PTR of `8.8.4.4` = `google-public-dns-b.google.com` | As far as I know now `dns.google` (a live example of PTRs changing) |
 | Correction | DoH "JSON encoded" | Standard DoH is `application/dns-message`; JSON is a non-standard API |
-| New | Not in the record table | HTTPS (65) and SVCB (64), RFC 9460 (Nov 2023). Very common now |
+| New | Only the classic record types matter | HTTPS (65) and SVCB (64), RFC 9460 (Nov 2023). Very common now |
 | New | SNI reveals the site name | ECH (RFC 9848 and 9849, March 2026). Name encrypted → DNS logs gain value |
-| Changed | DoH as a "What about DoH?" question | Close to a browser default. Watching port 53 alone misses it |
+| Changed | DoH is still rare | Close to a browser default. Watching port 53 alone misses it |
 | Changed | SPF + DKIM | SPF + DKIM + DMARC required (Google and Yahoo 2024, Microsoft 2025) |
 | Changed | Warning about the shared-IP accident | CDN growth makes IP blocking less and less suitable for web threats. Domain blocking is the default |
 | Changed | Alexa Top 1M | Shut down 2022 → Tranco, Cisco Umbrella, Cloudflare Radar |
 | Changed | OpenNIC resolves EmerDNS | Reportedly dropped around 2019 |
 | Changed | Free TLDs .tk / .ml | Freenom stopped new registrations in 2023 |
-| Added | Not mentioned | Subdomain takeover (dangling CNAME) |
-| Added | Not mentioned | Domain/NS hijacking, orphaned DNS-provider accounts (Sitting Ducks, 2024) |
-| Added | Not mentioned | Attacks using legitimate services (Living off Trusted Sites) |
-| Added | Server logs vs network extraction | Endpoint logs (Sysmon, EDR) rising as a third pillar |
+| Added | — | Subdomain takeover (dangling CNAME) |
+| Added | — | Domain/NS hijacking, orphaned DNS-provider accounts (Sitting Ducks, 2024) |
+| Added | — | Attacks using legitimate services (Living off Trusted Sites) |
+| Added | DNS collection = server logs + network extraction | Endpoint logs (Sysmon, EDR) rising as a third pillar |
 
 Still valid as written: the hierarchy, delegation, caching and TTL, record meanings, many-to-many mapping, "don't trust PTR", "check before you block".
 
@@ -219,7 +214,7 @@ Mix-ups that actually came up while working through review questions. Getting th
 | `127.0.0.1` answer = harmless? | It may be dormant. A host still asking = a host still infected |
 | A forwarder's destination IP = the server that knew the answer? | No — it may have asked someone else behind it. Capture location decides what you see |
 
-Further confusions from the DNS Analysis and Attacks review:
+Further confusions from the detection and attacks part:
 
 | Confusion | Correct understanding |
 | --- | --- |

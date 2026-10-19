@@ -22,7 +22,7 @@ title: 트레이닝
 
     ---
 
-    SANS SEC450(Blue Team Fundamentals, 2022) 교재를 한국어 강의 노트로 다시 풀고 2026년 기준 보충·정정을 덧붙인 SOC 기초. 첫 주제는 DNS.
+    블루팀·SOC 기초를 한국어 강의 노트로 풀고 2026년 기준 보충·정정을 덧붙인 섹션. 첫 주제는 DNS.
 
     [:octicons-arrow-right-24: Blue Team Essentials](blue-team-essentials/index.md)
 

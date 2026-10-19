@@ -2,7 +2,6 @@
 title: "Blockchain DNS and IDNs (Punycode)"
 tags:
   - training
-  - sec450
   - blue-team
   - dns
   - technique
@@ -12,17 +11,13 @@ tags:
 
 # Blockchain DNS and IDNs (Punycode)
 
-<div class="dfir-meta" markdown>
-**Course:** SANS SEC450 (2022) Book 2 · **Module:** DNS Analysis and Attacks · **Pages:** p.74–79
-</div>
-
 !!! abstract "What this page covers"
     Blockchain DNS used to escape domain seizure (EmerDNS, ENS, gateways, EtherHiding) and the detection opportunities it creates; fake domains built from foreign letters (IDN homoglyphs) and how to read Punycode; IDNs inside mail and mobile apps, and real attack examples.
 
 !!! note "Conventions"
-    **[Added]** = not in the course, **[Correction]** = course error, **[Changed]** / **[Caution]** = changed since 2022 / risky if done the old way. See the [DNS overview](index.md) and the [triage sheet](triage-sheet.md).
+    **[Added]** = practical must-knows, **[Correction]** = a commonly repeated mistake, **[Changed]** / **[Caution]** = changed recently / risky if done the old way. See the [DNS overview](index.md) and the [triage sheet](triage-sheet.md).
 
-## Blockchain DNS (p.74) { #blockchain }
+## Blockchain DNS { #blockchain }
 
 Attackers use blockchain DNS to avoid domain seizure. The price is that ordinary DNS can't resolve it — and that weakness is the detection opportunity.
 
@@ -48,18 +43,18 @@ Attackers use blockchain DNS to avoid domain seizure. The price is that ordinary
     - Legitimate false positives for "TLD not on the IANA list": internal names (`.local`, `.corp`, `.lan`; `.home.arpa` *is* official), typos, dot-less single words (Chrome test, NetBIOS-style short names), some VPN and dev tools. What it misses: gateway access (`.eth.limo`, `ipfs.io`), EtherHiding (blockchain node APIs over ordinary HTTPS), lookups wrapped in DoH, blockchain services that use official TLDs.
 
 !!! info "2026 view"
-    - OpenNIC reportedly dropped its EmerDNS link around 2019 because of abuse (the course description may be dated).
+    - OpenNIC reportedly dropped its EmerDNS link around 2019 because of abuse (older descriptions may be dated).
     - New main players: ENS (`.eth`), Unstoppable Domains (`.crypto` etc.), Handshake + IPFS.
     - **Gateways**: intermediate sites that turn blockchain names into ordinary web addresses (`vitalik.eth.limo`, `ipfs.io/ipfs/Qm...`). They resolve normally through company DNS on official TLDs, bypassing the "unknown TLD" rule. Abused for hard-to-take-down phishing → maintain a gateway-domain list, block if there's no business need, watch for connections right after an email click.
     - **EtherHiding** (Guardio, 2023): C2 addresses or malicious code stored in a smart contract (an undeletable public notice board) and read via blockchain node APIs over ordinary HTTPS. It passes almost the entire DNS triage sheet → context and behaviour detection: who, which process, and what next (a direct-IP connection with no DNS right after the API call).
 
-## IDNs and Punycode (p.75–77) { #idn }
+## IDNs and Punycode { #idn }
 
 Fake domains built from foreign letters that look identical to English can't be told apart by eye — but in DNS logs they always appear as Punycode starting with `xn--`.
 
 ### Key points
 
-- p.75: `yоutube.com` looks identical even on hover, but the second "o" is Cyrillic (U+043E) → "hover over the link" training doesn't catch it.
+- `yоutube.com` looks identical even on hover, but the second "o" is Cyrillic (U+043E) → "hover over the link" training doesn't catch it.
 - DNS originally allows only lowercase ASCII letters, digits and hyphens → other characters are converted to **Punycode** (IDN). E.g. `Καλημέρα.gr` = `xn--ixahbwnhi5b.gr`, `한국.kr` = `xn--3e0b707e.kr`.
 - Deceiving with identical-looking characters (Cyrillic О, Latin O, Greek Ο) = a **homoglyph (homograph) attack**. Unlike typo-squats (`micros0ft`) or letter pairs (`rnicrosoft`), even close inspection may not reveal it.
 - Punycode structure: `xn--` + the ASCII letters + `-` + encoded info for the non-ASCII letters, e.g. `xn--yutube-wqf.com`. **Every IDN label starts with `xn--`** (any label — subdomain or TLD) → search logs for `xn--`.
@@ -74,25 +69,25 @@ Fake domains built from foreign letters that look identical to English can't be 
 !!! info "2026 view"
     - After the 2017 `аррӏе.com` demonstration, browsers show mixed-script and imitating names as Punycode in the address bar; Chrome also has a look-alike warning page (exact conditions vary by version).
     - [Caution] Mail, chat and documents still show the original characters, so the pre-click stage remains vulnerable. In-app browsers may follow different rules.
-    - TLD operators have registration limits such as "no script mixing", but they vary. `ᏚĖC450.com` = `xn--c450-uva139z.com` (Cherokee Ꮪ U+13DA + ė U+0117).
+    - TLD operators have registration limits such as "no script mixing", but they vary. `ᏚĖCUREBANK.com` = `xn--curebank-3db3419b.com` (Cherokee Ꮪ U+13DA + ė U+0117).
     - The real fix: passkeys and FIDO2 security keys.
 
-## IDNs inside apps, and real attacks (p.78–79) { #idn-in-apps }
+## IDNs inside apps, and real attacks { #idn-in-apps }
 
 The browser shows Punycode only after the page has opened; mail, documents and phone screens show the original characters, so stopping it before the click is hard. Many real attacks also swap characters within the Latin script.
 
-### IDNs inside apps (p.78)
+### IDNs inside apps
 
 - Timeline: shown as original characters in the email → click → page opens (now the address bar shows Punycode) → user gets suspicious. Browser protection works *after* the page opens, so a malicious download or exploit may already be under way.
-- Course screenshots: Outlook desktop, Gmail web, Outlook and Gmail mobile, iOS notifications. How convincing it is depends on the **font**, and the app or device picks the font.
+- The same IDN renders differently per app: Outlook desktop, Gmail web, Outlook and Gmail mobile, iOS notifications. How convincing it is depends on the **font**, and the app or device picks the font.
 - Phones are especially weak: small text, hidden URLs, no hover, tap straight from the notification.
 - Defences sit before the user's screen: mail security (show Punycode, warn, quarantine), link rewriting and time-of-click checks, DNS-layer blocking, passkeys and security keys.
 
-### Real attacks (p.79)
+### Real attacks
 
 | Displayed as | In DNS logs | Swapped character | Mixed scripts? |
 | --- | --- | --- | --- |
-| `ᏚĖC450.com` | `xn--c450-uva139z.com` | Ꮪ U+13DA (Cherokee), ė U+0117 | Yes (Latin + Cherokee) |
+| `ᏚĖCUREBANK.com` (illustrative) | `xn--curebank-3db3419b.com` | Ꮪ U+13DA (Cherokee), ė U+0117 | Yes (Latin + Cherokee) |
 | `ḟacebook.com` | `xn--acebook-js3c.com` | ḟ U+1E1F | No (Latin only) |
 | `morɡanstanley.com` | `xn--moranstanley-0df.com` | ɡ U+0261 | No (Latin only) |
 | `lloydsbankingɡroup.com` | `xn--lloydsbankingroup-0ch.com` | ɡ U+0261 | No (Latin only) |
@@ -102,7 +97,7 @@ The browser shows Punycode only after the page has opened; mail, documents and p
 - **Slash look-alikes**: in `bankofamerica.com∕index.jp` the real registered domain is `com∕index.jp` and `bankofamerica` is a subdomain. With U+2215 it appears in DNS as `bankofamerica.xn--comindex-0f7d.jp`. The extreme case of "read from the right" (owned by a researcher).
 
 ??? question "Review Q&A"
-    - Correction: the quiz example `xn--micrsoft-07a.com` actually decodes to `miăcrsoft.com` (ă U+0103) — a badly built example. Correct ones: `micrоsoft.com` (first o Cyrillic) = `xn--micrsoft-qbh.com`, `microsоft.com` (second o) = `xn--microsft-sbh.com`. The second part lets you guess the brand and missing letter, but **which script it is only shows when you decode it and look at the code point** (Cyrillic о or Latin ö?).
+    - Trap: something like `xn--micrsoft-07a.com` may look plausible but actually decodes to `miăcrsoft.com` (ă U+0103). Cyrillic-o examples: `micrоsoft.com` (first o Cyrillic) = `xn--micrsoft-qbh.com`, `microsоft.com` (second o) = `xn--microsft-sbh.com`. The second part lets you guess the brand and missing letter, but **which script it is only shows when you decode it and look at the code point** (Cyrillic о or Latin ö?).
     - "The browser shows Punycode, so why not relax?": mail (original characters) → click → page opens → only then Punycode in the address bar. Measures: Punycode display and quarantine at the mail layer, time-of-click checks, DNS blocking, passkeys.
     - `paypal.com/login.secure-check.co`: if the `/` is a fake slash, the whole thing is a domain → registered domain `secure-check.co` (subdomain `paypal.com∕login`). If it's a real slash, the registered domain is `paypal.com` and the rest is a path. Same on screen, completely different owner.
 

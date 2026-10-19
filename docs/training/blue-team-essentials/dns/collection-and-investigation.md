@@ -2,7 +2,6 @@
 title: "DNS Log Collection and Safe Investigation"
 tags:
   - training
-  - sec450
   - blue-team
   - dns
   - concept
@@ -11,17 +10,13 @@ tags:
 
 # DNS Log Collection and Safe Investigation
 
-<div class="dfir-meta" markdown>
-**Course:** SANS SEC450 (2022) Book 2 · **Module:** DNS Analysis and Attacks · **Pages:** p.51–56
-</div>
-
 !!! abstract "What this page covers"
     What sensor placement lets you see, how to pivot to firewall logs when the client has been lost, the OPSEC-safe order for looking things up, and the four steps of DNS detection (parse · enrich · decide · act).
 
 !!! note "Conventions"
-    **[Added]** = not in the course, **[Correction]** = course error, **[Changed]** / **[Caution]** = changed since 2022 / risky if done the old way. See the [DNS overview](index.md) and the [triage sheet](triage-sheet.md).
+    **[Added]** = practical must-knows, **[Correction]** = a commonly repeated mistake, **[Changed]** / **[Caution]** = changed recently / risky if done the old way. See the [DNS overview](index.md) and the [triage sheet](triage-sheet.md).
 
-## Checking your logs and pivoting (p.52–53) { #visibility }
+## Checking your logs and pivoting { #visibility }
 
 To catch an attack you first have to be able to see it. Sensor placement and log type decide what is visible and what isn't.
 
@@ -63,7 +58,7 @@ Take the response IP from the DNS log, search firewall logs for it, and the real
     - [Caution] Auto-alerts built only on upstream logs will flag the company DNS server as "the infected host". Add an "is this IP a DNS server?" step to alert logic.
     - [Caution] Check whether your logging tool throws away the TTL field.
 
-## Safe investigation and the detection formula (p.54–56) { #investigation }
+## Safe investigation and the detection formula { #investigation }
 
 When you need a domain ↔ IP answer, weigh accuracy (is it the answer *from that time*?) against defensive OPSEC (does the attacker notice?). If the attack is targeted, or you aren't sure, default to quiet.
 
@@ -118,5 +113,5 @@ The same "host looked up a `.top` domain" alert can end in opposite conclusions:
 !!! info "2026 view"
     - Mature teams keep a non-attributable investigation environment as standard kit.
     - Uploading a suspicious file to VirusTotal effectively publishes it. "No uploads, hash search only" is a common rule.
-    - Some lookup services named in the course have changed (e.g. RiskIQ → Microsoft Defender Threat Intelligence).
+    - Some long-standing lookup services have changed (e.g. RiskIQ → Microsoft Defender Threat Intelligence).
     - [Caution] Short DNS log retention empties tier 1 and pushes you to tiers 2–3. Keep at least a "domain · time · IP" summary for a long time.
