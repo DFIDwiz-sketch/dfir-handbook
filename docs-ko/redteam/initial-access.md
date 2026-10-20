@@ -34,7 +34,7 @@ tags:
 
 <a id="overview"></a>
 
-# Chapter 05. Initial Access (Part 1)
+# Initial Access (Part 1)
 
 ## 1. 개요 및 피싱 페이로드 분류학 (Phishing Taxonomy)
 
@@ -225,7 +225,7 @@ PS C:\> .\ngentask.exe
 
 <a id="part2"></a>
 
-# Chapter 05. Initial Access (Part 2)
+# Initial Access (Part 2)
 
 ### 2.3 Windows Installer (.MSI) 패키지 분석
 
@@ -324,7 +324,7 @@ Windows Installer(`.msi`)는 설치에 필요한 파일과 단계별 작업(Acti
 
 <a id="triggers"></a>
 
-# Chapter 3. Triggers (초기 실행 유도 및 안티 샌드박스)
+# Triggers (초기 실행 유도 및 안티 샌드박스)
 
 트리거(Trigger)는 피해자가 컨테이너를 마운트/해제한 뒤 최초로 상호작용(보통 더블 클릭)하는 파일입니다. 핵심 목표는 익숙한 파일로 위장해 의심을 피하고, 백그라운드에서 페이로드와 미끼 파일(Decoy)을 동시에 실행하는 것입니다.
 
@@ -431,7 +431,7 @@ PowerShell(`WScript.Shell`)로 `.lnk`를 생성하면, 윈도우는 `.lnk` 바�
 
 <a id="containers"></a>
 
-# Chapter 4. Containers (컨테이너와 MotW 우회)
+# Containers (컨테이너와 MotW 우회)
 
 ### 4.1 Mark of the Web (MotW)의 내부 구조와 역할
 
@@ -473,7 +473,7 @@ HostUrl=https://.../test.pdf
 
 <a id="delivery"></a>
 
-# Chapter 5. Delivery (경계 보안 우회 및 전달)
+# Delivery (경계 보안 우회 및 전달)
 
 딜리버리는 완성된 패키지를 타겟 기업의 다층 경계 보안(방화벽, 이메일 게이트웨이, 웹 프록시, 네트워크 샌드박스)에 발각되지 않고 엔드포인트까지 도달시키는 기술입니다.
 

@@ -32,7 +32,7 @@ tags:
 
 <a id="overview"></a>
 
-# Chapter 05. Initial Access (Part 1)
+# Initial Access (Part 1)
 
 ## 1. Overview & phishing payload taxonomy
 
@@ -223,7 +223,7 @@ PS C:\> .\ngentask.exe
 
 <a id="part2"></a>
 
-# Chapter 05. Initial Access (Part 2)
+# Initial Access (Part 2)
 
 ### 2.3 Windows Installer (.MSI) packages
 
@@ -322,7 +322,7 @@ A dropper is an intermediate program that doesn't expose the final payload in th
 
 <a id="triggers"></a>
 
-# Chapter 3. Triggers (initial execution & anti-sandbox)
+# Triggers (initial execution & anti-sandbox)
 
 A trigger is the file the victim first interacts with (usually a double-click) after mounting/extracting a container. Its goals are to disguise itself as a familiar file to avoid suspicion, and to run the payload and a benign decoy at the same time in the background.
 
@@ -429,7 +429,7 @@ When you create a `.lnk` with PowerShell (`WScript.Shell`), Windows writes **the
 
 <a id="containers"></a>
 
-# Chapter 4. Containers (and MotW bypass)
+# Containers (and MotW bypass)
 
 ### 4.1 Mark of the Web (MotW) — structure and role
 
@@ -471,7 +471,7 @@ The course says mounting a `.iso`/`.img` removes MotW from inner files — but *
 
 <a id="delivery"></a>
 
-# Chapter 5. Delivery (perimeter bypass & payload delivery)
+# Delivery (perimeter bypass & payload delivery)
 
 Delivery is getting the finished package (container) past the target's layered perimeter (firewall, email gateway, web proxy, network sandbox) to the victim endpoint undetected.
 
