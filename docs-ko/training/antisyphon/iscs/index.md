@@ -43,7 +43,13 @@ title: Information Security Core Skills
 
     Egress 트래픽 분석, NetFlow, 방화벽 로그 수동 분석, AI로 로그 분석, Zeek, 비컨·지터·롱 커넥션, RITA, ASN·차단 목록, AC-Hunter 실습, UEBA, Deep Blue CLI, Windows 로그의 한계와 Sysmon.
 
+-   **[Day 3 — EDR, 위협 에뮬레이션, 호스트 방화벽](day-3.md)**
+
+    ---
+
+    Sysmon 실습 해설, Pass-the-Hash, EDR과 심층 방어(곱셈의 원리), 위협 에뮬레이션·Atomic Red Team, AI로 탐지 규칙 만들기와 검증, BloodHound, 갭 분석 실습, 호스트 방화벽과 횡적 이동 차단.
+
 </div>
 
-!!! info "3~4일차는 추후 추가"
-    3일차(EDR·Atomic Red Team·BloodHound·Pass-the-Hash), 4일차(인터넷 허용 목록·취약점 관리·웹 테스트·Ping Castle)는 순차적으로 정리해 추가합니다.
+!!! info "4일차는 추후 추가"
+    4일차(Responder 실습 해설·인터넷 허용 목록·취약점 관리·웹 테스트·Ping Castle)는 이어서 정리해 추가합니다.

@@ -43,7 +43,13 @@ Backup & recovery is "something you should just be doing," so it isn't covered s
 
     Egress traffic analysis, NetFlow, manual firewall-log analysis, using AI on logs, Zeek, beaconing / jitter / long connections, RITA, ASN deny-lists, the AC-Hunter lab, UEBA, Deep Blue CLI, Windows logging limits and Sysmon.
 
+-   **[Day 3 — EDR, Threat Emulation and Host Firewalls](day-3.md)**
+
+    ---
+
+    Sysmon lab review, Pass-the-Hash, EDR and defence in depth (why overlap multiplies), threat emulation and Atomic Red Team, writing and validating detections with AI, BloodHound, gap-analysis lab, host firewalls and stopping lateral movement.
+
 </div>
 
-!!! info "Days 3–4 to follow"
-    Day 3 (EDR / Atomic Red Team / BloodHound / Pass-the-Hash) and Day 4 (internet allow listing / vulnerability management / web testing / Ping Castle) will be added in sequence.
+!!! info "Day 4 to follow"
+    Day 4 (Responder lab walkthrough, internet allow listing, vulnerability management, web testing, Ping Castle) will be added next.
