@@ -1,0 +1,6645 @@
+<!DOCTYPE html><html lang="en" class="no-js"><head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Personal digital forensics &amp; incident response reference">
+      
+      
+        <meta name="author" content="Comwhiz">
+      
+      
+        <link rel="canonical" href="https://DFIDwiz-sketch.github.io/dfir-handbook/training/antisyphon/iscs/day-3/">
+      
+      
+        <link rel="prev" href="../day-2/">
+      
+      
+        <link rel="next" href="../../../blue-team-essentials/">
+      
+      
+        
+          <link rel="alternate" href="/dfir-handbook/" hreflang="en">
+        
+          <link rel="alternate" href="/dfir-handbook/ko/" hreflang="ko">
+        
+      
+      
+      <link rel="icon" href="../../../../assets/favicon.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Day 3 — EDR, Threat Emulation and Host Firewalls - DFIR Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/extra.css">
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  <link href="../../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+            html.glightbox-open { overflow: initial; height: 100%; }
+            .gslide-title { margin-top: 0px; user-select: text; }
+            .gslide-desc { color: #666; user-select: text; }
+            .gslide-image img { background: white; }
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
+        </style></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#day-3-edr-threat-emulation-and-host-firewalls" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../.." title="DFIR Handbook" class="md-header__button md-logo" aria-label="DFIR Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 9a3 3 0 0 1 3 3 3 3 0 0 1-3 3 3 3 0 0 1-3-3 3 3 0 0 1 3-3m5.86 10.31C16.23 21.22 14.28 22.45 12 23c-2.56-.61-4.7-2.07-6.42-4.37C3.86 16.34 3 13.8 3 11V5l9-4 9 4v6c0 2.39-.64 4.61-1.92 6.67l-2.91-2.91c.52-.79.83-1.76.83-2.76a5 5 0 0 0-5-5 5 5 0 0 0-5 5 5 5 0 0 0 5 5c1 0 1.97-.31 2.76-.83z"></path></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            DFIR Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Day 3 — EDR, Threat Emulation and Host Firewalls
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo" aria-label="Switch to light mode" type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo" aria-label="Switch to dark mode" type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo" aria-label="Switch to system preference" type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"></path></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/dfir-handbook/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/dfir-handbook/ko/" hreflang="ko" class="md-select__link">
+              한국어
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required="">
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard="" data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"></path></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix="">
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/DFIDwiz-sketch/dfir-handbook" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    dfir-handbook
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../basics/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Basics
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../windows/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Windows
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../linux/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../network/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Network
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../memory/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Memory
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../splunk/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Splunk
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../adversary/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Adversary
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../pentesting/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Pentesting
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../redteam/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Red Team
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../threat-intel/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Threat Intel
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../tools/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Tools
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../playbooks/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Playbooks
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../learning/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Learning
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Training
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../../tags/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Tags
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../.." title="DFIR Handbook" class="md-nav__button md-logo" aria-label="DFIR Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 9a3 3 0 0 1 3 3 3 3 0 0 1-3 3 3 3 0 0 1-3-3 3 3 0 0 1 3-3m5.86 10.31C16.23 21.22 14.28 22.45 12 23c-2.56-.61-4.7-2.07-6.42-4.37C3.86 16.34 3 13.8 3 11V5l9-4 9 4v6c0 2.39-.64 4.61-1.92 6.67l-2.91-2.91c.52-.79.83-1.76.83-2.76a5 5 0 0 0-5-5 5 5 0 0 0-5 5 5 5 0 0 0 5 5c1 0 1.97-.31 2.76-.83z"></path></svg>
+
+    </a>
+    DFIR Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/DFIDwiz-sketch/dfir-handbook" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    dfir-handbook
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix="">
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../basics/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Basics
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Basics
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../basics/http-status-codes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP Status Codes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../basics/linux-commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Essential Linux Commands
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../basics/well-known-ports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Well-Known Ports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../basics/windows-event-ids/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows Event IDs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../windows/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Windows
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../windows/artefact-identification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identifying Artefacts by Scenario
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../windows/prefetch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Prefetch
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../windows/amcache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Amcache
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../windows/shimcache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shimcache (AppCompatCache)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../windows/registry-keys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry Keys for DFIR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../windows/lnk-jumplists/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LNK Files &amp; Jump Lists
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../windows/mft-usn/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    $MFT, $UsnJrnl &amp; $LogFile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../windows/srum/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SRUM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../windows/event-logs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows Event Logs (EVTX)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../linux/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linux
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Linux
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../linux/auth-and-history/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication &amp; Shell History
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../linux/persistence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linux Persistence
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../linux/filesystem-timestamps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Filesystem &amp; Timestamps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../linux/logs-and-triage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logs, Processes &amp; Live Triage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../network/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Network
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Network
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_2">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../network/zeek/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Zeek
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Zeek
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../network/zeek/conn-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    conn.log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../network/zeek/dns-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    dns.log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../network/zeek/http-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    http.log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../network/zeek/ssl-x509/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ssl.log &amp; x509.log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../network/zeek/files-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    files.log &amp; pe.log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_3">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../network/arkime/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arkime
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Arkime
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../network/arkime/search-syntax/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arkime Search Syntax
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../network/arkime/hunting-workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Intrusion Detection with Arkime
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../network/wireshark-tshark/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wireshark &amp; tshark
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../network/beaconing-c2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Beaconing &amp; C2 Detection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../memory/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Memory
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../memory/volatility-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Volatility 3 Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../memory/processes-injection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Processes &amp; Code Injection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../memory/credentials-registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Credentials, Registry &amp; Rootkits
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../splunk/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Splunk
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Splunk
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../splunk/spl-cheatsheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SPL Cheat Sheet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../splunk/data-discovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Discovery &amp; Time
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../splunk/rex-and-fields/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    rex, Field Extraction &amp; eval
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../splunk/security-searches/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Searches by Question
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../splunk/hunting-patterns/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hunting Patterns in SPL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../splunk/botsv3-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    BOTSv3 Investigation Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../adversary/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adversary
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Adversary
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/hardening-by-version/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardening by Windows Version
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/phishing-delivery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phishing Delivery &amp; Initial Execution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/powershell-cradles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PowerShell Download Cradles &amp; Encoded Commands
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/lolbins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LOLBins — Signed Binary Proxy Execution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/lsass-dumping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LSASS Credential Dumping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/sam-ntds-extraction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SAM, LSA Secrets &amp; NTDS.dit Extraction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/dcsync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DCSync
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/kerberoasting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kerberoasting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/asrep-roasting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AS-REP Roasting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/golden-silver-tickets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Golden, Silver Tickets &amp; Pass-the-Ticket
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/llmnr-ntlm-relay/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLMNR/NBT-NS Poisoning &amp; NTLM Relay
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/adcs-abuse/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AD Certificate Services Abuse (ESC1 / ESC8)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/pass-the-hash/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pass-the-Hash
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/psexec-smb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PsExec &amp; SMB Lateral Movement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/wmi-winrm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WMI &amp; WinRM Execution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/rdp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RDP — Remote Desktop Abuse
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/uac-bypass/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UAC Bypass
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/token-impersonation-potato/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Token Impersonation &amp; Potato Attacks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/process-injection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Process Injection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/impair-defenses-log-clearing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Impair Defenses &amp; Log Clearing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/persistence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Persistence — Services, Tasks, Run Keys
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/eternalblue-smbv1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EternalBlue &amp; SMBv1 Exploitation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/printnightmare/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PrintNightmare &amp; Print Spooler Abuse
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../pentesting/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pentesting
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Pentesting
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_2">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../pentesting/recon/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Recon
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9_2" id="__nav_9_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Recon
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_2_2">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../pentesting/recon/nmap/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nmap
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9_2_2" id="__nav_9_2_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Nmap
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../pentesting/recon/nmap/scanning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nmap host discovery &amp; port scanning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../pentesting/recon/nmap/service-nse/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nmap service enumeration &amp; NSE
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../pentesting/recon/nmap/output-performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nmap output &amp; performance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../redteam/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Red Team
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Red Team
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../redteam/initial-access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Initial Access
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../threat-intel/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Threat Intel
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Threat Intel
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../threat-intel/dprk-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    North Korea (DPRK) — Groups &amp; Incidents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../threat-intel/dprk-ttps-hunting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    North Korea — TTPs &amp; Hunting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../tools/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tools
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tools
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../tools/imaging-collection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Disk &amp; Memory Imaging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../tools/kape/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    KAPE
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../tools/velociraptor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Velociraptor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../tools/zimmerman-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eric Zimmerman Tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../tools/plaso-timelines/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plaso &amp; Super-Timelines
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../playbooks/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Playbooks
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Playbooks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../playbooks/ransomware/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ransomware
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../playbooks/compromised-workstation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compromised Workstation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../playbooks/account-compromise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Account Compromise &amp; BEC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../playbooks/lateral-domain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lateral Movement &amp; Domain Compromise
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../playbooks/data-exfiltration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Exfiltration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../playbooks/webshell-server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web Shell &amp; Server Compromise
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_14">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../learning/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Learning
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Learning
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../learning/roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../learning/purple-team-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Purple-Team Weekly Loop
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../learning/curriculum-24-months/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    24-Month Curriculum
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../learning/resources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training Resources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15" checked="">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Training
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Training
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15_2" checked="">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Antisyphon
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15_2" id="__nav_15_2_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_15_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_15_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Antisyphon
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15_2_2" checked="">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Information Security Core Skills
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15_2_2" id="__nav_15_2_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_15_2_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_15_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Information Security Core Skills
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../day-1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 1 — Allow Listing and Password Attacks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../day-2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 2 — Egress Traffic Analysis and Logging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 3 — EDR, Threat Emulation and Host Firewalls
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 3 — EDR, Threat Emulation and Host Firewalls
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#sysmon-lab-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Sysmon lab walkthrough
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Sysmon lab walkthrough">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lab-recap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lab recap
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sysmon-artifacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Sysmon recorded
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pass-the-hash" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Pass-the-Hash — logging in without the password
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Pass-the-Hash — logging in without the password">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pth-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pth-core" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The key point — the hash is enough
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pth-in-sysmon" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Pass-the-Hash looks like in Sysmon
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#metasploit-in-practice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Is Metasploit used in real engagements?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#edr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. EDR — the most powerful control, but not one to rely on alone
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. EDR — the most powerful control, but not one to rely on alone">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#defense-in-depth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Defence in depth multiplies, it doesn't add
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#edr-ai-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing an EDR — AI is only as good as its data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bluespawn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Blue Spawn — an EDR stand-in for the lab
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trust-but-verify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Trust but verify — threat emulation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Trust but verify — threat emulation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#emulation-vs-simulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Emulation vs simulation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#signature-specificity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Don't write detections too specifically
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ai-detections" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using AI to write detections — and what humans must do
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bloodhound" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. BloodHound — paths to Domain Admin
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. BloodHound — paths to Domain Admin">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ai-augment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        John on commercial tools and AI
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bluespawn-art-lab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Lab — Blue Spawn + Atomic Red Team and gap analysis
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Lab — Blue Spawn + Atomic Red Team and gap analysis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#art-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#art-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adhoc-emulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ad-hoc emulation — what if there's no test yet?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#host-firewalls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Host firewalls and stopping lateral movement
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Host firewalls and stopping lateral movement">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#acceptable-compromise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Getting compromised is acceptable. But…"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hostile-internal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Treat the internal network as hostile
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#firewall-lab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lab — Nmap before and after the firewall
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#responder-prep" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Firewalls aren't the end — preparing the Responder lab
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ama" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. From the AMA
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Day 3 summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15_3">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../blue-team-essentials/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Blue Team Essentials
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15_3" id="__nav_15_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_15_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Blue Team Essentials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15_3_2">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../blue-team-essentials/dns/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DNS
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15_3_2" id="__nav_15_3_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_15_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    DNS
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/dns/understanding-dns/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Understanding DNS — Structure and Records
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/dns/collection-and-investigation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DNS Log Collection and Safe Investigation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/dns/domain-signals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Domain Signals — TLD, Reputation, Age, Randomness, ASN, Geolocation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/dns/dns-abuse/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DNS Abuse — Unauthorised DNS, Shared Hosting, Record Tampering, Tunnelling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/dns/blockchain-dns-and-idn/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Blockchain DNS and IDNs (Punycode)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/dns/encrypted-dns/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Encrypted DNS — DoT, DoH, DoQ, DNSSEC and Collection Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/dns/triage-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Suspicious DNS Triage Sheet · Corrections · Common Confusions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../tags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#sysmon-lab-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Sysmon lab walkthrough
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Sysmon lab walkthrough">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lab-recap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lab recap
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sysmon-artifacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Sysmon recorded
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pass-the-hash" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Pass-the-Hash — logging in without the password
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Pass-the-Hash — logging in without the password">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pth-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pth-core" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The key point — the hash is enough
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pth-in-sysmon" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Pass-the-Hash looks like in Sysmon
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#metasploit-in-practice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Is Metasploit used in real engagements?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#edr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. EDR — the most powerful control, but not one to rely on alone
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. EDR — the most powerful control, but not one to rely on alone">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#defense-in-depth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Defence in depth multiplies, it doesn't add
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#edr-ai-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing an EDR — AI is only as good as its data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bluespawn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Blue Spawn — an EDR stand-in for the lab
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trust-but-verify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Trust but verify — threat emulation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Trust but verify — threat emulation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#emulation-vs-simulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Emulation vs simulation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#signature-specificity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Don't write detections too specifically
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ai-detections" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using AI to write detections — and what humans must do
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bloodhound" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. BloodHound — paths to Domain Admin
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. BloodHound — paths to Domain Admin">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ai-augment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        John on commercial tools and AI
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bluespawn-art-lab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Lab — Blue Spawn + Atomic Red Team and gap analysis
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Lab — Blue Spawn + Atomic Red Team and gap analysis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#art-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#art-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adhoc-emulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ad-hoc emulation — what if there's no test yet?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#host-firewalls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Host firewalls and stopping lateral movement
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Host firewalls and stopping lateral movement">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#acceptable-compromise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Getting compromised is acceptable. But…"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hostile-internal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Treat the internal network as hostile
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#firewall-lab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lab — Nmap before and after the firewall
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#responder-prep" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Firewalls aren't the end — preparing the Responder lab
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ama" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. From the AMA
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Day 3 summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  <nav class="md-tags">
+    
+      
+      
+      
+      
+        <a href="../../../../tags/#tag:adversary-emulation" class="md-tag">adversary-emulation</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../tags/#tag:antisyphon" class="md-tag">antisyphon</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../tags/#tag:edr" class="md-tag">edr</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../tags/#tag:host-firewall" class="md-tag">host-firewall</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../tags/#tag:sysmon" class="md-tag">sysmon</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../tags/#tag:training" class="md-tag">training</a>
+      
+    
+  </nav>
+
+
+  
+    <a href="https://github.com/DFIDwiz-sketch/dfir-handbook/edit/main/docs/training/antisyphon/iscs/day-3.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75z"></path></svg>
+    </a>
+  
+  
+    
+      
+    
+    <a href="https://github.com/DFIDwiz-sketch/dfir-handbook/raw/main/docs/training/antisyphon/iscs/day-3.md" title="View source of this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5 5 5 0 0 1 5-5 5 5 0 0 1 5 5 5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5"></path></svg>
+    </a>
+  
+
+
+<h1 id="day-3-edr-threat-emulation-and-host-firewalls">Day 3 — EDR, Threat Emulation and Host Firewalls<a class="headerlink" href="#day-3-edr-threat-emulation-and-host-firewalls" title="Permanent link">¶</a></h1>
+<div class="dfir-meta">
+<p><strong>Course:</strong> Information Security Core Skills · <strong>Instructor:</strong> John Strand (BHIS) · <strong>Day 3 scope:</strong> Sysmon lab review → Pass-the-Hash → EDR &amp; defence in depth → threat emulation &amp; Atomic Red Team → AI-written detections → BloodHound → gap-analysis lab → host firewalls</p>
+</div>
+<div class="admonition abstract">
+<p class="admonition-title">Day 3 at a glance</p>
+<p>Day 3 opens with the <strong>Sysmon lab walkthrough</strong> deferred from Day 2, then shows how <strong>Pass-the-Hash</strong> (logging in with only a hash) looks in the logs. It then argues that <strong>EDR</strong> is powerful but not enough on its own — overlapping controls <strong>multiply</strong> — and that you shouldn't trust vendor claims but <strong>verify</strong> with tools like <strong>Atomic Red Team</strong> (gap analysis). It closes with <strong>host firewalls</strong>: blocking workstation-to-workstation traffic to remove the whole lateral-movement category.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Conventions</p>
+<p><strong>💡 Note (added)</strong> = my own addition beyond the lecture. <strong>(reconstructed)</strong> = something the instructor only showed on screen, written out generically. Labs that use offensive tooling are summarised by <strong>what they demonstrate and the defensive / detection takeaways</strong>; offensive command detail is omitted.</p>
+</div>
+<hr>
+<h2 id="sysmon-lab-review">1. Sysmon lab walkthrough<a class="headerlink" href="#sysmon-lab-review" title="Permanent link">¶</a></h2>
+<h3 id="lab-recap">Lab recap<a class="headerlink" href="#lab-recap" title="Permanent link">¶</a></h3>
+<ol>
+<li><strong>Windows (victim):</strong> disable real-time protection and the firewall, set the admin password to <code>password1234</code> (for the remote-logon part).</li>
+<li><strong>Kali (attacker):</strong> build a test payload <code>trustme.exe</code>, move it to the victim, wait for the callback.</li>
+<li><strong>Install Sysmon on Windows</strong>, then run <code>trustme.exe</code> → the attacker gets a remote session, dumps hashes and demonstrates a keylogger.</li>
+</ol>
+<p>Building the file prints <strong>"No encoder specified"</strong> — meaning no encoding was done to evade AV, <strong>on purpose</strong>. The goal here isn't AV bypass; it's <strong>reading Sysmon logs</strong>.</p>
+<p>John's numbers: the <strong>payload is 354 bytes</strong> but the <strong>final file is ~73 KB</strong>. That's Day 1's <strong>stager</strong>: the 354-byte piece just fetches the real body (the stage) from the attacker, and it's been stuffed inside a legitimate program, <strong>Apache Bench (<code>ab.exe</code>)</strong>, so the file is the size of that program.</p>
+<h3 id="sysmon-artifacts">What Sysmon recorded<a class="headerlink" href="#sysmon-artifacts" title="Permanent link">¶</a></h3>
+<p>Event Viewer → Applications and Services Logs → Microsoft → Windows → <strong>Sysmon → Operational</strong></p>
+<table>
+<thead>
+<tr>
+<th>Sysmon event</th>
+<th>What it showed</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1</strong> process create</td>
+<td><code>trustme.exe</code> ran; description Apache Bench; <strong>OriginalFileName <code>ab.exe</code></strong>; run by administrator; hashes; <strong>parent <code>cmd.exe</code></strong></td>
+<td>file name ≠ original name = a strong clue; launched directly from a command prompt</td>
+</tr>
+<tr>
+<td><strong>22</strong> DNS query</td>
+<td>DNS lookups by <code>trustme.exe</code></td>
+<td>where it tried to call home</td>
+</tr>
+<tr>
+<td><strong>8</strong> CreateRemoteThread</td>
+<td><code>trustme.exe</code> created a remote thread in <strong>LSASS</strong></td>
+<td><strong>the hash-dump signal</strong> — the moment hashes were pulled</td>
+</tr>
+<tr>
+<td><strong>1</strong> process create</td>
+<td><code>notepad.exe</code>, the Event Viewer snap-in, …</td>
+<td>even the keylogger demo and analysis steps appear in time order</td>
+</tr>
+</tbody>
+</table>
+<p><strong>LSASS (Local Security Authority Subsystem Service)</strong> handles logons and credentials and holds sensitive material such as password hashes in memory. Ordinary programs almost never create threads in it.</p>
+<div class="admonition note">
+<p class="admonition-title">💡 Note (added)</p>
+<p>The classic credential-dumping detections are Sysmon <strong>8</strong> (remote thread into LSASS) and <strong>10</strong> (process access to LSASS). In event 10, the <code>GrantedAccess</code> value (e.g. <code>0x1010</code>, <code>0x1410</code>) shows whether memory-read access was requested. Detection queries: <a href="../../../../adversary/lsass-dumping/">LSASS dumping</a>.</p>
+</div>
+<hr>
+<h2 id="pass-the-hash">2. Pass-the-Hash — logging in without the password<a class="headerlink" href="#pass-the-hash" title="Permanent link">¶</a></h2>
+<h3 id="pth-setup">Setup<a class="headerlink" href="#pth-setup" title="Permanent link">¶</a></h3>
+<p>John changes the admin password from <code>password1234</code> to a <strong>very long one</strong> — "uncrackable short of a quantum computer." Dumping hashes again shows the admin hash has changed.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Administrator:500:aad3b435b51404eeaad3b435b51404ee:&lt;NT hash&gt;:::
+</span></code></pre></div>
+<ul>
+<li><strong><code>aad3b4…</code> (first part) = the LM (LAN Manager) hash.</strong> Long obsolete and unused, so it's the <strong>blank value</strong> — identical for every account. Ignore it.</li>
+<li><strong>Second part = the NT hash.</strong> Changing the password produced a completely different value.</li>
+</ul>
+<h3 id="pth-core">The key point — the hash is enough<a class="headerlink" href="#pth-core" title="Permanent link">¶</a></h3>
+<p>Even assuming the hash can never be cracked, the attacker can authenticate by <strong>presenting the hash itself instead of the password</strong>. John uses the same remote-execution approach (PsExec) as Day 1's spray lab, with the hash in place of the password, and opens a new session without knowing the password at all.</p>
+<blockquote>
+<p>However long and strong the password, if an attacker <strong>gets the hash</strong> they can log in as that user.</p>
+</blockquote>
+<p>Day 1's NT-hash weakness — <strong>no salt</strong> — is why the hash effectively becomes "a key equivalent to the password."</p>
+<div class="admonition note">
+<p class="admonition-title">💡 Note (added) — the defence isn't a stronger password</p>
+<ul>
+<li><strong>Unique local admin passwords per host</strong> — with <strong>LAPS</strong>, a hash taken from one PC doesn't work on another.</li>
+<li><strong>Block lateral-movement paths</strong> — the <a href="#host-firewalls">host firewalls</a> section below (block SMB 445 between workstations).</li>
+<li><strong>Credential protection</strong> — Credential Guard, the Protected Users group, admin-account tiering.</li>
+</ul>
+<p>Artifacts and detection: <a href="../../../../adversary/pass-the-hash/">Pass-the-Hash</a>.</p>
+</div>
+<h3 id="pth-in-sysmon">What Pass-the-Hash looks like in Sysmon<a class="headerlink" href="#pth-in-sysmon" title="Permanent link">¶</a></h3>
+<p>The earlier attack was a <strong>file execution</strong> (<code>trustme.exe</code>); this remote one shows <strong>heavily obfuscated PowerShell</strong> authenticating, uploading and running the payload. The same attacker leaves <strong>different log shapes depending on how they get in</strong> — detection that only watches file execution would miss this.</p>
+<div class="admonition note">
+<p class="admonition-title">💡 Note (added) — traces of remote execution</p>
+<ul>
+<li>Security log <strong>4624</strong> — logon type <strong>3</strong> (network), authentication package <strong>NTLM</strong></li>
+<li>System log <strong>7045</strong> — new service installed (PsExec-style execution creates a service)</li>
+<li>Sysmon <strong>1</strong> — PowerShell spawned by a service (parent <code>services.exe</code>) with a long encoded command line</li>
+<li>PowerShell <strong>4104</strong> — the de-obfuscated script content</li>
+</ul>
+<p>Related: <a href="../../../../adversary/psexec-smb/">PsExec &amp; SMB</a> · <a href="../../../../adversary/powershell-cradles/">PowerShell cradles</a></p>
+</div>
+<h3 id="metasploit-in-practice">Is Metasploit used in real engagements?<a class="headerlink" href="#metasploit-in-practice" title="Permanent link">¶</a></h3>
+<p>Not much in professional pentests — many teams use <strong>Cobalt Strike, Brute Ratel, Nighthawk</strong>. But for <strong>breadth of functionality</strong> nothing matches Metasploit; its weakness is <strong>team collaboration</strong> (commercial tools are better at teamwork, AV evasion, BOF extensions).</p>
+<blockquote>
+<p>For an <strong>internal team</strong> doing day-to-day security work, Metasploit is <strong>free</strong> — and that's a huge advantage.</p>
+</blockquote>
+<hr>
+<h2 id="edr">3. EDR — the most powerful control, but not one to rely on alone<a class="headerlink" href="#edr" title="Permanent link">¶</a></h2>
+<p><strong>EDR (Endpoint Detection and Response)</strong> continuously watches process, file, network and registry activity on hosts and responds. In Back Doors &amp; Breaches the <strong>"Endpoint Security Protection Analysis"</strong> card neutralises social engineering, compromised web servers, accessibility-feature abuse, logon scripts, lateral movement, privilege escalation, AD weaponisation, C2 and exfil — hence <strong>4 resource points</strong>. In real life EDR is also among the most expensive tools. (Moving into this section John also briefly name-checked <strong>Velociraptor</strong> as a tool BHIS loves.)</p>
+<p>The problem is that many organisations now rely <strong>almost 100% on EDR</strong>.</p>
+<blockquote>
+<p>"To be completely honest with you, a lot of vendors lie" — guaranteeing they stop every attack with zero false positives.</p>
+</blockquote>
+<h3 id="defense-in-depth">Defence in depth multiplies, it doesn't add<a class="headerlink" href="#defense-in-depth" title="Permanent link">¶</a></h3>
+<p>"We spent this much" or "we have EDR on 100,000 nodes" isn't defence in depth. Controls that <strong>don't overlap</strong> are merely <strong>additive</strong>; controls that <strong>overlap on the same asset</strong> are <strong>multiplicative</strong>.</p>
+<p>If one host is covered by <strong>AV/EDR + network security monitoring (Day 2's Zeek/RITA) + SIEM + UEBA</strong>, one failing still leaves the others, and the attacker must evade <strong>all of them at once</strong> — the cost rises steeply.</p>
+<blockquote>
+<p>From nation-state work — landing on a system defended like that meant asking the command chain for permission to continue, and most of the time the answer was <strong>"stop."</strong> The risk of exposing very expensive TTPs was too high.</p>
+<p><strong>Make the attacker decide "this is too expensive"</strong> — that's the goal.</p>
+</blockquote>
+<p>Traditional deny-list AV is "pretty much garbage"; EDR finally lets you see systems <strong>holistically</strong>. A headline feature is the <strong>process tree</strong> (which process begat which), which matters again in memory analysis.</p>
+<div class="admonition note">
+<p class="admonition-title">💡 Note (added)</p>
+<p>A chain like <code>WINWORD.EXE → cmd.exe → powershell.exe → rundll32.exe</code> is the classic "Word macro ran a command" phishing compromise. Sysmon event 1's <code>ParentImage</code> is the raw material for this tree; memory forensics uses the same idea (Volatility <code>pstree</code>).</p>
+</div>
+<h3 id="edr-ai-data">Choosing an EDR — AI is only as good as its data<a class="headerlink" href="#edr-ai-data" title="Permanent link">¶</a></h3>
+<blockquote>
+<p>"We're a brand-new, scrappy EDR company with a completely proprietary AI no one has seen before." → John: <strong>odds are it's crap</strong>, because its training data just isn't big enough.</p>
+</blockquote>
+<p><strong>CrowdStrike, Microsoft Defender (+ Sentinel) and SentinelOne</strong> train on <strong>billions of endpoints</strong> and have the compute to crunch it — very hard for newcomers to match. John's recommendations: <strong>CrowdStrike</strong> and <strong>Windows Defender + Sentinel</strong> (the good tier costs money).</p>
+<h3 id="bluespawn">Blue Spawn — an EDR stand-in for the lab<a class="headerlink" href="#bluespawn" title="Permanent link">¶</a></h3>
+<p>An open-source tool built by Virginia students for the <strong>CCDC</strong> collegiate cyber-defence competition when AV wasn't allowed in — they asked to write their own, and it worked. But its <strong>MITRE coverage is low, so don't use it as a real EDR</strong>. The lab's point is to learn <strong>how you should test your EDR</strong>.</p>
+<hr>
+<h2 id="trust-but-verify">4. Trust but verify — threat emulation<a class="headerlink" href="#trust-but-verify" title="Permanent link">¶</a></h2>
+<p>Don't just trust vendor marketing — but it's <strong>not all the vendor's fault</strong>. <strong>Configuration</strong> can cripple a product:</p>
+<ul>
+<li><strong>A rule that globally allows PowerShell everywhere</strong> — dumb, but common</li>
+<li><strong>EDR deployed on 90% of the environment</strong> — the remaining <strong>10% is a big 10%</strong></li>
+</ul>
+<p>The answer is <strong>continuous validation of security controls</strong> — BHIS's SOC constantly checks its detection stack is executing as expected with the coverage expected.</p>
+<h3 id="emulation-vs-simulation">Emulation vs simulation<a class="headerlink" href="#emulation-vs-simulation" title="Permanent link">¶</a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Simulation</th>
+<th>Emulation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>How</td>
+<td><strong>a series of scripts</strong> imitating attack behaviour</td>
+<td><strong>one binary + a C2 server</strong> behaving like real malware</td>
+</tr>
+<tr>
+<td>Example</td>
+<td><strong>Atomic Red Team</strong></td>
+<td>Caldera agents, Metasploit, …</td>
+</tr>
+<tr>
+<td>Level</td>
+<td>entry</td>
+<td>further down the pipeline</td>
+</tr>
+</tbody>
+</table>
+<p>John: "honestly it doesn't make that much difference — do both."</p>
+<p><strong>Tools:</strong> <strong>Caldera</strong> (MITRE's adversary-simulation environment — deploy agents and exercise ATT&amp;CK techniques), <strong>Infection Monkey</strong>, <strong>Atomic Red Team</strong> (Red Canary — small per-technique tests showing what got detected; this course's main lab tool).</p>
+<div class="admonition warning">
+<p class="admonition-title">Test in alert-only, non-blocking mode</p>
+<p>Caldera <strong>publishes the AV signatures for its own binaries</strong> to prevent abuse, so any AV nails it. And most simulation tooling reproduces attacks with <strong>PowerShell scripts</strong> — if your EDR blocks PowerShell outright, none of the remaining tests run. Evaluate EDR in <strong>alerting, non-blocking</strong> mode so you learn exactly what it detects and misses.</p>
+</div>
+<h3 id="signature-specificity">Don't write detections too specifically<a class="headerlink" href="#signature-specificity" title="Permanent link">¶</a></h3>
+<p>Atomic Red Team shows each test's general command form and the concrete command with inputs (e.g. a <code>regsvr32</code> test). A lazy detection engineer who pastes the <strong>entire command string</strong> — including the full Atomic Red Team path — gets a rule that:</p>
+<ul>
+<li>fires <strong>every</strong> time someone runs Atomic Red Team, but</li>
+<li><strong>never</strong> fires on a real attack or pentest, because no attacker uses that exact path.</li>
+</ul>
+<p>Instead, <strong>turn the variable parts into variables and match the invariant combination</strong> — here, "<code>regsvr32</code> used <strong>together with</strong> <code>/s</code> <code>/u</code> <code>/i:</code> and <code>scrobj.dll</code>," case-insensitive.</p>
+<div class="admonition note">
+<p class="admonition-title">💡 Note (added)</p>
+<p>This technique is the well-known <strong>Squiblydoo</strong> (MITRE <strong>T1218.010</strong>, Regsvr32) — using the signed <code>regsvr32.exe</code> to run a remote scriptlet. See <a href="../../../../adversary/lolbins/">LOLBins</a>.</p>
+</div>
+<h3 id="ai-detections">Using AI to write detections — and what humans must do<a class="headerlink" href="#ai-detections" title="Permanent link">¶</a></h3>
+<p>John asks free ChatGPT: "please create a Sigma alert based on the following detect." <strong>Sigma</strong> is the shared detection-rule language you write once and convert to many SIEMs.</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Suspicious Regsvr32 Scriptlet DLL Execution</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nt">status</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">experimental</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Detects suspicious use of regsvr32 with scrobj.dll</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="nt">references</span><span class="p">:</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://attack.mitre.org/techniques/T1218/010/</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="nt">author</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OpenAI</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="nt">logsource</span><span class="p">:</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span><span class="nt">category</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">process_creation</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">  </span><span class="nt">product</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">windows</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="nt">detection</span><span class="p">:</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">  </span><span class="nt">selection</span><span class="p">:</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">    </span><span class="nt">Image|endswith</span><span class="p">:</span><span class="w"> </span><span class="s">'\regsvr32.exe'</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">    </span><span class="nt">CommandLine|contains|all</span><span class="p">:</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'scrobj'</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'/i:'</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">  </span><span class="nt">condition</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">selection</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="nt">falsepositives</span><span class="p">:</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Legitimate administrator software registration activity</span>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">high</span>
+</span></code></pre></div>
+<p><em>(reconstructed — the on-screen rule written out generically)</em></p>
+<ul>
+<li><strong><code>status: experimental</code></strong> — still being trialled.</li>
+<li><strong><code>references</code></strong> — the ATT&amp;CK technique it's based on.</li>
+<li><strong><code>author: OpenAI</code></strong> — the AI credited itself, which made John laugh.</li>
+<li><strong><code>logsource</code></strong> — Windows <strong>process creation</strong> (Sysmon 1 or Security 4688).</li>
+<li><strong><code>Image|endswith: '\regsvr32.exe'</code></strong> — path <strong>ends with</strong> <code>regsvr32.exe</code>, so it matches wherever it's run from.</li>
+<li><strong><code>CommandLine|contains|all</code></strong> — the command line contains <strong>all</strong> listed values.</li>
+<li><strong><code>condition: selection</code></strong> — alert when the above matches.</li>
+<li><strong><code>falsepositives</code></strong> — "legitimate admin software registration"; John has seen legitimate software use this same technique.</li>
+</ul>
+<p>ChatGPT avoided the over-specific trap and wrote a <strong>generalised</strong> rule; John also had it produce <strong>Elastic</strong> and <strong>LimaCharlie</strong> versions.</p>
+<p><strong>So what do humans do?</strong> Someone answers "tune" — John: <strong>"before we tune, we have to test."</strong> BHIS's order:</p>
+<ol>
+<li><strong>Draft</strong> — AI or an analyst writes the rule.</li>
+<li><strong>Back-test on historical data</strong> — BHIS's <strong>Detection Forge</strong> asks "how many times would this have fired?" If it's <strong>100,000</strong>, you have tuning to do; rules that spew false positives make people dislike you.</li>
+<li><strong>Tune</strong> — bring the volume down.</li>
+<li><strong>Test against a live attack</strong> — fire it with <strong>Atomic Red Team</strong> in a sandbox and confirm it triggers.</li>
+</ol>
+<blockquote>
+<p>Test <strong>both directions</strong>: history ("not too noisy?") and a current attack ("does it actually fire?").</p>
+</blockquote>
+<div class="admonition note">
+<p class="admonition-title">💡 Note (added) — the back-test idea in Splunk</p>
+<p>Translate the rule into SPL and run it over a past window to count hits:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>index=* EventCode=1 Image="*\\regsvr32.exe" CommandLine="*scrobj*" CommandLine="*/i:*"
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>| timechart span=1d count
+</span></code></pre></div>
+<p><code>EventCode=1</code> is Sysmon process creation; <code>Image="*\\regsvr32.exe"</code> keeps paths ending in regsvr32.exe; the two <code>CommandLine</code> terms keep only command lines containing <strong>both</strong> <code>scrobj</code> and <code>/i:</code> (space-separated terms are ANDed). <code>timechart span=1d count</code> counts per day as a time chart — hundreds a day means the rule needs tuning.</p>
+</div>
+<p><strong>Nervous about running these tools?</strong> Metasploit and Atomic Red Team <strong>don't</strong> run rampant through your environment — they run <strong>specific test cases on a specific host</strong>.</p>
+<hr>
+<h2 id="bloodhound">5. BloodHound — paths to Domain Admin<a class="headerlink" href="#bloodhound" title="Permanent link">¶</a></h2>
+<p><strong>BloodHound</strong> (SpecterOps) enumerates <strong>every path from a standard user to Domain Admin</strong>, for free.</p>
+<ol>
+<li>The attacker lands on my PC (I opened a bad Word doc) — they are effectively <strong>me</strong>.</li>
+<li>In many AD environments <strong>any user can log on to any workstation</strong> with their domain credentials.</li>
+<li>The tool authenticates to <strong>thousands of hosts</strong> asking "am I admin here?" — no, no, no …</li>
+<li>On the <strong>15,000th</strong> host, it finds admin rights.</li>
+</ol>
+<p><strong>Why that host?</strong> An accounting PC with a flatbed scanner whose software, for some stupid reason, needs <strong>local admin</strong> to run. So the help desk says "everyone on this team needs the scanner — <strong>add Domain Users to local Administrators</strong>. Who's ever going to find out?"</p>
+<blockquote>
+<p><strong>BloodHound answers that question</strong> — and attackers find out very quickly with automated tools.</p>
+</blockquote>
+<p>From there the attacker escalates, grabs <strong>domain-level credentials</strong> for services and other accounts, and moves to Domain Admin. Defenders should run this kind of testing too — looking at <strong>the whole AD environment</strong> through an attacker's eyes, not just one workstation.</p>
+<div class="admonition note">
+<p class="admonition-title">💡 Note (added)</p>
+<p>BloodHound's collector (SharpHound) generates <strong>bulk LDAP queries</strong> to domain controllers and SMB session / local-group enumeration across hosts. On the detection side look for one account making <strong>network logons (4624, type 3) to very many hosts</strong> in a short window, and bulk LDAP from one client (e.g. Zeek <code>ldap.log</code>). The key defence: <strong>never put Domain Users in a local Administrators group</strong>.</p>
+</div>
+<h3 id="ai-augment">John on commercial tools and AI<a class="headerlink" href="#ai-augment" title="Permanent link">¶</a></h3>
+<p>Commercial emulation tools — <strong>Scythe, AttackIQ, XM Cyber</strong> — are good, but many pitch themselves as <strong>full pentest replacements</strong> ("you don't need pentests anymore"). John sees this as the wrong way to apply AI: bolting it onto the status quo and concluding "we need fewer pentesters and SOC analysts, we save money."</p>
+<blockquote>
+<p>The industry was <strong>drowning</strong> — in vulnerabilities, detections, SIEM and log analysis. Then AI arrived — <strong>a chance to finally get ahead of attackers</strong>. Instead, vendors immediately saw it as <strong>"we can save money."</strong></p>
+</blockquote>
+<p>The right frame is the <strong>80/20 rule</strong> — tools and AI cover <strong>80% of the vulnerabilities with 20% of the effort</strong>, so humans focus on what humans are good at: business context and attack paths unique to that environment. <strong>AI augments; it doesn't replace.</strong></p>
+<blockquote>
+<p><strong>"The attackers have a vote."</strong> — they use the same tools, <strong>asymmetrically</strong> faster.</p>
+</blockquote>
+<p>The author of a recent Windows privilege-escalation zero-day (<strong>BlueHammer</strong>) has released more, Linux privesc bugs are piling up, and one vendor said it found them with AI. Vulnerabilities will scale very fast; organisations need to realise <strong>what's coming down the wire now</strong>.</p>
+<p><strong>MITRE evaluations — "everyone's a winner":</strong> after MITRE ATT&amp;CK Evaluations, nearly every vendor claims victory. <strong>Josh Lemon</strong> built his own scoring and early results showed wide variation — e.g. McAfee 268, Carbon Black 259, RSA 78 — and he also tallied each product's <strong>misses</strong>.</p>
+<div class="admonition note">
+<p class="admonition-title">💡 Note (added)</p>
+<p>The raw MITRE ATT&amp;CK Evaluations results are public. Reading <strong>misses and "detections after configuration change"</strong> in the raw data beats vendor press releases.</p>
+</div>
+<hr>
+<h2 id="bluespawn-art-lab">6. Lab — Blue Spawn + Atomic Red Team and gap analysis<a class="headerlink" href="#bluespawn-art-lab" title="Permanent link">¶</a></h2>
+<p>Really two labs in one: <strong>① run set techniques with Atomic Red Team and see what Blue Spawn catches</strong>, <strong>② hand-reproduce a new attack that has no test yet.</strong></p>
+<blockquote>
+<p>Blue Spawn <strong>won't detect everything — that's the point.</strong> The goal is <strong>gap analysis</strong>: find where the holes are.</p>
+</blockquote>
+<h3 id="art-setup">Setup<a class="headerlink" href="#art-setup" title="Permanent link">¶</a></h3>
+<p>Blue Spawn on the right (detections stream in live), PowerShell on the left; real-time protection off.</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c"># (reconstructed) install the Invoke-AtomicRedTeam framework plus the atomics test library</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nb">IEX </span><span class="p">(</span><span class="nb">IWR </span><span class="s1">'https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicredteam.ps1'</span> <span class="n">-UseBasicParsing</span><span class="p">)</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="nb">Install-AtomicRedTeam</span> <span class="n">-getAtomics</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="c"># load the module</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="nb">Import-Module</span> <span class="s2">"C:\AtomicRedTeam\invoke-atomicredteam\Invoke-AtomicRedTeam.psd1"</span> <span class="n">-Force</span>
+</span></code></pre></div>
+<ul>
+<li><strong><code>IWR</code></strong> (<code>Invoke-WebRequest</code>) — fetch the install script.</li>
+<li><strong><code>IEX</code></strong> (<code>Invoke-Expression</code>) — run it. The same command Day 2's Deep Blue CLI flagged in obfuscated payloads — used by legitimate installers and attackers alike.</li>
+<li><strong><code>Install-AtomicRedTeam -getAtomics</code></strong> — framework plus the <strong>test definitions (atomics)</strong>.</li>
+<li><strong><code>Import-Module ... .psd1</code></strong> — load it so <code>Invoke-AtomicTest</code> is available.</li>
+</ul>
+<p>Answer <strong>"Yes to All"</strong> to the PowerShell YAML module prompts. (One Atomic Red Team maintainer is <strong>Carrie Roberts</strong>, ex-BHIS and now an Antisyphon instructor.)</p>
+<h3 id="art-tests">Running tests<a class="headerlink" href="#art-tests" title="Permanent link">¶</a></h3>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nb">Invoke-AtomicTest</span> <span class="n">T1547</span><span class="p">.</span><span class="n">004</span>
+</span></code></pre></div>
+<ul>
+<li><strong><code>Invoke-AtomicTest</code></strong> — run the tests for a technique.</li>
+<li><strong><code>T1547.004</code></strong> — boot/logon autostart → <strong>Winlogon Helper DLL</strong> (persistence via the Winlogon registry values run at logon).</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">💡 Note (added) — useful flags</p>
+<ul>
+<li><code>-ShowDetailsBrief</code> — list the tests for a technique</li>
+<li><code>-CheckPrereqs</code> — verify prerequisites</li>
+<li><code>-Cleanup</code> — <strong>revert</strong> the test's changes (always run afterwards)</li>
+</ul>
+</div>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Blue Spawn result</th>
+<th>Lesson</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>T1547.004</strong> (Winlogon Helper DLL)</td>
+<td>detected immediately</td>
+<td>we <strong>now know</strong> this detection works</td>
+</tr>
+<tr>
+<td><strong>T1543</strong> (create/modify system process — services)</td>
+<td><strong>8</strong> technique detections (with the matched string) / generic "modifying a service" item: <strong>0</strong></td>
+<td>when activity doesn't match a known pattern, EDRs raise a <strong>medium</strong> "something happened" alert → focus on <strong>classified, technique-specific</strong> detections</td>
+</tr>
+<tr>
+<td>registry-key test</td>
+<td>nothing at first, then a <strong>burst a few seconds later</strong></td>
+<td><strong>the lag itself is part of the test</strong></td>
+</tr>
+<tr>
+<td>command-prompt test</td>
+<td>registry detections "raining" in</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why the lag?</strong> It's very common:</p>
+<ul>
+<li>Many EDRs <strong>store and forward</strong> endpoint events; under load the pipeline stalls, then catches up.</li>
+<li><strong>WEC/WEF</strong> and <strong>Elastic collectors</strong> have been seen to get overwhelmed and pause.</li>
+<li><strong>Cloud services</strong> are worse — Microsoft logs in particular can take <strong>up to an hour</strong> from event to your analysis platform.</li>
+</ul>
+<blockquote>
+<p>When judging "is our detection effective?", factor in <strong>not just whether it fires but how late it arrives</strong>.</p>
+</blockquote>
+<div class="admonition note">
+<p class="admonition-title">💡 Note (added) — measuring ingest lag in Splunk</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>index=* earliest=-24h
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>| eval lag_sec = _indextime - _time
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>| stats avg(lag_sec) AS avg_lag max(lag_sec) AS max_lag BY sourcetype
+</span></code></pre></div>
+<p><code>_time</code> is when the event <strong>happened</strong>; <code>_indextime</code> is when Splunk <strong>indexed</strong> it. <code>eval lag_sec = _indextime - _time</code> makes a new field with the difference in seconds, and <code>stats ... BY sourcetype</code> tabulates average and maximum lag per data type. A <code>max_lag</code> near 3600 means that source can arrive up to an hour late.</p>
+</div>
+<p>ATT&amp;CK technique IDs change between versions, so the course provides a <strong>crosswalk JSON</strong> mapping old numbers to new.</p>
+<h3 id="adhoc-emulation">Ad-hoc emulation — what if there's no test yet?<a class="headerlink" href="#adhoc-emulation" title="Permanent link">¶</a></h3>
+<blockquote>
+<p>A new attack drops. <strong>Atomic Red Team has no test for it.</strong> Management wants to know <em>now</em> whether you'd detect it; CISA has issued a warning.</p>
+</blockquote>
+<p>You need the ability to do <strong>custom ad-hoc adversary simulation</strong> — reproduce the behaviour by hand. John reopens a remote session on the test VM (the same steps as before, done quickly) and tries behaviours one by one:</p>
+<table>
+<thead>
+<tr>
+<th>Behaviour tested</th>
+<th>Blue Spawn result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Keystroke logging</strong> (typing into Notepad)</td>
+<td><strong>not detected</strong> — a clear failed detect</td>
+</tr>
+<tr>
+<td><strong>Registry persistence ①</strong> (autorun key added)</td>
+<td><strong>not detected</strong></td>
+</tr>
+<tr>
+<td><strong>Registry persistence ②</strong> (a different registry method)</td>
+<td><strong>detected</strong></td>
+</tr>
+</tbody>
+</table>
+<p>(Keystrokes weren't captured because the payload ran via the PowerShell method this time — how you run it can change results.)</p>
+<blockquote>
+<p><strong>What does our EDR detect, and what does it miss?</strong> — now you know <strong>where to add detections</strong>.</p>
+</blockquote>
+<div class="admonition note">
+<p class="admonition-title">💡 Note (added) — log sources to close the gaps</p>
+<ul>
+<li><strong>Registry autorun persistence</strong> (MITRE <strong>T1547.001</strong>, Run keys etc.) — watch Sysmon <strong>13</strong> (registry value set) for <code>\CurrentVersion\Run</code>, <code>\RunOnce</code>. <a href="../../../../adversary/persistence/">Persistence</a></li>
+<li><strong>Keylogging</strong> (MITRE <strong>T1056.001</strong>) — keyboard-hooking APIs rarely show in default logs, so it leans on EDR behavioural detection or memory analysis — a <strong>common blind spot</strong>.</li>
+</ul>
+</div>
+<p>The VM ends up "brutalised," so John <strong>destroys the lab and restarts it</strong> — the surest way back to clean.</p>
+<hr>
+<h2 id="host-firewalls">7. Host firewalls and stopping lateral movement<a class="headerlink" href="#host-firewalls" title="Permanent link">¶</a></h2>
+<p>Locking down host-based firewalls addresses essentially the <strong>whole Lateral Movement column</strong> of MITRE ATT&amp;CK. The course philosophy again:</p>
+<blockquote>
+<p>Don't chase individual techniques — take out <strong>whole categories</strong> of attack.</p>
+</blockquote>
+<p>The core concept is <strong>segmentation</strong> — down to the <strong>host level</strong> if at all possible — and the reason is the <strong>Pass-the-Hash</strong> shown earlier.</p>
+<h3 id="acceptable-compromise">"Getting compromised is acceptable. But…"<a class="headerlink" href="#acceptable-compromise" title="Permanent link">¶</a></h3>
+<blockquote>
+<p>Getting compromised is <strong>acceptable</strong> — it's going to happen. Like death, taxes and brushing your teeth.</p>
+</blockquote>
+<p>What's <strong>not</strong> acceptable: an attacker persisting <strong>for months</strong>, or pivoting from one host to the <strong>whole environment in minutes</strong>. <strong>Host firewalls</strong> (or <strong>private VLANs</strong>) can stop that.</p>
+<p><strong>How attackers spread:</strong> a client-side exploit or drive-by compromises one host → they want <strong>lateral movement</strong>, not one box → preferably using <strong>built-in Windows protocols</strong> (PsExec, pass-the-token, Remote Desktop, Pass-the-Hash) → take over the <strong>whole domain</strong>.</p>
+<h3 id="hostile-internal">Treat the internal network as hostile<a class="headerlink" href="#hostile-internal" title="Permanent link">¶</a></h3>
+<p>Turning on host firewalls means treating the internal network as hostile — "because it is." Set internal hosts' firewalls <strong>as you would at a coffee shop</strong>.</p>
+<blockquote>
+<p>It's absolutely insane that your systems are <strong>more secure at a Starbucks</strong> than on their own network.</p>
+</blockquote>
+<p>You can go further and segment <strong>between business units</strong> too (host firewalls plus inter-unit segmentation).</p>
+<table>
+<thead>
+<tr>
+<th>From</th>
+<th>To</th>
+<th>Allowed?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>servers, help desk, jump hosts</strong></td>
+<td>workstations</td>
+<td><strong>yes</strong> (needed for admin / support)</td>
+</tr>
+<tr>
+<td><strong>workstations</strong></td>
+<td>workstations</td>
+<td><strong>no</strong> (no reason to talk)</td>
+</tr>
+</tbody>
+</table>
+<p>Now a compromised host can't reach its peers, and you get <strong>overlapping fields of visibility</strong> — if AV, EDR, NSM, UEBA or SIEM fails, two or three others pick up the slack. Use your commercial AV's built-in firewall, or Windows' own <strong><code>netsh advfirewall</code></strong> ("awful, but free," and <strong>configurable via Group Policy</strong>).</p>
+<div class="admonition note">
+<p class="admonition-title">💡 Note (added)</p>
+<p>In practice, build inbound rules in GPO under <strong>Windows Defender Firewall with Advanced Security</strong>. Typical ports to block between workstations: <strong>SMB 445</strong>, <strong>RPC 135</strong> (+ dynamic RPC), <strong>NetBIOS 139</strong>, <strong>WinRM 5985/5986</strong>, <strong>RDP 3389</strong>. "Deny all, then allow only the management / jump-host ranges" is the clean pattern.</p>
+</div>
+<h3 id="firewall-lab">Lab — Nmap before and after the firewall<a class="headerlink" href="#firewall-lab" title="Permanent link">¶</a></h3>
+<p>Run in the new lab environment (<strong>antilab</strong>). Get the Windows VM's IP, then scan it from the attacker VM.</p>
+<p><strong>① Firewall off</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>nmap<span class="w"> </span><span class="m">10</span>.10.222.41
+</span></code></pre></div>
+<ul>
+<li><strong><code>nmap</code></strong> — a scanner that shows which ports are open on a target.</li>
+<li><strong><code>10.10.222.41</code></strong> — the lab Windows VM (varies per environment).</li>
+</ul>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>PORT     STATE SERVICE
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>135/tcp  open  msrpc
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>139/tcp  open  netbios-ssn
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>445/tcp  open  microsoft-ds
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>3389/tcp open  ms-wbt-server
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>5985/tcp open  wsman
+</span></code></pre></div>
+<p><strong>135</strong> RPC · <strong>139</strong> NetBIOS session · <strong>445</strong> SMB file sharing · <strong>3389</strong> Remote Desktop · <strong>5985</strong> WinRM</p>
+<p><strong>② Firewall on, scan again</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>netsh advfirewall set allprofiles state on
+</span></code></pre></div>
+<ul>
+<li><strong><code>netsh advfirewall</code></strong> — command-line control of Windows Firewall.</li>
+<li><strong><code>set allprofiles</code></strong> — apply to <strong>all profiles</strong> (domain, private, public).</li>
+<li><strong><code>state on</code></strong> — enable (<code>state off</code> disables).</li>
+</ul>
+<p>The <strong>RPC ports disappear</strong> (the lab keeps allow rules for Terminal Services and WSMan to stay connected). John: with those ports open, <strong>lateral movement is possible</strong> and Pass-the-Hash works very well.</p>
+<p><strong>③ Confirm with Pass-the-Hash</strong></p>
+<ul>
+<li><strong>Firewall off</strong> → the remote session succeeds; dumping the hash and re-authenticating <strong>with the hash</strong> also works. "It doesn't matter how strong someone's password is — if I've got your hash, I can authenticate as you."</li>
+<li><strong>Firewall on</strong> → the same attack tries port <strong>445</strong> and is <strong>dead in the water</strong>.</li>
+</ul>
+<blockquote>
+<p>Shutting down port 445 alone <strong>severely restricts lateral movement</strong> from that host — specifically <strong>Pass-the-Hash-style</strong> movement.</p>
+</blockquote>
+<div class="admonition note">
+<p class="admonition-title">💡 Note (added)</p>
+<p>With Windows Firewall auditing on, blocked connections log Security <strong>5157</strong> (Windows Filtering Platform blocked a connection). But as John said on Day 2, firewall logging is noisy — in practice log only <strong>meaningful rules</strong> (e.g. workstation-to-workstation 445/135) or watch from the network side (internal↔internal SMB in Zeek <code>conn.log</code>). Related: <a href="../../../../adversary/pass-the-hash/">Pass-the-Hash</a> · <a href="../../../../adversary/psexec-smb/">PsExec &amp; SMB</a>.</p>
+</div>
+<h3 id="responder-prep">Firewalls aren't the end — preparing the Responder lab<a class="headerlink" href="#responder-prep" title="Permanent link">¶</a></h3>
+<p>On the same network an attacker can redirect a target's traffic with <strong>ARP cache poisoning</strong>, <strong>LLMNR</strong> or <strong>WPAD</strong> and capture its authentication — Day 1's <strong>Responder</strong>. That long-dead lab is back thanks to the new environment.</p>
+<ul>
+<li>MetaCTF → <strong>Cloud Labs</strong> → code <strong><code>antilab</code></strong> → Submit. <strong>Two free lab hours every week</strong> (the first "Free Lab Friday").</li>
+<li>The attacker VM moved <strong>from Kali to Ubuntu</strong> (more flexible for Docker / honeypot labs ahead; Kali's tools install easily on it). The Windows VM is <strong>Windows Server 2025</strong> (AD capable; nested virtualisation and Docker planned).</li>
+<li>Flow: run Responder on Ubuntu on interface <strong><code>ens5</code></strong> → in Windows File Explorer browse to <code>\\&lt;Linux IP&gt;</code> and enter <code>password</code> (lower-case) → Responder shows the <strong>captured credentials</strong> → then crack them.</li>
+</ul>
+<p>The walkthrough was deferred to <strong>Day 4 morning</strong>, and John reposted an updated handout that includes the cracking step.</p>
+<div class="admonition note">
+<p class="admonition-title">💡 Note (added)</p>
+<p>The fix is Day 1's: <strong>disable LLMNR / NBT-NS</strong>, <strong>enforce SMB signing</strong>, plus this section's <strong>workstation-to-workstation blocking</strong>. <a href="../../../../adversary/llmnr-ntlm-relay/">LLMNR &amp; NTLM relay</a></p>
+</div>
+<hr>
+<h2 id="ama">8. From the AMA<a class="headerlink" href="#ama" title="Permanent link">¶</a></h2>
+<ul>
+<li><strong>Does the old trick of swapping a logon-screen accessibility tool (Utilman, Sticky Keys <code>sethc</code>, Magnifier) for a command prompt still work?</strong> → <strong>Yes</strong> — and notably you come in as <strong>SYSTEM</strong>. (This is the "accessibility features" item on the EDR card.)</li>
+<li><strong>Still using Kali?</strong> → John is "old school" and likes purpose-built Kali, but BHIS testers increasingly use a <strong>home-grown build</strong>.</li>
+<li><strong>What next after this course?</strong> → the next in the cycle, <strong>Active Defense and Cyber Deception</strong>.</li>
+<li><strong>Go-to cyber news?</strong> → BHIS's internal team that constantly shares news (and a Teams room), plus <strong>Simply Cyber's (Jerry) Daily Cyber Threat Brief</strong>.</li>
+<li><strong>Best home antivirus?</strong> → "Believe it or not, straight-up <strong>Windows Defender</strong> is about as good as you'll get."</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">💡 Note (added) — detecting / preventing accessibility-feature abuse</p>
+<p>MITRE <strong>T1546.008</strong>, typically used with direct disk access (physical access, boot media).</p>
+<ul>
+<li>Check <code>C:\Windows\System32\</code> <code>sethc.exe</code>, <code>utilman.exe</code>, <code>osk.exe</code>, <code>Magnify.exe</code> <strong>hashes against originals</strong> (an original name of <code>cmd.exe</code> is conclusive)</li>
+<li>Watch <strong>Image File Execution Options</strong> for a new <code>Debugger</code> value on those binaries (Sysmon <strong>13</strong>)</li>
+<li><strong>Full-disk encryption</strong> (BitLocker) prevents offline file swaps</li>
+<li><code>cmd.exe</code> spawned as a child of <code>winlogon.exe</code> at the logon screen (Sysmon <strong>1</strong>) is a strong signal</li>
+</ul>
+</div>
+<hr>
+<h2 id="summary">Day 3 summary<a class="headerlink" href="#summary" title="Permanent link">¶</a></h2>
+<table>
+<thead>
+<tr>
+<th>Topic</th>
+<th>Key point</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sysmon lab review</td>
+<td>name ≠ original name (1), DNS query (22), remote thread into LSASS (8 = hash-dump signal)</td>
+</tr>
+<tr>
+<td>Pass-the-Hash</td>
+<td>a hash is enough to log in — defend with LAPS, lateral-movement blocking, credential protection</td>
+</tr>
+<tr>
+<td>EDR &amp; defence in depth</td>
+<td>overlapping controls <strong>multiply</strong>; AI is only as good as its data</td>
+</tr>
+<tr>
+<td>Threat emulation</td>
+<td>trust but verify; test in <strong>alert-only, non-blocking</strong> mode; don't over-specify rules</td>
+</tr>
+<tr>
+<td>AI-written detections</td>
+<td>AI drafts; humans <strong>back-test on history and test against a live attack</strong></td>
+</tr>
+<tr>
+<td>BloodHound</td>
+<td>standard user → Domain Admin paths; never make Domain Users local admins</td>
+</tr>
+<tr>
+<td>Atomic Red Team lab</td>
+<td>technique-specific vs generic alerts; factor in <strong>log lag</strong>; gap analysis</td>
+</tr>
+<tr>
+<td>Host firewalls</td>
+<td>block workstation-to-workstation → remove the lateral-movement category</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition quote">
+<p>EDR is powerful but not enough alone — multiply the attacker's cost with overlapping controls, and keep finding and closing detection gaps with Atomic Red Team and hand-built emulation. And stop hash-fuelled lateral movement as a whole category with host firewalls that block workstation-to-workstation traffic.</p>
+</div>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">¶</a></h2>
+<ul>
+<li><a href="https://www.antisyphontraining.com/">Antisyphon Training</a> · <a href="https://www.blackhillsinfosec.com/">Black Hills Information Security</a></li>
+<li><a href="https://github.com/redcanaryco/atomic-red-team">Atomic Red Team</a> · <a href="https://github.com/redcanaryco/invoke-atomicredteam">Invoke-AtomicRedTeam</a> · <a href="https://caldera.mitre.org/">MITRE Caldera</a> · <a href="https://github.com/SpecterOps/BloodHound">BloodHound</a> · <a href="https://github.com/SigmaHQ/sigma">Sigma</a></li>
+<li><a href="https://attack.mitre.org/techniques/T1550/002/">MITRE ATT&amp;CK — T1550.002 Pass the Hash</a> · <a href="https://attack.mitre.org/techniques/T1218/010/">T1218.010 Regsvr32</a> · <a href="https://attack.mitre.org/techniques/T1546/008/">T1546.008 Accessibility Features</a></li>
+<li>Related: <a href="../../../../adversary/lsass-dumping/">LSASS dumping</a> · <a href="../../../../adversary/pass-the-hash/">Pass-the-Hash</a> · <a href="../../../../adversary/psexec-smb/">PsExec &amp; SMB</a> · <a href="../../../../adversary/persistence/">Persistence</a> · <a href="../../../../adversary/lolbins/">LOLBins</a> · <a href="../../../../adversary/llmnr-ntlm-relay/">LLMNR &amp; NTLM relay</a> · <a href="../../../../basics/windows-event-ids/">Windows Event IDs</a></li>
+</ul>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden="">
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"></path></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer">
+        
+          
+          <a href="../day-2/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Day 2 — Egress Traffic Analysis and Logging">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Day 2 — Egress Traffic Analysis and Logging
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../../blue-team-essentials/" class="md-footer__link md-footer__link--next" aria-label="Next: Blue Team Essentials">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Blue Team Essentials
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"></path></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Personal study notes. Not official guidance of any organisation.
+    </div>
+  
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/DFIDwiz-sketch" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.footer", "search.suggest", "search.highlight", "search.share", "toc.follow", "content.code.copy", "content.code.annotate", "content.action.edit", "content.action.view", "content.tabs.link", "content.tooltips"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../../../assets/lang-switch.js"></script>
+      
+    
+  
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(()=>{ lightbox.reload(); });
+</script></body></html>
