@@ -5442,6 +5442,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
       
         <li class="md-nav__item">
+  <a href="#loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The per-machine loop
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#enumeration-checklist" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -5500,7 +5511,7 @@
   <a href="#notes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Notes &amp; personal cheat sheet
+        Notes and a personal cheat sheet
       
     </span>
   </a>
@@ -5512,6 +5523,17 @@
     <span class="md-ellipsis">
       
         Workflow setup
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mindset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mindset
       
     </span>
   </a>
@@ -5738,6 +5760,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
       
         <li class="md-nav__item">
+  <a href="#loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The per-machine loop
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#enumeration-checklist" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -5796,7 +5829,7 @@
   <a href="#notes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Notes &amp; personal cheat sheet
+        Notes and a personal cheat sheet
       
     </span>
   </a>
@@ -5808,6 +5841,17 @@
     <span class="md-ellipsis">
       
         Workflow setup
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mindset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mindset
       
     </span>
   </a>
@@ -5882,43 +5926,63 @@
 
 <h1 id="methodology-habits">Methodology &amp; Habits<a class="headerlink" href="#methodology-habits" title="Permanent link">¶</a></h1>
 <div class="dfir-meta">
-<p><strong>Applies to:</strong> every machine · <strong>Last updated:</strong> 2026-10-22</p>
+<p><strong>Applies to:</strong> every machine · <strong>Last updated:</strong> 2026-10-23</p>
 </div>
 <div class="admonition abstract">
 <p class="admonition-title">In one sentence</p>
-<p>Most lost points in write-ups come from missed enumeration or time sunk into rabbit holes, not from missing advanced techniques.</p>
+<p>Most lost points in write-ups come from missed enumeration or time sunk into rabbit holes — not from missing an advanced technique.</p>
 </div>
-<div class="admonition info">
-<p class="admonition-title">Skeleton page</p>
-<p>Structure only for now — the headings below are the plan. Fill each section as you study.</p>
+<div class="admonition note">
+<p class="admonition-title">How this page is organised</p>
+<p>The habits that turn knowledge into points under a clock. Build these during practice so they run on autopilot in the exam.</p>
 </div>
+<h2 id="loop">The per-machine loop<a class="headerlink" href="#loop" title="Permanent link">¶</a></h2>
+<pre class="mermaid"><code>flowchart LR
+    S[Scan all ports] --&gt; E[Enumerate each service]
+    E --&gt; F[Foothold: simple ideas first]
+    F --&gt; L[Local enumeration]
+    L --&gt; P[Privilege escalation]
+    P --&gt; D[Document as you go]</code></pre>
 <h2 id="enumeration-checklist">Enumeration checklist<a class="headerlink" href="#enumeration-checklist" title="Permanent link">¶</a></h2>
 <ul>
-<li>Full TCP, UDP, read all of the output</li>
+<li><strong>All ports, both protocols.</strong> Full TCP (<code>-p-</code>), then service/version on what's open. Don't forget a UDP scan of common ports — SNMP and others hide there.</li>
+<li><strong>Read all the output.</strong> The intended path is usually visible; the skill is noticing it, not finding something hidden.</li>
+<li><strong>Enumerate the boring things too.</strong> A generic-looking service or an empty-looking share is often the way in.</li>
 </ul>
 <h2 id="simple-first">Simple things first<a class="headerlink" href="#simple-first" title="Permanent link">¶</a></h2>
+<p>Before any exploit chain, try the cheap ideas:</p>
 <ul>
-<li>Default credentials, password reuse, anonymous / blank logins</li>
+<li>Default credentials (<code>admin:admin</code>, product defaults), the username as the password, anonymous / blank logins.</li>
+<li>Password reuse — a credential from one box or user tried everywhere.</li>
+<li>"Nmap doesn't lie" — if a port is open, something is listening; find out what before assuming it's a dead end.</li>
 </ul>
 <h2 id="parallel">Don't wait on scans<a class="headerlink" href="#parallel" title="Permanent link">¶</a></h2>
-<ul>
-<li>Research what you have found while scans run</li>
-</ul>
+<p>Long scans run in the background while you work. Found a WordPress plugin? Research it now; don't wait for the scan to finish. Keep two or three threads of investigation going at once.</p>
 <h2 id="rabbit-holes">Rabbit holes<a class="headerlink" href="#rabbit-holes" title="Permanent link">¶</a></h2>
 <ul>
-<li>Time-boxing and when to move on</li>
+<li><strong>Time-box.</strong> Give a lead a fixed budget (say 30–45 min). If it hasn't moved, note it and switch targets — come back with fresh eyes.</li>
+<li><strong>Not every hard thing is the path.</strong> OffSec deliberately includes distractions. Good enumeration is also about <em>ruling things out</em>.</li>
+<li><strong>Backtracking is exhausting</strong> — enumerate fully the first time so you don't have to redo a box at hour 15.</li>
 </ul>
 <h2 id="metasploit">Metasploit budget<a class="headerlink" href="#metasploit" title="Permanent link">¶</a></h2>
+<p>One target only, locked in once used (<a href="../exam-format/#metasploit">exam rule</a>). Spend it where it helps most — many people save it for a privilege-escalation suggestion on a single stubborn box rather than an initial foothold. <code>msfvenom</code> and <code>multi/handler</code> are allowed everywhere.</p>
+<h2 id="notes">Notes and a personal cheat sheet<a class="headerlink" href="#notes" title="Permanent link">¶</a></h2>
 <ul>
-<li>One target only — where to spend it</li>
-</ul>
-<h2 id="notes">Notes &amp; personal cheat sheet<a class="headerlink" href="#notes" title="Permanent link">¶</a></h2>
-<ul>
-<li>Per-box note structure; a cheat sheet built from your own mistakes</li>
+<li><strong>One page per machine</strong>, same structure every time: scan → enumeration → initial access → local enumeration → privilege escalation → flags. This <em>is</em> your report draft — see <a href="../reporting/">Reporting</a>.</li>
+<li><strong>Screenshot as you go</strong>, including the proof requirements, so you're not re-hacking a box to get a missing screenshot.</li>
+<li><strong>Build a cheat sheet from your own mistakes</strong>, not generic tips — the command you forgot, the step you skipped. That is the one resource no course gives you.</li>
 </ul>
 <h2 id="workflow">Workflow setup<a class="headerlink" href="#workflow" title="Permanent link">¶</a></h2>
 <ul>
-<li>Variables for IPs and domains, folder layout, scripts</li>
+<li>Variables for target IP, your IP and the domain, so pivoting to a new box is one edit.</li>
+<li>A tidy folder per target; one terminal multiplexer (tmux) tab per machine.</li>
+<li>Your scripts, wordlists and payloads in known places before the exam starts.</li>
+</ul>
+<h2 id="mindset">Mindset<a class="headerlink" href="#mindset" title="Permanent link">¶</a></h2>
+<ul>
+<li>Feeling underprepared the night before is normal. If you've done the work, that feeling is a liar.</li>
+<li>Action kills anxiety — once the first scan is running, muscle memory takes over.</li>
+<li>Take real breaks and eat lightly. Burnout is a documented exam factor, not an excuse. Most breakthroughs come after stepping away.</li>
 </ul>
 <h2 id="related-pages">Related pages<a class="headerlink" href="#related-pages" title="Permanent link">¶</a></h2>
 <ul>
