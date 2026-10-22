@@ -85,6 +85,14 @@ Use the **search bar** (press ++slash++ or ++s++) — it is usually faster than 
 
     [:octicons-arrow-right-24: Pentesting](pentesting/index.md)
 
+-   :material-certificate:{ .lg .middle } **OSCP+**
+
+    ---
+
+    OSCP+ exam prep hub — exam format, Active Directory, pivoting, privesc, web, reporting, practice labs and exam-day strategy.
+
+    [:octicons-arrow-right-24: OSCP+](oscp/index.md)
+
 -   :material-toolbox:{ .lg .middle } **Tools**
 
     ---

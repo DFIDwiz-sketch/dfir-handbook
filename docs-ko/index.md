@@ -85,6 +85,14 @@ hide:
 
     [:octicons-arrow-right-24: 펜테스팅](pentesting/index.md)
 
+-   :material-certificate:{ .lg .middle } **OSCP+**
+
+    ---
+
+    OSCP+ 시험 준비 허브 — 시험 구조, Active Directory, 피벗팅, 권한 상승, 웹, 리포트, 실습 랩, 시험 당일 전략.
+
+    [:octicons-arrow-right-24: OSCP+](oscp/index.md)
+
 -   :material-toolbox:{ .lg .middle } **도구**
 
     ---
