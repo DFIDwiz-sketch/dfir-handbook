@@ -101,6 +101,14 @@ tags:
 
     [:octicons-arrow-right-24: 실습 랩](practice-labs.md)
 
+-   :material-flask-outline:{ .lg .middle } **랩 실습**
+
+    ---
+
+    홈 랩에서 직접 돌린 전체 예제 — 공격을 끝까지, 그다음 탐지(Splunk / Zeek). 첫 주제: Kerberoasting.
+
+    [:octicons-arrow-right-24: 랩 실습](labs/index.md)
+
 </div>
 
 ## 4. 시험 당일과 계획 { #4-exam-day-and-plan }

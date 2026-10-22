@@ -101,6 +101,14 @@ tags:
 
     [:octicons-arrow-right-24: Practice labs](practice-labs.md)
 
+-   :material-flask-outline:{ .lg .middle } **Lab walkthroughs**
+
+    ---
+
+    Full worked examples from my home lab — attack end to end, then detect it (Splunk / Zeek). First up: Kerberoasting.
+
+    [:octicons-arrow-right-24: Lab walkthroughs](labs/index.md)
+
 </div>
 
 ## 4. Exam day and plan
