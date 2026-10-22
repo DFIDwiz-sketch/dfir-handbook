@@ -26,6 +26,14 @@ title: 트레이닝
 
     [:octicons-arrow-right-24: Blue Team Essentials](blue-team-essentials/index.md)
 
+-   :material-certificate:{ .lg .middle } **OffSec OSCP+ (PEN-200)**
+
+    ---
+
+    OSCP+ 시험 준비 허브 — 시험 구조, Active Directory, 피벗팅, 권한 상승, 웹, 리포트, 실습 랩, 시험 당일 전략.
+
+    [:octicons-arrow-right-24: OSCP+](oscp/index.md)
+
 </div>
 
 !!! note "이 섹션의 성격"

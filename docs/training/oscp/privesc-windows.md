@@ -45,9 +45,9 @@ tags:
 
 ## Related pages
 
-- [Token Impersonation / Potato](../adversary/token-impersonation-potato.md) · [UAC Bypass](../adversary/uac-bypass.md)
-- [SAM / NTDS Extraction](../adversary/sam-ntds-extraction.md) · [LSASS Dumping](../adversary/lsass-dumping.md)
-- [Registry keys](../windows/registry-keys.md) · [Event logs](../windows/event-logs.md)
+- [Token Impersonation / Potato](../../adversary/token-impersonation-potato.md) · [UAC Bypass](../../adversary/uac-bypass.md)
+- [SAM / NTDS Extraction](../../adversary/sam-ntds-extraction.md) · [LSASS Dumping](../../adversary/lsass-dumping.md)
+- [Registry keys](../../windows/registry-keys.md) · [Event logs](../../windows/event-logs.md)
 
 ## References
 

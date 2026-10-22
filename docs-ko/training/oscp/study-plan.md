@@ -42,4 +42,4 @@ tags:
 
 ## 관련 페이지 { #related-pages }
 
-- [실습 랩](practice-labs.md) · [시험 당일 전략](exam-day.md) · [학습 로드맵](../learning/roadmap.md)
+- [실습 랩](practice-labs.md) · [시험 당일 전략](exam-day.md) · [학습 로드맵](../../learning/roadmap.md)

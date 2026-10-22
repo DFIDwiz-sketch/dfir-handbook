@@ -49,8 +49,8 @@ tags:
 
 ## 관련 페이지 { #related-pages }
 
-- [Linux 인증과 히스토리](../linux/auth-and-history.md) · [Linux 지속성](../linux/persistence.md) · [Linux 로그와 트리아지](../linux/logs-and-triage.md)
-- [Linux 명령어](../basics/linux-commands.md)
+- [Linux 인증과 히스토리](../../linux/auth-and-history.md) · [Linux 지속성](../../linux/persistence.md) · [Linux 로그와 트리아지](../../linux/logs-and-triage.md)
+- [Linux 명령어](../../basics/linux-commands.md)
 
 ## 참고 자료 { #references }
 

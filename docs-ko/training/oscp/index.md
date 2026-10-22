@@ -146,6 +146,6 @@ tags:
 
 !!! info "여기에 페이지 추가하기"
     ```bash
-    python new.py oscp/<name> -t concept
+    python new.py training/oscp/<name> -t concept
     ```
-    새 페이지는 메뉴 맨 끝에 붙습니다 (`.pages` 의 `...`). **공부 항목** 그룹 안에 넣으려면 `docs/oscp/.pages` 와 `docs-ko/oscp/.pages` 양쪽의 그 그룹에 파일 이름을 추가하세요.
+    새 페이지는 메뉴 맨 끝에 붙습니다 (`.pages` 의 `...`). **공부 항목** 그룹 안에 넣으려면 `docs/training/oscp/.pages` 와 `docs-ko/training/oscp/.pages` 양쪽의 그 그룹에 파일 이름을 추가하세요.

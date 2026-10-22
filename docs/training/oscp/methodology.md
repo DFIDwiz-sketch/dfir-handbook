@@ -46,7 +46,7 @@ tags:
 
 ## Related pages
 
-- [Nmap](../pentesting/recon/nmap/index.md) · [Reporting](reporting.md) · [Exam-day strategy](exam-day.md)
+- [Nmap](../../pentesting/recon/nmap/index.md) · [Reporting](reporting.md) · [Exam-day strategy](exam-day.md)
 
 ## References
 

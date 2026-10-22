@@ -42,4 +42,4 @@ tags:
 
 ## Related pages
 
-- [Practice labs](practice-labs.md) · [Exam-day strategy](exam-day.md) · [Learning roadmap](../learning/roadmap.md)
+- [Practice labs](practice-labs.md) · [Exam-day strategy](exam-day.md) · [Learning roadmap](../../learning/roadmap.md)

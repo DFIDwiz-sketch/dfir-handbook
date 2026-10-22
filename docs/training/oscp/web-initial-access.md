@@ -48,8 +48,8 @@ tags:
 
 ## Related pages
 
-- [Nmap](../pentesting/recon/nmap/index.md) · [Well-known ports](../basics/well-known-ports.md) · [HTTP status codes](../basics/http-status-codes.md)
-- [Red Team: Initial Access](../redteam/initial-access.md) · [Phishing delivery](../adversary/phishing-delivery.md)
+- [Nmap](../../pentesting/recon/nmap/index.md) · [Well-known ports](../../basics/well-known-ports.md) · [HTTP status codes](../../basics/http-status-codes.md)
+- [Red Team: Initial Access](../../redteam/initial-access.md) · [Phishing delivery](../../adversary/phishing-delivery.md)
 
 ## References
 

@@ -49,7 +49,7 @@ tags:
 
 ## 관련 페이지 { #related-pages }
 
-- [나의 공부 계획](study-plan.md) · [학습 자료](../learning/resources.md)
+- [나의 공부 계획](study-plan.md) · [학습 자료](../../learning/resources.md)
 
 ## 참고 자료 { #references }
 

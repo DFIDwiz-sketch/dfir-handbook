@@ -57,10 +57,10 @@ tags:
 
 같은 기법의 탐지 쪽 내용:
 
-- [Kerberoasting](../adversary/kerberoasting.md) · [AS-REP Roasting](../adversary/asrep-roasting.md) · [Pass-the-Hash](../adversary/pass-the-hash.md)
-- [DCSync](../adversary/dcsync.md) · [Golden & Silver Tickets](../adversary/golden-silver-tickets.md) · [AD CS 악용](../adversary/adcs-abuse.md)
-- [LLMNR / NTLM Relay](../adversary/llmnr-ntlm-relay.md) · [LSASS 덤프](../adversary/lsass-dumping.md) · [SAM / NTDS 추출](../adversary/sam-ntds-extraction.md)
-- [PsExec / SMB](../adversary/psexec-smb.md) · [WMI / WinRM](../adversary/wmi-winrm.md) · [RDP](../adversary/rdp.md)
+- [Kerberoasting](../../adversary/kerberoasting.md) · [AS-REP Roasting](../../adversary/asrep-roasting.md) · [Pass-the-Hash](../../adversary/pass-the-hash.md)
+- [DCSync](../../adversary/dcsync.md) · [Golden & Silver Tickets](../../adversary/golden-silver-tickets.md) · [AD CS 악용](../../adversary/adcs-abuse.md)
+- [LLMNR / NTLM Relay](../../adversary/llmnr-ntlm-relay.md) · [LSASS 덤프](../../adversary/lsass-dumping.md) · [SAM / NTDS 추출](../../adversary/sam-ntds-extraction.md)
+- [PsExec / SMB](../../adversary/psexec-smb.md) · [WMI / WinRM](../../adversary/wmi-winrm.md) · [RDP](../../adversary/rdp.md)
 - 다음 단계: [피벗팅과 터널링](pivoting.md)
 
 ## 참고 자료 { #references }

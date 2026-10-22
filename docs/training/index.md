@@ -26,6 +26,14 @@ Notes from courses and training I've taken, re-worked into my own reference and 
 
     [:octicons-arrow-right-24: Blue Team Essentials](blue-team-essentials/index.md)
 
+-   :material-certificate:{ .lg .middle } **OffSec OSCP+ (PEN-200)**
+
+    ---
+
+    OSCP+ exam prep hub — exam format, Active Directory, pivoting, privesc, web, reporting, practice labs and exam-day strategy.
+
+    [:octicons-arrow-right-24: OSCP+](oscp/index.md)
+
 </div>
 
 !!! note "About these pages"

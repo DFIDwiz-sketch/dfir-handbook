@@ -45,9 +45,9 @@ tags:
 
 ## 관련 페이지 { #related-pages }
 
-- [토큰 가장 / Potato](../adversary/token-impersonation-potato.md) · [UAC 우회](../adversary/uac-bypass.md)
-- [SAM / NTDS 추출](../adversary/sam-ntds-extraction.md) · [LSASS 덤프](../adversary/lsass-dumping.md)
-- [레지스트리 키](../windows/registry-keys.md) · [이벤트 로그](../windows/event-logs.md)
+- [토큰 가장 / Potato](../../adversary/token-impersonation-potato.md) · [UAC 우회](../../adversary/uac-bypass.md)
+- [SAM / NTDS 추출](../../adversary/sam-ntds-extraction.md) · [LSASS 덤프](../../adversary/lsass-dumping.md)
+- [레지스트리 키](../../windows/registry-keys.md) · [이벤트 로그](../../windows/event-logs.md)
 
 ## 참고 자료 { #references }
 

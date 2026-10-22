@@ -49,8 +49,8 @@ tags:
 
 ## Related pages
 
-- [Linux auth & history](../linux/auth-and-history.md) · [Linux persistence](../linux/persistence.md) · [Linux logs & triage](../linux/logs-and-triage.md)
-- [Linux commands](../basics/linux-commands.md)
+- [Linux auth & history](../../linux/auth-and-history.md) · [Linux persistence](../../linux/persistence.md) · [Linux logs & triage](../../linux/logs-and-triage.md)
+- [Linux commands](../../basics/linux-commands.md)
 
 ## References
 

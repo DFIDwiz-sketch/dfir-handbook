@@ -57,10 +57,10 @@ tags:
 
 Detection side of the same techniques:
 
-- [Kerberoasting](../adversary/kerberoasting.md) · [AS-REP Roasting](../adversary/asrep-roasting.md) · [Pass-the-Hash](../adversary/pass-the-hash.md)
-- [DCSync](../adversary/dcsync.md) · [Golden & Silver Tickets](../adversary/golden-silver-tickets.md) · [AD CS Abuse](../adversary/adcs-abuse.md)
-- [LLMNR / NTLM Relay](../adversary/llmnr-ntlm-relay.md) · [LSASS Dumping](../adversary/lsass-dumping.md) · [SAM / NTDS Extraction](../adversary/sam-ntds-extraction.md)
-- [PsExec / SMB](../adversary/psexec-smb.md) · [WMI / WinRM](../adversary/wmi-winrm.md) · [RDP](../adversary/rdp.md)
+- [Kerberoasting](../../adversary/kerberoasting.md) · [AS-REP Roasting](../../adversary/asrep-roasting.md) · [Pass-the-Hash](../../adversary/pass-the-hash.md)
+- [DCSync](../../adversary/dcsync.md) · [Golden & Silver Tickets](../../adversary/golden-silver-tickets.md) · [AD CS Abuse](../../adversary/adcs-abuse.md)
+- [LLMNR / NTLM Relay](../../adversary/llmnr-ntlm-relay.md) · [LSASS Dumping](../../adversary/lsass-dumping.md) · [SAM / NTDS Extraction](../../adversary/sam-ntds-extraction.md)
+- [PsExec / SMB](../../adversary/psexec-smb.md) · [WMI / WinRM](../../adversary/wmi-winrm.md) · [RDP](../../adversary/rdp.md)
 - Next step in the chain: [Pivoting & tunnelling](pivoting.md)
 
 ## References

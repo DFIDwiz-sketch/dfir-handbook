@@ -46,7 +46,7 @@ tags:
 
 ## 관련 페이지 { #related-pages }
 
-- [Nmap](../pentesting/recon/nmap/index.md) · [리포트](reporting.md) · [시험 당일 전략](exam-day.md)
+- [Nmap](../../pentesting/recon/nmap/index.md) · [리포트](reporting.md) · [시험 당일 전략](exam-day.md)
 
 ## 참고 자료 { #references }
 

@@ -48,8 +48,8 @@ tags:
 
 ## 관련 페이지 { #related-pages }
 
-- [Nmap](../pentesting/recon/nmap/index.md) · [잘 알려진 포트](../basics/well-known-ports.md) · [HTTP 상태 코드](../basics/http-status-codes.md)
-- [레드팀: 초기 침투](../redteam/initial-access.md) · [피싱 전달](../adversary/phishing-delivery.md)
+- [Nmap](../../pentesting/recon/nmap/index.md) · [잘 알려진 포트](../../basics/well-known-ports.md) · [HTTP 상태 코드](../../basics/http-status-codes.md)
+- [레드팀: 초기 침투](../../redteam/initial-access.md) · [피싱 전달](../../adversary/phishing-delivery.md)
 
 ## 참고 자료 { #references }
 

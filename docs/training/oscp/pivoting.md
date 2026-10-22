@@ -51,8 +51,8 @@ tags:
 
 ## Related pages
 
-- [Nmap](../pentesting/recon/nmap/index.md) — scanning through a tunnel
-- [Network](../network/index.md) — what tunnelled traffic looks like to a defender
+- [Nmap](../../pentesting/recon/nmap/index.md) — scanning through a tunnel
+- [Network](../../network/index.md) — what tunnelled traffic looks like to a defender
 - [Active Directory](active-directory.md)
 
 ## References

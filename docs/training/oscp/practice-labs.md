@@ -49,7 +49,7 @@ tags:
 
 ## Related pages
 
-- [Study plan](study-plan.md) · [Learning resources](../learning/resources.md)
+- [Study plan](study-plan.md) · [Learning resources](../../learning/resources.md)
 
 ## References
 

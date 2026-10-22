@@ -51,8 +51,8 @@ tags:
 
 ## 관련 페이지 { #related-pages }
 
-- [Nmap](../pentesting/recon/nmap/index.md) — 터널을 통한 스캔
-- [네트워크](../network/index.md) — 방어자 눈에 터널 트래픽이 어떻게 보이는지
+- [Nmap](../../pentesting/recon/nmap/index.md) — 터널을 통한 스캔
+- [네트워크](../../network/index.md) — 방어자 눈에 터널 트래픽이 어떻게 보이는지
 - [Active Directory](active-directory.md)
 
 ## 참고 자료 { #references }

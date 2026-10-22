@@ -146,6 +146,6 @@ tags:
 
 !!! info "Adding a page here"
     ```bash
-    python new.py oscp/<name> -t concept
+    python new.py training/oscp/<name> -t concept
     ```
-    New pages land at the end of the menu (the `...` in `.pages`). To put one inside **Study areas**, add it to that group in `docs/oscp/.pages` and `docs-ko/oscp/.pages`.
+    New pages land at the end of the menu (the `...` in `.pages`). To put one inside **Study areas**, add it to that group in `docs/training/oscp/.pages` and `docs-ko/training/oscp/.pages`.
