@@ -7,7 +7,7 @@ tags:
 # OSCP+ { #oscp }
 
 <div class="dfir-meta" markdown>
-**시험:** OffSec PEN-200 → OSCP / OSCP+ · **상태:** 준비 중 · **최종 수정:** 2026-10-22
+**시험:** OffSec PEN-200 → OSCP / OSCP+ · **상태:** 준비 중 · **최종 수정:** 2026-10-23
 </div>
 
 !!! abstract "이 섹션은"
