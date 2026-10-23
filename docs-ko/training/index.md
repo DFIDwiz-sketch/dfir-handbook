@@ -34,7 +34,16 @@ title: 트레이닝
 
     [:octicons-arrow-right-24: OSCP+](oscp/index.md)
 
+-   :material-console:{ .lg .middle } **Silver C2**
+
+    ---
+
+    A Practical Introduction with Silver — C2 기본 원리, Sliver 구성 요소와 기본 명령어, Session·Beacon 비교, 확인 문제와 계산 예제. 1~3강을 영어와 한국어로 제공합니다.
+
+    [:octicons-arrow-right-24: Silver C2](silver-c2/index.md)
+
 </div>
 
 !!! note "이 섹션의 성격"
     강사의 말과 제가 덧붙인 보충을 구분해 적습니다. **💡 보충 (강의 외)** 표시는 강의에 없던 추가 설명이고, **(재구성)** 표시는 강사가 화면으로만 보여 주고 소리 내어 읽지 않아 제가 일반적인 형태로 복원한 명령어입니다. 모두 개인 학습 노트이며 어떤 기관의 공식 지침도 아닙니다.
+

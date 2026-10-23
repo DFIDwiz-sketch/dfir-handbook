@@ -34,7 +34,16 @@ Notes from courses and training I've taken, re-worked into my own reference and 
 
     [:octicons-arrow-right-24: OSCP+](oscp/index.md)
 
+-   :material-console:{ .lg .middle } **Silver C2**
+
+    ---
+
+    A Practical Introduction with Silver — C2 fundamentals, Sliver components and basic commands, sessions versus beacons, and worked review questions. Lessons 1–3 are available in English and Korean.
+
+    [:octicons-arrow-right-24: Silver C2](silver-c2/index.md)
+
 </div>
 
 !!! note "About these pages"
     These are personal study notes, not official guidance of any organisation. **💡 Note (added)** marks my own additions beyond the lecture; **(reconstructed)** marks commands the instructor only showed on screen, written out in a generic form — match them to the actual lab handout.
+
