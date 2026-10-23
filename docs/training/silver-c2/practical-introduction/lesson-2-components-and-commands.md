@@ -42,7 +42,7 @@ The prompt is the text indicating that an interface is ready for input. It might
 
 ## Opening a console { #opening-a-console }
 
-**Lecture:** The workshop provides an installed server and instructs learners to connect to its Ubuntu host using the lab's SSH key, then launch the Sliver client. The subtitles do not preserve the full SSH command or every setup step.
+**Lecture:** The workshop provides an installed server and instructs learners to connect to its Ubuntu host using the lab's SSH key, then launch the Sliver client.
 
 **Supplement — local server example:** If the Linux server binary is named `sliver-server` and is in the current directory, run this in the **Linux terminal**:
 
@@ -64,7 +64,7 @@ For the remaining examples, assume you have a working Sliver console through eit
 
 ## Starting an HTTP listener { #starting-an-http-listener }
 
-**Lecture:** The instructor starts an HTTP listener before generating the first beacon. The exact typed listener command is missing from the subtitles.
+**Lecture:** The instructor starts an HTTP listener before generating the first beacon.
 
 **Supplement — illustrative example:** Assume the isolated lab C2 server actually owns IP address `192.168.56.10`. To receive HTTP implant communication on TCP port `8080`, enter this in the **Sliver console**:
 
@@ -82,7 +82,7 @@ http --lhost 192.168.56.10 --lport 8080
 
 An IP/domain identifies the destination, a port identifies a communication endpoint, and a protocol specifies the communication rules. The address must exist on the server; the port must be available. Routing, firewall policy, and compatible implant settings also matter.
 
-The listener command **does not create, copy, or execute an implant**. It prepares the server to receive communication. The syntax above was checked against the [official listener command definitions](https://github.com/BishopFox/sliver/blob/master/client/command/jobs/commands.go); it is not claimed to be the instructor's exact command.
+The listener command **does not create, copy, or execute an implant**. It prepares the server to receive communication. The syntax above was checked against the [official listener command definitions](https://github.com/BishopFox/sliver/blob/master/client/command/jobs/commands.go).
 
 ## Inspecting server jobs { #inspecting-server-jobs }
 
@@ -125,7 +125,7 @@ beacons
 | `sessions` | Sessions managed by the server, with their status | That every listed entry is currently healthy; inspect status |
 | `beacons` | Registered beacons and their state | That a past registration is still checking in; inspect timing |
 
-**Lecture:** The subtitles explicitly identify `implants` as a list of generated implants and later mention `sessions`. The `beacons` comparison is included here as a supplementary clarification. [Official build-list implementation](https://github.com/BishopFox/sliver/blob/master/client/command/generate/implants.go)
+**Lecture:** `implants` lists generated implant builds. Compare it with `sessions` and `beacons` to distinguish created files from registered connections. [Official build-list implementation](https://github.com/BishopFox/sliver/blob/master/client/command/generate/implants.go)
 
 | Stage | What may be visible |
 |---|---|

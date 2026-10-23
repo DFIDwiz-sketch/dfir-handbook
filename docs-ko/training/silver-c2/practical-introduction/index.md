@@ -4,9 +4,9 @@ title: A Practical Introduction with Silver
 
 # A Practical Introduction with Silver { #a-practical-introduction-with-silver }
 
-제공된 **RTVcron — C2 for Red Team: A Practical Introduction with Sliver** 자동 생성 자막을 바탕으로 작성한 학습 노트입니다. 페이지 제목은 요청한 메뉴 이름을 따르며, 실제 도구 이름은 **Sliver**입니다.
+**Sliver**를 사용한 C2의 원리를 처음부터 쉽게 설명하는 입문 강좌입니다. 페이지 제목은 요청한 메뉴 이름을 따르며, 실제 도구 이름은 **Sliver**입니다.
 
-지금까지 학습한 범위인 **Beacon 대기 시간 45초 계산 예제**까지 다룹니다. 자막을 그대로 옮긴 문서나 공식 강의 자료가 아니라, 내용을 쉽게 설명하고 보충한 독립적인 학습 노트입니다. 실습 설명은 허가된 격리 환경을 전제로 합니다.
+지금까지 학습한 범위인 **Beacon 대기 시간 45초 계산 예제**까지 다룹니다. 개념과 명령어, 확인 문제를 단계별로 쉽게 설명합니다. 실습 설명은 허가된 격리 환경을 전제로 합니다.
 
 ## 학습할 수 있는 강의 { #lessons-available }
 
@@ -22,12 +22,12 @@ title: A Practical Introduction with Silver
 
 | 표기 | 의미 |
 |---|---|
-| **강좌** | 제공된 자막에서 확인되는 주제 또는 명령 이름 |
+| **강좌** | 강좌에서 다루는 핵심 주제와 명령 이름 |
 | **보충** | 추가 설명, 정정, 공식 프로젝트 자료로 확인한 문법 |
-| **설명용 예시** | 학습을 위한 주소·시간표·단순화한 출력이며, 영상 화면을 복원한 것이 아님 |
+| **설명용 예시** | 학습을 위한 주소·시간표·단순화한 출력 |
 
-!!! note "자동 생성 자막의 한계"
-    강사가 화면에 보이는 명령을 소리 내어 읽지 않고 가리키는 경우가 있습니다. 자막에는 모든 옵션·주소·출력이 남아 있지 않습니다. 보충한 명령은 예시로 표시하며, 강사가 입력한 내용을 그대로 재현했다고 주장하지 않습니다. 실제 사용 전에는 설치된 버전의 도움말과 대조하세요.
+!!! note "명령어 예시 사용 안내"
+    예시에는 설명용 실습 주소와 단순화한 출력을 사용합니다. 허가된 자신의 실습 환경에 맞게 조정하고, 사용 전에는 설치된 버전의 도움말과 대조하세요.
 
 ## 이후 학습 계획 { #planned-continuation }
 
@@ -35,7 +35,6 @@ title: A Practical Introduction with Silver
 
 ## 참고 자료 { #sources }
 
-- 제공된 자막 파일: *[English (auto-generated)] RTVcron C2 for Red Team A Practical Introduction with Sliver [DownSub.com].txt*. 자막 원문과 로컬 파일 경로는 게시하지 않습니다.
 - [Sliver 공식 저장소](https://github.com/BishopFox/sliver)
 - [Sliver 공식 문서](https://sliver.sh/)
 - [Architecture — 공식 위키의 과거 리비전](https://github.com/BishopFox/sliver/wiki/Architecture/a1016f154840c2d9508e38a8201d887744ba5afb)

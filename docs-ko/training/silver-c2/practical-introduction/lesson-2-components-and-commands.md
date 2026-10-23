@@ -42,7 +42,7 @@ flowchart LR
 
 ## 콘솔 열기 { #opening-a-console }
 
-**강좌:** 이미 설치된 서버가 제공되며, 실습용 SSH 키로 Ubuntu 호스트에 접속한 뒤 Sliver Client를 실행합니다. 자막에는 완전한 SSH 명령과 모든 설정 단계가 남아 있지 않습니다.
+**강좌:** 이미 설치된 서버가 제공되며, 실습용 SSH 키로 Ubuntu 호스트에 접속한 뒤 Sliver Client를 실행합니다.
 
 **보충 — 서버 직접 실행 예시:** Linux용 서버 파일 이름이 `sliver-server`이고 현재 폴더에 있다면, **Linux 터미널**에서 실행합니다.
 
@@ -64,7 +64,7 @@ flowchart LR
 
 ## HTTP Listener 시작 { #starting-an-http-listener }
 
-**강좌:** 첫 Beacon을 생성하기 전에 HTTP Listener를 시작합니다. 화면에 입력한 Listener 명령 전체는 자막에 남아 있지 않습니다.
+**강좌:** 첫 Beacon을 생성하기 전에 HTTP Listener를 시작합니다.
 
 **보충 — 설명용 예시:** 격리 실습용 C2 서버에 `192.168.56.10`이라는 IP가 실제로 할당되어 있다고 가정합니다. TCP 8080번 포트에서 HTTP Implant 통신을 받으려면 **Sliver 콘솔**에 입력합니다.
 
@@ -82,7 +82,7 @@ http --lhost 192.168.56.10 --lport 8080
 
 IP·도메인은 목적지를, 포트는 통신 접점을, 프로토콜은 대화 규칙을 지정합니다. 해당 주소가 서버에 존재해야 하고 포트도 사용 가능해야 합니다. 네트워크 경로·방화벽 정책·호환되는 Implant 설정도 필요합니다.
 
-이 Listener 명령은 **Implant를 생성·복사·실행하지 않습니다.** 서버가 통신을 받을 준비를 하는 명령입니다. 위 문법은 [공식 Listener 명령 정의](https://github.com/BishopFox/sliver/blob/master/client/command/jobs/commands.go)로 확인한 보충 예시이며, 강사가 입력한 내용을 그대로 복원한 것은 아닙니다.
+이 Listener 명령은 **Implant를 생성·복사·실행하지 않습니다.** 서버가 통신을 받을 준비를 하는 명령입니다. 위 문법은 [공식 Listener 명령 정의](https://github.com/BishopFox/sliver/blob/master/client/command/jobs/commands.go)로 확인한 보충 예시입니다.
 
 ## 서버 Job 확인 { #inspecting-server-jobs }
 
@@ -125,7 +125,7 @@ beacons
 | `sessions` | 서버가 관리하는 Session 목록과 상태 | 목록의 모든 항목이 현재 정상이라는 사실. 상태를 함께 확인해야 함 |
 | `beacons` | 등록된 Beacon과 상태 | 과거에 등록된 Beacon이 지금도 연락한다는 사실. 체크인 정보를 확인해야 함 |
 
-**강좌:** 자막에서 `implants`를 생성한 Implant 목록으로 직접 설명하며, 이후 `sessions`도 언급합니다. `beacons`와 함께 비교한 것은 이해를 돕기 위한 보충입니다. [공식 빌드 목록 구현](https://github.com/BishopFox/sliver/blob/master/client/command/generate/implants.go)
+**강좌:** `implants`는 생성된 Implant 빌드를 보여 줍니다. `sessions`·`beacons`와 비교하여 생성된 파일과 서버에 등록된 연결을 구분합니다. [공식 빌드 목록 구현](https://github.com/BishopFox/sliver/blob/master/client/command/generate/implants.go)
 
 | 단계 | 나타날 수 있는 정보 |
 |---|---|

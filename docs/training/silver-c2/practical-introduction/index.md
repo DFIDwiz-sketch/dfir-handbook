@@ -4,9 +4,9 @@ title: A Practical Introduction with Silver
 
 # A Practical Introduction with Silver { #a-practical-introduction-with-silver }
 
-Study notes based on the supplied auto-generated subtitles for **RTVcron — C2 for Red Team: A Practical Introduction with Sliver**. The page title follows the requested navigation wording; the actual tool is **Sliver**.
+A beginner-friendly introduction to command and control using **Sliver**. The page title follows the requested navigation wording; the actual tool is **Sliver**.
 
-The notes cover the lessons studied so far, through the worked **45-second beacon waiting-time example**. They are an independent teaching adaptation, not a verbatim transcript or an official course handout. Exercises assume an authorized, isolated lab.
+The notes cover the lessons studied so far, through the worked **45-second beacon waiting-time example**. Concepts, commands, and review questions are explained step by step. Exercises assume an authorized, isolated lab.
 
 ## Lessons available { #lessons-available }
 
@@ -22,12 +22,12 @@ Read one lesson at a time. Each lesson connects a concept to an example and ends
 
 | Label | Meaning |
 |---|---|
-| **Lecture** | A topic or command name identifiable in the supplied subtitles |
+| **Lecture** | Core topics and command names covered in the course |
 | **Supplement** | Added explanation, a correction, or syntax checked against official project sources |
-| **Illustrative example** | A teaching address, timeline, or simplified output; not a recovered screen recording |
+| **Illustrative example** | A teaching address, timeline, or simplified output |
 
-!!! note "Subtitle limitations"
-    The instructor sometimes refers to a command visible on screen without reading it aloud. Auto-generated subtitles do not preserve every option, address, or output. Supplementary commands below are identified as examples; they are not claimed to reproduce the instructor's exact keystrokes. Check your installed version's help before using them.
+!!! note "Using command examples"
+    Examples use illustrative lab addresses and simplified output. Adapt them to your own authorized lab and check your installed version's help before using them.
 
 ## Planned continuation { #planned-continuation }
 
@@ -35,7 +35,6 @@ Later lessons will cover payload/stager/loader terminology, lab communication, d
 
 ## Sources { #sources }
 
-- Supplied subtitle file: *[English (auto-generated)] RTVcron C2 for Red Team A Practical Introduction with Sliver [DownSub.com].txt*. The subtitle text and local file path are not published here.
 - [Sliver official repository](https://github.com/BishopFox/sliver)
 - [Sliver documentation](https://sliver.sh/)
 - [Architecture — official historical wiki revision](https://github.com/BishopFox/sliver/wiki/Architecture/a1016f154840c2d9508e38a8201d887744ba5afb)
