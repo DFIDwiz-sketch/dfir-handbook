@@ -6,7 +6,7 @@ title: A Practical Introduction with Silver
 
 **Sliver**를 사용한 C2의 원리를 처음부터 쉽게 설명하는 입문 강좌입니다. 페이지 제목은 요청한 메뉴 이름을 따르며, 실제 도구 이름은 **Sliver**입니다.
 
-지금까지 학습한 범위인 **Beacon 대기 시간 45초 계산 예제**까지 다룹니다. 개념과 명령어, 확인 문제를 단계별로 쉽게 설명합니다. 실습 설명은 허가된 격리 환경을 전제로 합니다.
+**1~7강**에서 C2 기본 원리부터 파일 전달, 실행 확인, 백신·EDR 증거까지 다룹니다. 개념과 명령어, 확인 문제를 단계별로 쉽게 설명합니다. 실습 설명은 허가된 격리 환경을 전제로 합니다.
 
 ## 학습할 수 있는 강의 { #lessons-available }
 
@@ -15,6 +15,10 @@ title: A Practical Introduction with Silver
 | [1강 — C2 기본 원리](lesson-1-c2-fundamentals.md) | C2의 필요성, Assumed Breach, 리버스 셸, 연결과 권한의 차이 |
 | [2강 — 구성 요소와 명령어](lesson-2-components-and-commands.md) | Client·Server·Listener·Implant, 명령 입력 위치, Listener 시작과 상태 확인 |
 | [3강 — Session과 Beacon](lesson-3-sessions-and-beacons.md) | 대화형·주기적 작업 전달, 대상 선택, 체크인 대기와 작업 실행 시간의 구분 |
+| [4강 — Payload, Stager, Loader](lesson-4-payloads-stagers-and-loaders.md) | Staged·Stageless 전달, Loader의 역할, 통신 방식과의 구분 |
+| [5강 — 생성 명령 읽기](lesson-5-reading-generation-commands.md) | 대상 OS·CPU, 연락 주소, 시간 설정, 저장 위치 |
+| [6강 — 전달·실행·연결 증거](lesson-6-delivery-execution-and-evidence.md) | 파일 전달, HTTP 200의 한계, SHA-256 비교, 체크인과 작업 결과 |
+| [7강 — 백신·EDR과 탐지 증거](lesson-7-antivirus-edr-and-detection-evidence.md) | 정적·실행 중 관찰, Defender 1116·1117, 탐지와 조치의 구분 |
 
 한 번에 한 강의씩 읽습니다. 각 강의는 개념을 예제에 연결하고, 확인 문제와 펼쳐 볼 수 있는 해설로 마무리합니다.
 
@@ -31,7 +35,7 @@ title: A Practical Introduction with Silver
 
 ## 이후 학습 계획 { #planned-continuation }
 
-이후에는 Payload·Stager·Loader 용어, 실습 통신, 탐지 원리, 권한과 내부 환경 파악, 네트워크 분리와 Pivoting, 방어 관점의 복습을 다룹니다. 학습 계획에 있는 주제이며, 아직 해당 강의 내용은 추가하지 않았습니다.
+이후에는 권한과 내부 환경 파악, 네트워크 분리와 Pivoting, 방어 관점의 복습을 다룹니다. 학습 계획에 있는 주제이며, 아직 해당 강의 내용은 추가하지 않았습니다.
 
 ## 참고 자료 { #sources }
 

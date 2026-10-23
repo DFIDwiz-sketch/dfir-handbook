@@ -111,4 +111,4 @@ Waiting time = 60 - 15 = 45 seconds
 
 **45초는 작업을 받기까지 기다리는 시간입니다.** 실행 시간과 결과 전송 시간은 별도로 더해집니다. 결과가 반드시 정확히 45초 후에 도착한다는 뜻은 아닙니다.
 
-[강좌 개요로 돌아가기](index.md)
+[4강 — Payload, Stager, Loader로 이동](lesson-4-payloads-stagers-and-loaders.md)

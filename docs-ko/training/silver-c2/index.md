@@ -17,7 +17,7 @@ C2를 처음 배우는 학생을 위한 학습 노트입니다. 운영자의 작
 
     ---
 
-    1~3강: C2 기본 원리, Sliver의 구성 요소와 기본 콘솔 명령어, Session과 Beacon의 차이. 다이어그램, 시간 계산 예제, 확인 문제와 해설을 포함합니다.
+    1~7강: C2 기본 원리, 구성 요소와 명령어, Session·Beacon, Payload·Loader, 생성 설정, 전달·실행 증거, 백신·EDR 조사. 다이어그램과 확인 문제 해설을 포함합니다.
 
     [:octicons-arrow-right-24: 강좌 열기](practical-introduction/index.md)
 

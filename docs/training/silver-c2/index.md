@@ -17,7 +17,7 @@ Beginner-friendly C2 study notes, connecting an operator's view with the evidenc
 
     ---
 
-    Lessons 1–3: C2 fundamentals, Sliver components and basic console commands, and sessions versus beacons. Includes diagrams, worked timing examples, and review questions with answers.
+    Lessons 1–7: C2 fundamentals, components and commands, sessions and beacons, payloads and loaders, generation settings, delivery and execution evidence, and antivirus/EDR investigation. Includes diagrams and review answers.
 
     [:octicons-arrow-right-24: Open the course](practical-introduction/index.md)
 

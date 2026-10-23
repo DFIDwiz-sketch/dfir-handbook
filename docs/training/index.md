@@ -38,7 +38,7 @@ Notes from courses and training I've taken, re-worked into my own reference and 
 
     ---
 
-    A Practical Introduction with Silver — C2 fundamentals, Sliver components and basic commands, sessions versus beacons, and worked review questions. Lessons 1–3 are available in English and Korean.
+    A Practical Introduction with Silver — C2 fundamentals, Sliver commands, payload delivery, execution evidence, and antivirus/EDR investigation. Lessons 1–7 include diagrams, examples, and review answers in English and Korean.
 
     [:octicons-arrow-right-24: Silver C2](silver-c2/index.md)
 

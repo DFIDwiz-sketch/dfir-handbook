@@ -111,4 +111,4 @@ Waiting time = 60 - 15 = 45 seconds
 
 **45 seconds is the waiting time until task collection.** Execution and result-transfer time are additional. The result is not guaranteed to arrive after exactly 45 seconds.
 
-[Return to the course overview](index.md)
+[Continue to Lesson 4 — Payloads, stagers, and loaders](lesson-4-payloads-stagers-and-loaders.md)
