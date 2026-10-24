@@ -17,7 +17,7 @@ Beginner-friendly C2 study notes, connecting an operator's view with the evidenc
 
     ---
 
-    Lessons 1–7: C2 fundamentals, components and commands, sessions and beacons, payloads and loaders, generation settings, delivery and execution evidence, and antivirus/EDR investigation. Includes diagrams and review answers.
+    Lessons 1–10: C2 fundamentals, sessions and beacons, payloads, delivery and execution evidence, antivirus/EDR, permissions, port forwarding, and SOCKS5. Includes a three-VM web-server-to-internal-SSH lab with commands, diagrams, troubleshooting, and review answers.
 
     [:octicons-arrow-right-24: Open the course](practical-introduction/index.md)
 

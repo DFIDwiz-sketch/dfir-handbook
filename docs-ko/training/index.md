@@ -38,7 +38,7 @@ title: 트레이닝
 
     ---
 
-    A Practical Introduction with Silver — C2 기본 원리, Sliver 명령어, Payload 전달, 실행 증거, 백신·EDR 조사. 1~7강의 다이어그램·예시·확인 문제 해설을 영어와 한국어로 제공합니다.
+    A Practical Introduction with Silver — C2 기본 원리, Sliver 명령어, 전달·실행 증거, 백신·EDR, 권한, 피벗팅. 1~10강의 다이어그램·확인 문제 해설과 포트포워딩·SOCKS5를 이용한 내부 SSH 가상환경 실습을 영어와 한국어로 제공합니다.
 
     [:octicons-arrow-right-24: Silver C2](silver-c2/index.md)
 

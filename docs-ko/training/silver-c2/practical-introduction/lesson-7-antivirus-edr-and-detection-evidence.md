@@ -119,4 +119,4 @@ Get-WinEvent -FilterHashtable @{
 
     **2. 아니요.** 탐지 기록이 확인된 것입니다. 관련 조치 증거를 찾고, 파일과 위협이 일치하는지, 실제 조치와 결과가 무엇인지 확인해야 합니다. 1117도 번호만 해석하지 말고 메시지를 읽어야 합니다.
 
-[강좌 개요로 돌아가기](index.md)
+[다음: 계정·토큰·접근 권한](lesson-8-identity-tokens-and-permissions.md)

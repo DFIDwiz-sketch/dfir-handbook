@@ -6,7 +6,7 @@ title: A Practical Introduction with Silver
 
 **Sliver**를 사용한 C2의 원리를 처음부터 쉽게 설명하는 입문 강좌입니다. 페이지 제목은 요청한 메뉴 이름을 따르며, 실제 도구 이름은 **Sliver**입니다.
 
-**1~7강**에서 C2 기본 원리부터 파일 전달, 실행 확인, 백신·EDR 증거까지 다룹니다. 개념과 명령어, 확인 문제를 단계별로 쉽게 설명합니다. 실습 설명은 허가된 격리 환경을 전제로 합니다.
+**1~10강**에서 C2 기본 원리, 전달·실행 증거, 백신·EDR, 실효 권한, 네트워크 피벗팅을 다룹니다. 가상환경의 웹 서버 VM을 경유하여 내부 SSH 서버에 접근하는 포트포워딩·SOCKS5 명령을 구체적으로 설명합니다. 개념과 확인 문제 해설을 단계별로 쉽게 풀며, 실습은 허가된 격리 환경을 전제로 합니다.
 
 ## 학습할 수 있는 강의 { #lessons-available }
 
@@ -19,6 +19,9 @@ title: A Practical Introduction with Silver
 | [5강 — 생성 명령 읽기](lesson-5-reading-generation-commands.md) | 대상 OS·CPU, 연락 주소, 시간 설정, 저장 위치 |
 | [6강 — 전달·실행·연결 증거](lesson-6-delivery-execution-and-evidence.md) | 파일 전달, HTTP 200의 한계, SHA-256 비교, 체크인과 작업 결과 |
 | [7강 — 백신·EDR과 탐지 증거](lesson-7-antivirus-edr-and-detection-evidence.md) | 정적·실행 중 관찰, Defender 1116·1117, 탐지와 조치의 구분 |
+| [8강 — 계정·토큰·접근 권한](lesson-8-identity-tokens-and-permissions.md) | 계정 소속과 프로세스 승격의 차이, 자원별 권한, 권한 문제의 자세한 해설 |
+| [9강 — 포트포워딩과 SOCKS5](lesson-9-port-forwarding-and-socks.md) | 도달 가능성·인증·인가, 고정 포워딩과 프록시 클라이언트의 차이, HTTP 예제와 다이어그램 |
+| [10강 — 웹 서버를 경유한 내부 SSH 가상환경 실습](lesson-10-web-server-to-internal-ssh-lab.md) | VM 3대와 네트워크 2개, 두 방식의 구체적인 SSH 명령, 호스트 키, 문제 진단, 방어 관찰, 정리 |
 
 한 번에 한 강의씩 읽습니다. 각 강의는 개념을 예제에 연결하고, 확인 문제와 펼쳐 볼 수 있는 해설로 마무리합니다.
 
@@ -35,7 +38,7 @@ title: A Practical Introduction with Silver
 
 ## 이후 학습 계획 { #planned-continuation }
 
-이후에는 권한과 내부 환경 파악, 네트워크 분리와 Pivoting, 방어 관점의 복습을 다룹니다. 학습 계획에 있는 주제이며, 아직 해당 강의 내용은 추가하지 않았습니다.
+8~10강에 계정·권한, 네트워크 분리, 포트포워딩·SOCKS5와 SSH 실습을 추가했습니다. 이후 강의는 이 기초를 바탕으로 내부 환경 조사와 방어 관점의 복습을 이어갑니다.
 
 ## 참고 자료 { #sources }
 

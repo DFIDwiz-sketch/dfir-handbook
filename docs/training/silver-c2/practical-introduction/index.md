@@ -6,7 +6,7 @@ title: A Practical Introduction with Silver
 
 A beginner-friendly introduction to command and control using **Sliver**. The page title follows the requested navigation wording; the actual tool is **Sliver**.
 
-Lessons **1–7** cover C2 fundamentals through file delivery, execution checks, and antivirus/EDR evidence. Concepts, commands, and review questions are explained step by step. Exercises assume an authorized, isolated lab.
+Lessons **1–10** cover C2 fundamentals, delivery and execution evidence, antivirus/EDR, effective permissions, and network pivoting. Worked virtual-lab commands show port forwarding and SOCKS5 access to an internal SSH server through a web-server VM. Concepts and review answers are explained step by step. Exercises assume an authorized, isolated lab.
 
 ## Lessons available { #lessons-available }
 
@@ -19,6 +19,9 @@ Lessons **1–7** cover C2 fundamentals through file delivery, execution checks,
 | [5 — Reading a generation command](lesson-5-reading-generation-commands.md) | Target OS, CPU architecture, callback address, timing, and output location |
 | [6 — Delivery, execution, and connection evidence](lesson-6-delivery-execution-and-evidence.md) | File transfer, HTTP 200 limits, SHA-256 comparison, check-ins, and task results |
 | [7 — Antivirus, EDR, and detection evidence](lesson-7-antivirus-edr-and-detection-evidence.md) | Static and runtime observations, Defender 1116/1117, and detection versus action |
+| [8 — Identity, tokens, and permissions](lesson-8-identity-tokens-and-permissions.md) | Account membership versus process elevation, resource-specific rights, and detailed permission answers |
+| [9 — Port forwarding and SOCKS5](lesson-9-port-forwarding-and-socks.md) | Reachability, authentication, and authorization; fixed forwards versus proxy-aware clients; HTTP examples and diagrams |
+| [10 — Web server to internal SSH: a virtual lab](lesson-10-web-server-to-internal-ssh-lab.md) | Three VMs and two networks, exact SSH commands for both methods, host keys, troubleshooting, defensive observations, and cleanup |
 
 Read one lesson at a time. Each lesson connects a concept to an example and ends with questions and expandable answers.
 
@@ -35,7 +38,7 @@ Read one lesson at a time. Each lesson connects a concept to an example and ends
 
 ## Planned continuation { #planned-continuation }
 
-Later lessons will cover permissions and internal discovery, network segmentation and pivoting, and defensive review. These are roadmap topics; their lessons have not been added yet.
+Lessons 8–10 now cover identity and permissions, network segmentation, port forwarding, and SOCKS5 with a worked SSH lab. Later lessons will build on this foundation with further internal-environment investigation and defensive review.
 
 ## Sources { #sources }
 

@@ -119,4 +119,4 @@ If the path, threat identifiers, and action result match, this supports “quara
 
     **2. No.** It establishes a detection record. Find the related action evidence, confirm the file and threat match, and inspect the actual action and outcome. Even 1117 must be read rather than interpreted solely by its event number.
 
-[Return to the course overview](index.md)
+[Next: Identity, tokens, and permissions](lesson-8-identity-tokens-and-permissions.md)
