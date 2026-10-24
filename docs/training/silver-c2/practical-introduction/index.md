@@ -6,7 +6,7 @@ title: A Practical Introduction with Silver
 
 A beginner-friendly introduction to command and control using **Sliver**. The page title follows the requested navigation wording; the actual tool is **Sliver**.
 
-Lessons **1–10** cover C2 fundamentals, delivery and execution evidence, antivirus/EDR, effective permissions, and network pivoting. Worked virtual-lab commands show port forwarding and SOCKS5 access to an internal SSH server through a web-server VM. Concepts and review answers are explained step by step. Exercises assume an authorized, isolated lab.
+Lessons **1–14** cover C2 fundamentals, delivery and execution evidence, antivirus/EDR, permissions, pivoting, SSH evidence, network inspection, Armory, BOFs, and execution mechanisms. Worked virtual-lab commands and diagrams connect the concepts. Detailed follow-up answers include connection failures, BOF/COFF/OBJ explanations, and memory loading versus process placement. Exercises assume an authorized, isolated lab.
 
 ## Lessons available { #lessons-available }
 
@@ -22,8 +22,21 @@ Lessons **1–10** cover C2 fundamentals, delivery and execution evidence, antiv
 | [8 — Identity, tokens, and permissions](lesson-8-identity-tokens-and-permissions.md) | Account membership versus process elevation, resource-specific rights, and detailed permission answers |
 | [9 — Port forwarding and SOCKS5](lesson-9-port-forwarding-and-socks.md) | Reachability, authentication, and authorization; fixed forwards versus proxy-aware clients; HTTP examples and diagrams |
 | [10 — Web server to internal SSH: a virtual lab](lesson-10-web-server-to-internal-ssh-lab.md) | Three VMs and two networks, exact SSH commands for both methods, host keys, troubleshooting, defensive observations, and cleanup |
+| [11 — Pivot connections and SSH evidence](lesson-11-pivot-connections-and-ssh-evidence.md) | Observed source versus human operator, temporary ports, authentication records, TCP states, and detailed review answers |
+| [12 — Network interfaces, sockets, and reachability](lesson-12-network-interfaces-and-sockets.md) | Selected-target context, ifconfig/netstat, LISTEN limits, and firewall, route, VM, container, and HTTP failure analysis |
+| [13 — Built-in commands, Armory, and BOFs](lesson-13-armory-and-bof-basics.md) | Package search/install, aliases/extensions, registration versus execution, compatibility, and memory-execution effects |
+| [14 — EXE, .NET Assembly, and BOF execution](lesson-14-exe-dotnet-and-bof-execution.md) | Artifact type, Client/target paths, CLR, hosting processes, and the learner's answers with detailed reasoning |
 
-Read one lesson at a time. Each lesson connects a concept to an example and ends with questions and expandable answers.
+Read one lesson at a time. The lessons connect concepts to examples, with review questions, detailed answers, and follow-up explanations.
+
+## Follow-up questions and detailed answers { #follow-up-questions-and-detailed-answers }
+
+- [BOF, COFF, loaders, and OBJ files](bof-coff-and-object-files-questions.md): the detailed explanation, simpler report/DOCX analogy, object-file compilation/linking, and the target-compatible preparation sequence.
+- [Course coverage and next steps](course-coverage-and-next-steps.md): what the original course covers, which topics have been taught, which explanations were added, and what remains.
+- [SSH source-attribution and login-state answers](lesson-11-pivot-connections-and-ssh-evidence.md#answer-source-address-versus-person).
+- [Why LISTEN does not establish remote access](lesson-12-network-interfaces-and-sockets.md#answer-listen-versus-access), including the requested non-firewall causes.
+- [Why registered help is not a target result](lesson-13-armory-and-bof-basics.md#answer-help-versus-result).
+- [EXE-format and hosting-process answers](lesson-14-exe-dotnet-and-bof-execution.md#answer-exe-extension).
 
 ## How to read the notes { #how-to-read-the-notes }
 
@@ -38,7 +51,7 @@ Read one lesson at a time. Each lesson connects a concept to an example and ends
 
 ## Planned continuation { #planned-continuation }
 
-Lessons 8–10 now cover identity and permissions, network segmentation, port forwarding, and SOCKS5 with a worked SSH lab. Later lessons will build on this foundation with further internal-environment investigation and defensive review.
+Further teaching will develop Windows token privileges and integrity levels, diagnostic-tool interpretation, service configuration, authentication/authorization, and internal SMB workflows. Lesson numbering is a teaching structure, not a claim that the entire original course has been covered. See the [coverage comparison](course-coverage-and-next-steps.md#current-coverage).
 
 ## Sources { #sources }
 

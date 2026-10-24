@@ -258,4 +258,4 @@ Use the actual IDs from the corresponding lists. Keep the entry IDs distinct fro
 
     **4. No.** It establishes the accepted account and, after successful commands, execution in that login context. Its permissions on each resource remain a separate question.
 
-[Previous: Port forwarding and SOCKS5](lesson-9-port-forwarding-and-socks.md) · [Return to the course overview](index.md)
+[Previous: Port forwarding and SOCKS5](lesson-9-port-forwarding-and-socks.md) · [Next: Pivot connections and SSH evidence](lesson-11-pivot-connections-and-ssh-evidence.md)

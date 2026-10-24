@@ -17,7 +17,7 @@ Beginner-friendly C2 study notes, connecting an operator's view with the evidenc
 
     ---
 
-    Lessons 1–10: C2 fundamentals, sessions and beacons, payloads, delivery and execution evidence, antivirus/EDR, permissions, port forwarding, and SOCKS5. Includes a three-VM web-server-to-internal-SSH lab with commands, diagrams, troubleshooting, and review answers.
+    Lessons 1–14: C2 fundamentals through pivoting, SSH evidence, network inspection, Armory, BOF/COFF/OBJ, and EXE/.NET execution. Includes a three-VM SSH lab, diagrams, detailed learner questions and answers, troubleshooting, and a course-coverage guide.
 
     [:octicons-arrow-right-24: Open the course](practical-introduction/index.md)
 

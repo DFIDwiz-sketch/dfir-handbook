@@ -6,7 +6,7 @@ title: A Practical Introduction with Silver
 
 **Sliver**를 사용한 C2의 원리를 처음부터 쉽게 설명하는 입문 강좌입니다. 페이지 제목은 요청한 메뉴 이름을 따르며, 실제 도구 이름은 **Sliver**입니다.
 
-**1~10강**에서 C2 기본 원리, 전달·실행 증거, 백신·EDR, 실효 권한, 네트워크 피벗팅을 다룹니다. 가상환경의 웹 서버 VM을 경유하여 내부 SSH 서버에 접근하는 포트포워딩·SOCKS5 명령을 구체적으로 설명합니다. 개념과 확인 문제 해설을 단계별로 쉽게 풀며, 실습은 허가된 격리 환경을 전제로 합니다.
+**1~14강**에서 C2 기본 원리, 전달·실행 증거, 백신·EDR, 권한, 피벗팅, SSH 증거, 네트워크 조회, Armory·BOF·실행 방식을 다룹니다. 가상환경 명령과 다이어그램으로 연결하고, 접속 실패 원인·BOF/COFF/OBJ·메모리 로딩과 프로세스 위치에 대한 추가 질문도 상세히 해설합니다. 실습은 허가된 격리 환경을 전제로 합니다.
 
 ## 학습할 수 있는 강의 { #lessons-available }
 
@@ -22,8 +22,21 @@ title: A Practical Introduction with Silver
 | [8강 — 계정·토큰·접근 권한](lesson-8-identity-tokens-and-permissions.md) | 계정 소속과 프로세스 승격의 차이, 자원별 권한, 권한 문제의 자세한 해설 |
 | [9강 — 포트포워딩과 SOCKS5](lesson-9-port-forwarding-and-socks.md) | 도달 가능성·인증·인가, 고정 포워딩과 프록시 클라이언트의 차이, HTTP 예제와 다이어그램 |
 | [10강 — 웹 서버를 경유한 내부 SSH 가상환경 실습](lesson-10-web-server-to-internal-ssh-lab.md) | VM 3대와 네트워크 2개, 두 방식의 구체적인 SSH 명령, 호스트 키, 문제 진단, 방어 관찰, 정리 |
+| [11강 — 피벗 연결과 SSH 증거](lesson-11-pivot-connections-and-ssh-evidence.md) | 관찰한 출발지와 실제 운영자, 임시 포트, 인증 기록, TCP 상태, 상세 정답 해설 |
+| [12강 — 인터페이스·소켓·연결 가능성](lesson-12-network-interfaces-and-sockets.md) | 선택한 대상의 의미, ifconfig/netstat, LISTEN의 한계, 방화벽·경로·VM·컨테이너·HTTP 실패 분석 |
+| [13강 — 기본 명령·Armory·BOF](lesson-13-armory-and-bof-basics.md) | 패키지 검색·설치, Alias·Extension, 등록과 실행, 호환성, 메모리 실행의 효과 |
+| [14강 — EXE·.NET Assembly·BOF 실행](lesson-14-exe-dotnet-and-bof-execution.md) | 파일 종류, Client·대상 경로, CLR, 호스팅 프로세스, 학습자 답과 상세 해설 |
 
-한 번에 한 강의씩 읽습니다. 각 강의는 개념을 예제에 연결하고, 확인 문제와 펼쳐 볼 수 있는 해설로 마무리합니다.
+한 번에 한 강의씩 읽습니다. 개념을 예제에 연결하고 확인 문제, 자세한 해설, 추가 질문의 설명을 함께 제공합니다.
+
+## 추가 질문과 상세 해답 { #follow-up-questions-and-detailed-answers }
+
+- [BOF·COFF·로더·OBJ 파일](bof-coff-and-object-files-questions.md): 자세한 설명, 쉬운 보고서·DOCX 비유, 목적 파일의 컴파일·링크, 대상에 맞춘 준비 흐름.
+- [학습 범위와 다음 단계](course-coverage-and-next-steps.md): 원강좌의 범위, 지금까지 가르친 주제, 추가한 보충, 남은 학습.
+- [SSH 출발지와 로그인 상태 해설](lesson-11-pivot-connections-and-ssh-evidence.md#answer-source-address-versus-person).
+- [LISTEN이 원격 접속을 입증하지 않는 이유](lesson-12-network-interfaces-and-sockets.md#answer-listen-versus-access): 요청한 방화벽 외 원인까지 포함.
+- [도움말 등록과 대상 실행의 차이](lesson-13-armory-and-bof-basics.md#answer-help-versus-result).
+- [EXE 형식과 호스팅 프로세스 해설](lesson-14-exe-dotnet-and-bof-execution.md#answer-exe-extension).
 
 ## 노트의 표기 방식 { #how-to-read-the-notes }
 
@@ -38,7 +51,7 @@ title: A Practical Introduction with Silver
 
 ## 이후 학습 계획 { #planned-continuation }
 
-8~10강에 계정·권한, 네트워크 분리, 포트포워딩·SOCKS5와 SSH 실습을 추가했습니다. 이후 강의는 이 기초를 바탕으로 내부 환경 조사와 방어 관점의 복습을 이어갑니다.
+이후에는 Windows 토큰 특권·무결성 수준, 진단 도구 해석, 서비스 설정, 인증·인가, 내부 SMB 흐름을 이어갑니다. 강의 번호는 학습 구성 방식이며 원강좌 전체를 다뤘다는 뜻은 아닙니다. [학습 범위 비교](course-coverage-and-next-steps.md#current-coverage)를 참고하세요.
 
 ## 참고 자료 { #sources }
 

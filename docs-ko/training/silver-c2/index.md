@@ -17,7 +17,7 @@ C2를 처음 배우는 학생을 위한 학습 노트입니다. 운영자의 작
 
     ---
 
-    1~10강: C2 기본 원리, Session·Beacon, Payload, 전달·실행 증거, 백신·EDR, 권한, 포트포워딩·SOCKS5. VM 3대로 웹 서버를 경유하는 내부 SSH 실습을 구성하고, 명령어·다이어그램·문제 진단·확인 문제 해설을 제공합니다.
+    1~14강: C2 기본부터 피벗팅, SSH 증거, 네트워크 조회, Armory, BOF·COFF·OBJ, EXE·.NET 실행까지. VM 3대의 SSH 실습, 다이어그램, 학습자 추가 질문과 상세 해답, 문제 진단, 학습 범위 안내를 제공합니다.
 
     [:octicons-arrow-right-24: 강좌 열기](practical-introduction/index.md)
 

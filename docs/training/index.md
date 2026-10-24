@@ -38,7 +38,7 @@ Notes from courses and training I've taken, re-worked into my own reference and 
 
     ---
 
-    A Practical Introduction with Silver — C2 fundamentals, Sliver commands, delivery and execution evidence, antivirus/EDR, permissions, and pivoting. Lessons 1–10 include diagrams, review answers, and a virtual-lab SSH exercise using port forwarding and SOCKS5 in English and Korean.
+    A Practical Introduction with Silver — Lessons 1–14 in English and Korean, covering C2, evidence, permissions, pivoting, SSH logs, network inspection, Armory, BOF/COFF/OBJ, and execution mechanisms. Includes virtual-lab commands, diagrams, and detailed answers to follow-up questions.
 
     [:octicons-arrow-right-24: Silver C2](silver-c2/index.md)
 

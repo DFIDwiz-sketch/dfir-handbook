@@ -258,4 +258,4 @@ socks5 stop --id <Proxy_ID>
 
     **4. 아니요.** 받아들여진 계정과, 명령 실행 성공 후에는 그 로그인 컨텍스트에서의 실행까지 확인됩니다. 각각의 자원에 대한 권한은 별도로 판단해야 합니다.
 
-[이전: 포트포워딩과 SOCKS5](lesson-9-port-forwarding-and-socks.md) · [강좌 개요로 돌아가기](index.md)
+[이전: 포트포워딩과 SOCKS5](lesson-9-port-forwarding-and-socks.md) · [다음: 피벗 연결과 SSH 증거](lesson-11-pivot-connections-and-ssh-evidence.md)
