@@ -75,8 +75,8 @@ docs/                 ← 영어 글
     .pages            ←   "index.md 먼저, 나머지는 알파벳순"
     *.md              ←   페이지들
   windows/  linux/  network/  memory/  splunk/  adversary/  tools/  playbooks/
-  assets/             ← CSS, 아이콘, 이미지, lang-switch.js
-docs-ko/              ← 한국어 글 (docs/ 와 같은 구조)
+  assets/             ← extra.css(디자인), theme.js, lang-switch.js, 아이콘, 이미지
+docs-ko/              ← 한국어 글 (docs/ 와 같은 구조, assets/ 도 같은 파일 복사본)
 templates/            ← new.py 가 쓰는 페이지 템플릿 5종
 new.py                ← 새 페이지 생성 스크립트
 mkdocs.yml            ← 사이트 설정 (거의 안 건드림)
@@ -87,6 +87,10 @@ mkdocs.ko.yml         ← 한국어 사이트 설정 (mkdocs.yml 상속)
 ### 새 섹션(탭) 추가하고 싶으면
 
 `docs/새폴더/` 와 `docs-ko/새폴더/` 를 만들고, `docs/.pages` 와 `docs-ko/.pages` 의 `nav:` 에 각각 한 줄 추가. `new.py 새폴더/페이지` 로 만들면 폴더와 index.md 는 자동 생성됩니다.
+
+### 디자인(색·글꼴) 바꾸고 싶으면
+
+`docs/assets/extra.css` 맨 위의 `--cr-*` 값(라이트/다크 두 블록)만 바꾸면 사이트 전체 색이 바뀝니다. 바꾼 뒤 **같은 파일을 `docs-ko/assets/extra.css` 에도 복사**하세요. 한국어 사이트는 같은 CSS 안에서 한글 글꼴 Pretendard 를 씁니다. 처음 열면 라이트 모드이고, 헤더의 해/달 버튼으로 다크 모드로 바꿀 수 있어요.
 
 ### 페이지 순서 바꾸고 싶으면
 

@@ -5,11 +5,15 @@ hide:
   - toc
 ---
 
+<div class="dfir-hero" markdown>
+
 # DFIR Handbook
 
 Personal reference for digital forensics and incident response — everything I have studied, in one searchable place. From the fundamentals (ports, status codes, event IDs) through host and network artifacts, to adversary techniques and how to detect them.
 
-Use the **search bar** (press ++slash++ or ++s++) — it is usually faster than browsing.
+<label class="dfir-search" for="__search" tabindex="0" role="button">:material-magnify: Search event IDs, artifacts, techniques, commands ++slash++</label>
+
+</div>
 
 <div class="grid cards" markdown>
 

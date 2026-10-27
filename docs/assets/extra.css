@@ -1,45 +1,309 @@
-/* ── 소소한 다듬기 ─────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════
+   DFIR Handbook — "Clear Reference" 디자인
+   조용한 흰 바탕 + 진한 글자 + 청록 포인트 하나. 색 띠 헤더 대신 얇은 선.
+   색은 아래 두 블록(라이트 / 다크)의 --cr-* 값만 바꾸면 사이트 전체가 바뀝니다.
+   이 파일은 docs/assets 와 docs-ko/assets 에 똑같이 들어 있어야 합니다.
+   ═══════════════════════════════════════════════════════════════════ */
 
-/* 본문 폭 조금 넓게 (표가 많은 사이트라서) */
-.md-grid {
-  max-width: 76rem;
+@import url("https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700;800&display=swap");
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
+
+:root {
+  --cr-heading-font: "Inter Tight", var(--md-text-font-family);
+}
+/* 한국어 사이트(<html lang="ko">)는 한글이 깔끔한 Pretendard 로 */
+html[lang="ko"] {
+  --md-text-font: "Pretendard Variable";
+  --cr-heading-font: "Pretendard Variable", var(--md-text-font-family);
 }
 
-/* 표: 헤더 굵게, 줄무늬, 컴팩트 */
-.md-typeset table:not([class]) {
-  font-size: 0.78rem;
+/* ── 색 토큰: 라이트 (기본) ─────────────────────────────────────── */
+[data-md-color-scheme="default"] {
+  --cr-ink: #15181e;          /* 제목, 강조 */
+  --cr-text: #262a33;         /* 본문 */
+  --cr-muted: #5a6170;        /* 보조 글자 */
+  --cr-line: #e5e7eb;         /* 구분선 */
+  --cr-wash: #f6f7f9;         /* 옅은 바탕 (코드, 박스) */
+  --cr-accent: #0d7c76;       /* 링크, 현재 위치 */
+  --cr-accent-wash: #e7f4f2;
+  --cr-surface: #ffffff;
 }
-.md-typeset table:not([class]) th {
+
+/* ── 색 토큰: 다크 ─────────────────────────────────────────────── */
+[data-md-color-scheme="slate"] {
+  --cr-ink: #eef0f3;
+  --cr-text: #d6dae0;
+  --cr-muted: #9aa2ae;
+  --cr-line: #2b3039;
+  --cr-wash: #1d2128;
+  --cr-accent: #4cc2b8;
+  --cr-accent-wash: #173230;
+  --cr-surface: #15181d;
+}
+
+/* 토큰 → Material 변수 연결 (두 모드 공통) */
+[data-md-color-scheme="default"],
+[data-md-color-scheme="slate"] {
+  --md-default-bg-color: var(--cr-surface);
+  --md-default-fg-color: var(--cr-ink);
+  --md-default-fg-color--light: var(--cr-muted);
+  --md-default-fg-color--lightest: var(--cr-wash);
+  --md-typeset-color: var(--cr-text);
+  --md-typeset-a-color: var(--cr-accent);
+  --md-typeset-table-color: var(--cr-line);
+
+  --md-primary-fg-color: var(--cr-surface);        /* 헤더 바탕 */
+  --md-primary-fg-color--light: var(--cr-wash);
+  --md-primary-fg-color--dark: var(--cr-ink);
+  --md-primary-bg-color: var(--cr-ink);            /* 헤더 글자 */
+  --md-primary-bg-color--light: var(--cr-muted);
+  --md-accent-fg-color: var(--cr-accent);
+  --md-accent-fg-color--transparent: var(--cr-accent-wash);
+  --md-accent-bg-color: var(--cr-surface);
+
+  --md-code-bg-color: var(--cr-wash);
+
+  --md-footer-bg-color: var(--cr-wash);
+  --md-footer-bg-color--dark: var(--cr-wash);
+  --md-footer-fg-color: var(--cr-ink);
+  --md-footer-fg-color--light: var(--cr-muted);
+  --md-footer-fg-color--lighter: var(--cr-muted);
+
+  /* Mermaid 다이어그램도 같은 색으로 */
+  --md-mermaid-node-bg-color: var(--cr-accent-wash);
+  --md-mermaid-node-fg-color: var(--cr-accent);
+  --md-mermaid-edge-color: var(--cr-muted);
+  --md-mermaid-label-fg-color: var(--cr-text);
+  --md-mermaid-sequence-actor-line-color: var(--cr-line);
+  --md-mermaid-sequence-message-line-color: var(--cr-muted);
+}
+[data-md-color-scheme="slate"] { --md-code-fg-color: #c9cfd8; }
+
+/* ── 레이아웃 폭 (표가 많은 사이트라서 조금 넓게) ─────────────────── */
+.md-grid { max-width: 76rem; }
+
+/* ── 헤더 + 상단 탭: 색 띠 대신 흰 바탕과 얇은 선 ──────────────────── */
+.md-header,
+.md-header--shadow { box-shadow: none; }
+.md-header { border-bottom: 1px solid var(--cr-line); }
+.md-header__title {
+  font-family: var(--cr-heading-font);
   font-weight: 700;
-  background-color: var(--md-default-fg-color--lightest);
+  letter-spacing: -0.02em;
 }
-.md-typeset table:not([class]) tbody tr:nth-child(even) {
-  background-color: var(--md-default-fg-color--lightest);
+.md-tabs {
+  background-color: var(--cr-surface);
+  color: var(--cr-muted);
+  border-bottom: 1px solid var(--cr-line);
+}
+.md-tabs__link {
+  opacity: 1;
+  font-weight: 500;
+  color: var(--cr-muted);
+}
+.md-tabs__link:hover,
+.md-tabs__item--active .md-tabs__link { color: var(--cr-ink); }
+.md-tabs__item--active { box-shadow: inset 0 -2px 0 var(--cr-ink); }
+
+/* 헤더 검색창 */
+@media screen and (min-width: 60em) {
+  .md-search__form {
+    background-color: var(--cr-wash);
+    border: 1px solid var(--cr-line);
+    border-radius: 0.45rem;
+  }
+  .md-search__form:hover { background-color: var(--cr-wash); border-color: var(--cr-muted); }
 }
 
-/* 인라인 코드 살짝 색 */
-.md-typeset code {
-  font-size: 0.82em;
+/* ── 글자 ─────────────────────────────────────────────────────── */
+.md-typeset { line-height: 1.72; }
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4 {
+  font-family: var(--cr-heading-font);
+  color: var(--cr-ink);
 }
+.md-typeset h1 {
+  font-weight: 800;
+  font-size: 2.3em;
+  line-height: 1.1;
+  letter-spacing: -0.028em;
+  margin-bottom: 0.9em;
+}
+.md-typeset h2 {
+  font-weight: 700;
+  font-size: 1.6em;
+  letter-spacing: -0.015em;
+  margin-top: 2em;
+}
+.md-typeset h3 { font-weight: 650; letter-spacing: -0.01em; }
+.md-typeset h4 { font-weight: 650; }
 
-/* "카드" 그리드 — index 페이지에서 쓰는 격자 */
-.md-typeset .grid.cards > ul > li {
+/* ── 왼쪽 메뉴 / 오른쪽 목차 ────────────────────────────────────── */
+.md-nav__title { color: var(--cr-ink); }
+.md-nav__link { color: var(--cr-muted); }
+.md-nav__link--active,
+.md-nav__item .md-nav__link--active { color: var(--cr-accent); font-weight: 600; }
+
+/* ── 코드 ─────────────────────────────────────────────────────── */
+.md-typeset code { font-size: 0.82em; }
+.md-typeset pre > code {
+  border: 1px solid var(--cr-line);
   border-radius: 0.5rem;
 }
-.md-typeset .grid.cards > ul > li:hover {
-  border-color: var(--md-accent-fg-color);
+.md-typeset :not(pre) > code { border-radius: 0.25rem; }
+
+/* ── 표: 가로선만 ─────────────────────────────────────────────── */
+.md-typeset table:not([class]) {
+  font-size: 0.76rem;
+  border: 0;
+  box-shadow: none;
+}
+.md-typeset table:not([class]) th {
+  font-weight: 650;
+  color: var(--cr-ink);
+  background-color: transparent;
+  border-bottom: 1.5px solid var(--cr-ink);
+}
+.md-typeset table:not([class]) td { border-top: 1px solid var(--cr-line); }
+.md-typeset table:not([class]) th,
+.md-typeset table:not([class]) td { padding: 0.7em 1em; }
+.md-typeset table:not([class]) tbody tr:nth-child(even) { background-color: transparent; }
+.md-typeset table:not([class]) tbody tr:hover {
+  background-color: var(--cr-wash);
+  box-shadow: none;
 }
 
-/* 태그 뱃지 */
+/* ── 알림 상자 (!!! note 등): 테두리 대신 옅은 바탕 + 왼쪽 색 선 ────
+   왼쪽 선과 아이콘 색은 종류(note/warning/danger…)마다 그대로 유지됩니다. */
+.md-typeset .admonition,
+.md-typeset details {
+  border-width: 0 0 0 3px;
+  border-radius: 0.4rem;
+  background-color: var(--cr-wash);
+  box-shadow: none;
+}
+.md-typeset .admonition-title,
+.md-typeset summary {
+  background-color: transparent !important;
+  font-weight: 650;
+}
+.md-typeset .admonition.quote,
+.md-typeset details.quote { background-color: transparent; }
+
+/* ── 태그 ─────────────────────────────────────────────────────── */
 .md-typeset .md-tag {
+  background-color: var(--cr-wash);
+  border: 1px solid var(--cr-line);
+  border-radius: 1rem;
+  color: var(--cr-muted);
+  font-weight: 500;
+}
+.md-typeset a.md-tag:hover {
+  background-color: var(--cr-accent-wash);
+  border-color: var(--cr-accent);
+  color: var(--cr-accent);
+}
+
+/* ── 페이지 상단 메타 정보 (템플릿의 .dfir-meta) — 제목 아래 한 줄 ── */
+.dfir-meta {
+  font-size: 0.72rem;
+  color: var(--cr-muted);
+  margin: -0.5rem 0 1.4rem;
+}
+.dfir-meta strong { color: var(--cr-ink); font-weight: 600; }
+
+/* ── 카드 그리드 → 촘촘한 목록 ───────────────────────────────────
+   상자 대신 가로선으로 나눈 목록. 마크다운은 그대로 두어도 됩니다. */
+.md-typeset .grid.cards { grid-gap: 0 2rem; }
+.md-typeset .grid.cards > ul > li {
+  position: relative;
+  padding: 0.9rem 0 1rem;
+  border: 0;
+  border-bottom: 1px solid var(--cr-line);
+  border-radius: 0;
+  background: transparent;
+  transition: none;
+}
+.md-typeset .grid.cards > ul > li:hover,
+.md-typeset .grid.cards > ul > li:focus-within {
+  border-color: var(--cr-line);
+  box-shadow: none;
+}
+.md-typeset .grid.cards > ul > li > hr { display: none; }
+.md-typeset .grid.cards > ul > li .twemoji { color: var(--cr-accent); }
+.md-typeset .grid.cards > ul > li > p { margin: 0; }
+.md-typeset .grid.cards > ul > li > p:first-child strong {
+  font-family: var(--cr-heading-font);
+  font-weight: 700;
+  font-size: 1.08em;
+  letter-spacing: -0.01em;
+  color: var(--cr-ink);
+}
+.md-typeset .grid.cards > ul > li > p:first-child strong a { color: inherit; }
+.md-typeset .grid.cards > ul > li:hover > p:first-child strong { color: var(--cr-accent); }
+.md-typeset .grid.cards > ul > li > p:not(:first-child) {
+  margin-top: 0.3rem;
+  color: var(--cr-muted);
+  font-size: 0.92em;
+  line-height: 1.55;
+}
+/* 아이콘+제목 / 설명 / "→ 링크" 형태의 카드: 링크 줄은 숨기고 카드 전체를 누를 수 있게 */
+.md-typeset .grid.cards > ul > li:has(> hr) > p:last-child { margin: 0; height: 0; }
+.md-typeset .grid.cards > ul > li:has(> hr) > p:last-child > a {
+  position: absolute;
+  inset: 0;
+  font-size: 0;
+  color: transparent;
   border-radius: 0.3rem;
 }
+.md-typeset .grid.cards > ul > li:has(> hr) > p:last-child > a:focus-visible {
+  outline: 2px solid var(--cr-accent);
+  outline-offset: 2px;
+}
 
-/* 페이지 상단 메타 정보 (템플릿에서 쓰는 클래스) */
-.dfir-meta {
-  font-size: 0.75rem;
-  color: var(--md-default-fg-color--light);
-  border-left: 3px solid var(--md-accent-fg-color);
-  padding: 0.3rem 0.8rem;
+/* ── 홈 첫 화면 ───────────────────────────────────────────────── */
+.md-content__inner:has(.dfir-hero) > .md-content__button { display: none; }
+.dfir-hero {
+  padding: 0.6rem 0 2rem;
   margin-bottom: 1.2rem;
+  border-bottom: 1px solid var(--cr-line);
+}
+.md-typeset .dfir-hero h1 {
+  font-size: clamp(2.4rem, 7vw, 3.4rem);
+  letter-spacing: -0.032em;
+  margin: 0 0 0.8rem;
+}
+.md-typeset .dfir-hero p {
+  max-width: 38rem;
+  margin: 0;
+  color: var(--cr-muted);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+.md-typeset .dfir-search {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  max-width: 38rem;
+  margin-top: 1.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--cr-line);
+  border-radius: 0.6rem;
+  background-color: var(--cr-surface);
+  color: var(--cr-muted);
+  font-size: 0.8rem;
+  cursor: text;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+}
+.md-typeset .dfir-search:hover { border-color: var(--cr-muted); }
+.md-typeset .dfir-search .twemoji { color: var(--cr-muted); }
+.md-typeset .dfir-search .keys { margin-left: auto; }
+.md-typeset .dfir-search:focus-visible { outline: 2px solid var(--cr-accent); outline-offset: 2px; }
+.md-typeset .dfir-hero h1 .headerlink { display: none; }
+@media screen and (max-width: 44.9375em) {
+  .md-typeset .dfir-hero p { font-size: 0.82rem; }
+  .md-typeset .dfir-search { font-size: 0.74rem; }
+  .md-typeset .dfir-search .keys { display: none; }
 }

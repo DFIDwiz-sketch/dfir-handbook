@@ -5,11 +5,15 @@ hide:
   - toc
 ---
 
+<div class="dfir-hero" markdown>
+
 # DFIR 핸드북 { #dfir-handbook }
 
 디지털 포렌식과 침해사고 대응(DFIR)을 위한 개인 레퍼런스입니다. 공부한 내용을 한곳에 모아 검색할 수 있게 정리했습니다. 기초(포트, 상태 코드, 이벤트 ID)부터 호스트·네트워크 아티팩트, 그리고 공격 기법과 탐지 방법까지 다룹니다.
 
-**검색창**을 쓰세요 (++slash++ 또는 ++s++ 키). 메뉴를 하나씩 찾는 것보다 대개 더 빠릅니다.
+<label class="dfir-search" for="__search" tabindex="0" role="button">:material-magnify: 이벤트 ID, 아티팩트, 공격 기법, 명령어 검색 ++slash++</label>
+
+</div>
 
 <div class="grid cards" markdown>
 
