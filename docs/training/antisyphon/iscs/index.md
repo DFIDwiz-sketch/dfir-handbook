@@ -49,7 +49,10 @@ Backup & recovery is "something you should just be doing," so it isn't covered s
 
     Sysmon lab review, Pass-the-Hash, EDR and defence in depth (why overlap multiplies), threat emulation and Atomic Red Team, writing and validating detections with AI, BloodHound, gap-analysis lab, host firewalls and stopping lateral movement.
 
-</div>
+-   **[Day 4 — Responder, Internet Allow Listing and Vulnerability Management](day-4.md)** *(in progress)*
 
-!!! info "Day 4 to follow"
-    Day 4 (Responder lab walkthrough, internet allow listing, vulnerability management, web testing, Ping Castle) will be added next.
+    ---
+
+    Responder lab walkthrough (deep dives on NTLMv2 cracking, relay and SMB signing), internet allow listing (block "Uncategorized", remove ads, DoH), vulnerability management (CVSS +1, lows and informationals, group by vulnerability), the Nessus report lab. (Web security, ZAP and Ping Castle to follow.)
+
+</div>
