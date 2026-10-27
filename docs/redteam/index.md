@@ -12,7 +12,7 @@ Pages in this section are listed in the sidebar.
 
 [**Open the Post-Exploitation learning section →**](post-exploitation/index.md)
 
-Study **19 topics across five pages**, with command explanations, comparison tables and execution diagrams. The English companion follows the complete Korean lecture and includes modern defensive context.
+Study **19 topics across five pages**, with command explanations, comparison tables and execution diagrams. Each page includes modern defensive context.
 
 | Page | Topics |
 | --- | --- |
