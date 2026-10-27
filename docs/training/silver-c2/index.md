@@ -17,7 +17,7 @@ Beginner-friendly C2 study notes, connecting an operator's view with the evidenc
 
     ---
 
-    Lessons 1–14: C2 fundamentals through pivoting, SSH evidence, network inspection, Armory, BOF/COFF/OBJ, and EXE/.NET execution. Includes a three-VM SSH lab, diagrams, detailed learner questions and answers, troubleshooting, and a course-coverage guide.
+    Lessons 1–15: C2 fundamentals through pivoting, SSH evidence, network inspection, Armory, BOF/COFF/OBJ, EXE/.NET execution, and Windows tokens, Deny only, and privileges. Includes a three-VM SSH lab, diagrams, detailed learner questions and answers, troubleshooting, and a course-coverage guide.
 
     [:octicons-arrow-right-24: Open the course](practical-introduction/index.md)
 

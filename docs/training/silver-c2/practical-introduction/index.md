@@ -6,7 +6,7 @@ title: A Practical Introduction with Silver
 
 A beginner-friendly introduction to command and control using **Sliver**. The page title follows the requested navigation wording; the actual tool is **Sliver**.
 
-Lessons **1–14** cover C2 fundamentals, delivery and execution evidence, antivirus/EDR, permissions, pivoting, SSH evidence, network inspection, Armory, BOFs, and execution mechanisms. Worked virtual-lab commands and diagrams connect the concepts. Detailed follow-up answers include connection failures, BOF/COFF/OBJ explanations, and memory loading versus process placement. Exercises assume an authorized, isolated lab.
+Lessons **1–15** cover C2 fundamentals, delivery and execution evidence, antivirus/EDR, permissions, pivoting, SSH evidence, network inspection, Armory, BOFs, execution mechanisms, and Windows tokens. Worked virtual-lab commands and diagrams connect the concepts. Detailed follow-up answers include connection failures, BOF/COFF/OBJ explanations, and memory loading versus process placement. Exercises assume an authorized, isolated lab.
 
 ## Lessons available { #lessons-available }
 
@@ -26,6 +26,7 @@ Lessons **1–14** cover C2 fundamentals, delivery and execution evidence, antiv
 | [12 — Network interfaces, sockets, and reachability](lesson-12-network-interfaces-and-sockets.md) | Selected-target context, ifconfig/netstat, LISTEN limits, and firewall, route, VM, container, and HTTP failure analysis |
 | [13 — Built-in commands, Armory, and BOFs](lesson-13-armory-and-bof-basics.md) | Package search/install, aliases/extensions, registration versus execution, compatibility, and memory-execution effects |
 | [14 — EXE, .NET Assembly, and BOF execution](lesson-14-exe-dotnet-and-bof-execution.md) | Artifact type, Client/target paths, CLR, hosting processes, and the learner's answers with detailed reasoning |
+| [15 — Windows tokens, Deny only, and privileges](lesson-15-windows-tokens-and-privileges.md) | Two programs under one account, permission cards, group attributes, privilege state, integrity, and detailed review answers |
 
 Read one lesson at a time. The lessons connect concepts to examples, with review questions, detailed answers, and follow-up explanations.
 
@@ -37,6 +38,8 @@ Read one lesson at a time. The lessons connect concepts to examples, with review
 - [Why LISTEN does not establish remote access](lesson-12-network-interfaces-and-sockets.md#answer-listen-versus-access), including the requested non-firewall causes.
 - [Why registered help is not a target result](lesson-13-armory-and-bof-basics.md#answer-help-versus-result).
 - [EXE-format and hosting-process answers](lesson-14-exe-dotnet-and-bof-execution.md#answer-exe-extension).
+
+- [Deny only and the two-file example](lesson-15-windows-tokens-and-privileges.md#deny-only-file-example): distinguish group attributes, privilege state, and evidence of an actual action.
 
 ## How to read the notes { #how-to-read-the-notes }
 
@@ -51,7 +54,7 @@ Read one lesson at a time. The lessons connect concepts to examples, with review
 
 ## Planned continuation { #planned-continuation }
 
-Further teaching will develop Windows token privileges and integrity levels, diagnostic-tool interpretation, service configuration, authentication/authorization, and internal SMB workflows. Lesson numbering is a teaching structure, not a claim that the entire original course has been covered. See the [coverage comparison](course-coverage-and-next-steps.md#current-coverage).
+Lesson 15 now explains Windows tokens, privileges, and integrity levels. Further teaching will develop diagnostic-tool interpretation, service configuration, authentication/authorization, and internal SMB workflows. Lesson numbering is a teaching structure, not a claim that the entire original course has been covered. See the [coverage comparison](course-coverage-and-next-steps.md#current-coverage).
 
 ## Sources { #sources }
 

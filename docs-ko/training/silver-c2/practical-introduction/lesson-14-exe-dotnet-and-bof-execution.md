@@ -168,4 +168,4 @@ Existing implant process
 
 **어떻게 실행했는지**와 **어디서 실행했는지**를 함께 묻습니다. 프로세스 생성과 계정에는 각각의 증거가 필요하며 메모리 실행이라는 말만으로 답할 수 없습니다.
 
-[이전: BOF·COFF·OBJ 문답](bof-coff-and-object-files-questions.md) · [학습 범위와 다음 단계](course-coverage-and-next-steps.md) · [강좌 개요](index.md)
+[이전: BOF·COFF·OBJ 문답](bof-coff-and-object-files-questions.md) · [다음: Windows 토큰·특권](lesson-15-windows-tokens-and-privileges.md) · [강좌 개요](index.md)

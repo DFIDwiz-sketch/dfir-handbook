@@ -38,7 +38,7 @@ Notes from courses and training I've taken, re-worked into my own reference and 
 
     ---
 
-    A Practical Introduction with Silver — Lessons 1–14 in English and Korean, covering C2, evidence, permissions, pivoting, SSH logs, network inspection, Armory, BOF/COFF/OBJ, and execution mechanisms. Includes virtual-lab commands, diagrams, and detailed answers to follow-up questions.
+    A Practical Introduction with Silver — Lessons 1–15 in English and Korean, covering C2, evidence, permissions, pivoting, SSH logs, network inspection, Armory, BOF/COFF/OBJ, execution mechanisms, and Windows tokens, Deny only, and privileges. Includes virtual-lab commands, diagrams, and detailed answers to follow-up questions.
 
     [:octicons-arrow-right-24: Silver C2](silver-c2/index.md)
 

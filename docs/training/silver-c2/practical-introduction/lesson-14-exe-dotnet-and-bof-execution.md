@@ -168,4 +168,4 @@ Existing implant process
 
 Ask both **how the code was executed** and **where it executed**. Process creation and identity need their own evidence; memory execution alone does not answer either question.
 
-[Previous: BOF, COFF, and OBJ questions](bof-coff-and-object-files-questions.md) · [Course coverage and next steps](course-coverage-and-next-steps.md) · [Course overview](index.md)
+[Previous: BOF, COFF, and OBJ questions](bof-coff-and-object-files-questions.md) · [Next: Windows tokens and privileges](lesson-15-windows-tokens-and-privileges.md) · [Course overview](index.md)

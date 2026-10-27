@@ -38,7 +38,7 @@ title: 트레이닝
 
     ---
 
-    A Practical Introduction with Silver — 1~14강을 영어·한국어로 제공하며 C2, 증거, 권한, 피벗팅, SSH 로그, 네트워크 조회, Armory, BOF·COFF·OBJ, 실행 방식을 다룹니다. 가상환경 명령·다이어그램과 추가 질문의 상세 해답을 포함합니다.
+    A Practical Introduction with Silver — 1~15강을 영어·한국어로 제공하며 C2, 증거, 권한, 피벗팅, SSH 로그, 네트워크 조회, Armory, BOF·COFF·OBJ, 실행 방식, Windows 토큰·Deny only·특권을 다룹니다. 가상환경 명령·다이어그램과 추가 질문의 상세 해답을 포함합니다.
 
     [:octicons-arrow-right-24: Silver C2](silver-c2/index.md)
 
