@@ -1,5 +1,5 @@
 ---
-title: "Day 4 — Responder, Internet Allow Listing and Vulnerability Management (in progress)"
+title: "Day 4 — Responder, Internet Allow Listing, Vulnerability Management and Web Security (in progress)"
 tags:
   - training
   - antisyphon
@@ -8,20 +8,40 @@ tags:
   - vulnerability-management
 ---
 
-# Day 4 — Responder, Internet Allow Listing and Vulnerability Management
+# Day 4 — Responder, Internet Allow Listing, Vulnerability Management and Web Security
 
 <div class="dfir-meta" markdown>
-**Course:** Information Security Core Skills · **Instructor:** John Strand (BHIS) · **Day 4 so far:** Responder lab walkthrough → NTLM cracking, relay and signing → internet allow listing → vulnerability management → Nessus report lab
+**Course:** Information Security Core Skills · **Instructor:** John Strand (BHIS) · **Day 4 so far:** Responder lab walkthrough → NTLM cracking, relay and signing → internet allow listing → vulnerability management → Nessus report lab → web application security → ZAP lab
 </div>
 
-!!! abstract "Day 4 at a glance (parts 1–2)"
-    Day 4 opens with the **Responder lab** set up on Day 3. An attacker on the same network redirects traffic, captures the **NTLMv2 challenge/response**, then cracks it offline or **relays** it — hence host-to-host blocking, disabling LLMNR and **SMB signing**. Next, exploiting the attacker habit of **using brand-new domains briefly and burning them**: simply **blocking "Uncategorized"** in your web filter gives you de-facto **internet allow listing**. Finally, **vulnerability management** in the AI era — bump CVSS up a level, don't ignore lows and informationals, and **group by vulnerability rather than by host** — plus the **Nessus report lab**.
+!!! abstract "Day 4 at a glance (parts 1–3)"
+    Day 4 opens with the **Responder lab** set up on Day 3. An attacker on the same network redirects traffic, captures the **NTLMv2 challenge/response**, then cracks it offline or **relays** it — hence host-to-host blocking, disabling LLMNR and **SMB signing**. Next, exploiting the attacker habit of **using brand-new domains briefly and burning them**: simply **blocking "Uncategorized"** in your web filter gives you de-facto **internet allow listing**. Finally, **vulnerability management** in the AI era — bump CVSS up a level, don't ignore lows and informationals, and **group by vulnerability rather than by host** — plus the **Nessus report lab**. Then **web application security** — don't bolt security on at the end; test throughout development with **SAST and DAST**, scan with **Burp and ZAP**, and check **whether your detections catch the scan** — and the **ZAP lab**.
 
 !!! info "This page is in progress"
-    **Parts 1–2** are written up. Parts 3–4 (web application security and the ZAP lab, AD hardening and the Ping Castle lab, wrap-up) will follow.
+    **Parts 1–3** are written up. Part 4 (AD hardening and the Ping Castle lab, wrap-up) will follow.
 
 !!! note "Conventions"
     **💡 Note (added)** = my own addition beyond the lecture. **(reconstructed)** = something the instructor only described or showed on screen, written out generically. Answers to questions that came up while studying are collected as **"Deep dive"** sub-sections. Labs that use offensive tooling are summarised by what they demonstrate and the defensive / detection takeaways.
+
+**Day 4 map (so far)**
+
+```mermaid
+flowchart LR
+    subgraph P1["Part 1 · attacker on your network"]
+        R["Capture NTLMv2<br/>with Responder"] --> C["Crack<br/>Hashcat 5600"]
+        R --> L["Relay<br/>ntlmrelayx"]
+    end
+    subgraph P1B["Part 1 · internet allow listing"]
+        U["Block 'Uncategorized'<br/>+ remove ads"]
+    end
+    subgraph P2["Part 2 · vulnerability management"]
+        V["CVSS +1<br/>read lows and infos<br/>group by vulnerability"]
+    end
+    subgraph P3["Part 3 · web applications"]
+        W["SAST and DAST<br/>Burp and ZAP<br/>test detective controls"]
+    end
+    P1 --> P1B --> P2 --> P3
+```
 
 ---
 
@@ -40,6 +60,22 @@ Responder starts poisoners for **LLMNR, NBT-NS and mDNS** (Day 1 — Windows sho
 Responder's servers — **HTTP, HTTPS, SMB, Kerberos** and more — are all primed to steal credentials (**WPAD** is off for this lab).
 
 > **Segmentation would stop an attack like this** — but we very rarely see organisations with that segmentation.
+
+**Attack flow and where to break it** — dotted lines are the defence that cuts each step.
+
+```mermaid
+flowchart LR
+    A["① Name lookup fails<br/>LLMNR / NBT-NS broadcast"] --> B["② Attacker answers 'that's me'<br/>Responder"]
+    B --> C["③ Victim authenticates automatically<br/>NTLMv2 challenge / response"]
+    C --> D{"④ Attacker's choice"}
+    D -->|"offline"| E["Crack<br/>Hashcat -m 5600"]
+    D -->|"live"| F["Relay<br/>ntlmrelayx to another server"]
+    E --> G["Password recovered"]
+    F --> H["Session as the victim"]
+    X1["Defence: disable LLMNR / NBT-NS<br/>block host-to-host traffic"] -.->|"stops"| B
+    X2["Defence: long, strong passwords"] -.->|"stops"| E
+    X3["Defence: SMB signing required"] -.->|"stops"| F
+```
 
 ### The capture { #capture }
 
@@ -93,18 +129,20 @@ NTLM is a question-and-answer scheme. The server sends a random **question (chal
 - A **NetNTLMv2** value is a **one-time answer to one specific challenge**. Next time the server asks a **different question**, so a recorded answer is useless → no reuse, **offline cracking only**.
 - **Relay** doesn't store anything for later — the attacker **sits between victim and real server and forwards question and answer in real time**.
 
-```text
-Victim PC              Attacker (ntlmrelayx)           Real server (e.g. file server)
-    │                         │                                │
-    │── ① I want to auth ───▶│                                │
-    │                         │── ② I want to auth (as victim) ─▶│
-    │                         │◀──────── ③ challenge ───────────│
-    │◀── ④ same challenge ───│                                │
-    │  (victim computes the answer with its NT hash)           │
-    │── ⑤ response ─────────▶│                                │
-    │                         │──────── ⑥ same response ──────▶│
-    │                         │◀──── ⑦ authenticated! ─────────│
-                    (the attacker now has a session as the victim)
+```mermaid
+sequenceDiagram
+    participant V as Victim PC
+    participant A as Attacker ntlmrelayx
+    participant S as Real server - file server
+    V->>A: ① I want to authenticate
+    A->>S: ② I want to authenticate - posing as victim
+    S->>A: ③ challenge
+    A->>V: ④ forward the same challenge
+    Note over V: computes the answer with its NT hash
+    V->>A: ⑤ response
+    A->>S: ⑥ forward the same response
+    S->>A: ⑦ authenticated
+    Note over A,S: attacker now has a session as the victim<br/>without the password or the NT hash
 ```
 
 Because the real server's challenge is passed to the victim, the victim answers **exactly that challenge** — the answer the server is waiting for. The attacker gets a session as the victim **without knowing the password or the NT hash**, which is why relay works **however strong the password is**.
@@ -129,6 +167,17 @@ Think of a **bank counter**:
 - **SMB signing = requiring the customer's personal seal on every withdrawal slip after that.** Every request after logon (open a file, run a command …) must carry **a seal only the real user can produce**.
 - **The attacker has no seal.** Authentication succeeds, but **the very first request is rejected**. They got to the counter but can't get anything done.
 
+```mermaid
+sequenceDiagram
+    participant A as Attacker - relaying
+    participant S as File server - signing required
+    A->>S: forward the victim's response
+    S->>A: authenticated
+    A->>S: request 1 - open a file, unsigned
+    S--xA: rejected - missing or invalid signature
+    Note over A: no signing key - no session key<br/>so no request can be processed
+```
+
 **Watch out: it must be "required," not just "enabled."**
 
 - **Enabled:** "you may seal or not." → the attacker says "no seal, thanks" and it's accepted → **doesn't stop relay**
@@ -147,6 +196,14 @@ Recent Windows (Windows 11 24H2, Windows Server 2025) is moving to **SMB signing
 3. Signatures are made with that **session key**, which itself is **never sent over the network**.
 
 **So how does the file server know it?** It doesn't have users' NT hashes, so it **asks the domain controller**. The DC validates the answer, derives the session key and passes it to the file server over the **Netlogon secure channel**. Only the **client, the DC and the file server** know the key — the forwarding attacker doesn't. (With **Kerberos**, signing uses the **session key inside the Kerberos ticket** instead of the NT hash — same principle.)
+
+```mermaid
+flowchart LR
+    NT1["Victim PC<br/>holds the NT hash"] -->|"NT hash + this challenge / response"| K1["Session key"]
+    NT2["Domain controller<br/>holds the NT hash"] -->|"same derivation"| K2["Session key"]
+    K2 -->|"Netlogon secure channel"| FS["File server<br/>receives the session key"]
+    ATK["Attacker<br/>no NT hash, only forwarding"] -.->|"cannot derive"| NOK["No session key<br/>so no signature"]
+```
 
 **The key consequence — if the attacker already has the hash, it's different.** An attacker who **already holds the NT hash** can derive the session key and **sign requests themselves**. So **Pass-the-Hash is not stopped by SMB signing.**
 
@@ -195,6 +252,13 @@ Pentesters like BHIS use a tool that **buys expired domains and sorts them by UR
 
 > Attackers rarely do this — they **buy brand-new domains**. That difference is the key to the defence below.
 
+| | Real attackers | Pentesters (BHIS) |
+|---|---|---|
+| Which domains | **brand-new** ones (or a compromised server's domain) | expired domains **back on sale** |
+| How long | a week or two, then burnt and refunded | for the engagement |
+| Vendor category | none → **"Uncategorized"** | already a **legitimate category** |
+| Blocking "Uncategorized" | **catches them** | can get around it |
+
 ### Allow the sites, remove the ads { #ads }
 
 Most people visit **only a handful of sites** a day. The exceptions are the click-on-everything crowd and heavy news readers — on sites like Yahoo, **ads that look like news stories** sit among the content, and some people click them. But they're rare.
@@ -212,6 +276,15 @@ Web filters list categories (adware, alcohol, anonymizers, porn, gambling …). 
 Attackers use **brand-new domains**, so your firewall / proxy vendor has **never seen them**.
 
 > If Cisco has never seen that domain before, do you really want your users going there? That seems like a bad idea.
+
+```mermaid
+flowchart LR
+    U["User visits a domain"] --> P{"Web proxy<br/>category lookup"}
+    P -->|"known good category<br/>news, business..."| OK["Allow<br/>+ block ads"]
+    P -->|"blocked category<br/>gambling, adult..."| BL["Block"]
+    P -->|"Uncategorized<br/>newly registered"| UN["Block<br/>or Pi-hole prompt"]
+    C2["C2 malware<br/>has no hands"] -.->|"can't click the button"| UN
+```
 
 !!! note "💡 Note (added)"
     Many proxies and DNS filters now have a separate **"Newly Registered Domains (NRD)"** category (e.g. registered within 30 days). Blocking it alongside "Uncategorized" effectively filters the domains attackers just bought.
@@ -303,6 +376,15 @@ Exploits and worms used to spread **indiscriminately** and give defenders **some
 
     Both help, but both rise only **after signals accumulate**, so they can lag in an era of AI-accelerated exploitation. Use KEV / EPSS to set the front of the queue — and don't ignore what's below.
 
+**Summary — the old way vs the AI era**
+
+| | Old way | AI era (John's proposal) |
+|---|---|---|
+| Priority | highs and criticals only | **bump CVSS +1** |
+| No public exploit | later | AI can produce one quickly → **act early** |
+| Lows / informationals | ignored | **a human reads them in context** |
+| Unit of work | per host | **per vulnerability + automation** |
+
 ### The bigger problem — ignored lows and informationals { #lows-and-infos }
 
 > The bigger problem is that **lows and informationals** probably shouldn't have been ignored anyway.
@@ -364,6 +446,17 @@ Looking host by host — **1,000 IPs × ~25 vulns each = 25,000 issues** — fee
 > You don't actually have 25,000 vulnerabilities. You usually have **a couple hundred vulnerabilities repeating** again and again across systems.
 
 Flip the question — ❌ "what vulnerabilities does this host have?" → ⭕ "**which hosts have this vulnerability?**" Now you chase **a couple hundred**, and you can use **automation — Microsoft patching, Ansible scripts** — to push the same fix to many systems **in parallel**.
+
+```mermaid
+flowchart LR
+    subgraph HV["Per-host view"]
+        H1["1,000 hosts"] --> H2["× ~25 each"] --> H3["= 25,000 items<br/>overwhelming"]
+    end
+    subgraph VV["Per-vulnerability view"]
+        V1["Group identical findings<br/>by plugin ID"] --> V2["a few hundred vulnerabilities"] --> V3["Fix many hosts at once<br/>with patching / Ansible"]
+    end
+    H3 -.->|"flip the question"| V1
+```
 
 !!! note "💡 Note (added) — \"group by vulnerability\" in Splunk"
     Suppose Nessus results were exported to CSV and uploaded to Splunk as a **lookup file** `nessus_scan.csv` (columns such as `Plugin ID`, `Name`, `Risk`, `Host`, `Port`, `Plugin Output`).
@@ -493,11 +586,265 @@ That's a standard vulnerability-assessment scan — **fundamentally different** 
 
 ---
 
-That's Day 4 parts 1–2. One-line summary:
+## 5. Web application security { #web-app-security }
 
-> **An attacker on your network captures NTLMv2 and cracks or relays it — the answer is host-to-host blocking, disabling LLMNR and required SMB signing, while stolen-hash Pass-the-Hash needs separate defences. Attackers burn brand-new domains, so blocking "Uncategorized" and removing ads gives de-facto internet allow listing. For vulnerabilities, bump CVSS up a level, look at lows and informationals, and group by vulnerability so automation can fix them at scale.**
+A standard vulnerability-assessment scan is fundamentally different from testing **web applications, mobile apps and APIs**. So how do we secure our apps quickly and effectively? Three obstacles: **training** is ridiculously expensive, **tools** can be expensive, and **changing the whole process** to build security in is hard.
 
-Next (parts 3–4, to be added): **web application security** and the **ZAP lab**, **AD hardening** (BloodHound, PlumHound, Mimikatz) and the **Ping Castle lab**, wrap-up.
+### Security gets "bolted on" at the end { #bolted-on }
+
+The software development life cycle keeps building, adding functionality and improving — but security is consistently **bolted on at the end, almost as an afterthought**. A common call to BHIS:
+
+> "We need a web application security assessment — and by the way, we need it fairly quickly because **we're going live in a month**."
+
+They've done no security until then and expect BHIS to show up and **sprinkle security all over the place**. That's **expensive and dangerous**; security should be done **continuously throughout the life cycle**.
+
+### Is AI-written code secure? { #ai-code }
+
+BHIS uses Anthropic's Claude, OpenAI's ChatGPT and others — and John has noticed something:
+
+> AI will write code, but it won't necessarily write it **securely**. Strangely, ask the same AI to **look for the security vulnerabilities** in that code and it finds **a bunch**.
+
+That's because these are **two different skill sets**:
+
+| Skill | How the AI learned it | Used when writing code? |
+|---|---|---|
+| **Writing code** | trained on billions of lines from the internet (John: "plagiarised") | yes |
+| **Securing code** | a separate skill | **missing** |
+
+!!! note "💡 Note (added)"
+    So when using AI to write code, ask for "implement the feature" and "review it for security" **as separate requests**. With **SAST** (below) turned on in the repository, AI-written code is scanned automatically just like human-written code.
+
+Many organisations now **write their own apps** instead of buying SaaS (John: the "SaaS apocalypse"). Building got easier, but we're back to the same place — **security is hard.**
+
+### Except it's not really that hard { #not-that-hard }
+
+> Security is hard. **Except not really.**
+
+- Most security testers **know less about development than developers do** — different skill sets.
+- So it's **easier to teach a web developer security** than to teach a tester development.
+- There are **tons of free tools**.
+- The **Pareto principle (80/20)** — **80% of vulnerabilities** can be found with **20% of the effort**.
+
+### Where and when to test { #when-to-test }
+
+These tools are so easy to use that they belong in **every stage** of the build cycle — run them **nightly**.
+
+```mermaid
+flowchart LR
+    D["Development<br/>humans + AI"] --> CS["Every commit<br/>SAST code scanning<br/>+ SCA dependency checks"]
+    CS --> B["Build and deploy<br/>test environment"]
+    B --> DA["Nightly<br/>DAST scan<br/>ZAP / Burp"]
+    DA --> ST["Before the pentest<br/>share self-test results"]
+    ST --> PT["Pentest<br/>humans hunt logic / permission flaws"]
+    PT -.->|"fix, then repeat"| D
+```
+
+- **Source-code analysis (SAST)** — John shows GitHub **Advanced Security → Code scanning**, which analyses repository code for security vulnerabilities. "That's something you should **turn on** for source-code analysis."
+- **Dynamic testing (DAST)** — scan the **running app** to see how it reacts live. Code runs **inside an engine like Apache or Nginx**, which can introduce **additional vulnerabilities at runtime**, and code scanning isn't great at **business-logic errors**.
+
+!!! note "💡 Note (added) — the three kinds of analysis"
+    | Name | What it looks at | Example |
+    |---|---|---|
+    | **SAST** (static) | **source code**, not running | GitHub code scanning (CodeQL) |
+    | **DAST** (dynamic) | the **running app's** responses | ZAP, Burp active scan |
+    | **SCA** (composition) | known vulnerabilities in **third-party libraries** | GitHub Dependabot |
+
+    Each catches different things, so use them together. AI-written code sometimes pulls in **old library versions**, which makes SCA especially useful.
+
+### What tools catch and what they miss { #what-tools-catch }
+
+| Automated tools catch well (~80–85% of issues) | Humans need to find |
+|---|---|
+| Cross-site scripting (XSS) | **Logic errors** — reusing a coupon, skipping a checkout step |
+| SQL injection | **Permission errors** — changing an order number shows someone else's data |
+| Command injection | some **stored** attacks (e.g. stored XSS) |
+| Common misconfigurations | anything that needs the app's **business context** |
+
+> Do the tools cover everything? No — they just don't. That needs manual testing, which is a lot of what BHIS does.
+
+!!! note "💡 Note (added) — the injection family, simply"
+    - **SQL injection** — typing something like `' OR '1'='1` instead of a username makes the app **treat it as part of the database command**, skipping the password check.
+    - **Command injection** — if the app appends user input to an OS command, characters like `;` can **chain extra commands**.
+    - **XSS** — if input is echoed back into a page, a script in it can **run in other users' browsers**.
+
+    Same root cause: **trusting user input and using it as-is** — the "injection" family in the OWASP Top 10.
+
+### Self-test before the pentest { #self-test }
+
+> **Before** your assessment, run the tools yourself and share the results with the tester: "We're aware of these — **find the stuff an automated tool won't**."
+
+Pentest time isn't wasted on what tools can find, and any good tester wants to move on to the **hard-to-find vulnerabilities** — they're more fun.
+
+---
+
+## 6. Tools — Burp and ZAP { #burp-and-zap }
+
+BHIS's main tool is **Burp Suite Pro** (not free, but cheap and awesome); there's also **W3AF**, and this lab's **ZAP** (free).
+
+> These tools are **far better than most commercial tools you'd spend over $20,000 on** — but you have to know how to use them.
+
+| | Burp Suite Pro | ZAP (Zed Attack Proxy) |
+|---|---|---|
+| Price | about **US$500** (paid, but cheap) | **free** |
+| Origin | **PortSwigger** — always its own product (not a ZAP extension) | **Paros Proxy** → **OWASP ZAP** → today the ZAP core team |
+| Interface | stripped-down, basic — "all killer, no filler" | an automated-scan wizard that's easy for beginners |
+| Key features | intercept / modify, crawl, active scan | intercept / modify, active scan, **fully automated scanning** |
+| At BHIS | **the main tool**; most-used by web testers | this lab's tool |
+
+John sees Burp's plain interface as an **advantage**: rather than a "paste a URL and scan" button, you browse or crawl the site, it appears on the left, and you start an active scan there — exactly what you need where you expect it. Newcomers, though, tend to gravitate to the **pretty** tools. On ZAP:
+
+> It has active scanning. **It's free.** A strong development core. **It's free.** It intercepts and modifies requests. **It's free.** Fully automated scanning too. And it costs you "free.93" — **in everyone's budget**.
+
+!!! note "💡 Note (added) — who runs ZAP today"
+    The lecture said "Crash Override" has taken over ZAP. Per ZAP's own documentation: ZAP **left OWASP in September 2023**, and **since September 2024 Checkmarx supports it** (employing three core-team members). It remains an **independent open-source project controlled by the ZAP core team**, and free.
+
+### John's favourite trick — feed the results to AI { #burp-ai }
+
+1. Browsing a web server with Burp records the discovered pages and requests in a **state file**.
+2. Upload that file to an **AI agent**: "analyse this Burp state file and look for these vulnerabilities."
+3. It does — adding AI to any of these tools **hyper-extends** its analysis.
+
+!!! warning "💡 Note (added) — check before you upload"
+    These files contain real requests, so they may include **session cookies, tokens and user data**. Check company / client policy before sending them to an external AI service, and scrub sensitive values first.
+
+### The web-proxy workflow { #proxy-workflow }
+
+The same for Burp and ZAP:
+
+```mermaid
+flowchart LR
+    I["① Intercept<br/>see, pause, modify requests"] --> SC["② Set scope<br/>authorised targets only"]
+    SC --> CR["③ Crawl<br/>find pages and input points"]
+    CR --> AS["④ Active scan<br/>try SQLi, XSS..."]
+    CR -.-> AI["Analyse crawl / state file<br/>with AI"]
+    AS --> RV["⑤ Review results<br/>most certain first"]
+```
+
+| Step | What it does | Why it matters |
+|---|---|---|
+| ① **Intercept** | see requests, stop them, change anything, set fuzzing points | see directly how the app handles input |
+| ② **Scope** | define only what you're testing | otherwise it **crawls and attacks third-party sites** — out of scope |
+| ③ **Crawl (spider)** | finds every page and **input parameter** | the list to analyse and attack; great material for AI analysis |
+| ④ **Active scan** | fires SQL injection, XSS and more | handles the automatable 80% |
+| ⑤ **Review** | Burp: **solid red, white text = certain**; **white background, red text = relatively certain critical** | draws your eye to what to fix first |
+
+---
+
+## 7. Test your detective controls too { #test-detective-controls }
+
+> We need to keep looking for vulnerabilities, of course — but **at the same time we need to test our detective controls.**
+
+When you run a web scan, check whether your **IDS, IPS, SIEM and AI engines detect it**.
+
+> Move away from "can we be hacked?" to **"what can we actually detect?"**
+
+MITRE ATT&CK gives a taxonomy to file findings against attack methods — Day 3's "trust but verify," applied to the web.
+
+```mermaid
+flowchart LR
+    S["Run a ZAP scan<br/>authorised target"] --> L["Web server logs<br/>WAF / IDS"]
+    L --> SI["SIEM detection rules"]
+    SI --> Q{"Did an alert<br/>fire?"}
+    Q -->|"yes"| OK["Detection confirmed"]
+    Q -->|"no"| GAP["Detection gap<br/>add / tune a rule"]
+    GAP -.-> S
+```
+
+!!! note "💡 Note (added) — spotting a scan in web logs (Splunk)"
+    A scanner leaves **lots of requests from one source**, **lots of distinct paths**, and a **spike of server errors (5xx)** in the access log.
+
+    ```spl
+    index=web sourcetype=access_combined earliest=-1h
+    | stats count AS requests dc(uri_path) AS unique_paths count(eval(status>=500)) AS server_errors BY clientip
+    | where requests > 500 AND server_errors > 20
+    | sort - requests
+    ```
+
+    - **`index=web sourcetype=access_combined earliest=-1h`** — the last hour of web access logs (common Apache / Nginx format); adjust the index.
+    - **`stats ... BY clientip`** — group by requesting IP.
+        - **`count AS requests`** — total requests.
+        - **`dc(uri_path) AS unique_paths`** — distinct paths; scanners hit huge numbers of them.
+        - **`count(eval(status>=500)) AS server_errors`** — count only status ≥ 500; `eval(...)` counts events where the condition is true. Injection attempts cause lots of server errors.
+    - **`where requests > 500 AND server_errors > 20`** — keep IPs with many requests and many errors (tune thresholds).
+    - **`sort - requests`** — busiest first.
+
+    ```text
+    clientip       requests  unique_paths  server_errors
+    10.10.239.50   18452     2210          640
+    ```
+
+    People don't open thousands of distinct paths an hour. If this fires, the detection works; if not, that's **Day 3's detection gap**. Status codes: [HTTP status codes](../../../basics/http-status-codes.md).
+
+---
+
+## 8. ZAP lab { #zap-lab }
+
+### Setup { #zap-setup }
+
+Use the **new lab environment (antilab)** — not the older "Active Defense and Cyber Deception" one.
+
+```mermaid
+flowchart LR
+    subgraph LAB["Lab environment antilab"]
+        ZAP["ZAP<br/>automated scan"]
+        DSVW["Damn Small Vulnerable Web App<br/>http://linux-ip:65412"]
+    end
+    ZAP -->|"① crawl<br/>② active scan"| DSVW
+    DSVW -->|"responses and error messages"| ZAP
+    ZAP --> ALERT["Alerts pane, bottom left"]
+```
+
+1. In the Windows VM, open an **Ubuntu shell**.
+2. Change to the web-testing lab directory and note the **Linux IP**.
+3. Run the **Damn Small Vulnerable Web App (DSVW)** Python script — not pretty, but **vulnerabilities present and accounted for**.
+4. Start **ZAP** (slow at first; it asks whether to **persist the session**).
+5. **Automated Scan** → enter the **Linux IP and port** (in the lab, `http://10.10.239.83:65412` — the IP differs per environment) → **Attack**.
+6. If the scan **breaks DSVW, restart it**.
+
+!!! warning "Authorised targets only"
+    This lab scans a **deliberately vulnerable practice app inside your own lab**. ZAP's active scan sends real attack requests, so in practice only point it at **authorised targets within scope** — exactly why John stresses setting scope.
+
+### Walkthrough { #zap-walkthrough }
+
+ZAP was still updating so the URL entry fought back at first; then **Automated → URL → Attack**. Requests stream past, and quickly:
+
+> Oh, we actually got a **command injection** vulnerability, it looks like, already.
+
+ZAP **crawls** first, then switches to the **active scan**; meanwhile watch the **Alerts** pane in the lower left. DSVW fell over once and was restarted (John: "I'll probably update the lab to run it in a loop"). Checking at the end, the scan was at **100%**.
+
+| Finding | What it means | Why it's dangerous | Fix |
+|---|---|---|---|
+| **Command injection** | input appended to a server OS command | arbitrary command execution on the server | never build commands from input; accept only allowed values |
+| **SQL injection (SQLite)** | input lands inside the SQL statement; even the DB type leaks | read / modify the database | **parameterised queries** |
+| **Database error disclosure** | `sqlite3.OperationalError ... syntax error` shown to the user | a **hint** for the attacker | log details; show users a generic error page |
+| **UNION SQL injection** | appends **another table's data** to the result | data theft | parameterised queries, **least-privilege DB account** |
+| **Remote file include (RFI)** | a supplied path **loads another file** | inject phishing content into a legitimate page, etc. | restrict loadable files to a **fixed allow list** |
+
+**Open the SQL injection alert** and you see the request above and the response below — an **Internal Server Error** with:
+
+```text
+sqlite3.OperationalError: near "...": syntax error
+```
+
+> You should never see those errors from the database coming through directly.
+
+!!! note "💡 Note (added) — why an error message is a hint"
+    It tells the attacker "this app uses SQLite," "my input reached the SQL statement," and "the syntax broke here," so they can refine the next attempt precisely. **File inclusion** comes in two flavours — **LFI** (read other files on the server) and **RFI** (load a file from an external server) — both from trusting a user-supplied path.
+
+### Why results differ between students { #zap-variance }
+
+> Some of you probably got different vulnerabilities than others. That's very common — as a web server gets **overloaded**, some responses don't come back properly.
+
+!!! note "💡 Note (added)"
+    A finding **missing from an automated scan doesn't mean it isn't there.** Slow servers or failed requests cause misses. For important apps, throttle the scan or run it more than once — and keep a human verification step.
+
+---
+
+That's Day 4 parts 1–3. One-line summary:
+
+> **An attacker on your network captures NTLMv2 and cracks or relays it — the answer is host-to-host blocking, disabling LLMNR and required SMB signing, while stolen-hash Pass-the-Hash needs separate defences. Attackers burn brand-new domains, so blocking "Uncategorized" and removing ads gives de-facto internet allow listing. For vulnerabilities, bump CVSS up a level, look at lows and informationals, and group by vulnerability so automation can fix them at scale. Test web apps throughout development with SAST and DAST, have humans hunt the logic and permission flaws tools miss, and check that your detections catch the scan.**
+
+Next (part 4, to be added): **AD hardening** (BloodHound, PlumHound, Mimikatz), the **Ping Castle lab**, and the course wrap-up.
 
 ## References
 
@@ -505,4 +852,6 @@ Next (parts 3–4, to be added): **web application security** and the **ZAP lab*
 - [Responder](https://github.com/lgandx/Responder) · [Impacket (ntlmrelayx)](https://github.com/fortra/impacket) · [Hashcat example hashes (mode numbers)](https://hashcat.net/wiki/doku.php?id=example_hashes)
 - [Microsoft — SMB signing](https://learn.microsoft.com/windows-server/storage/file-server/smb-signing) · [CISA KEV](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) · [FIRST EPSS](https://www.first.org/epss/) · [FIRST CVSS](https://www.first.org/cvss/)
 - [MITRE ATT&CK — T1557.001 LLMNR/NBT-NS Poisoning and SMB Relay](https://attack.mitre.org/techniques/T1557/001/)
-- Related: [LLMNR & NTLM relay](../../../adversary/llmnr-ntlm-relay.md) · [Pass-the-Hash](../../../adversary/pass-the-hash.md) · [SAM & NTDS extraction](../../../adversary/sam-ntds-extraction.md) · [Zeek](../../../network/zeek/index.md) · [Well-known ports](../../../basics/well-known-ports.md)
+- [ZAP](https://www.zaproxy.org/) · [ZAP ownership](https://zaproxy.org/docs/zap-ownership) · [Burp Suite](https://portswigger.net/burp) · [Damn Small Vulnerable Web](https://github.com/stamparm/DSVW)
+- [GitHub code scanning](https://docs.github.com/code-security/code-scanning) · [OWASP Top 10](https://owasp.org/www-project-top-ten/)
+- Related: [LLMNR & NTLM relay](../../../adversary/llmnr-ntlm-relay.md) · [Pass-the-Hash](../../../adversary/pass-the-hash.md) · [SAM & NTDS extraction](../../../adversary/sam-ntds-extraction.md) · [Zeek](../../../network/zeek/index.md) · [Well-known ports](../../../basics/well-known-ports.md) · [HTTP status codes](../../../basics/http-status-codes.md)
