@@ -1,29 +1,28 @@
 ---
-title: "Day 4 — Responder, Internet Allow Listing, Vulnerability Management and Web Security (in progress)"
+title: "Day 4 — Responder, Internet Allow Listing, Vulnerability Management, Web Security and AD Hardening"
 tags:
   - training
   - antisyphon
   - ntlm-relay
   - internet-allowlisting
   - vulnerability-management
+  - active-directory
+  - ping-castle
 ---
 
-# Day 4 — Responder, Internet Allow Listing, Vulnerability Management and Web Security
+# Day 4 — Responder, Internet Allow Listing, Vulnerability Management, Web Security and AD Hardening
 
 <div class="dfir-meta" markdown>
-**Course:** Information Security Core Skills · **Instructor:** John Strand (BHIS) · **Day 4 so far:** Responder lab walkthrough → NTLM cracking, relay and signing → internet allow listing → vulnerability management → Nessus report lab → web application security → ZAP lab
+**Course:** Information Security Core Skills · **Instructor:** John Strand (BHIS) · **Day 4 scope:** Responder lab walkthrough → NTLM cracking, relay and signing → internet allow listing → vulnerability management → Nessus report lab → web application security → ZAP lab → AD hardening (BloodHound, PlumHound, Mimikatz) → Ping Castle lab → course wrap-up
 </div>
 
-!!! abstract "Day 4 at a glance (parts 1–3)"
-    Day 4 opens with the **Responder lab** set up on Day 3. An attacker on the same network redirects traffic, captures the **NTLMv2 challenge/response**, then cracks it offline or **relays** it — hence host-to-host blocking, disabling LLMNR and **SMB signing**. Next, exploiting the attacker habit of **using brand-new domains briefly and burning them**: simply **blocking "Uncategorized"** in your web filter gives you de-facto **internet allow listing**. Finally, **vulnerability management** in the AI era — bump CVSS up a level, don't ignore lows and informationals, and **group by vulnerability rather than by host** — plus the **Nessus report lab**. Then **web application security** — don't bolt security on at the end; test throughout development with **SAST and DAST**, scan with **Burp and ZAP**, and check **whether your detections catch the scan** — and the **ZAP lab**.
-
-!!! info "This page is in progress"
-    **Parts 1–3** are written up. Part 4 (AD hardening and the Ping Castle lab, wrap-up) will follow.
+!!! abstract "Day 4 at a glance"
+    Day 4 opens with the **Responder lab** set up on Day 3. An attacker on the same network redirects traffic, captures the **NTLMv2 challenge/response**, then cracks it offline or **relays** it — hence host-to-host blocking, disabling LLMNR and **SMB signing**. Next, exploiting the attacker habit of **using brand-new domains briefly and burning them**: simply **blocking "Uncategorized"** in your web filter gives you de-facto **internet allow listing**. Finally, **vulnerability management** in the AI era — bump CVSS up a level, don't ignore lows and informationals, and **group by vulnerability rather than by host** — plus the **Nessus report lab**. Then **web application security** — don't bolt security on at the end; test throughout development with **SAST and DAST**, scan with **Burp and ZAP**, and check **whether your detections catch the scan** — and the **ZAP lab**. Part 4 is **AD hardening** — **BloodHound** to see the paths to Domain Admin as a graph, **PlumHound** to turn them into a fix list, and breaking today's dead ends before they connect — plus why **Mimikatz** is more than a hash extractor (and how to detect it), the **Ping Castle report lab**, and the course wrap-up.
 
 !!! note "Conventions"
     **💡 Note (added)** = my own addition beyond the lecture. **(reconstructed)** = something the instructor only described or showed on screen, written out generically. Answers to questions that came up while studying are collected as **"Deep dive"** sub-sections. Labs that use offensive tooling are summarised by what they demonstrate and the defensive / detection takeaways.
 
-**Day 4 map (so far)**
+**Day 4 map**
 
 ```mermaid
 flowchart LR
@@ -40,7 +39,10 @@ flowchart LR
     subgraph P3["Part 3 · web applications"]
         W["SAST and DAST<br/>Burp and ZAP<br/>test detective controls"]
     end
-    P1 --> P1B --> P2 --> P3
+    subgraph P4["Part 4 · AD hardening"]
+        AD["BloodHound / PlumHound<br/>Mimikatz detection<br/>Ping Castle"]
+    end
+    P1 --> P1B --> P2 --> P3 --> P4
 ```
 
 ---
@@ -217,8 +219,8 @@ So each needs its own defence: **SMB signing for relay**; **Day 3's LAPS, workst
 
 ### Labs coming up later today { #upcoming-labs }
 
-- **Web testing lab** — attack a deliberately vulnerable little web app (Damn Small Vulnerable Web App) with **ZAP (Zed Attack Proxy)** (part 3)
-- **Ping Castle lab** — no VM needed; just **analyse a Ping Castle report** on a website (part 4)
+- **Web testing lab** — attack a deliberately vulnerable little web app (Damn Small Vulnerable Web App) with **ZAP (Zed Attack Proxy)** ([part 3](#zap-lab))
+- **Ping Castle lab** — no VM needed; just **analyse a Ping Castle report** on a website ([part 4](#ping-castle))
 
 ---
 
@@ -838,13 +840,401 @@ sqlite3.OperationalError: near "...": syntax error
 !!! note "💡 Note (added)"
     A finding **missing from an automated scan doesn't mean it isn't there.** Slow servers or failed requests cause misses. For important apps, throttle the scan or run it more than once — and keep a human verification step.
 
+
 ---
 
-That's Day 4 parts 1–3. One-line summary:
+## 9. AD hardening — the last control { #ad-hardening }
 
-> **An attacker on your network captures NTLMv2 and cracks or relays it — the answer is host-to-host blocking, disabling LLMNR and required SMB signing, while stolen-hash Pass-the-Hash needs separate defences. Attackers burn brand-new domains, so blocking "Uncategorized" and removing ads gives de-facto internet allow listing. For vulnerabilities, bump CVSS up a level, look at lows and informationals, and group by vulnerability so automation can fix them at scale. Test web apps throughout development with SAST and DAST, have humans hunt the logic and permission flaws tools miss, and check that your detections catch the scan.**
+After the ZAP lab John moves on to the tenth control, **Active Directory (AD) hardening**. It goes by quickly in the lecture, but every attack from the previous three days ends up here.
 
-Next (part 4, to be added): **AD hardening** (BloodHound, PlumHound, Mimikatz), the **Ping Castle lab**, and the course wrap-up.
+!!! note "💡 Note (added) — why AD comes last"
+    AD manages an organisation's accounts, groups, PCs, servers and permissions in one place, and the top permission is **Domain Admin (DA)**. With DA you can log in to every PC, reset every password and push software to every machine through Group Policy. That is why an attacker inside the network almost always aims for DA. Every attack covered so far is **a step on the staircase to DA**; AD hardening is about breaking those steps.
+
+```mermaid
+flowchart LR
+    A["First account<br/>password spray<br/>(Day 1)"] --> B["Service account<br/>Kerberoasting<br/>(Day 1)"]
+    A --> C["Other users' auth<br/>Responder / relay<br/>(Day 4 part 1)"]
+    B --> D["Move to next PC<br/>Pass-the-Hash<br/>(Day 3)"]
+    C --> D
+    D --> E["Admin credentials<br/>from memory<br/>(Mimikatz)"]
+    E --> F["Domain Admin"]
+    H["AD hardening<br/>BloodHound / PlumHound<br/>Ping Castle"] -.->|"breaks the steps"| D
+    H -.-> E
+```
+
+### BloodHound — every path to Domain Admin { #bloodhound }
+
+The first tool is **BloodHound** (SpecterOps), which also came up on Day 3.
+
+> BloodHound takes a standard, non-privileged user and enumerates **all the pathways for that user to become a full domain administrator**.
+
+BloodHound sees AD as a **graph**. Users, groups, computers and GPOs are the dots (nodes); the relationships between them are the lines (edges). Each one is an ordinary setting on its own — chained together, they become a path.
+
+| Edge | Meaning |
+|---|---|
+| **MemberOf** | This user/group is a member of that group |
+| **AdminTo** | This user/group is local admin on that PC |
+| **HasSession** | This user is logged in on that PC (their credentials are in memory) |
+| **GenericAll** and other rights edges | This object can freely change that one (reset a password, add to a group, …) |
+
+```mermaid
+flowchart LR
+    U["jsmith<br/>standard user"] -->|"MemberOf"| G["Helpdesk group"]
+    G -->|"AdminTo"| PC["PC-07"]
+    PC -->|"HasSession"| DA["admin.kim<br/>logged in"]
+    DA -->|"MemberOf"| DAG["Domain Admins"]
+```
+
+How to read it: jsmith is in Helpdesk, so can become admin on PC-07; PC-07's memory still holds the credentials of admin.kim, who is logged in there; extract them ([Mimikatz](#mimikatz), below) and jsmith is a Domain Admin. **None of this shows up in a vulnerability scanner** — nothing is unpatched; it is a problem of **permission relationships**. That is why part 2 said vulnerability scans don't see post-compromise lateral-movement opportunities.
+
+!!! note "💡 Note (added) — lists and graphs"
+    A well-known line from Microsoft's John Lambert (2015):
+
+    > Defenders think in lists. Attackers think in graphs. As long as this is true, attackers win.
+
+    Defenders look at "the list of admin accounts" and "the list of patches"; attackers look at "how does this connect to that." BloodHound lets **defenders see the graph too**.
+
+#### 💡 Note (added) — BloodHound collection leaves traces { #detect-bloodhound }
+
+BloodHound collects with **standard domain-user rights** only (the collector is called SharpHound). It asks the DC over LDAP for users, groups and permissions, and asks each PC "who is logged in?" and "who is local admin?". Those last questions connect to each PC's special **`IPC$`** share and open **named pipes** (channels programs use to talk) such as `srvsvc` and `samr`. The result is a pattern where **one PC opens the same pipes on dozens or hundreds of PCs in a short time** — a detection point when an attacker uses the same tool.
+
+**Event 5145** = "A network share object was checked to see whether client can be granted desired access". It records who (account), from where (source IP) and which file/pipe on which share — **on the PC being accessed**. It is off by default; turn on **Object Access → Audit Detailed File Share** in advanced audit policy. It is noisy, so it is usually enabled on servers and key PCs only.
+
+```spl
+index=wineventlog source="WinEventLog:Security" EventCode=5145 Share_Name="*IPC$" Relative_Target_Name IN ("srvsvc", "samr", "lsarpc")
+| bin _time span=10m
+| stats dc(host) AS target_count values(Relative_Target_Name) AS pipes BY _time, Source_Address, Account_Name
+| where target_count > 20
+| sort - target_count
+```
+
+- **Line 1** — Security log, **5145** only, share name ending in `IPC$` (the real value looks like `\\*\IPC$`), and target is one of three pipes. `IN (...)` means "equals any value in the brackets".
+    - **`srvsvc`** — Server service. Queries who is logged in (sessions).
+    - **`samr`** — Security Account Manager. Queries local group members (who is admin).
+    - **`lsarpc`** — Local Security Authority. Translates between SIDs and names.
+- **Line 2 `bin _time span=10m`** — groups time into 10-minute buckets so you can count "how many hosts in 10 minutes".
+- **Line 3 `stats ...`**
+    - **`dc(host) AS target_count`** — `dc` is distinct count. 5145 is logged on the accessed PC, so `host` is the target → "how many PCs were touched".
+    - **`values(Relative_Target_Name) AS pipes`** — the pipes used.
+    - **`BY _time, Source_Address, Account_Name`** — per 10-minute bucket, source IP and account.
+- **Line 4 `where target_count > 20`** — only sources touching more than 20 hosts in 10 minutes (tune the threshold).
+- **Line 5 `sort - target_count`** — highest first.
+
+```text
+_time                Source_Address  Account_Name  target_count  pipes
+2026-10-27 14:10:00  10.0.5.23       jsmith        143           lsarpc
+                                                                 samr
+                                                                 srvsvc
+2026-10-27 02:00:00  10.0.1.15       svc_sccm      38            samr
+```
+
+Row 1 — **a standard user on a standard PC touched 143 hosts in 10 minutes** → suspect BloodHound-style collection, investigate first. Row 2 — a management tool's service account doing its overnight job → likely benign; confirm and add to an allow list.
+
+!!! tip "Field names depend on log format"
+    With `renderXml = false` (classic format) the fields are `Share_Name`, `Relative_Target_Name`, `Source_Address`, `Account_Name` as above; in XML format they are `ShareName`, `RelativeTargetName`, `IpAddress`, `SubjectUserName`. Event IDs are collected in [Windows event IDs](../../../basics/windows-event-ids.md).
+
+### PlumHound — turning the graph into a to-do list { #plumhound }
+
+> We wrote a little tool — written by Kent at Black Hills Information Security — called **PlumHound**. PlumHound takes the data from your BloodHound output and creates **work effort**.
+
+BloodHound shows "the full path to DA" through an attacker's eyes. But a defender staring at a graph doesn't immediately get "so what do I fix on Monday?". PlumHound turns the same data into **tabular reports** you can work through. John's examples: **domain users, workstations with RDP, Kerberoastable users, group policy objects, paths to Domain Admin**.
+
+```mermaid
+flowchart LR
+    SH["SharpHound<br/>collects as standard user"] --> NEO["Neo4j<br/>graph database"]
+    NEO --> BH["BloodHound UI<br/>path graph to DA"]
+    NEO --> PH["PlumHound<br/>runs prepared queries"]
+    PH --> REP["HTML / CSV reports<br/>= fix list"]
+    BH --> RT["Red team: where to go"]
+    REP --> BT["Blue team: what to fix first"]
+```
+
+| | BloodHound | PlumHound |
+|---|---|---|
+| **Question** | "Can I reach DA? How?" | "What should we fix? In what order?" |
+| **Output** | Path graph (UI) | Report list (HTML / CSV) |
+| **Dead ends** | Easy to miss if they don't reach DA | Stay on the list |
+| **Main users** | Attackers, pentesters, defenders | Defenders, sysadmins |
+
+!!! note "💡 Note (added) — a bit more on PlumHound (per the BHIS blog)"
+    A Python tool by **Kent Ickler and Jordan Drysdale**. It connects to the **Neo4j** graph database BloodHound uses, runs prepared **Cypher** queries and writes **HTML or CSV reports**. The default task list produces **69 reports plus an index page**, and each report includes its query so you can reuse it elsewhere. Examples: high-privilege Kerberoastable accounts, LAPS deployment, accounts whose passwords never expire, accounts with passwords in the description field.
+
+    - **AnalyzePath** — shows **which single relationship to break** to cut the paths from a given user or group.
+    - **BusiestPath** — lists **the paths that affect the most users** first, to prioritise remediation.
+
+### Why dead ends matter — Hogwarts' moving staircases { #moving-staircases }
+
+> BloodHound looks specifically for the total pathway to domain administrator. But there are a lot of **dead ends**. Think Hogwarts — when the students were going to their rooms, the staircases were constantly changing and moving. Your AD environment is a lot like that when it comes to vulnerabilities. Some stairways get you into your house; others drop you somewhere else. The point is, **a pathway that doesn't end in a domain administrator account today might in a few weeks or months.**
+
+AD changes every day: people join and leave, get added to groups, admins log in to PCs to fix things, new GPOs appear — the staircases move.
+
+```mermaid
+flowchart LR
+    subgraph T1["Today — dead end"]
+        A1["jsmith"] --> B1["Helpdesk"] --> C1["PC-07<br/>no DA session"]
+        C1 -.-> X1["Stops here<br/>(BloodHound: no path)"]
+    end
+    subgraph T2["Next month — path complete"]
+        A2["jsmith"] --> B2["Helpdesk"] --> C2["PC-07<br/>admin.kim logs in to fix the printer"]
+        C2 --> D2["Domain Admins"]
+    end
+    T1 ==>|"the staircase moves"| T2
+```
+
+Today BloodHound's "path to DA" says "nothing found", but PlumHound's list still shows items like **"Helpdesk is local admin on 300 PCs"**, so you can fix it in advance. It's the same lesson as **not ignoring lows and informationals** in part 2 — things that aren't critical now become critical when they connect.
+
+---
+
+## 10. Mimikatz — more than a hash extractor { #mimikatz }
+
+> A lot of people use Mimikatz just for **extracting password hashes and clear-text passwords out of memory**, which it's very good at. But it does **a tremendous amount more** than that, which can be used for **assessing individual workstations**.
+
+Windows keeps logged-in users' credentials in the memory of the **LSASS** process (so it can authenticate to file servers and the like without asking again). Mimikatz reads that memory.
+
+!!! note "💡 Note (added) — what else it can do (concepts)"
+    | Capability | Concept | Related page |
+    |---|---|---|
+    | **Credentials in memory** | Hashes, tickets and (on old settings) clear-text passwords from LSASS | [LSASS dumping](../../../adversary/lsass-dumping.md) |
+    | **Kerberos tickets** | View and export tickets in memory for reuse | [Pass-the-Hash](../../../adversary/pass-the-hash.md) |
+    | **Stored secrets** | Decrypt secrets Windows protects (Credential Manager, saved browser passwords, …) | — |
+    | **DCSync** | With replication rights, **imitate DC replication** and pull every account's hash without logging in to a DC | [DCSync](../../../adversary/dcsync.md) |
+    | **Ticket forgery** | Use the krbtgt hash to forge a ticket for any user (Golden Ticket) | [Golden & Silver Tickets](../../../adversary/golden-silver-tickets.md) |
+
+**What "assessing workstations" means** — in an authorised assessment, what's left on a single PC exposes **AD admin habits**. If a standard user's PC has **DA credentials in memory**, someone logged in to an ordinary PC with a DA account (a tiering failure), and an attacker who owns that one PC wins.
+
+| Defence | What it does |
+|---|---|
+| **Credential Guard** | Moves LSASS secrets into a virtualisation-based isolated space so reading memory doesn't reveal them |
+| **LSA protection (RunAsPPL)** | Makes LSASS a protected process so even admin-level programs can't easily read its memory |
+| **Protected Users group** | Members don't use NTLM or weak crypto, and credentials aren't cached |
+| **Admin tiering** | DA accounts log in to DCs only; PCs get PC-only admin accounts |
+| **LAPS** | A different local admin password on every PC (stops Day 3 Pass-the-Hash spread) |
+| **Disable WDigest** | Turns off the old behaviour of keeping clear-text passwords in memory (off by default on modern Windows) |
+
+!!! note "💡 Note (added)"
+    The two detections below are additions beyond the lecture. As on [Day 3](day-3.md), they only count once you've **tested them and confirmed they fire**.
+
+### Detection ① LSASS memory access — Sysmon event 10 { #detect-lsass }
+
+**Sysmon event 10 (ProcessAccess)** = records when one process opens another. `SourceImage` = the program doing the access, `TargetImage` = the program being accessed, `GrantedAccess` = the rights requested (a number).
+
+```spl
+index=wineventlog source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=10 TargetImage="*\\lsass.exe"
+| search NOT SourceImage IN ("C:\\Windows\\System32\\wininit.exe", "C:\\Windows\\System32\\csrss.exe", "C:\\Windows\\System32\\svchost.exe", "C:\\ProgramData\\Microsoft\\Windows Defender\\Platform\\*\\MsMpEng.exe")
+| stats count values(GrantedAccess) AS access BY host, SourceImage
+| sort - count
+```
+
+- **Line 1** — Sysmon event 10 where **the accessed program is lsass.exe**. `\\` means a single backslash inside an SPL string.
+- **Line 2 `search NOT SourceImage IN (...)`** — removes the built-in Windows processes and Defender (MsMpEng) that touch LSASS legitimately. **Exclude by full path, not just name** — attackers often name malware `svchost.exe` and drop it in another folder; excluding by name would hide it too.
+- **Line 3 `stats count values(GrantedAccess) AS access BY host, SourceImage`** — count and requested rights per PC and source program.
+- **Line 4 `sort - count`** — highest first.
+
+**Reading GrantedAccess** — the number is a sum of permission bits.
+
+| Value | Meaning |
+|---|---|
+| `0x0010` | Read memory |
+| `0x0400` | Query information |
+| `0x1000` | Query limited information |
+| `0x1010` | `0x1000 + 0x0010` → limited query + **read memory** (common with credential-theft tools) |
+| `0x1410` | `0x1000 + 0x0400 + 0x0010` → also includes **read memory** |
+| `0x1FFFFF` | All access |
+
+The key question is **"does it include 0x10 (read memory)?"**
+
+```text
+host    SourceImage                                         count  access
+WS-07   C:\Users\Public\update.exe                          2      0x1010
+WS-07   C:\Program Files\VMware\VMware Tools\vmtoolsd.exe   14     0x1000
+```
+
+Row 1 — an unknown exe in the Public folder with **read-memory rights** → investigate first. Row 2 — `0x1000` is limited query only, no memory read → likely a legitimate tool. In a lab, Atomic Red Team's **T1003.001 (LSASS Memory)** tests let you confirm this search actually fires.
+
+### Detection ② DCSync — event 4662 { #detect-dcsync }
+
+**Event 4662** = "An operation was performed on an object". It is logged **on the DC** when an AD object is accessed. To get it, enable **DS Access → Audit Directory Service Access** on DCs and set an **audit entry (SACL)** on the domain object. DCSync is a replication request, so 4662 contains **GUIDs for the replication rights**.
+
+| GUID | Right |
+|---|---|
+| `1131f6aa-9c07-11d1-f79f-00c04fc2dcd2` | Replicating Directory Changes |
+| `1131f6ad-9c07-11d1-f79f-00c04fc2dcd2` | Replicating Directory Changes **All** (includes secrets such as password hashes) |
+
+```spl
+index=wineventlog source="WinEventLog:Security" EventCode=4662 ("1131f6aa-9c07-11d1-f79f-00c04fc2dcd2" OR "1131f6ad-9c07-11d1-f79f-00c04fc2dcd2")
+| search NOT Account_Name="*$"
+| stats count min(_time) AS first_seen BY host, Account_Name
+| convert ctime(first_seen)
+```
+
+- **Line 1** — 4662 events containing either GUID. The GUIDs are searched as **raw text**, not a field, because in classic format this information spans several lines and field extraction is unreliable.
+- **Line 2 `search NOT Account_Name="*$"`** — removes **computer accounts** (ending in `$`); DCs replicating with each other is normal.
+- **Line 3 `stats count min(_time) AS first_seen BY host, Account_Name`** — count per DC and account, plus **the earliest time** (= first seen).
+- **Line 4 `convert ctime(first_seen)`** — turns the numeric (epoch) time into a readable date.
+
+```text
+host   Account_Name        count  first_seen
+DC01   helpdesk02          2      10/27/2026 14:03:11
+DC01   MSOL_8a1f2c3d4e5f   96     10/27/2026 00:00:04
+```
+
+Row 1 — a helpdesk account requested replication → not normal work, **investigate immediately**. Row 2 — `MSOL_` accounts belong to **Microsoft Entra Connect (formerly Azure AD Connect)**, which legitimately uses replication rights to sync password hashes → benign; confirm and allow-list.
+
+---
+
+## 11. Ping Castle lab { #ping-castle }
+
+> The one we're going to be talking about now is **Ping Castle**. We have a lab where you're going to be looking at the vulnerabilities Ping Castle found in an Active Directory environment.
+
+Ping Castle is an **AD security assessment tool**. Run it with **standard domain-user rights** and you get an **HTML report** — think of it as AD's health-check report.
+
+### Reading the score { #pingcastle-score }
+
+!!! note "💡 Note (added)"
+    The report has four categories, each scored **up to 100**. **Higher is worse** (0 = no issues, 100 = maximum risk) — like golf, lower is better.
+
+| Category | What it looks at |
+|---|---|
+| **Stale Objects** | Unused accounts and PCs, old operating systems, old delegations |
+| **Privileged Accounts** | Number of admins, admin account settings |
+| **Trusts** | Trust relationships with other domains |
+| **Anomalies** | Other security settings (LLMNR, SMB signing, krbtgt, …) |
+
+**The overall score is the highest of the four.** The weakest area defines the domain — manage admins perfectly and one open trust still sinks you. Each triggered rule adds points; click it for the **explanation and remediation**.
+
+```mermaid
+flowchart LR
+    S["Stale Objects<br/>45"] --> M{"Highest value"}
+    P["Privileged Accounts<br/>80"] --> M
+    T["Trusts<br/>20"] --> M
+    A["Anomalies<br/>100"] --> M
+    M --> G["Overall score 100<br/>(higher is worse)"]
+```
+
+(Numbers are illustrative.)
+
+### The lab — reading a report, no VM needed { #pingcastle-lab }
+
+As previewed in part 1, this lab **doesn't use the VM**. You go to a website, analyse a **pre-generated Ping Castle report**, and **answer the questions** listed above it.
+
+> Just to be completely honest, I do not know how they created this environment to run this Ping Castle report against. It is wild. **Insane number of vulnerabilities.** I don't know how this domain controller didn't just start a fire.
+
+The goal is to get familiar with **Ping Castle's output** and the **kinds of vulnerabilities** you look for in a report.
+
+> Once again, you **don't need to be an elite hacker** to find these things. All you need is access to a Ping Castle report, which is **cheap** — more expensive if you're consulting. You can get really good vulnerability analysis without having to do a whole bunch of hacks.
+
+!!! note "💡 Note (added) — licensing"
+    Ping Castle is now owned by **Netwrix**. The free **Community edition** can audit **your own environment** (no technical support or commercial-use rights). **Auditing other organisations (consulting)** requires the commercial **Service Provider** licence, and the **Enterprise** edition for protecting your own company is also paid — that's John's "more expensive if you're consulting".
+
+### How to read the report { #pingcastle-reading }
+
+!!! note "💡 Note (added)"
+    Most lab questions ask "what is this item and why is it dangerous?". Reading in this order is fastest.
+
+```mermaid
+flowchart LR
+    A["① Overall score and<br/>four category scores"] --> B["② Find the category<br/>driving the score"]
+    B --> C["③ Its rules,<br/>highest points first"]
+    C --> D["④ Click a rule<br/>explanation, evidence, fix, objects"]
+    D --> E["⑤ Link it to this course's attacks<br/>and explain why it's dangerous"]
+```
+
+### Common findings and how they connect to this course { #pingcastle-findings }
+
+| Finding | Why it's dangerous | Connects to | Fix |
+|---|---|---|---|
+| **LLMNR / NBT-NS not disabled** | Responder captures authentication | [Day 4 part 1](#responder-lab) · [LLMNR & NTLM relay](../../../adversary/llmnr-ntlm-relay.md) | Disable LLMNR by GPO, disable NBT-NS |
+| **SMB signing not required** | NTLM relay | [Deep dive ②](#deep-dive-smb-signing) | Require signing on all servers and PCs |
+| **Accounts with SPNs (especially admins)** | Kerberoasting → offline cracking | [Day 1](day-1.md) · [Kerberoasting](../../../adversary/kerberoasting.md) | Long passwords or **gMSA**; remove from admin groups |
+| **No LAPS** | Same local admin password everywhere → Pass-the-Hash spreads | [Day 3](day-3.md) · [Pass-the-Hash](../../../adversary/pass-the-hash.md) | Windows LAPS |
+| **Too many admins / passwords never expire** | Larger target, stale passwords | [Day 1](day-1.md) | Minimum membership, regular review |
+| **Old krbtgt password** | If it ever leaked, forged tickets stay valid | [Mimikatz](#mimikatz) · [Golden & Silver Tickets](../../../adversary/golden-silver-tickets.md) | Reset **twice** using the proper procedure |
+| **Unconstrained delegation** | Compromise that server and you steal tickets of users who connect | [BloodHound](#bloodhound) | Switch to constrained delegation; mark sensitive accounts "cannot be delegated" |
+| **Obsolete OS, unused accounts and PCs** | Unpatchable systems, ownerless accounts | [Part 2 vulnerability management](#vulnerability-management) | Clean up or disable |
+| **Print Spooler running on DCs** | A path to coerce the DC into authenticating | [Day 4 part 1 relay](#ntlmrelayx) · [PrintNightmare](../../../adversary/printnightmare.md) | Disable Spooler on DCs |
+
+!!! note "💡 Note (added) — two terms from the table"
+    - **gMSA (group Managed Service Account)** — a service account whose long password AD generates and rotates automatically. Kerberoasting it becomes practically impossible.
+    - **krbtgt** — the account that signs every Kerberos ticket. With its hash you can forge a ticket for any user (Golden Ticket). It is reset **twice** because AD **remembers the previous password** too — reset once and the old hash still works.
+
+### 💡 Note (added) — watch for Ping Castle runs too { #detect-pingcastle }
+
+Like BloodHound, Ping Castle **runs with standard-user rights**. An attacker can run it too and get a free map of your AD weaknesses. So **runs from accounts or PCs outside the security team** are worth an alert (Sigma has a Ping Castle execution rule).
+
+```spl
+index=wineventlog source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=1 (Image="*\\PingCastle.exe" OR OriginalFileName="PingCastle.exe")
+| table _time, host, Image, ParentImage, CommandLine
+```
+
+- **Line 1** — **Sysmon event 1 (process creation)** where the executable path ends in PingCastle.exe, or `OriginalFileName` is PingCastle.exe. `OriginalFileName` is **the original name embedded inside the executable**, so renaming the file to `upd.exe` doesn't hide it.
+- **Line 2 `table ...`** — time, PC, executable, parent process and command line as a table.
+
+```text
+_time                host   Image                              ParentImage                                                CommandLine
+2026-10-27 15:22:41  WS-12  C:\Users\jsmith\Downloads\upd.exe  C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe  upd.exe --healthcheck --server corp.local
+```
+
+Run from a standard user's Downloads folder, **renamed**, via PowerShell → worth investigating.
+
+---
+
+## 12. Course wrap-up { #wrap-up }
+
+The recording announces the AMA but goes straight into the closing. John thanks **two groups** at the pay-what-you-can course.
+
+First, **the people who paid.** You didn't have to pay. Some say that makes you a sucker; BHIS sees it as **paying it forward** in the industry.
+
+Second, **the people who didn't pay.** He says they understand "110%" that even $25 matters to some families today.
+
+> **Time is your single most precious commodity.** You could have spent it with your family, with your friends, recuperating physically and spiritually — and you chose to be here.
+
+One request: **amplify the signal.** If you see a new pay-what-you-can class on LinkedIn or Bluesky, share it, to help reach people with the passion and capability to join this industry.
+
+Announcements from the host:
+
+- **Certificates of completion** go out overnight (streaming viewers can still register) — please post them on social media.
+- The **Threat Hunt Summit**, and **pay-what-you-can workshops** on Fridays (the next day: Wade Wells on CTI).
+- John's next class, in about a month: **Active Defense and Cyber Deception**.
+
+### 💡 Note (added) — the four-day course on one page { #course-recap }
+
+Here is which control stops each stage of an attack. **Layering** them so the next one catches what the previous one missed is Day 3's defence in depth (the multiplication principle).
+
+```mermaid
+flowchart LR
+    S1["Execution<br/>malware / LOLBins"] --> S2["Credentials<br/>spray / Kerberoast / Responder"]
+    S2 --> S3["C2<br/>beacons"]
+    S3 --> S4["Lateral movement<br/>Pass-the-Hash"]
+    S4 --> S5["Domain takeover<br/>DA / DCSync"]
+    C1["① Application allow listing<br/>⑤ EDR"] -.-> S1
+    C2["② Password controls<br/>SMB signing / no LLMNR"] -.-> S2
+    C3["③ Egress analysis<br/>⑧ Internet allow listing"] -.-> S3
+    C4["⑦ Host firewalls<br/>④ UEBA"] -.-> S4
+    C5["⑩ AD hardening<br/>⑨ Vulnerability management"] -.-> S5
+```
+
+**⑥ Logging (Sysmon)** isn't tied to one stage — it records **traces from every stage**, so you can find later what the other controls missed.
+
+| # | Control | Day | One-line takeaway | Key tools / logs |
+|---|---|---|---|---|
+| 1 | Application allow listing | [Day 1](day-1.md) | Only approved programs run | AppLocker, events 8003 (audit: would have been blocked) / 8004 (blocked) |
+| 2 | Password controls | [Day 1](day-1.md) | Long passphrases against spraying and Kerberoasting | 4625 / 4624, 4769 (encryption 0x17) |
+| 3 | Egress traffic analysis | [Day 2](day-2.md) | Find beacons in outbound connections | Zeek, RITA, AC-Hunter |
+| 4 | UEBA | [Day 2](day-2.md) | Unusual user behaviour | LogonTracer, 4624 logon types |
+| 5 | EDR | [Day 3](day-3.md) | Overlap multiplies effectiveness | Validate with Atomic Red Team |
+| 6 | Logging | [Day 2](day-2.md) · [Day 3](day-3.md) | Default Windows logs aren't enough → Sysmon | Sysmon 1 / 3 / 10, Deep Blue CLI |
+| 7 | Host firewalls | [Day 3](day-3.md) | Block PC-to-PC traffic to stop lateral movement | Windows Firewall (netsh advfirewall) |
+| 8 | Internet allow listing | [Day 4](#internet-allowlisting) | Block "Uncategorized", remove ads | Web proxy, Pi-hole |
+| 9 | Vulnerability management | [Day 4](#vulnerability-management) | Group by vulnerability; read lows and infos | Nessus, ZAP |
+| 10 | AD hardening | [Day 3](day-3.md) · [Day 4](#ad-hardening) | Break the staircase to DA | BloodHound, PlumHound, Ping Castle |
+
+---
+
+That's all of Day 4 and the end of the course. One-line summary:
+
+> **An attacker on your network captures NTLMv2 and cracks or relays it — the answer is host-to-host blocking, disabling LLMNR and required SMB signing, while stolen-hash Pass-the-Hash needs separate defences. Attackers burn brand-new domains, so blocking "Uncategorized" and removing ads gives de-facto internet allow listing. For vulnerabilities, bump CVSS up a level, look at lows and informationals, and group by vulnerability so automation can fix them at scale. Test web apps throughout development with SAST and DAST, and check that your detections catch the scan. See AD as a graph — BloodHound for paths, PlumHound for the fix list, Ping Castle for the health check — and break today's dead ends before they become tomorrow's paths.**
+
+Next course: John Strand's **Active Defense and Cyber Deception**. The course overview is at [Information Security Core Skills](index.md).
 
 ## References
 
@@ -854,4 +1244,8 @@ Next (part 4, to be added): **AD hardening** (BloodHound, PlumHound, Mimikatz), 
 - [MITRE ATT&CK — T1557.001 LLMNR/NBT-NS Poisoning and SMB Relay](https://attack.mitre.org/techniques/T1557/001/)
 - [ZAP](https://www.zaproxy.org/) · [ZAP ownership](https://zaproxy.org/docs/zap-ownership) · [Burp Suite](https://portswigger.net/burp) · [Damn Small Vulnerable Web](https://github.com/stamparm/DSVW)
 - [GitHub code scanning](https://docs.github.com/code-security/code-scanning) · [OWASP Top 10](https://owasp.org/www-project-top-ten/)
-- Related: [LLMNR & NTLM relay](../../../adversary/llmnr-ntlm-relay.md) · [Pass-the-Hash](../../../adversary/pass-the-hash.md) · [SAM & NTDS extraction](../../../adversary/sam-ntds-extraction.md) · [Zeek](../../../network/zeek/index.md) · [Well-known ports](../../../basics/well-known-ports.md) · [HTTP status codes](../../../basics/http-status-codes.md)
+- [BloodHound (SpecterOps)](https://bloodhound.specterops.io/) · [PlumHound](https://github.com/PlumHound/PlumHound) · [PlumHound introduction (BHIS)](https://www.blackhillsinfosec.com/plumhound-reporting-engine-for-bloodhoundad/)
+- [PingCastle](https://www.pingcastle.com/) · [PingCastle user guide (Netwrix)](https://docs.netwrix.com/docs/pingcastle/3_5) · [Compare PingCastle editions (Netwrix)](https://netwrix.com/en/products/pingcastle/pingcastle-comparison/)
+- [MITRE ATT&CK — T1003.001 LSASS Memory](https://attack.mitre.org/techniques/T1003/001/) · [T1003.006 DCSync](https://attack.mitre.org/techniques/T1003/006/)
+- [Microsoft — Credential Guard](https://learn.microsoft.com/windows/security/identity-protection/credential-guard/) · [LSA protection](https://learn.microsoft.com/windows-server/security/credentials-protection-and-management/configuring-additional-lsa-protection) · [Protected Users](https://learn.microsoft.com/windows-server/security/credentials-protection-and-management/protected-users-security-group) · [Windows LAPS](https://learn.microsoft.com/windows-server/identity/laps/laps-overview)
+- Related: [LLMNR & NTLM relay](../../../adversary/llmnr-ntlm-relay.md) · [Pass-the-Hash](../../../adversary/pass-the-hash.md) · [SAM & NTDS extraction](../../../adversary/sam-ntds-extraction.md) · [Zeek](../../../network/zeek/index.md) · [Well-known ports](../../../basics/well-known-ports.md) · [HTTP status codes](../../../basics/http-status-codes.md) · [Kerberoasting](../../../adversary/kerberoasting.md) · [DCSync](../../../adversary/dcsync.md) · [Golden & Silver Tickets](../../../adversary/golden-silver-tickets.md) · [LSASS dumping](../../../adversary/lsass-dumping.md) · [PrintNightmare](../../../adversary/printnightmare.md) · [Windows event IDs](../../../basics/windows-event-ids.md)

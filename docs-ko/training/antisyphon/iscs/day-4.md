@@ -1,29 +1,28 @@
 ---
-title: "Day 4 — Responder, 인터넷 허용 목록, 취약점 관리, 웹 보안 (진행 중)"
+title: "Day 4 — Responder, 인터넷 허용 목록, 취약점 관리, 웹 보안, AD 하드닝"
 tags:
   - training
   - antisyphon
   - ntlm-relay
   - internet-allowlisting
   - vulnerability-management
+  - active-directory
+  - ping-castle
 ---
 
-# Day 4 — Responder, 인터넷 허용 목록, 취약점 관리, 웹 보안 { #day-4 }
+# Day 4 — Responder, 인터넷 허용 목록, 취약점 관리, 웹 보안, AD 하드닝 { #day-4 }
 
 <div class="dfir-meta" markdown>
-**과정:** Information Security Core Skills · **강사:** John Strand (BHIS) · **4일차 범위(지금까지):** Responder 실습 해설 → NTLM 크래킹·릴레이·서명 → 인터넷 허용 목록 → 취약점 관리 → Nessus 보고서 실습 → 웹 애플리케이션 보안 → ZAP 실습
+**과정:** Information Security Core Skills · **강사:** John Strand (BHIS) · **4일차 범위:** Responder 실습 해설 → NTLM 크래킹·릴레이·서명 → 인터넷 허용 목록 → 취약점 관리 → Nessus 보고서 실습 → 웹 애플리케이션 보안 → ZAP 실습 → AD 하드닝(BloodHound·PlumHound·Mimikatz) → Ping Castle 실습 → 과정 마무리
 </div>
 
-!!! abstract "4일차 한눈에 (1~3부)"
-    3일차에 준비한 **Responder 실습**으로 시작합니다. 같은 네트워크의 공격자는 트래픽을 돌려 **NTLMv2 챌린지·응답**을 가로채고, 오프라인으로 크래킹하거나 그대로 **릴레이**합니다 — 그래서 호스트 간 통신 차단, LLMNR 끄기, **SMB 서명**이 필요합니다. 이어서 공격자가 **새로 산 도메인을 짧게 쓰고 버리는** 습성을 역이용해, 웹 필터에서 **"미분류(Uncategorized)"를 차단**하는 것만으로 사실상의 **인터넷 허용 목록**을 만드는 법을 봅니다. 마지막으로 AI 시대의 **취약점 관리** — CVSS를 한 단계 올려 보고, 무시되던 Low·Informational도 살피고, 시스템별이 아니라 **취약점별로 묶어** 처리하기 — 와 **Nessus 보고서 실습**, 그리고 **웹 애플리케이션 보안** — 보안을 마지막에 "덧붙이지" 말고 개발 내내 **SAST·DAST**로 시험하고, **Burp·ZAP**으로 스캔하면서 **우리 탐지가 그 스캔을 잡는지**도 함께 확인하기 — 와 **ZAP 실습**입니다.
-
-!!! info "이 페이지는 진행 중입니다"
-    현재 **1~3부**까지 정리되어 있습니다. 4부(AD 하드닝·Ping Castle 실습, 마무리)는 이어서 추가합니다.
+!!! abstract "4일차 한눈에"
+    3일차에 준비한 **Responder 실습**으로 시작합니다. 같은 네트워크의 공격자는 트래픽을 돌려 **NTLMv2 챌린지·응답**을 가로채고, 오프라인으로 크래킹하거나 그대로 **릴레이**합니다 — 그래서 호스트 간 통신 차단, LLMNR 끄기, **SMB 서명**이 필요합니다. 이어서 공격자가 **새로 산 도메인을 짧게 쓰고 버리는** 습성을 역이용해, 웹 필터에서 **"미분류(Uncategorized)"를 차단**하는 것만으로 사실상의 **인터넷 허용 목록**을 만드는 법을 봅니다. 마지막으로 AI 시대의 **취약점 관리** — CVSS를 한 단계 올려 보고, 무시되던 Low·Informational도 살피고, 시스템별이 아니라 **취약점별로 묶어** 처리하기 — 와 **Nessus 보고서 실습**, 그리고 **웹 애플리케이션 보안** — 보안을 마지막에 "덧붙이지" 말고 개발 내내 **SAST·DAST**로 시험하고, **Burp·ZAP**으로 스캔하면서 **우리 탐지가 그 스캔을 잡는지**도 함께 확인하기 — 와 **ZAP 실습**입니다. 마지막 4부는 **AD 하드닝**입니다 — **BloodHound**로 도메인 관리자까지 가는 경로를 그래프로 보고, **PlumHound**로 그것을 고칠 일 목록으로 바꾸고, 지금은 막다른 길인 경로도 미리 끊습니다. **Mimikatz**가 해시 추출 이상을 한다는 점과 그 탐지, **Ping Castle 보고서 실습**, 그리고 과정 마무리로 끝납니다.
 
 !!! note "표기 규칙"
     **💡 보충 (강의 외)** = 강의에 없던 제 추가 설명. **(재구성)** = 강사가 말로만 설명하거나 화면으로만 보여 줘 제가 일반적인 형태로 복원한 내용. 공부하며 생긴 질문에 대한 답은 **"깊이 보기"** 소단원으로 따로 정리했습니다. 공격 도구를 쓰는 실습은 무엇을 보여 주는지와 방어·탐지 포인트 위주로 정리했습니다.
 
-**4일차 지도 (지금까지)**
+**4일차 지도**
 
 ```mermaid
 flowchart LR
@@ -40,7 +39,10 @@ flowchart LR
     subgraph P3["3부 · 웹 애플리케이션"]
         W["SAST·DAST<br/>Burp·ZAP<br/>탐지 통제 시험"]
     end
-    P1 --> P1B --> P2 --> P3
+    subgraph P4["4부 · AD 하드닝"]
+        AD["BloodHound·PlumHound<br/>Mimikatz 탐지<br/>Ping Castle"]
+    end
+    P1 --> P1B --> P2 --> P3 --> P4
 ```
 
 ---
@@ -217,8 +219,8 @@ flowchart LR
 
 ### 오늘 남은 실습 예고 { #upcoming-labs }
 
-- **웹 테스트 실습** — 일부러 취약하게 만든 작은 웹 앱(Damn Small Vulnerable Web App)을 **ZAP(Zed Attack Proxy)**으로 공격 (3부)
-- **Ping Castle 실습** — VM 없이 웹 사이트에서 **Ping Castle 보고서를 분석** (4부)
+- **웹 테스트 실습** — 일부러 취약하게 만든 작은 웹 앱(Damn Small Vulnerable Web App)을 **ZAP(Zed Attack Proxy)**으로 공격 ([3부](#zap-lab))
+- **Ping Castle 실습** — VM 없이 웹 사이트에서 **Ping Castle 보고서를 분석** ([4부](#ping-castle))
 
 ---
 
@@ -838,13 +840,401 @@ sqlite3.OperationalError: near "...": syntax error
 !!! note "💡 보충 (강의 외)"
     자동 스캔 결과에 **어떤 취약점이 없다고 해서 정말 없는 것은 아닙니다.** 서버가 느려지거나 일부 요청이 실패하면 놓칠 수 있습니다. 중요한 앱은 스캔 속도를 낮추거나 여러 번 돌리고, 결국 사람이 확인하는 단계가 필요합니다.
 
+
 ---
 
-여기까지가 4일차 1~3부입니다. 한 줄 요약:
+## 9. AD 하드닝 — 마지막 통제 { #ad-hardening }
 
-> **같은 네트워크의 공격자는 NTLMv2를 가로채 크래킹하거나 릴레이한다 — 호스트 간 통신 차단·LLMNR 끄기·SMB 서명(필수)이 답이고, 해시를 훔친 Pass-the-Hash는 따로 막아야 한다. 공격자는 새 도메인을 짧게 쓰고 버리므로 "미분류" 차단과 광고 제거만으로 사실상의 인터넷 허용 목록이 된다. 취약점은 CVSS를 한 단계 올려 보고, Low·Informational도 살피고, 취약점별로 묶어 자동화로 고쳐라. 웹 앱은 개발 내내 SAST·DAST로 시험하고, 도구가 못 찾는 로직·권한 오류는 사람이 찾고, 스캔할 때 우리 탐지가 그걸 잡는지도 확인하라.**
+ZAP 실습을 마치고 John은 10번째 통제인 **액티브 디렉터리(AD) 하드닝**으로 넘어갑니다. 강의에서는 짧게 지나가지만, 앞의 3일 동안 배운 공격이 결국 모두 여기로 모입니다.
 
-다음(4부, 추가 예정): **AD 하드닝**(BloodHound·PlumHound·Mimikatz)과 **Ping Castle 실습**, 과정 마무리.
+!!! note "💡 보충 (강의 외) — 왜 마지막이 AD인가"
+    AD는 회사의 계정·그룹·PC·서버·권한을 한곳에서 관리하는 시스템이고, 그 꼭대기 권한이 **도메인 관리자(Domain Admin, DA)**입니다. DA를 얻으면 모든 PC에 로그인하고, 모든 계정의 비밀번호를 바꾸고, 그룹 정책으로 모든 PC에 프로그램을 뿌릴 수 있습니다. 그래서 내부망에 들어온 공격자의 최종 목표는 거의 항상 DA입니다. 지금까지 배운 공격은 모두 **DA로 올라가는 계단**이었고, AD 하드닝은 그 계단을 끊는 작업입니다.
+
+```mermaid
+flowchart LR
+    A["첫 계정<br/>패스워드 스프레이<br/>(1일차)"] --> B["서비스 계정<br/>커버로스팅<br/>(1일차)"]
+    A --> C["다른 사용자 인증<br/>Responder·릴레이<br/>(4일차 1부)"]
+    B --> D["옆 PC로 이동<br/>Pass-the-Hash<br/>(3일차)"]
+    C --> D
+    D --> E["메모리에서<br/>관리자 자격 증명<br/>(Mimikatz)"]
+    E --> F["도메인 관리자"]
+    H["AD 하드닝<br/>BloodHound·PlumHound<br/>Ping Castle"] -.->|"계단을 끊는다"| D
+    H -.-> E
+```
+
+### BloodHound — 도메인 관리자까지 가는 모든 길 { #bloodhound }
+
+첫 번째 도구는 3일차에도 나온 **BloodHound**(SpecterOps)입니다.
+
+> BloodHound는 권한 없는 일반 사용자 하나에서 시작해서, 그 사용자가 **도메인 관리자가 될 수 있는 모든 경로**를 찾아 나열한다.
+
+BloodHound는 AD를 **그래프**로 봅니다. 사용자·그룹·컴퓨터·그룹 정책(GPO)이 점(노드)이고, 그 사이의 관계가 선(엣지)입니다. 하나하나는 평범한 설정인데, 이어 붙이면 길이 됩니다.
+
+| 엣지(관계) | 뜻 |
+|---|---|
+| **MemberOf** | 이 사용자·그룹은 저 그룹의 멤버다 |
+| **AdminTo** | 이 사용자·그룹은 저 PC의 로컬 관리자다 |
+| **HasSession** | 저 PC에 이 사용자가 로그인해 있다(메모리에 자격 증명이 남아 있다) |
+| **GenericAll** 등 권한 엣지 | 이 개체가 저 개체를 마음대로 바꿀 수 있다(비밀번호 재설정, 그룹 추가 등) |
+
+```mermaid
+flowchart LR
+    U["jsmith<br/>일반 사용자"] -->|"MemberOf"| G["Helpdesk 그룹"]
+    G -->|"AdminTo"| PC["PC-07"]
+    PC -->|"HasSession"| DA["admin.kim<br/>로그인해 있음"]
+    DA -->|"MemberOf"| DAG["Domain Admins"]
+```
+
+읽는 법: jsmith는 Helpdesk 그룹이니 PC-07의 관리자가 될 수 있고, PC-07의 메모리에는 로그인해 있던 admin.kim의 자격 증명이 남아 있으니 그것을 꺼내면(뒤의 [Mimikatz](#mimikatz)) 도메인 관리자가 됩니다. 이 중 어느 것도 **취약점 스캐너에는 안 잡힙니다.** 패치가 빠진 게 아니라 **권한 관계**의 문제이기 때문입니다 — 2부에서 "취약점 스캔은 침투 후 횡적 이동 기회를 못 본다"고 한 이유입니다.
+
+!!! note "💡 보충 (강의 외) — 목록과 그래프"
+    Microsoft의 John Lambert가 2015년에 남긴 유명한 말입니다.
+
+    > 방어자는 목록으로 생각하고, 공격자는 그래프로 생각한다. 이것이 사실인 한 공격자가 이긴다.
+
+    방어자는 "관리자 계정 목록", "패치 목록"을 보지만 공격자는 "이것과 저것이 어떻게 이어지나"를 봅니다. BloodHound는 **방어자도 그래프로 볼 수 있게** 해 주는 도구입니다.
+
+#### 💡 보충 (강의 외) — BloodHound 수집도 흔적을 남긴다 { #detect-bloodhound }
+
+BloodHound는 **일반 도메인 사용자 권한**만으로 데이터를 모읍니다(수집기 이름: SharpHound). DC에는 LDAP으로 사용자·그룹·권한을 묻고, 각 PC에는 "지금 누가 로그인해 있나", "로컬 관리자가 누구인가"를 묻습니다. 뒤쪽 질문은 PC마다 **`IPC$`** 라는 특수 공유에 붙어 `srvsvc`, `samr` 같은 **네임드 파이프**(프로그램끼리 대화하는 통로)를 여는 방식이라, **한 PC가 짧은 시간에 수십~수백 대의 PC에 같은 통로를 여는** 패턴이 생깁니다. 공격자가 같은 도구를 쓰면 이것이 탐지 포인트입니다.
+
+**이벤트 5145** = "네트워크 공유 개체에 대한 접근 검사". 누가(계정), 어디서(원본 IP), 어떤 공유의 어떤 파일·파이프에 접근했는지를 **접근을 당한 PC 쪽에** 기록합니다. 기본으로 꺼져 있고, 고급 감사 정책의 **개체 액세스 → 세부 파일 공유 감사**를 켜야 남습니다. 양이 많아서 보통 서버나 중요 PC에만 켭니다.
+
+```spl
+index=wineventlog source="WinEventLog:Security" EventCode=5145 Share_Name="*IPC$" Relative_Target_Name IN ("srvsvc", "samr", "lsarpc")
+| bin _time span=10m
+| stats dc(host) AS target_count values(Relative_Target_Name) AS pipes BY _time, Source_Address, Account_Name
+| where target_count > 20
+| sort - target_count
+```
+
+- **1줄** — 보안 로그의 **5145**만, 공유 이름이 `IPC$`로 끝나는 것(실제 값은 `\\*\IPC$` 꼴)만, 접근 대상이 세 파이프 중 하나인 것만 남깁니다. `IN (...)`은 "괄호 안 값 중 하나와 같으면"이라는 뜻입니다.
+    - **`srvsvc`** — 서버 서비스. 누가 로그인해 있는지(세션) 조회.
+    - **`samr`** — 보안 계정 관리자. 로컬 그룹 멤버(누가 관리자인지) 조회.
+    - **`lsarpc`** — 로컬 보안 기관. SID와 이름을 서로 바꿔 줌.
+- **2줄 `bin _time span=10m`** — 시간을 10분 단위 칸으로 묶습니다. 이걸 해야 "10분 동안 몇 대"를 셀 수 있습니다.
+- **3줄 `stats ...`**
+    - **`dc(host) AS target_count`** — `dc`는 서로 다른 값의 개수(distinct count). 5145는 접근을 당한 PC에 남으니 `host`가 곧 대상 PC → "몇 대를 건드렸나".
+    - **`values(Relative_Target_Name) AS pipes`** — 쓴 파이프 목록.
+    - **`BY _time, Source_Address, Account_Name`** — 10분 칸·원본 IP·계정별로.
+- **4줄 `where target_count > 20`** — 10분에 20대 넘게 건드린 것만(기준값은 환경에 맞게).
+- **5줄 `sort - target_count`** — 많은 순.
+
+```text
+_time                Source_Address  Account_Name  target_count  pipes
+2026-10-27 14:10:00  10.0.5.23       jsmith        143           lsarpc
+                                                                 samr
+                                                                 srvsvc
+2026-10-27 02:00:00  10.0.1.15       svc_sccm      38            samr
+```
+
+첫 줄 — **일반 사용자가 일반 PC에서 10분 동안 143대** → BloodHound류 수집 의심, 조사 1순위. 둘째 줄 — 관리 도구 서비스 계정의 새벽 정기 작업 → 정상일 가능성이 높으니 확인 후 예외 목록에.
+
+!!! tip "필드 이름은 로그 형식에 따라 다르다"
+    `renderXml = false`(클래식 형식)이면 위처럼 `Share_Name`, `Relative_Target_Name`, `Source_Address`, `Account_Name`이고, XML 형식이면 `ShareName`, `RelativeTargetName`, `IpAddress`, `SubjectUserName`입니다. 이벤트 번호의 뜻은 [Windows 이벤트 ID](../../../basics/windows-event-ids.md)에 모아 두었습니다.
+
+### PlumHound — 그래프를 "할 일 목록"으로 { #plumhound }
+
+> BHIS의 Kent가 만든 **PlumHound**라는 작은 도구가 있다. PlumHound는 BloodHound 결과 데이터를 받아서 **작업 목록(work effort)**을 만들어 준다.
+
+BloodHound는 공격자의 눈으로 "DA까지 가는 전체 경로"를 보여 줍니다. 그런데 방어자는 그래프를 보는 것만으로는 "그래서 월요일에 뭘 고치지?"가 바로 나오지 않습니다. PlumHound는 같은 데이터를 **표 형태 보고서**로 바꿔 하나씩 처리할 수 있게 해 줍니다. John이 예로 든 항목은 **도메인 사용자, RDP가 되는 워크스테이션, 커버로스팅 가능한 사용자, 그룹 정책 개체, DA까지의 경로**입니다.
+
+```mermaid
+flowchart LR
+    SH["SharpHound<br/>일반 사용자 권한으로 수집"] --> NEO["Neo4j<br/>그래프 DB"]
+    NEO --> BH["BloodHound 화면<br/>DA까지의 경로 그래프"]
+    NEO --> PH["PlumHound<br/>미리 만든 질의 실행"]
+    PH --> REP["HTML·CSV 보고서<br/>= 고칠 일 목록"]
+    BH --> RT["레드팀: 어디로 갈까"]
+    REP --> BT["블루팀: 무엇부터 고칠까"]
+```
+
+| | BloodHound | PlumHound |
+|---|---|---|
+| **질문** | "DA까지 갈 수 있나? 어떻게?" | "무엇을 고쳐야 하나? 무엇부터?" |
+| **결과물** | 경로 그래프(화면) | 보고서 목록(HTML·CSV) |
+| **막다른 길** | DA로 안 이어지면 잘 안 보임 | 목록에 그대로 남음 |
+| **주 사용자** | 공격자·펜테스터, 방어자 | 방어자·시스템 관리자 |
+
+!!! note "💡 보충 (강의 외) — PlumHound 조금 더 (BHIS 블로그 기준)"
+    **Kent Ickler와 Jordan Drysdale**가 만든 Python 도구입니다. BloodHound가 데이터를 저장하는 **Neo4j** 그래프 DB에 접속해 미리 준비된 질의(**Cypher**)를 돌리고, 결과를 **HTML이나 CSV 보고서**로 만듭니다. 기본 작업 목록 하나로 **보고서 69개와 목차 페이지**가 나오고, 각 보고서에 쓴 질의가 함께 들어 있어 다른 도구에서도 재사용할 수 있습니다. 예: 높은 권한의 커버로스팅 가능 계정, LAPS 배포 현황, 비밀번호가 만료되지 않는 계정, 설명 칸에 비밀번호를 적어 둔 계정.
+
+    - **AnalyzePath** — 특정 사용자·그룹에서 시작하는 경로를 끊으려면 **어떤 관계 하나를 끊으면 되는지** 알려 줍니다.
+    - **BusiestPath** — **가장 많은 사용자에게 영향을 주는 경로**부터 보여 줘서, 무엇부터 고칠지 우선순위를 잡게 해 줍니다.
+
+### 막다른 길도 고쳐야 하는 이유 — 호그와트의 움직이는 계단 { #moving-staircases }
+
+> BloodHound는 도메인 관리자까지 이어지는 완전한 경로를 찾는다. 그런데 **막다른 길(dead end)**이 아주 많다. 호그와트를 떠올려 보라. 학생들이 기숙사로 갈 때 계단이 계속 바뀌고 움직였다. AD의 취약점도 그렇다. 어떤 계단은 기숙사로 데려다주지만, 어떤 계단은 엉뚱한 방에 떨어뜨린다. 핵심은, **지금은 도메인 관리자로 끝나지 않는 경로가 몇 주, 몇 달 뒤에는 그렇게 될 수 있다**는 것이다.
+
+AD는 매일 바뀝니다. 사람이 입사·퇴사하고, 그룹에 추가되고, 관리자가 문제를 고치러 PC에 로그인하고, 새 GPO가 생깁니다 — 계단이 움직이는 것입니다.
+
+```mermaid
+flowchart LR
+    subgraph T1["오늘 — 막다른 길"]
+        A1["jsmith"] --> B1["Helpdesk"] --> C1["PC-07<br/>DA 세션 없음"]
+        C1 -.-> X1["끝<br/>(BloodHound: 경로 없음)"]
+    end
+    subgraph T2["다음 달 — 경로 완성"]
+        A2["jsmith"] --> B2["Helpdesk"] --> C2["PC-07<br/>admin.kim이 프린터 고치러 로그인"]
+        C2 --> D2["Domain Admins"]
+    end
+    T1 ==>|"계단이 움직임"| T2
+```
+
+오늘 BloodHound의 "DA까지 경로"만 보면 "문제 없음"이지만, PlumHound 목록에는 **"Helpdesk가 PC 300대의 로컬 관리자"** 같은 항목이 그대로 남아 있어 미리 고칠 수 있습니다. 2부에서 **Low·Informational을 무시하지 말라**고 한 것과 같은 이야기입니다 — 지금은 치명적이지 않은 것도 다른 것과 이어지면 치명적이 됩니다.
+
+---
+
+## 10. Mimikatz — 해시 추출기 그 이상 { #mimikatz }
+
+> 많은 사람들이 Mimikatz를 메모리에서 **패스워드 해시와 평문 패스워드를 꺼내는 데만** 쓴다. 그건 아주 잘한다. 하지만 그보다 **훨씬, 엄청나게 많은 일**을 하고, **개별 워크스테이션을 평가**하는 데 쓸 수 있다.
+
+Windows는 로그인한 사용자의 자격 증명을 **LSASS** 프로세스 메모리에 보관합니다(그래야 파일 서버 등에 접속할 때 비밀번호를 다시 묻지 않고 자동으로 인증할 수 있습니다). Mimikatz는 이 메모리를 읽습니다.
+
+!!! note "💡 보충 (강의 외) — 무엇을 더 할 수 있나 (개념)"
+    | 할 수 있는 일 | 개념 | 관련 페이지 |
+    |---|---|---|
+    | **메모리 자격 증명** | LSASS에서 해시·티켓·(옛 설정이면) 평문 비밀번호 | [LSASS 덤프](../../../adversary/lsass-dumping.md) |
+    | **Kerberos 티켓** | 메모리의 티켓을 보고 내보내 재사용 | [Pass-the-Hash](../../../adversary/pass-the-hash.md) |
+    | **저장된 비밀** | Windows가 암호화해 둔 비밀(자격 증명 관리자, 브라우저 저장 비밀번호 등) 풀기 | — |
+    | **DCSync** | 복제 권한이 있는 계정이면 **DC 복제를 흉내 내** DC에 로그인하지 않고도 모든 계정의 해시를 받아 감 | [DCSync](../../../adversary/dcsync.md) |
+    | **티켓 위조** | krbtgt 해시로 아무 사용자의 티켓이나 위조(골든 티켓) | [골든·실버 티켓](../../../adversary/golden-silver-tickets.md) |
+
+**"워크스테이션 평가"의 뜻** — 승인된 점검에서 한 PC에 무엇이 남아 있는지 보면 **AD 관리 습관**이 드러납니다. 일반 사용자 PC의 메모리에 **DA 자격 증명**이 있다면, DA 계정으로 일반 PC에 로그인했다는 뜻(관리자 티어링 실패)이고, 공격자는 그 PC 하나만 장악하면 끝입니다.
+
+| 방어 | 하는 일 |
+|---|---|
+| **Credential Guard** | LSASS의 비밀을 가상화 기반 격리 공간으로 옮겨, 메모리를 읽어도 꺼낼 수 없게 함 |
+| **LSA 보호 (RunAsPPL)** | LSASS를 보호된 프로세스로 만들어, 관리자 권한 프로그램도 쉽게 메모리에 접근하지 못하게 함 |
+| **Protected Users 그룹** | 이 그룹 계정은 NTLM·약한 암호화를 안 쓰고, 자격 증명이 캐시로 남지 않음 |
+| **관리자 티어링** | DA 계정은 DC에만 로그인, 일반 PC에는 PC 전용 관리자 계정 |
+| **LAPS** | PC마다 로컬 관리자 비밀번호를 다르게(3일차 Pass-the-Hash 확산 차단) |
+| **WDigest 끄기** | 메모리에 평문 비밀번호를 남기던 옛 방식 비활성(최신 Windows는 기본 꺼짐) |
+
+!!! note "💡 보충 (강의 외)"
+    아래 두 탐지는 강의에 없던 추가 내용입니다. 둘 다 [3일차](day-3.md)의 원칙대로 **직접 시험해서 실제로 잡히는지 확인**해야 의미가 있습니다.
+
+### 탐지 ① LSASS 메모리 접근 — Sysmon 이벤트 10 { #detect-lsass }
+
+**Sysmon 이벤트 10 (ProcessAccess)** = 어떤 프로세스가 다른 프로세스를 열어 접근했는지 기록합니다. `SourceImage` = 접근한 프로그램, `TargetImage` = 접근을 당한 프로그램, `GrantedAccess` = 요청한 권한(숫자).
+
+```spl
+index=wineventlog source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=10 TargetImage="*\\lsass.exe"
+| search NOT SourceImage IN ("C:\\Windows\\System32\\wininit.exe", "C:\\Windows\\System32\\csrss.exe", "C:\\Windows\\System32\\svchost.exe", "C:\\ProgramData\\Microsoft\\Windows Defender\\Platform\\*\\MsMpEng.exe")
+| stats count values(GrantedAccess) AS access BY host, SourceImage
+| sort - count
+```
+
+- **1줄** — Sysmon 로그의 이벤트 10 중 **접근을 당한 프로그램이 lsass.exe**인 것만. `\\`는 SPL 문자열 안에서 역슬래시 하나를 뜻합니다.
+- **2줄 `search NOT SourceImage IN (...)`** — 정상적으로 LSASS에 접근하는 Windows 기본 프로세스와 Defender(MsMpEng)를 뺍니다. **이름만이 아니라 전체 경로로** 빼는 게 중요합니다 — 공격자가 악성 파일 이름을 `svchost.exe`로 지어 다른 폴더에 두는 경우가 많아서, 이름만으로 빼면 그것까지 같이 빠집니다.
+- **3줄 `stats count values(GrantedAccess) AS access BY host, SourceImage`** — PC·접근한 프로그램별로 건수와 요청한 권한 목록.
+- **4줄 `sort - count`** — 많은 순.
+
+**GrantedAccess 읽는 법** — 숫자는 권한 비트의 합입니다.
+
+| 값 | 뜻 |
+|---|---|
+| `0x0010` | 메모리 읽기 |
+| `0x0400` | 정보 조회 |
+| `0x1000` | 제한된 정보 조회 |
+| `0x1010` | `0x1000 + 0x0010` → 제한된 정보 조회 + **메모리 읽기** (자격 증명 탈취 도구에서 자주 보임) |
+| `0x1410` | `0x1000 + 0x0400 + 0x0010` → 역시 **메모리 읽기** 포함 |
+| `0x1FFFFF` | 모든 권한 |
+
+핵심은 **"0x10(메모리 읽기)이 들어 있는가"**입니다.
+
+```text
+host    SourceImage                                         count  access
+WS-07   C:\Users\Public\update.exe                          2      0x1010
+WS-07   C:\Program Files\VMware\VMware Tools\vmtoolsd.exe   14     0x1000
+```
+
+첫 줄 — Public 폴더의 낯선 exe가 **메모리 읽기 권한**으로 접근 → 1순위 조사. 둘째 줄 — `0x1000`은 제한된 정보 조회뿐, 메모리 읽기 없음 → 정상 도구일 가능성이 높음. 랩에서는 Atomic Red Team의 **T1003.001 (LSASS 메모리)** 테스트로 이 검색이 실제로 잡히는지 확인할 수 있습니다.
+
+### 탐지 ② DCSync — 이벤트 4662 { #detect-dcsync }
+
+**이벤트 4662** = "개체에 대한 작업이 수행되었습니다". AD 개체에 접근할 때 **DC에** 기록됩니다. 켜려면 DC에서 **DS 액세스 → 디렉터리 서비스 액세스 감사**를 켜고, 도메인 개체에 **감사 설정(SACL)**을 해 둬야 합니다. DCSync는 복제 요청이라 4662에 **복제 권한을 뜻하는 GUID**가 찍힙니다.
+
+| GUID | 권한 |
+|---|---|
+| `1131f6aa-9c07-11d1-f79f-00c04fc2dcd2` | 디렉터리 변경 내용 복제 |
+| `1131f6ad-9c07-11d1-f79f-00c04fc2dcd2` | 비밀(비밀번호 해시)을 포함한 **모든** 변경 내용 복제 |
+
+```spl
+index=wineventlog source="WinEventLog:Security" EventCode=4662 ("1131f6aa-9c07-11d1-f79f-00c04fc2dcd2" OR "1131f6ad-9c07-11d1-f79f-00c04fc2dcd2")
+| search NOT Account_Name="*$"
+| stats count min(_time) AS first_seen BY host, Account_Name
+| convert ctime(first_seen)
+```
+
+- **1줄** — 보안 로그의 4662 중 두 GUID 중 하나라도 들어 있는 이벤트. GUID를 필드가 아니라 **원문 글자로** 검색하는 이유: 클래식 형식에서는 이 정보가 여러 줄로 기록돼 필드 추출이 들쭉날쭉해서, 원문 검색이 더 안전합니다.
+- **2줄 `search NOT Account_Name="*$"`** — `$`로 끝나는 **컴퓨터 계정**을 뺍니다. DC끼리 서로 복제하는 것은 정상이기 때문입니다.
+- **3줄 `stats count min(_time) AS first_seen BY host, Account_Name`** — DC·계정별 건수와 **가장 이른 시각**(= 처음 본 시각).
+- **4줄 `convert ctime(first_seen)`** — 숫자(epoch)로 나온 시각을 사람이 읽는 날짜로 바꿉니다.
+
+```text
+host   Account_Name        count  first_seen
+DC01   helpdesk02          2      10/27/2026 14:03:11
+DC01   MSOL_8a1f2c3d4e5f   96     10/27/2026 00:00:04
+```
+
+첫 줄 — 헬프데스크 계정이 복제를 요청 → 정상 업무가 아니므로 **즉시 조사**. 둘째 줄 — `MSOL_`로 시작하는 계정은 **Microsoft Entra Connect(옛 Azure AD Connect)**의 동기화 계정으로, 원래 복제 권한으로 비밀번호 해시를 동기화합니다 → 정상, 확인 후 예외.
+
+---
+
+## 11. Ping Castle 실습 { #ping-castle }
+
+> 이제 이야기할 것은 **Ping Castle**이다. 액티브 디렉터리 환경에서 Ping Castle이 찾아낸 취약점들을 보는 실습을 할 것이다.
+
+Ping Castle은 **AD 보안 점검 도구**입니다. **일반 도메인 사용자 권한**으로 실행하면 **HTML 보고서**가 나옵니다 — AD의 건강검진표라고 생각하면 됩니다.
+
+### 점수 읽는 법 { #pingcastle-score }
+
+!!! note "💡 보충 (강의 외)"
+    보고서는 4개 범주로 나뉘고, 각 범주는 **최대 100점**입니다. 점수는 **높을수록 나쁩니다**(0 = 문제 없음, 100 = 최대 위험). 골프처럼 낮을수록 좋다고 생각하면 됩니다.
+
+| 범주 | 보는 것 |
+|---|---|
+| **오래된 개체 (Stale Objects)** | 안 쓰는 계정·PC, 오래된 OS, 오래된 위임 설정 |
+| **특권 계정 (Privileged Accounts)** | 관리자 수, 관리자 계정 설정 |
+| **신뢰 관계 (Trusts)** | 다른 도메인과의 신뢰 관계 |
+| **이상 항목 (Anomalies)** | 나머지 보안 설정(LLMNR, SMB 서명, krbtgt 등) |
+
+**전체 점수 = 4개 범주 중 가장 높은 점수**입니다. 가장 약한 곳이 그 도메인의 수준이라는 뜻입니다 — 관리자 관리를 아무리 잘해도 신뢰 관계 하나가 뚫려 있으면 끝입니다. 각 규칙은 걸리면 점수가 붙고, 클릭하면 **설명과 해결 방법**이 나옵니다.
+
+```mermaid
+flowchart LR
+    S["오래된 개체<br/>45"] --> M{"가장 높은 값"}
+    P["특권 계정<br/>80"] --> M
+    T["신뢰 관계<br/>20"] --> M
+    A["이상 항목<br/>100"] --> M
+    M --> G["전체 점수 100<br/>(높을수록 나쁨)"]
+```
+
+(숫자는 예시입니다.)
+
+### 실습 — VM 없이 보고서 읽기 { #pingcastle-lab }
+
+1부에서 예고한 대로 이 실습은 **VM이 필요 없습니다.** 웹 사이트에 접속해 **미리 만들어진 Ping Castle 보고서**를 분석하고, 위에 있는 **질문들에 답하는** 방식입니다.
+
+> 솔직히 말하면, 이 Ping Castle 보고서를 돌린 환경을 어떻게 만들었는지 나도 모르겠다. 정말 엄청나다. **취약점이 말도 안 되게 많다.** 이 도메인 컨트롤러가 어떻게 불타 버리지 않았는지 모르겠다.
+
+목적은 **Ping Castle의 출력 형식**과, 보고서에서 찾게 되는 **취약점 종류**에 익숙해지는 것입니다.
+
+> 다시 말하지만, 이런 걸 찾으려고 **엘리트 해커일 필요가 없다.** Ping Castle 보고서만 있으면 된다. **싸다** — 컨설팅이 아니면 싸고, 컨설팅에 쓰면 더 비싸다. 해킹을 잔뜩 하지 않고도 아주 좋은 취약점 분석을 얻을 수 있다.
+
+!!! note "💡 보충 (강의 외) — 라이선스"
+    Ping Castle은 현재 **Netwrix** 소유입니다. 무료 **Community 판**으로 **자기 환경**을 점검할 수 있습니다(기술 지원·상업적 사용 권리 없음). **다른 조직을 점검(컨설팅)**하려면 상업용 **Service Provider** 라이선스가 필요하고, 자기 회사 보호용 **Enterprise** 판도 유료입니다 — John이 "컨설팅에 쓰면 더 비싸다"고 한 것이 이것입니다.
+
+### 보고서 읽는 순서 { #pingcastle-reading }
+
+!!! note "💡 보충 (강의 외)"
+    실습 질문 대부분은 "이 항목이 무엇이고 왜 위험한가"를 묻습니다. 이 순서로 읽으면 빠릅니다.
+
+```mermaid
+flowchart LR
+    A["① 전체 점수와<br/>4개 범주 점수"] --> B["② 점수를 끌어올린<br/>범주 찾기"]
+    B --> C["③ 그 범주의 규칙을<br/>점수 높은 순으로"]
+    C --> D["④ 규칙 클릭<br/>설명·근거·해결·해당 개체"]
+    D --> E["⑤ 이 과정의 공격과 연결해<br/>'왜 위험한가' 설명하기"]
+```
+
+### 보고서에 자주 나오는 항목과 이 과정의 연결 { #pingcastle-findings }
+
+| 보고서 항목 | 왜 위험한가 | 연결 | 고치는 법 |
+|---|---|---|---|
+| **LLMNR·NBT-NS가 꺼져 있지 않음** | Responder로 인증 가로채기 | [4일차 1부](#responder-lab) · [LLMNR·NTLM 릴레이](../../../adversary/llmnr-ntlm-relay.md) | GPO로 LLMNR 끄기, NBT-NS 끄기 |
+| **SMB 서명이 "필수"가 아님** | NTLM 릴레이 | [깊이 보기 ②](#deep-dive-smb-signing) | 모든 서버·PC에 서명 필수 |
+| **SPN이 붙은 계정(특히 관리자)** | 커버로스팅 → 오프라인 크래킹 | [1일차](day-1.md) · [커버로스팅](../../../adversary/kerberoasting.md) | 긴 비밀번호나 **gMSA**, 관리자 그룹에서 빼기 |
+| **LAPS 미사용** | 모든 PC 로컬 관리자 비밀번호가 같아 Pass-the-Hash로 확산 | [3일차](day-3.md) · [Pass-the-Hash](../../../adversary/pass-the-hash.md) | Windows LAPS |
+| **관리자 수가 많음·비밀번호 만료 없음** | 공격 대상이 늘고 비밀번호가 오래됨 | [1일차](day-1.md) | 최소 인원, 정기 검토 |
+| **krbtgt 비밀번호가 오래됨** | 예전에 유출됐다면 위조 티켓이 계속 유효 | [Mimikatz](#mimikatz) · [골든·실버 티켓](../../../adversary/golden-silver-tickets.md) | 정해진 절차로 **두 번** 변경 |
+| **제약 없는 위임 (Unconstrained Delegation)** | 그 서버가 뚫리면 접속한 사용자의 티켓을 빼앗김 | [BloodHound](#bloodhound) | 제한된 위임으로, 민감 계정은 "위임 불가" |
+| **오래된 OS, 안 쓰는 계정·PC** | 패치 안 되는 시스템, 주인 없는 계정 | [2부 취약점 관리](#vulnerability-management) | 정리·비활성화 |
+| **DC에서 Print Spooler 실행** | DC가 강제로 인증하게 만드는 공격 경로 | [4일차 1부 릴레이](#ntlmrelayx) · [PrintNightmare](../../../adversary/printnightmare.md) | DC에서 Spooler 끄기 |
+
+!!! note "💡 보충 (강의 외) — 표에 나온 두 용어"
+    - **gMSA (그룹 관리 서비스 계정)** — AD가 긴 비밀번호를 자동으로 만들고 바꿔 주는 서비스 계정. 커버로스팅으로 크래킹하는 것이 사실상 불가능해집니다.
+    - **krbtgt** — 모든 Kerberos 티켓에 서명하는 계정. 이 해시가 있으면 아무 사용자의 티켓이나 위조할 수 있습니다(골든 티켓). 비밀번호를 **두 번** 바꾸는 이유는 AD가 **직전 비밀번호를 하나 더 기억**하기 때문입니다 — 한 번만 바꾸면 예전 해시가 아직 통합니다.
+
+### 💡 보충 (강의 외) — Ping Castle 실행도 감시 대상 { #detect-pingcastle }
+
+Ping Castle도 BloodHound처럼 **일반 사용자 권한으로 돌아갑니다.** 공격자도 돌릴 수 있고, 그러면 우리 AD의 약점 지도를 공짜로 얻는 셈입니다. 그래서 **보안팀이 아닌 계정·PC에서의 실행**은 알림 대상입니다(Sigma에도 Ping Castle 실행 탐지 규칙이 있습니다).
+
+```spl
+index=wineventlog source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=1 (Image="*\\PingCastle.exe" OR OriginalFileName="PingCastle.exe")
+| table _time, host, Image, ParentImage, CommandLine
+```
+
+- **1줄** — **Sysmon 이벤트 1 (프로세스 생성)** 중 실행 파일 경로가 PingCastle.exe로 끝나거나, `OriginalFileName`이 PingCastle.exe인 것. `OriginalFileName`은 **실행 파일 안에 박힌 원래 이름**이라, 공격자가 파일 이름을 `upd.exe`로 바꿔도 그대로여서 잡힙니다.
+- **2줄 `table ...`** — 시각·PC·실행 파일·부모 프로세스·명령줄을 표로.
+
+```text
+_time                host   Image                              ParentImage                                                CommandLine
+2026-10-27 15:22:41  WS-12  C:\Users\jsmith\Downloads\upd.exe  C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe  upd.exe --healthcheck --server corp.local
+```
+
+일반 사용자의 다운로드 폴더에서, **이름을 바꾼 채** PowerShell로 실행됐습니다 → 조사 대상입니다.
+
+---
+
+## 12. 과정 마무리 { #wrap-up }
+
+녹화에서는 AMA로 넘어가겠다고 한 뒤 별도 질문 없이 바로 마무리로 들어갑니다. John은 Pay-What-You-Can 강의에 온 **두 그룹**에게 감사를 전합니다.
+
+첫째, **돈을 낸 사람들.** 안 내도 되는데 낸 것을 "호구"라고 하는 사람도 있지만, BHIS는 그것을 업계에 **받은 것을 다음 사람에게 돌려주는(pay it forward)** 행동으로 봅니다.
+
+둘째, **돈을 내지 않은 사람들.** 요즘은 25달러도 어떤 가정에는 큰돈이라는 것을 "110%" 이해한다고 말합니다.
+
+> **시간은 여러분의 가장 소중한 자원이다.** 가족과, 친구와 보낼 수도 있었고, 몸과 마음을 쉴 수도 있었는데, 여러분은 여기 오기로 선택했다.
+
+부탁은 하나 — **신호를 증폭해 달라(amplify the signal).** LinkedIn이나 Bluesky에서 새 Pay-What-You-Can 강의 소식을 보면 공유해서, 열정과 능력이 있는 사람들이 이 업계에 들어올 수 있게 도와 달라는 것입니다.
+
+진행자의 안내:
+
+- **수료증**은 그날 밤 발송(스트리밍으로 본 사람도 등록하면 받을 수 있음) — 받으면 SNS에 공유해 달라.
+- **Threat Hunt Summit**, 금요일마다 열리는 **Pay-What-You-Can 워크숍**(다음 날은 Wade Wells의 CTI).
+- John의 다음 강의는 약 한 달 뒤 **Active Defense and Cyber Deception**.
+
+### 💡 보충 (강의 외) — 4일 과정 한눈에 보기 { #course-recap }
+
+공격이 진행되는 단계마다 어떤 통제가 막아 주는지 한 장으로 보면 이렇습니다. 한 통제가 놓쳐도 다음 통제가 잡도록 **겹쳐 두는 것**이 3일차에서 말한 심층 방어(곱셈의 원리)입니다.
+
+```mermaid
+flowchart LR
+    S1["실행<br/>악성 파일·LOLBins"] --> S2["자격 증명<br/>스프레이·커버로스팅·Responder"]
+    S2 --> S3["C2 통신<br/>비컨"]
+    S3 --> S4["횡적 이동<br/>Pass-the-Hash"]
+    S4 --> S5["도메인 장악<br/>DA·DCSync"]
+    C1["① 애플리케이션 허용 목록<br/>⑤ EDR"] -.-> S1
+    C2["② 패스워드 통제<br/>SMB 서명·LLMNR 끄기"] -.-> S2
+    C3["③ Egress 분석<br/>⑧ 인터넷 허용 목록"] -.-> S3
+    C4["⑦ 호스트 방화벽<br/>④ UEBA"] -.-> S4
+    C5["⑩ AD 하드닝<br/>⑨ 취약점 관리"] -.-> S5
+```
+
+**⑥ 로깅(Sysmon)**은 특정 단계가 아니라 **모든 단계의 흔적**을 남겨, 위의 통제들이 놓친 것을 나중에라도 찾게 해 줍니다.
+
+| # | 통제 | 날 | 핵심 한 줄 | 대표 도구·로그 |
+|---|---|---|---|---|
+| 1 | 애플리케이션 허용 목록 | [1일차](day-1.md) | 정해진 프로그램만 실행 | AppLocker, 이벤트 8003(감사 모드: 막혔을 것)·8004(차단) |
+| 2 | 패스워드 통제 | [1일차](day-1.md) | 긴 패스프레이즈로 스프레이·커버로스팅 대비 | 4625·4624, 4769(암호화 0x17) |
+| 3 | 나가는 트래픽 분석 | [2일차](day-2.md) | 밖으로 나가는 연결에서 비컨 찾기 | Zeek, RITA, AC-Hunter |
+| 4 | UEBA | [2일차](day-2.md) | 평소와 다른 사용자 행동 | LogonTracer, 4624 로그온 유형 |
+| 5 | EDR | [3일차](day-3.md) | 겹쳐 쓰면 효과가 곱해진다 | Atomic Red Team으로 검증 |
+| 6 | 로깅 | [2일차](day-2.md)·[3일차](day-3.md) | 기본 Windows 로그로는 부족 → Sysmon | Sysmon 1·3·10, Deep Blue CLI |
+| 7 | 호스트 방화벽 | [3일차](day-3.md) | PC끼리 직접 통신을 막아 횡적 이동 차단 | Windows 방화벽(netsh advfirewall) |
+| 8 | 인터넷 허용 목록 | [4일차](#internet-allowlisting) | "미분류" 차단, 광고 제거 | 웹 프록시, Pi-hole |
+| 9 | 취약점 관리 | [4일차](#vulnerability-management) | 취약점별로 묶고 Low·Info도 | Nessus, ZAP |
+| 10 | AD 하드닝 | [3일차](day-3.md)·[4일차](#ad-hardening) | DA까지 가는 계단 끊기 | BloodHound, PlumHound, Ping Castle |
+
+---
+
+여기까지가 4일차 전체이자 과정의 끝입니다. 한 줄 요약:
+
+> **같은 네트워크의 공격자는 NTLMv2를 가로채 크래킹하거나 릴레이한다 — 호스트 간 통신 차단·LLMNR 끄기·SMB 서명(필수)이 답이고, 해시를 훔친 Pass-the-Hash는 따로 막아야 한다. 공격자는 새 도메인을 짧게 쓰고 버리므로 "미분류" 차단과 광고 제거만으로 사실상의 인터넷 허용 목록이 된다. 취약점은 CVSS를 한 단계 올려 보고, Low·Informational도 살피고, 취약점별로 묶어 자동화로 고쳐라. 웹 앱은 개발 내내 SAST·DAST로 시험하고, 스캔할 때 우리 탐지가 그걸 잡는지도 확인하라. AD는 그래프로 보라 — BloodHound로 경로를, PlumHound로 할 일 목록을, Ping Castle로 건강검진표를 얻고, 지금은 막다른 길인 것도 미리 끊어라.**
+
+다음 강의: John Strand의 **Active Defense and Cyber Deception**. 과정 전체 개요는 [Information Security Core Skills](index.md)에 있습니다.
 
 ## 참고 자료 { #references }
 
@@ -854,4 +1244,8 @@ sqlite3.OperationalError: near "...": syntax error
 - [MITRE ATT&CK — T1557.001 LLMNR/NBT-NS Poisoning and SMB Relay](https://attack.mitre.org/techniques/T1557/001/)
 - [ZAP](https://www.zaproxy.org/) · [ZAP 운영 주체(Ownership)](https://zaproxy.org/docs/zap-ownership) · [Burp Suite](https://portswigger.net/burp) · [Damn Small Vulnerable Web](https://github.com/stamparm/DSVW)
 - [GitHub 코드 스캐닝](https://docs.github.com/code-security/code-scanning) · [OWASP Top 10](https://owasp.org/www-project-top-ten/)
-- 관련 페이지: [LLMNR과 NTLM 릴레이](../../../adversary/llmnr-ntlm-relay.md) · [Pass-the-Hash](../../../adversary/pass-the-hash.md) · [SAM과 NTDS 추출](../../../adversary/sam-ntds-extraction.md) · [Zeek](../../../network/zeek/index.md) · [잘 알려진 포트](../../../basics/well-known-ports.md) · [HTTP 상태 코드](../../../basics/http-status-codes.md)
+- [BloodHound (SpecterOps)](https://bloodhound.specterops.io/) · [PlumHound](https://github.com/PlumHound/PlumHound) · [PlumHound 소개 (BHIS)](https://www.blackhillsinfosec.com/plumhound-reporting-engine-for-bloodhoundad/)
+- [PingCastle](https://www.pingcastle.com/) · [PingCastle 사용자 가이드 (Netwrix)](https://docs.netwrix.com/docs/pingcastle/3_5) · [PingCastle 판 비교 (Netwrix)](https://netwrix.com/en/products/pingcastle/pingcastle-comparison/)
+- [MITRE ATT&CK — T1003.001 LSASS Memory](https://attack.mitre.org/techniques/T1003/001/) · [T1003.006 DCSync](https://attack.mitre.org/techniques/T1003/006/)
+- [Microsoft — Credential Guard](https://learn.microsoft.com/windows/security/identity-protection/credential-guard/) · [LSA 보호](https://learn.microsoft.com/windows-server/security/credentials-protection-and-management/configuring-additional-lsa-protection) · [Protected Users](https://learn.microsoft.com/windows-server/security/credentials-protection-and-management/protected-users-security-group) · [Windows LAPS](https://learn.microsoft.com/windows-server/identity/laps/laps-overview)
+- 관련 페이지: [LLMNR과 NTLM 릴레이](../../../adversary/llmnr-ntlm-relay.md) · [Pass-the-Hash](../../../adversary/pass-the-hash.md) · [SAM과 NTDS 추출](../../../adversary/sam-ntds-extraction.md) · [Zeek](../../../network/zeek/index.md) · [잘 알려진 포트](../../../basics/well-known-ports.md) · [HTTP 상태 코드](../../../basics/http-status-codes.md) · [커버로스팅](../../../adversary/kerberoasting.md) · [DCSync](../../../adversary/dcsync.md) · [골든·실버 티켓](../../../adversary/golden-silver-tickets.md) · [LSASS 덤프](../../../adversary/lsass-dumping.md) · [PrintNightmare](../../../adversary/printnightmare.md) · [Windows 이벤트 ID](../../../basics/windows-event-ids.md)

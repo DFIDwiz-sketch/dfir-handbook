@@ -49,10 +49,10 @@ title: Information Security Core Skills
 
     Sysmon 실습 해설, Pass-the-Hash, EDR과 심층 방어(곱셈의 원리), 위협 에뮬레이션·Atomic Red Team, AI로 탐지 규칙 만들기와 검증, BloodHound, 갭 분석 실습, 호스트 방화벽과 횡적 이동 차단.
 
--   **[Day 4 — Responder, 인터넷 허용 목록, 취약점 관리, 웹 보안](day-4.md)** *(진행 중)*
+-   **[Day 4 — Responder, 인터넷 허용 목록, 취약점 관리, 웹 보안, AD 하드닝](day-4.md)**
 
     ---
 
-    Responder 실습 해설(NTLMv2 크래킹·릴레이·SMB 서명 깊이 보기), 인터넷 허용 목록("미분류" 차단, 광고 제거, DoH), 취약점 관리(CVSS +1, Low·Informational, 취약점별로 묶기), Nessus 보고서 실습, 웹 애플리케이션 보안(SAST·DAST, Burp·ZAP, 탐지 통제 시험), ZAP 실습. (AD 하드닝·Ping Castle은 이어서 추가)
+    Responder 실습 해설(NTLMv2 크래킹·릴레이·SMB 서명 깊이 보기), 인터넷 허용 목록("미분류" 차단, 광고 제거, DoH), 취약점 관리(CVSS +1, Low·Informational, 취약점별로 묶기), Nessus 보고서 실습, 웹 애플리케이션 보안(SAST·DAST, Burp·ZAP, 탐지 통제 시험), ZAP 실습, AD 하드닝(BloodHound·PlumHound, 움직이는 계단, Mimikatz와 그 탐지), Ping Castle 실습, 과정 마무리와 10가지 통제 총정리.
 
 </div>
