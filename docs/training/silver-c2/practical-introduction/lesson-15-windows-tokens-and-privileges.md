@@ -242,4 +242,4 @@ This illustrates an administrator-group account using a filtered token for an im
 
 **Correct, with one refinement:** it is present **and currently enabled** in the queried token. Whether it was requested, used, or resulted in shutdown needs separate evidence, just as HTTP 200, TCP ESTABLISHED, or package installation has a limited evidential meaning.
 
-[Previous: EXE, .NET, and BOF execution](lesson-14-exe-dotnet-and-bof-execution.md) · [Course coverage](course-coverage-and-next-steps.md) · [Course overview](index.md)
+[Previous: EXE, .NET, and BOF execution](lesson-14-exe-dotnet-and-bof-execution.md) · [Next: Windows services and diagnostic findings](lesson-16-windows-services-and-diagnostic-findings.md) · [Course coverage](course-coverage-and-next-steps.md) · [Course overview](index.md)

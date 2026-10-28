@@ -6,7 +6,7 @@ title: A Practical Introduction with Silver
 
 **Sliver**를 사용한 C2의 원리를 처음부터 쉽게 설명하는 입문 강좌입니다. 페이지 제목은 요청한 메뉴 이름을 따르며, 실제 도구 이름은 **Sliver**입니다.
 
-**1~15강**에서 C2 기본 원리, 전달·실행 증거, 백신·EDR, 권한, 피벗팅, SSH 증거, 네트워크 조회, Armory·BOF·실행 방식·Windows 토큰을 다룹니다. 가상환경 명령과 다이어그램으로 연결하고, 접속 실패 원인·BOF/COFF/OBJ·메모리 로딩과 프로세스 위치에 대한 추가 질문도 상세히 해설합니다. 실습은 허가된 격리 환경을 전제로 합니다.
+**1~16강**에서 C2 기본 원리, 전달·실행 증거, 백신·EDR, 권한, 피벗팅, SSH 증거, 네트워크 조회, Armory·BOF·실행 방식·Windows 토큰·서비스 권한과 진단 결과를 다룹니다. 가상환경 명령과 다이어그램으로 연결하고, 접속 실패 원인·BOF/COFF/OBJ·메모리 로딩과 프로세스 위치에 대한 추가 질문도 상세히 해설합니다. 실습은 허가된 격리 환경을 전제로 합니다.
 
 ## 학습할 수 있는 강의 { #lessons-available }
 
@@ -27,6 +27,7 @@ title: A Practical Introduction with Silver
 | [13강 — 기본 명령·Armory·BOF](lesson-13-armory-and-bof-basics.md) | 패키지 검색·설치, Alias·Extension, 등록과 실행, 호환성, 메모리 실행의 효과 |
 | [14강 — EXE·.NET Assembly·BOF 실행](lesson-14-exe-dotnet-and-bof-execution.md) | 파일 종류, Client·대상 경로, CLR, 호스팅 프로세스, 학습자 답과 상세 해설 |
 | [15강 — Windows 토큰·Deny only·특권](lesson-15-windows-tokens-and-privileges.md) | 같은 계정의 두 프로그램, 권한 카드, 그룹 속성, 특권 상태, 무결성 수준과 상세 정답 해설 |
+| [16강 — Windows 서비스·권한·진단 결과](lesson-16-windows-services-and-diagnostic-findings.md) | 서비스 실행 계정·관리/파일 권한, 진단 경고, 작업 지시서 비유, 디스크와 실행 중 프로세스, 상세 해답 |
 
 한 번에 한 강의씩 읽습니다. 개념을 예제에 연결하고 확인 문제, 자세한 해설, 추가 질문의 설명을 함께 제공합니다.
 
@@ -41,6 +42,10 @@ title: A Practical Introduction with Silver
 
 - [Deny only와 두 파일 예시](lesson-15-windows-tokens-and-privileges.md#deny-only-file-example): 그룹 속성과 특권 상태를 구분하고, 활성 상태와 실제 동작을 따로 해석합니다.
 
+- [서비스 진단 경고의 쉬운 설명](lesson-16-windows-services-and-diagnostic-findings.md#warning-analogy): 관리자·작업 지시서 비유와 디스크 파일·실행 중 프로세스의 차이.
+- [16강 확인 문제의 상세 해답](lesson-16-windows-services-and-diagnostic-findings.md#review-answers): SYSTEM 서비스 발견과 RX 권한의 의미.
+- [학습 점검과 17~25강 계획](course-coverage-and-next-steps.md#lesson-plan).
+
 ## 노트의 표기 방식 { #how-to-read-the-notes }
 
 | 표기 | 의미 |
@@ -54,7 +59,7 @@ title: A Practical Introduction with Silver
 
 ## 이후 학습 계획 { #planned-continuation }
 
-15강에서 Windows 토큰·특권·무결성 수준을 다뤘습니다. 이후에는 진단 도구 해석, 서비스 설정, 인증·인가, 내부 SMB 흐름을 이어갑니다. 강의 번호는 학습 구성 방식이며 원강좌 전체를 다뤘다는 뜻은 아닙니다. [학습 범위 비교](course-coverage-and-next-steps.md#current-coverage)를 참고하세요.
+16강에서 서비스 실행 계정·서비스/파일 권한·진단 결과의 증거를 다뤘습니다. 다음에는 서비스 권한과 설정 분석, 진단 도구, 인증·인가, 내부 SMB, 실행 파일 분석과 종합 실습을 이어갑니다. [학습 점검과 17~25강 계획](course-coverage-and-next-steps.md#lesson-plan)을 참고하세요. 예정 번호이며 아직 완료된 강의가 아닙니다.
 
 ## 참고 자료 { #sources }
 

@@ -6,7 +6,7 @@ title: A Practical Introduction with Silver
 
 A beginner-friendly introduction to command and control using **Sliver**. The page title follows the requested navigation wording; the actual tool is **Sliver**.
 
-Lessons **1–15** cover C2 fundamentals, delivery and execution evidence, antivirus/EDR, permissions, pivoting, SSH evidence, network inspection, Armory, BOFs, execution mechanisms, and Windows tokens. Worked virtual-lab commands and diagrams connect the concepts. Detailed follow-up answers include connection failures, BOF/COFF/OBJ explanations, and memory loading versus process placement. Exercises assume an authorized, isolated lab.
+Lessons **1–16** cover C2 fundamentals, delivery and execution evidence, antivirus/EDR, permissions, pivoting, SSH evidence, network inspection, Armory, BOFs, execution mechanisms, Windows tokens, and service permissions and diagnostic findings. Worked virtual-lab commands and diagrams connect the concepts. Detailed follow-up answers include connection failures, BOF/COFF/OBJ explanations, and memory loading versus process placement. Exercises assume an authorized, isolated lab.
 
 ## Lessons available { #lessons-available }
 
@@ -27,6 +27,7 @@ Lessons **1–15** cover C2 fundamentals, delivery and execution evidence, antiv
 | [13 — Built-in commands, Armory, and BOFs](lesson-13-armory-and-bof-basics.md) | Package search/install, aliases/extensions, registration versus execution, compatibility, and memory-execution effects |
 | [14 — EXE, .NET Assembly, and BOF execution](lesson-14-exe-dotnet-and-bof-execution.md) | Artifact type, Client/target paths, CLR, hosting processes, and the learner's answers with detailed reasoning |
 | [15 — Windows tokens, Deny only, and privileges](lesson-15-windows-tokens-and-privileges.md) | Two programs under one account, permission cards, group attributes, privilege state, integrity, and detailed review answers |
+| [16 — Windows services, permissions, and diagnostic findings](lesson-16-windows-services-and-diagnostic-findings.md) | Service identity, management/file rights, diagnostic warnings, the instruction-sheet analogy, disk versus process, and detailed answers |
 
 Read one lesson at a time. The lessons connect concepts to examples, with review questions, detailed answers, and follow-up explanations.
 
@@ -41,6 +42,10 @@ Read one lesson at a time. The lessons connect concepts to examples, with review
 
 - [Deny only and the two-file example](lesson-15-windows-tokens-and-privileges.md#deny-only-file-example): distinguish group attributes, privilege state, and evidence of an actual action.
 
+- [A simpler explanation of service warnings](lesson-16-windows-services-and-diagnostic-findings.md#warning-analogy): the manager/instruction-sheet analogy and stored files versus running processes.
+- [Lesson 16 detailed review answers](lesson-16-windows-services-and-diagnostic-findings.md#review-answers): finding a SYSTEM service and interpreting RX.
+- [Learning review and the Lessons 17–25 plan](course-coverage-and-next-steps.md#lesson-plan).
+
 ## How to read the notes { #how-to-read-the-notes }
 
 | Label | Meaning |
@@ -54,7 +59,7 @@ Read one lesson at a time. The lessons connect concepts to examples, with review
 
 ## Planned continuation { #planned-continuation }
 
-Lesson 15 now explains Windows tokens, privileges, and integrity levels. Further teaching will develop diagnostic-tool interpretation, service configuration, authentication/authorization, and internal SMB workflows. Lesson numbering is a teaching structure, not a claim that the entire original course has been covered. See the [coverage comparison](course-coverage-and-next-steps.md#current-coverage).
+Lesson 16 covers service identity, service/file rights, and diagnostic evidence. Next come service-permission and configuration analysis, diagnostic tools, authentication/authorization, internal SMB, executable analysis, and a combined lab. See the [learning review and Lessons 17–25 plan](course-coverage-and-next-steps.md#lesson-plan). These are proposed units, not completed lessons.
 
 ## Sources { #sources }
 

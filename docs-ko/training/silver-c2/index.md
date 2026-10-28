@@ -17,7 +17,7 @@ C2를 처음 배우는 학생을 위한 학습 노트입니다. 운영자의 작
 
     ---
 
-    1~15강: C2 기본부터 피벗팅, SSH 증거, 네트워크 조회, Armory, BOF·COFF·OBJ, EXE·.NET 실행, Windows 토큰·Deny only·특권까지. VM 3대의 SSH 실습, 다이어그램, 학습자 추가 질문과 상세 해답, 문제 진단, 학습 범위 안내를 제공합니다.
+    1~16강: C2 기본부터 피벗팅, SSH 증거, 네트워크 조회, Armory, BOF·COFF·OBJ, EXE·.NET 실행, Windows 토큰·Deny only·특권, 서비스 권한·진단 결과까지. VM 3대의 SSH 실습, 다이어그램, 학습자 추가 질문과 상세 해답, 문제 진단, 학습 점검과 17~25강 계획을 제공합니다.
 
     [:octicons-arrow-right-24: 강좌 열기](practical-introduction/index.md)
 

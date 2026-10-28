@@ -242,4 +242,4 @@ Current implant:
 
 **정확하며 한 가지를 더 분명히 하면**, 조회한 토큰에 특권이 있고 **현재 활성 상태**라는 점까지 알 수 있습니다. 요청·사용 여부와 종료 결과에는 별도의 증거가 필요합니다. HTTP 200, TCP ESTABLISHED, 패키지 설치도 입증 범위가 한정된 것과 같습니다.
 
-[이전: EXE·.NET·BOF 실행](lesson-14-exe-dotnet-and-bof-execution.md) · [학습 범위](course-coverage-and-next-steps.md) · [강좌 개요](index.md)
+[이전: EXE·.NET·BOF 실행](lesson-14-exe-dotnet-and-bof-execution.md) · [다음: Windows 서비스와 진단 결과](lesson-16-windows-services-and-diagnostic-findings.md) · [학습 범위](course-coverage-and-next-steps.md) · [강좌 개요](index.md)
