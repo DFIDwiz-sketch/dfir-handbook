@@ -22,10 +22,18 @@ tags:
 
     [:octicons-arrow-right-24: DNS](dns/index.md)
 
+-   :material-web:{ .lg .middle } **HTTP**
+
+    ---
+
+    Web servers and web shells, URL anatomy and phishing tricks, GET/POST and what gets logged, the other methods (CONNECT, HEAD, OPTIONS, PUT, DELETE, TRACE), reading request headers, and practice questions with answers.
+
+    [:octicons-arrow-right-24: HTTP](http/index.md)
+
 </div>
 
 !!! info "Next topic"
-    HTTP will follow.
+    HTTP response headers and HTTPS analysis will follow.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.
