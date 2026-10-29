@@ -239,7 +239,64 @@ For each HTTP request, go field by field:
 
 The IP is the apartment block; hundreds of sites live in it. The server reads Host — "ah, a customer for `shop.example.com`" — and serves that site. This is **virtual hosting**. For analysts too, **the IP alone doesn't tell you which site was visited; Host does**. That's why Zeek stores `host` separately.
 
-**[Added] Domain fronting.** In HTTPS the outside of the envelope (SNI) and the Host inside are separate. An attacker writes a trusted, famous site on the outside and their C2 site in the inner Host; the firewall only checks the outside, and the CDN delivers to the attacker's site. Most major CDNs have blocked this, but where TLS inspection is available, **requests whose SNI and Host differ** are worth checking.
+#### [Added] Domain fronting and how it evolved (2026) { #domain-fronting }
+
+**Classic domain fronting.** In HTTPS the outside of the envelope (SNI) and the Host inside are separate. An attacker writes a trusted, famous site on the outside and their C2 site in the inner Host; the firewall only checks the outside, and the CDN reads the inner Host and delivers to the attacker's site (MITRE ATT&CK T1090.004).
+
+The big clouds responded with **"refuse delivery if the outer and inner names differ"** — but not every CDN did.
+
+| CDN | Status |
+| --- | --- |
+| Google, AWS CloudFront | Blocked from around 2018 (CloudFront returns `421` on a mismatch) |
+| Microsoft Azure (Front Door/CDN) | Blocking announced late 2022, enforced for existing customers from January 2024 |
+| Cloudflare | No successful fronting in a 2023 measurement study |
+| Fastly | Still possible when tested in March 2025 (SNI and Host not compared) |
+| Other CDNs | 22 of 30 tested (~73%) still allowed it in a 2023 study, including Akamai and Fastly |
+
+**Variant 1: Domain Borrowing.** Published in 2021 to get past the "SNI ≠ Host → refuse" check.
+
+1. A reputable `bigcorp.com` already uses a CDN that holds a `*.bigcorp.com` wildcard certificate
+2. The attacker opens their own account on the same CDN and adds an unused name such as `cdn-update.bigcorp.com` as "their" site. Some CDNs **did not verify ownership**
+3. When an infected PC connects, SNI and Host are **both** `cdn-update.bigcorp.com` and the certificate is genuine → it passes the "SNI = Host?" check, yet the CDN delivers to the attacker's server
+
+It's like a building manager handing an empty flat bearing someone else's building name to a stranger without checking. The specific CDN flaws were most likely reported and fixed, but the root cause — **weak domain-ownership checks at CDNs and clouds** — keeps recurring. It belongs to the same family as DNS [subdomain takeover](../dns/understanding-dns.md#cname).
+
+**Variant 2: same-account crossing and CDN-chaining.** These are research directions rather than one named technique.
+
+- **Same-account crossing:** some CDNs check not "are the outer and inner names identical?" but "do both belong to **the same customer account**?". Fronting between that account's domains still works. To use it, an attacker must take over a customer account that owns a reputable domain, so it appears alongside account compromise.
+- **CDN chaining:** putting one CDN in front of another, or multi-CDN setups, where each hop checks names differently. Mostly research; no widely reported real-world attacks found.
+
+**[Still valid in 2026] What attackers use more often.** Rather than elaborate fronting, they simply **create their own address on a trusted service**, where outer and inner names match and nothing needs faking: Cloudflare Workers/Pages, Cloudflare tunnels (`trycloudflare.com`), free cloud subdomains such as `*.azurefd.net`, and the Telegram/Discord/Slack APIs. In February 2026 a proof of concept (a demonstration, not an observed attack) showed AI chatbots' web-browsing features (Grok, Copilot) relaying C2 traffic. The common thread is **borrowing reputation**; domain fronting is just one way to do it.
+
+**ECH (Encrypted Client Hello): the "official" version of fronting.** A TLS 1.3 extension that encrypts the real site name with a public key fetched from the DNS [HTTPS record (type 65)](../dns/understanding-dns.md#records). It became a standard as **RFC 9849** in March 2026.
+
+```
+Outer ClientHello (visible):  SNI = cloudflare-ech.com     ← cover name, shared by many sites
+Inner ClientHello (encrypted): SNI = real-c2-site.example  ← hidden
+IP layer (visible):           10.1.5.23  →  104.21.x.x     ← source and destination IP still visible
+```
+
+- Line 1: the outside shows a shared cover name (`cloudflare-ech.com` for Cloudflare)
+- Line 2: only the real site name is encrypted
+- Line 3: source and destination IPs, volume, timing and interval remain visible
+
+!!! warning "[Correction] Common misconceptions about ECH"
+    - **"It hides source and destination" is overstated.** Only the hostname is hidden. You still see which apartment block (IP) traffic goes to — just not which flat.
+    - **It's closer to "fronting sanctioned by the CDN" than a replacement for fronting.** It looks similar, but it's a CDN feature: an attacker must put C2 behind an ECH-capable service (in practice, Cloudflare), and the CDN sees the real name. It only hides from the company firewall in the middle.
+    - **It isn't widespread yet.** Per Corrata's May 2025 report, just under 10% of the top 1M sites support it (almost all Cloudflare), and only ~0.06% of connections used it (Jan–Mar 2025). Malicious or risky sites were over-represented at ~17% of ECH-enabled sites, and over 90% of phishing detections on ECH sites were on Cloudflare.
+    - **Browsers only use ECH with encrypted DNS.** Chrome needs secure DNS on and a published ECH key; Firefox 119+ needs DoH on.
+    - No widely reported malware using ECH to hide C2 was found. With phishing already concentrated on ECH sites, assume it is coming.
+
+**SOC response.**
+
+- **Classic fronting:** with TLS inspection, alert on **SNI ≠ Host**
+- **Domain borrowing / reputation borrowing:** SNI = Host, so that check misses it → look for **never-seen subdomains of reputable domains**, beacon-like **fixed intervals**, and traffic when nobody is at the desk. Clean up unused CDN configurations and dangling CNAMEs so your own domains can't be borrowed
+- **ECH:** the key fact is that **ECH is almost useless without encrypted DNS**
+    - **Force company DNS and block external DoH** and browsers won't turn ECH on
+    - Even if ECH is used, company DNS logs show **which domain's HTTPS (65) and A records were queried** → that is the real site name
+    - Firewall ECH-blocking features (offered by major vendors such as Cisco) or browser policy can disable ECH; browsers then reconnect with a plain SNI
+    - The cover name `cloudflare-ech.com` stays visible (Russia used exactly this to block ECH in November 2024)
+    - Names may be hidden, but IP, timing, interval and volume are not — [beacon detection](../../../network/beaconing-c2.md) and EDR / Sysmon Event ID 3 (which program connected where) still work
 
 ### User-Agent — the program's self-introduction { #user-agent }
 
@@ -349,6 +406,7 @@ Header order is arbitrary and shouldn't change the response.
     - **Less information in User-Agent.** User-Agent Reduction hides Windows 10 vs 11 and minor versions; details moved to Client Hints (`Sec-CH-UA`).
     - **Normal traffic looks different.** OPTIONS (CORS preflight), PUT, PATCH and DELETE are routine in REST APIs; per-app baselines matter more.
     - **Terminology.** "Entity header" is no longer an official term after RFC 9110.
+    - **Domain fronting evolved into "reputation borrowing".** Big clouds blocked it, some CDNs still allow it, and domain borrowing (SNI = Host), own addresses on trusted services, and ECH (RFC 9849, March 2026) have appeared. [Details](#domain-fronting)
     - **PUT-related bugs keep appearing.** Apache Tomcat CVE-2025-24813 (March 2025) could lead to remote code execution via PUT in certain configurations, with exploitation attempts reported soon after disclosure.
 
 !!! warning "[Caution] / [Correction]"
