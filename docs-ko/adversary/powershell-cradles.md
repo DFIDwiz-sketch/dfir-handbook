@@ -14,7 +14,7 @@ tags:
 </div>
 
 !!! abstract "요약"
-    PowerShell은 서명돼 있고, 어디에나 있고, 디스크에 파일 없이 **메모리에서 바로** 코드를 실행할 수 있어서 공격자가 가장 좋아하는 인터프리터입니다. "크래들"은 한 줄로 2단계를 내려받아 실행하고(`IEX (New-Object Net.WebClient).DownloadString(...)`), 인코딩(`-EncodedCommand`)과 난독화는 대충 보는 로그 검토에서 의도를 숨깁니다. 하지만 **스크립트 블록 로깅(4104)**은 그와 상관없이 *디코딩된* 텍스트를 기록하므로 — 로깅이 켜져 있다면 가장 잘 관측되는 기법 중 하나입니다.
+    PowerShell은 서명돼 있고, 어디에나 있고, 디스크에 파일 없이 **메모리에서 바로** 코드를 실행할 수 있어서 공격자가 가장 좋아하는 인터프리터입니다. "크래들"은 한 줄로 2단계를 내려받아 실행하고(`IEX (New-Object Net.WebClient).DownloadString(...)`), 인코딩(`-EncodedCommand`)과 난독화는 대충 보는 로그 검토에서 의도를 숨깁니다. 하지만 <strong>스크립트 블록 로깅(4104)</strong>은 그와 상관없이 *디코딩된* 텍스트를 기록하므로 — 로깅이 켜져 있다면 가장 잘 관측되는 기법 중 하나입니다.
 
 ## 공격 원리 { #how-the-attack-works }
 
@@ -106,7 +106,7 @@ $b=(New-Object Net.WebClient).DownloadData('...'); [AppDomain]::CurrentDomain.Lo
 
 ## 대응 { #response }
 
-스크립트 블록(`4104`/디코딩된 실행기 출력)을 디코딩해 읽고 무엇을 가져와서 무엇을 했는지 이해한 뒤, **C2/스테이징 URL과 도메인**을 뽑아 차단하세요. 2단계가 떨어뜨린 파일은 해시해서 헌팅하세요([Amcache](../windows/amcache.md)/[files.log](../network/zeek/files-log.md)). 크래들은 곧장 비콘으로 이어지는 경우가 많으니 [비코닝과 C2](../network/beaconing-c2.md)와 자격증명 접근까지 따라가세요. PowerShell 로그와 콘솔 히스토리를 보존하세요. 강화 — 이 기법은 로깅이 가장 큰 값을 하는 곳입니다: **스크립트 블록 로깅**과 **모듈 로깅**을 전사에 켜고, WDAC/AppLocker로 PowerShell을 **제한된 언어 모드(CLM)**로 돌리고, **AMSI**를 켜 두고(디코딩된 버퍼를 검사), PowerShell v2 제거를 고려하고(AMSI 없음, 4104 없음), `-enc`/`-w hidden`/`DownloadString`에 상시 경보를 거세요.
+스크립트 블록(`4104`/디코딩된 실행기 출력)을 디코딩해 읽고 무엇을 가져와서 무엇을 했는지 이해한 뒤, **C2/스테이징 URL과 도메인**을 뽑아 차단하세요. 2단계가 떨어뜨린 파일은 해시해서 헌팅하세요([Amcache](../windows/amcache.md)/[files.log](../network/zeek/files-log.md)). 크래들은 곧장 비콘으로 이어지는 경우가 많으니 [비코닝과 C2](../network/beaconing-c2.md)와 자격증명 접근까지 따라가세요. PowerShell 로그와 콘솔 히스토리를 보존하세요. 강화 — 이 기법은 로깅이 가장 큰 값을 하는 곳입니다: **스크립트 블록 로깅**과 **모듈 로깅**을 전사에 켜고, WDAC/AppLocker로 PowerShell을 <strong>제한된 언어 모드(CLM)</strong>로 돌리고, **AMSI**를 켜 두고(디코딩된 버퍼를 검사), PowerShell v2 제거를 고려하고(AMSI 없음, 4104 없음), `-enc`/`-w hidden`/`DownloadString`에 상시 경보를 거세요.
 
 ## 참고 자료 { #references }
 

@@ -57,7 +57,7 @@ certutil -hashfile E:\case\mem.raw SHA256 > E:\case\mem.raw.sha256
 | **ewfacquire** (libewf) | Linux | CLI로 E01 생성 |
 | **X-Ways / EnCase** | Windows | 상용, 법정 표준 |
 
-**포맷**: 증거에는 **E01(EWF)**이 좋습니다 — 압축하고, 해시와 사건 메타데이터를 파일 안에 저장하며, 세그먼트로 나눕니다. **raw/dd**는 평범한 비트 사본입니다(가장 크고, 어디서나 읽힘). E01은 FTK Imager, Arsenal Image Mounter, `ewfmount`로 읽기 전용 마운트해서 어떤 도구로든 파싱할 수 있습니다([KAPE](kape.md) `--tsource` 포함).
+**포맷**: 증거에는 <strong>E01(EWF)</strong>이 좋습니다 — 압축하고, 해시와 사건 메타데이터를 파일 안에 저장하며, 세그먼트로 나눕니다. **raw/dd**는 평범한 비트 사본입니다(가장 크고, 어디서나 읽힘). E01은 FTK Imager, Arsenal Image Mounter, `ewfmount`로 읽기 전용 마운트해서 어떤 도구로든 파싱할 수 있습니다([KAPE](kape.md) `--tsource` 포함).
 
 ```bash
 # Linux, physical disk /dev/sdb → E01 with hashing

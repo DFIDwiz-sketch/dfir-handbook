@@ -14,7 +14,7 @@ tags:
 </div>
 
 !!! abstract "요약"
-    Active Directory Certificate Services(ADCS)는 **Kerberos 로그온(PKINIT)**에 쓸 수 있는 인증서를 발급합니다. 인증서 템플릿이나 CA 자체가 잘못 설정되어 있으면, 낮은 권한의 사용자가 **자신이 Domain Admin이라고 적힌 인증서**를 받을 수 있습니다 — 그리고 그 인증서로 TGT와 관리자의 NT 해시를 얻습니다. 2021년 "Certified Pre-Owned" 연구가 이런 잘못된 설정에 **ESC1 – ESC8**(이후 ESC9 – ESC16)이라는 이름을 붙였습니다. 인증서는 **지속성** 수단으로도 아주 좋습니다: 비밀번호를 재설정해도 살아남고, 기본적으로 1년 이상 유효합니다.
+    Active Directory Certificate Services(ADCS)는 <strong>Kerberos 로그온(PKINIT)</strong>에 쓸 수 있는 인증서를 발급합니다. 인증서 템플릿이나 CA 자체가 잘못 설정되어 있으면, 낮은 권한의 사용자가 **자신이 Domain Admin이라고 적힌 인증서**를 받을 수 있습니다 — 그리고 그 인증서로 TGT와 관리자의 NT 해시를 얻습니다. 2021년 "Certified Pre-Owned" 연구가 이런 잘못된 설정에 **ESC1 – ESC8**(이후 ESC9 – ESC16)이라는 이름을 붙였습니다. 인증서는 **지속성** 수단으로도 아주 좋습니다: 비밀번호를 재설정해도 살아남고, 기본적으로 1년 이상 유효합니다.
 
 ## 공격 원리 { #how-the-attack-works }
 
@@ -113,13 +113,13 @@ ADCS의 잘못된 설정은 **Server 2003부터 2025까지 모든 Enterprise CA*
 
 ## 대응 { #response }
 
-취약한 경로로 발급된 모든 인증서를 찾아내고(CA 데이터베이스, 4887) **폐기(revoke)**한 뒤 새 CRL을 게시하세요. 사용자 비밀번호를 재설정해도 인증서는 무효화되지 *않습니다*. DC 인증서나 CA 자체가 탈취되었다면(CA 개인 키 탈취 = "Golden Certificate"), CA를 다시 구축하고 그 인증서를 `NTAuthCertificates`에서 제거해야 합니다.
+취약한 경로로 발급된 모든 인증서를 찾아내고(CA 데이터베이스, 4887) <strong>폐기(revoke)</strong>한 뒤 새 CRL을 게시하세요. 사용자 비밀번호를 재설정해도 인증서는 무효화되지 *않습니다*. DC 인증서나 CA 자체가 탈취되었다면(CA 개인 키 탈취 = "Golden Certificate"), CA를 다시 구축하고 그 인증서를 `NTAuthCertificates`에서 제거해야 합니다.
 
 ### Windows 버전별 대응책 { #remediation-by-windows-version }
 
 | 대응책 | 막는 것 | 적용 가능 버전 |
 |---|---|---|
-| client-auth EKU가 있는 템플릿에서 **Supply in the request**(`CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT`)를 제거하거나 **관리자 승인(manager approval)**을 요구 | ESC1 | 모든 Enterprise CA 버전 |
+| client-auth EKU가 있는 템플릿에서 **Supply in the request**(`CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT`)를 제거하거나 <strong>관리자 승인(manager approval)</strong>을 요구 | ESC1 | 모든 Enterprise CA 버전 |
 | 등록 권한과 템플릿 **쓰기** 권한을 관리자로 제한 | ESC1 / ESC4 | 전체 |
 | `EDITF_ATTRIBUTESUBJECTALTNAME2` 해제 (`certutil -setreg policy\EditFlags -EDITF_ATTRIBUTESUBJECTALTNAME2`) | ESC6 | 전체 |
 | HTTP 웹 등록을 끄거나 **HTTPS + EPA Required**를 강제 | ESC8 | 2012 R2+ (EPA); 오래된 CA에서는 역할을 제거 |

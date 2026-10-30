@@ -285,7 +285,7 @@ WMI(Windows Management Instrumentation)는 윈도우 관리 정보를 조회·�
 많은 구형 교재가 소개하는 `AppInit_DLLs`는 레지스트리(`HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Windows\AppInit_DLLs`)에 DLL 경로를 적어두면 `user32.dll`을 로드하는 거의 모든 프로세스에 해당 DLL을 강제 인젝션하는 강력한 기능이었습니다.
 
 > **왜 현재 실전에서는 실패하는가? (UEFI Secure Boot와의 연동)**
-> 마이크로소프트는 무분별한 DLL 인젝션을 막기 위해 Windows 8 및 Win 10/11부터 **UEFI 보안 부팅(Secure Boot)이 활성화되어 있으면 `LoadAppInit_DLLs` 값을 `1`로 설정해도 OS 커널이 무조건 무시하고 비활성화**하도록 패치했습니다. 특히 **Windows 11은 설치 최소 요구사항으로 UEFI Secure Boot를 강제**하므로, 현대 엔터프라이즈 환경에서 `AppInit_DLLs` 기법은 사실상 **사멸(Dead)**했습니다.
+> 마이크로소프트는 무분별한 DLL 인젝션을 막기 위해 Windows 8 및 Win 10/11부터 **UEFI 보안 부팅(Secure Boot)이 활성화되어 있으면 `LoadAppInit_DLLs` 값을 `1`로 설정해도 OS 커널이 무조건 무시하고 비활성화**하도록 패치했습니다. 특히 **Windows 11은 설치 최소 요구사항으로 UEFI Secure Boot를 강제**하므로, 현대 엔터프라이즈 환경에서 `AppInit_DLLs` 기법은 사실상 <strong>사멸(Dead)</strong>했습니다.
 
 ### 4.4 기존 Windows 서비스 변조 및 `svchost.exe` ServiceDll 하이재킹
 

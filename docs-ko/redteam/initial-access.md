@@ -303,7 +303,7 @@ Windows Installer(`.msi`)는 설치에 필요한 파일과 단계별 작업(Acti
 
 - **리플렉션 및 리소스 추출:** C# 라이브러리에 실행 파일을 리소스로 포함한 뒤, 생성자에서 `Assembly.GetExecutingAssembly().GetManifestResourceStream()`으로 메모리에 읽어 들입니다.
 - **드롭 위치 선정 (OPSEC):** `%TEMP%`·홈 디렉터리 드롭은 즉시 탐지됩니다. 그래서 표준 사용자도 쓰기/폴더 생성이 가능한 **`C:\ProgramData\*`** 하위에 폴더를 만들어 파일을 생성합니다.
-- **GadgetToJScript를 통한 스크립트화:** 컴파일된 .NET DLL 자체는 실행할 수 없으므로, **.NET 역직렬화(Deserialization)**를 악용하는 `GadgetToJScript`로 어셈블리를 `.js`/`.vbs`/VBA/HTA 스크립트로 변환합니다. 피해자가 `.js`를 실행(`wscript.exe`)하면 메모리에서 역직렬화되며 생성자 안의 드로퍼 코드가 작동합니다.
+- **GadgetToJScript를 통한 스크립트화:** 컴파일된 .NET DLL 자체는 실행할 수 없으므로, <strong>.NET 역직렬화(Deserialization)</strong>를 악용하는 `GadgetToJScript`로 어셈블리를 `.js`/`.vbs`/VBA/HTA 스크립트로 변환합니다. 피해자가 `.js`를 실행(`wscript.exe`)하면 메모리에서 역직렬화되며 생성자 안의 드로퍼 코드가 작동합니다.
 
 #### 최신 보안 업데이트 및 제약 사항
 

@@ -62,7 +62,7 @@ mimikatz  kerberos::golden /user:x /domain:corp.local /sid:S-1-5-21-... /target:
 
 ## 영향받는 Windows 버전 { #affected-windows-versions }
 
-Kerberos 티켓 위조는 유효한 키를 쓰기 때문에 **모든 Active Directory 도메인(2000 → 2025)**에서 통합니다. 최근 업데이트 중 일부는 *엉성한* 위조를 실패하게 만듭니다:
+Kerberos 티켓 위조는 유효한 키를 쓰기 때문에 <strong>모든 Active Directory 도메인(2000 → 2025)</strong>에서 통합니다. 최근 업데이트 중 일부는 *엉성한* 위조를 실패하게 만듭니다:
 
 | 변경 | 위조 티켓에 미치는 영향 | 적용 대상 |
 |---|---|---|

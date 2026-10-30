@@ -37,7 +37,7 @@ tags:
 | Sysmon/Operational | 64 MB (설정 기본값) | 몇 시간 ~ 며칠 |
 | 대부분의 `*Operational` 채널 | 1 MB (!) | 아주 짧음 — 예: TaskScheduler, WMI-Activity |
 
-보존 모드는 거의 항상 **"필요하면 이벤트 덮어쓰기"**라서 오래된 레코드는 조용히 사라집니다. **볼륨 섀도 복사본**에는 더 오래된 `Security.evtx`가 들어 있는 경우가 많으니 항상 `vssadmin list shadows` / KAPE `--vss`로 확인하세요.
+보존 모드는 거의 항상 <strong>"필요하면 이벤트 덮어쓰기"</strong>라서 오래된 레코드는 조용히 사라집니다. **볼륨 섀도 복사본**에는 더 오래된 `Security.evtx`가 들어 있는 경우가 많으니 항상 `vssadmin list shadows` / KAPE `--vss`로 확인하세요.
 
 ## 수집할 만한 채널 (Security/System/Application 외) { #channels-worth-grabbing-beyond-securitysystemapplication }
 

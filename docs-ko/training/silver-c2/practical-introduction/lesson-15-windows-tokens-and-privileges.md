@@ -107,7 +107,7 @@ SeShutdownPrivilege        Disabled
 
 ## Deny only는 무슨 뜻인가요? { #deny-only-explained }
 
-학습자는 **‘아니요. 그런데 Deny only는 무슨 뜻인가요?’**라고 질문했습니다.
+학습자는 <strong>‘아니요. 그런데 Deny only는 무슨 뜻인가요?’</strong>라고 질문했습니다.
 
 ```text
 Group: Administrators

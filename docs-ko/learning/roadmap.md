@@ -56,7 +56,7 @@ flowchart LR
 
 - NTLM 인증 → [Pass-the-Hash](../adversary/pass-the-hash.md) → [NTLM relay](../adversary/llmnr-ntlm-relay.md).
 - Kerberos: TGT/TGS, SPN, 위임(delegation), 서비스 계정 → [Kerberoasting](../adversary/kerberoasting.md), [AS-REP roasting](../adversary/asrep-roasting.md), [Golden/Silver 티켓](../adversary/golden-silver-tickets.md), [DCSync](../adversary/dcsync.md), [ADCS](../adversary/adcs-abuse.md).
-- 목표는 명령어 암기가 아니라 **"이 인증 설계의 어떤 특성 때문에 이 공격이 가능한가?"**를 설명하는 것이고, 그래서 어떤 통제가 그 공격을 끊는지 아는 것입니다.
+- 목표는 명령어 암기가 아니라 <strong>"이 인증 설계의 어떤 특성 때문에 이 공격이 가능한가?"</strong>를 설명하는 것이고, 그래서 어떤 통제가 그 공격을 끊는지 아는 것입니다.
 
 ### 5. 리버스 엔지니어링 { #5-reverse-engineering }
 

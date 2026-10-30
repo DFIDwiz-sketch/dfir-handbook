@@ -13,7 +13,7 @@ tags:
 </div>
 
 !!! abstract "한 줄 요약"
-    Linux 파일에는 타임스탬프가 네 개(MACB) 있지만 — NTFS와 달리 — **crtime(생성 시각)**은 숨겨져 있고 `$FILE_NAME` 같은 두 번째 세트가 없어서 타임스톰핑을 잡기가 더 어렵습니다. 대신 **변경 시각(ctime)**, 저널, inode/링크 이상에 기대야 합니다.
+    Linux 파일에는 타임스탬프가 네 개(MACB) 있지만 — NTFS와 달리 — <strong>crtime(생성 시각)</strong>은 숨겨져 있고 `$FILE_NAME` 같은 두 번째 세트가 없어서 타임스톰핑을 잡기가 더 어렵습니다. 대신 **변경 시각(ctime)**, 저널, inode/링크 이상에 기대야 합니다.
 
 ## 네 가지 타임스탬프 (MACB) { #the-four-timestamps-macb }
 

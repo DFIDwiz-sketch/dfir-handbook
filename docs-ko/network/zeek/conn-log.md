@@ -130,7 +130,7 @@ tags:
 
 - **바이트 수는 페이로드만입니다.** 0바이트 `SF` 연결은 데이터 없는 핸드셰이크 — TCP 프로브, 헬스 체크, 또는 할 일이 없었던 비콘입니다.
 - **`orig_bytes` vs `orig_ip_bytes`**: `orig_bytes`는 0인데 `orig_ip_bytes`가 크다면 페이로드가 재전송에 있었거나 Zeek이 재조립하지 못한 것(`missed_bytes`) — 캡처 품질 문제입니다.
-- **UDP "연결"**은 5-튜플로 묶고 비활동 타임아웃을 둔 플로우입니다. `duration`이 여러 데이터그램에 걸칠 수 있고, 같은 리졸버로의 DNS는 긴 UDP 연결 하나로 보일 수 있습니다.
+- <strong>UDP "연결"</strong>은 5-튜플로 묶고 비활동 타임아웃을 둔 플로우입니다. `duration`이 여러 데이터그램에 걸칠 수 있고, 같은 리졸버로의 DNS는 긴 UDP 연결 하나로 보일 수 있습니다.
 - **ICMP**: `id.orig_p` = ICMP 타입, `id.resp_p` = 코드. `orig_bytes`가 큰 타입 8/0이 많으면 = ICMP 터널.
 - **내부 vs. 외부**: `local.zeek`에 `Site::local_nets`를 설정하면 `local_orig/local_resp`가 채워집니다 — 그러면 "내부 → 외부, `orig_bytes` 큼"이 한 줄짜리 쿼리가 됩니다.
 - **비코닝**은 여기 있습니다: 같은 `id.orig_h`/`id.resp_h`/`id.resp_p`, `ts` 값 사이의 거의 일정한 간격, 비슷한 `orig_bytes`. [비코닝과 C2](../beaconing-c2.md) 참고.
