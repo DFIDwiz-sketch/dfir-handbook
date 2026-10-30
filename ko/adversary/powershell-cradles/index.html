@@ -7015,7 +7015,7 @@
 </div>
 <div class="admonition abstract">
 <p class="admonition-title">요약</p>
-<p>PowerShell은 서명돼 있고, 어디에나 있고, 디스크에 파일 없이 <strong>메모리에서 바로</strong> 코드를 실행할 수 있어서 공격자가 가장 좋아하는 인터프리터입니다. "크래들"은 한 줄로 2단계를 내려받아 실행하고(<code>IEX (New-Object Net.WebClient).DownloadString(...)</code>), 인코딩(<code>-EncodedCommand</code>)과 난독화는 대충 보는 로그 검토에서 의도를 숨깁니다. 하지만 **스크립트 블록 로깅(4104)**은 그와 상관없이 <em>디코딩된</em> 텍스트를 기록하므로 — 로깅이 켜져 있다면 가장 잘 관측되는 기법 중 하나입니다.</p>
+<p>PowerShell은 서명돼 있고, 어디에나 있고, 디스크에 파일 없이 <strong>메모리에서 바로</strong> 코드를 실행할 수 있어서 공격자가 가장 좋아하는 인터프리터입니다. "크래들"은 한 줄로 2단계를 내려받아 실행하고(<code>IEX (New-Object Net.WebClient).DownloadString(...)</code>), 인코딩(<code>-EncodedCommand</code>)과 난독화는 대충 보는 로그 검토에서 의도를 숨깁니다. 하지만 <strong>스크립트 블록 로깅(4104)</strong>은 그와 상관없이 <em>디코딩된</em> 텍스트를 기록하므로 — 로깅이 켜져 있다면 가장 잘 관측되는 기법 중 하나입니다.</p>
 </div>
 <h2 id="how-the-attack-works">공격 원리<a class="headerlink" href="#how-the-attack-works" title="Permanent link">¶</a></h2>
 <pre class="mermaid"><code>flowchart LR
@@ -7128,7 +7128,7 @@
 </div>
 </div>
 <h2 id="response">대응<a class="headerlink" href="#response" title="Permanent link">¶</a></h2>
-<p>스크립트 블록(<code>4104</code>/디코딩된 실행기 출력)을 디코딩해 읽고 무엇을 가져와서 무엇을 했는지 이해한 뒤, <strong>C2/스테이징 URL과 도메인</strong>을 뽑아 차단하세요. 2단계가 떨어뜨린 파일은 해시해서 헌팅하세요(<a href="../../windows/amcache/">Amcache</a>/<a href="../../network/zeek/files-log/">files.log</a>). 크래들은 곧장 비콘으로 이어지는 경우가 많으니 <a href="../../network/beaconing-c2/">비코닝과 C2</a>와 자격증명 접근까지 따라가세요. PowerShell 로그와 콘솔 히스토리를 보존하세요. 강화 — 이 기법은 로깅이 가장 큰 값을 하는 곳입니다: <strong>스크립트 블록 로깅</strong>과 <strong>모듈 로깅</strong>을 전사에 켜고, WDAC/AppLocker로 PowerShell을 **제한된 언어 모드(CLM)**로 돌리고, <strong>AMSI</strong>를 켜 두고(디코딩된 버퍼를 검사), PowerShell v2 제거를 고려하고(AMSI 없음, 4104 없음), <code>-enc</code>/<code>-w hidden</code>/<code>DownloadString</code>에 상시 경보를 거세요.</p>
+<p>스크립트 블록(<code>4104</code>/디코딩된 실행기 출력)을 디코딩해 읽고 무엇을 가져와서 무엇을 했는지 이해한 뒤, <strong>C2/스테이징 URL과 도메인</strong>을 뽑아 차단하세요. 2단계가 떨어뜨린 파일은 해시해서 헌팅하세요(<a href="../../windows/amcache/">Amcache</a>/<a href="../../network/zeek/files-log/">files.log</a>). 크래들은 곧장 비콘으로 이어지는 경우가 많으니 <a href="../../network/beaconing-c2/">비코닝과 C2</a>와 자격증명 접근까지 따라가세요. PowerShell 로그와 콘솔 히스토리를 보존하세요. 강화 — 이 기법은 로깅이 가장 큰 값을 하는 곳입니다: <strong>스크립트 블록 로깅</strong>과 <strong>모듈 로깅</strong>을 전사에 켜고, WDAC/AppLocker로 PowerShell을 <strong>제한된 언어 모드(CLM)</strong>로 돌리고, <strong>AMSI</strong>를 켜 두고(디코딩된 버퍼를 검사), PowerShell v2 제거를 고려하고(AMSI 없음, 4104 없음), <code>-enc</code>/<code>-w hidden</code>/<code>DownloadString</code>에 상시 경보를 거세요.</p>
 <h2 id="references">참고 자료<a class="headerlink" href="#references" title="Permanent link">¶</a></h2>
 <ul>
 <li><a href="https://attack.mitre.org/techniques/T1059/001/">MITRE ATT&amp;CK — T1059.001</a> · <a href="https://attack.mitre.org/techniques/T1027/">T1027</a></li>

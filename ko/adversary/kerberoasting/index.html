@@ -7021,7 +7021,7 @@
     DC-&gt;&gt;A: TGS-REP — ticket encrypted with the service account's NT hash
     A-&gt;&gt;C: extract ticket, hashcat -m 13100
     C-&gt;&gt;C: crack offline → service account plaintext</code></pre>
-<p>DC는 인증된 <em>모든</em> 사용자에게 티켓을 내줍니다 — 설계가 그렇습니다. AES 대신 **RC4(etype 0x17/23)**를 요청하면 해시를 훨씬 빨리 크랙할 수 있어서 도구들은 일부러 낮춥니다.</p>
+<p>DC는 인증된 <em>모든</em> 사용자에게 티켓을 내줍니다 — 설계가 그렇습니다. AES 대신 <strong>RC4(etype 0x17/23)</strong>를 요청하면 해시를 훨씬 빨리 크랙할 수 있어서 도구들은 일부러 낮춥니다.</p>
 <h2 id="attacker-tooling-commands">공격 도구 / 명령<a class="headerlink" href="#attacker-tooling-commands" title="Permanent link">¶</a></h2>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a># Rubeus (Windows)
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>Rubeus.exe kerberoast /outfile:hashes.txt
@@ -7111,7 +7111,7 @@
 </div>
 </div>
 <h2 id="response">대응<a class="headerlink" href="#response" title="Permanent link">¶</a></h2>
-<p>크랙된 자격증명은 서비스 계정 비밀번호이므로 <strong>요청된 모든 SPN 계정을 교체하고</strong>(<code>values(Service_Name)</code> 목록), 권한 있는 서비스 계정은 완전히 탈취된 것으로 다루세요. 서비스 계정은 여러 시스템에서 재사용되는 경우가 많으니, 로스팅 시각 이후 그 계정들의 로그온을 헌팅하세요. 강화: 서비스 계정에 <strong>길고 무작위인 비밀번호</strong>를 주거나 자동으로 교체되는 **그룹 관리 서비스 계정(gMSA)**으로 옮기고, 가능하면 <strong>AES</strong>를 강제하고 RC4를 끄고, <code>4769</code> RC4를 상시 모니터링하고, SPN이 있는 계정 수를 줄이세요. 고권한 계정에서는 SPN을 아예 없애세요 (SPN이 있는 Domain Admin은 로스팅을 기다리는 재앙입니다).</p>
+<p>크랙된 자격증명은 서비스 계정 비밀번호이므로 <strong>요청된 모든 SPN 계정을 교체하고</strong>(<code>values(Service_Name)</code> 목록), 권한 있는 서비스 계정은 완전히 탈취된 것으로 다루세요. 서비스 계정은 여러 시스템에서 재사용되는 경우가 많으니, 로스팅 시각 이후 그 계정들의 로그온을 헌팅하세요. 강화: 서비스 계정에 <strong>길고 무작위인 비밀번호</strong>를 주거나 자동으로 교체되는 <strong>그룹 관리 서비스 계정(gMSA)</strong>으로 옮기고, 가능하면 <strong>AES</strong>를 강제하고 RC4를 끄고, <code>4769</code> RC4를 상시 모니터링하고, SPN이 있는 계정 수를 줄이세요. 고권한 계정에서는 SPN을 아예 없애세요 (SPN이 있는 Domain Admin은 로스팅을 기다리는 재앙입니다).</p>
 <h2 id="references">참고 자료<a class="headerlink" href="#references" title="Permanent link">¶</a></h2>
 <ul>
 <li><a href="https://attack.mitre.org/techniques/T1558/003/">MITRE ATT&amp;CK — T1558.003</a></li>
