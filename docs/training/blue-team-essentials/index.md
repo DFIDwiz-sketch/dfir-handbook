@@ -26,7 +26,7 @@ tags:
 
     ---
 
-    Web servers and web shells, URL anatomy and phishing tricks, GET/POST and what gets logged, the other methods (CONNECT, HEAD, OPTIONS, PUT, DELETE, TRACE), reading request headers, and practice questions with answers.
+    Web servers and web shells, URL anatomy and phishing tricks, GET/POST and what gets logged, the other methods (CONNECT, HEAD, OPTIONS, PUT, DELETE, TRACE), reading request headers, judging real malicious requests (exploit kits, URLs inside URLs), and practice questions with answers.
 
     [:octicons-arrow-right-24: HTTP](http/index.md)
 

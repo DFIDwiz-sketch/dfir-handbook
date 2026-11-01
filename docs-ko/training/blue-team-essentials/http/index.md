@@ -17,6 +17,7 @@ tags:
 | --- | --- | --- |
 | 1 | [웹 서버, URL, GET 요청](web-servers-urls-get.md) | 주문과 배달, 문서 루트, 웹셸과 이벤트 4688·Sysmon 1, 모듈 백도어, URL 해부(`@`·`#`·`%`·`file://`), Zeek http.log, GET 로그·SQL 인젝션·경로 조작·C2 비콘, 확인 문제 |
 | 2 | [POST, 그 밖의 메서드, 요청 헤더](post-methods-headers.md) | POST와 로그, 악성코드·웹셸의 POST, CONNECT·HEAD·OPTIONS·PUT·DELETE·TRACE, Host·User-Agent·Referer·Cookie·Accept·X-Forwarded-For, 헤더 순서 지문, 확인 문제 |
+| 3 | [요청 판정 연습](reading-requests.md) | 칸마다 묻는 점검법, 무작위지만 정상인 문자열, Angler 익스플로잇 킷 요청 해부, 도메인 섀도잉, Referer 속 URL(구글 번역·Safe Links), ClickFix·`translate.goog` 피싱, 확인 문제 |
 
 ## 꼭 기억할 10가지 { #must-know }
 

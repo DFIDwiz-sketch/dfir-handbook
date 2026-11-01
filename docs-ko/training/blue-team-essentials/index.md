@@ -26,7 +26,7 @@ tags:
 
     ---
 
-    웹 서버와 웹셸, URL 해부와 피싱 속임수, GET·POST와 로그, 그 밖의 메서드(CONNECT·HEAD·OPTIONS·PUT·DELETE·TRACE), 요청 헤더 읽기, 확인 문제와 해설.
+    웹 서버와 웹셸, URL 해부와 피싱 속임수, GET·POST와 로그, 그 밖의 메서드(CONNECT·HEAD·OPTIONS·PUT·DELETE·TRACE), 요청 헤더 읽기, 실제 악성 요청 판정 연습(익스플로잇 킷, URL 속 URL), 확인 문제와 해설.
 
     [:octicons-arrow-right-24: HTTP](http/index.md)
 
