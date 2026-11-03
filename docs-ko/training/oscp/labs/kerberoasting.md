@@ -15,7 +15,7 @@ tags:
     홈 랩에서 Kerberoasting을 처음부터 끝까지 — 원리, 취약한 SPN 계정 준비, Kali에서 roast·크랙, 그리고 Splunk에서 Windows 이벤트 4769로 탐지.
 
 !!! note "공부 쪽 vs 탐지 쪽"
-    이건 실습 버전이에요. 원리와 탐지 레퍼런스는 [공격 기법 › Kerberoasting](../../../adversary/kerberoasting.md)에, 시험 전략 관점은 [Active Directory](../active-directory.md#credential-attacks)에 있습니다.
+    이건 실습 버전이에요. 원리와 탐지 레퍼런스는 [공격 기법 › Kerberoasting](../../../adversary/kerberoasting.md)에, 시험 전략 관점은 [Active Directory](../active-directory.md#kerberoasting)에 있습니다.
 
 ## 1. 왜 되는가 { #how-it-works }
 
@@ -215,7 +215,7 @@ Zeek 센서가 올라가면 Kerberos 트래픽이 `kerberos.log` 에 `request_ty
 
 ## 관련 페이지 { #related-pages }
 
-- [공격 기법 › Kerberoasting](../../../adversary/kerberoasting.md) (탐지 레퍼런스) · [Active Directory](../active-directory.md#credential-attacks) · [시험 구조 › 금지 도구](../exam-format.md#restricted)
+- [공격 기법 › Kerberoasting](../../../adversary/kerberoasting.md) (탐지 레퍼런스) · [Active Directory](../active-directory.md#kerberoasting) · [시험 구조 › 금지 도구](../exam-format.md#restricted)
 - 사촌 격 기법: AS-REP Roasting(비밀번호도 필요 없음) — [공격 기법 › AS-REP Roasting](../../../adversary/asrep-roasting.md)
 
 ## 참고 자료 { #references }

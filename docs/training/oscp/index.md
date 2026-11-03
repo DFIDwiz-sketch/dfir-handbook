@@ -7,11 +7,24 @@ tags:
 # OSCP+
 
 <div class="dfir-meta" markdown>
-**Exam:** OffSec PEN-200 → OSCP / OSCP+ · **Status:** Preparing · **Last updated:** 2026-10-23
+**Exam:** OffSec PEN-200 → OSCP / OSCP+ · **Status:** Preparing · **Last updated:** 2026-11-03
 </div>
 
 !!! abstract "What this section is"
     Study hub for the OSCP+ exam (PEN-200). The layout follows what 2025–2026 pass and fail write-ups agree on: **get the Active Directory set solid, and hold the standalone machines with strong fundamentals.** Where a technique already has a page in this handbook, the OSCP page links to it instead of repeating it — so the attacker view here and the detection view in Adversary / Windows / Network stay connected.
+
+!!! warning "Before the exam: check the official OSCP+ Exam Guide"
+    Exam rules — banned tools, the Metasploit limit, proof requirements, report format — **change over time**. Before you sit the exam, read the current [OffSec OSCP+ Exam Guide](https://help.offsec.com/hc/en-us/articles/360040165632) yourself. The rule notes in this section are a study aid, not the authority.
+
+!!! danger "Restricted in the exam (summary)"
+    - **Automatic exploitation tools** — sqlmap, SQLninja, db_autopwn, browser_autopwn → do SQLi by hand ([Manual SQLi](web-initial-access.md#sqli)).
+    - **Mass vulnerability scanners** — Nessus, OpenVAS, NeXpose, Core Impact → `nmap -sV` / NSE + `searchsploit` ([Recon](recon-enumeration.md)).
+    - **Commercial tools** — Burp Suite Pro, Metasploit Pro → Burp Community, manual testing.
+    - **Spoofing** — ARP / DNS / NBNS / LLMNR poisoning (Responder poisoning, mitm6, bettercap) → [coercion to your own SMB server](active-directory.md#coercion).
+    - **AI / chatbots** — ChatGPT, Claude, Gemini, OffSec KAI and the like → your own notes and public references.
+    - **Metasploit / Meterpreter** — one target only, no pivoting with it; `msfvenom` and `multi/handler` (non-Meterpreter) are fine everywhere ([Shells](shells-file-transfer.md)).
+
+    Details: [Exam format › Restricted](exam-format.md#restricted) · [Metasploit](exam-format.md#metasploit).
 
 ## 1. Know the exam
 
@@ -25,17 +38,75 @@ tags:
 
     [:octicons-arrow-right-24: Exam format & scoring](exam-format.md)
 
+-   :material-transit-connection-variant:{ .lg .middle } **Exam workflow**
+
+    ---
+
+    The whole exam as one pipeline: recon → foothold → stable shell → privesc → AD assumed breach → pivot → lateral movement → domain. Links every stage to its page.
+
+    [:octicons-arrow-right-24: Exam workflow](exam-workflow.md)
+
 </div>
 
 ## 2. Study areas
 
+Each study-area page follows the same layout: **concept → main tools → scenarios (situation → command → what to read → next step) → common mistakes → exam tips**.
+
 <div class="grid cards" markdown>
+
+-   :material-radar:{ .lg .middle } **Recon & enumeration**
+
+    ---
+
+    nmap, NetExec, smbclient, enum4linux-ng, SNMP, NFS — find every port and everything it leaks.
+
+    [:octicons-arrow-right-24: Recon & enumeration](recon-enumeration.md)
+
+-   :material-web:{ .lg .middle } **Web & initial access**
+
+    ---
+
+    ffuf / feroxbuster / gobuster, nikto, Burp Community, searchsploit, manual SQLi, upload, LFI, client-side.
+
+    [:octicons-arrow-right-24: Web & initial access](web-initial-access.md)
+
+-   :material-console:{ .lg .middle } **Shells & file transfer**
+
+    ---
+
+    Reverse shells, msfvenom payloads, TTY upgrade, moving tools in and loot out, the one-target Metasploit rule.
+
+    [:octicons-arrow-right-24: Shells & file transfer](shells-file-transfer.md)
+
+-   :material-linux:{ .lg .middle } **Linux privilege escalation**
+
+    ---
+
+    LinPEAS, pspy, GTFOBins — sudo, SUID, capabilities, cron, credentials, NFS, kernel last.
+
+    [:octicons-arrow-right-24: Linux privesc](privesc-linux.md)
+
+-   :material-microsoft-windows:{ .lg .middle } **Windows privilege escalation**
+
+    ---
+
+    WinPEAS, PrintSpoofer / GodPotato, LOLBAS — tokens, services, tasks, AlwaysInstallElevated, stored creds.
+
+    [:octicons-arrow-right-24: Windows privesc](privesc-windows.md)
+
+-   :material-lock-open-variant:{ .lg .middle } **Password attacks**
+
+    ---
+
+    hashcat / john modes, custom wordlists, NetExec & Kerbrute spraying, hydra — and lockout math.
+
+    [:octicons-arrow-right-24: Password attacks](password-attacks.md)
 
 -   :material-domain:{ .lg .middle } **Active Directory**
 
     ---
 
-    Top priority. Assumed-breach start, enumeration, Kerberos attacks, lateral movement, domain compromise.
+    Top priority. Assumed breach → NetExec, BloodHound CE, Kerberoast / AS-REP, ACL abuse, Impacket lateral movement, mimikatz, DCSync.
 
     [:octicons-arrow-right-24: Active Directory](active-directory.md)
 
@@ -46,30 +117,6 @@ tags:
     The most common failure point: reaching the internal subnet. Ligolo-ng, Chisel, SSH forwarding, proxychains.
 
     [:octicons-arrow-right-24: Pivoting & tunnelling](pivoting.md)
-
--   :material-linux:{ .lg .middle } **Linux privilege escalation**
-
-    ---
-
-    sudo, SUID, capabilities, cron, credentials on the box, kernel exploits.
-
-    [:octicons-arrow-right-24: Linux privesc](privesc-linux.md)
-
--   :material-microsoft-windows:{ .lg .middle } **Windows privilege escalation**
-
-    ---
-
-    Token privileges and potatoes, services, scheduled tasks, AlwaysInstallElevated, stored credentials.
-
-    [:octicons-arrow-right-24: Windows privesc](privesc-windows.md)
-
--   :material-web:{ .lg .middle } **Web & initial access**
-
-    ---
-
-    Manual SQLi, upload bypasses, LFI → RCE, SSRF, CMS, fixing public exploits, client-side tricks.
-
-    [:octicons-arrow-right-24: Web & initial access](web-initial-access.md)
 
 -   :material-format-list-checks:{ .lg .middle } **Methodology & habits**
 
