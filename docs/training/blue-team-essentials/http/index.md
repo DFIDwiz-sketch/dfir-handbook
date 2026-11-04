@@ -18,6 +18,7 @@ tags:
 | 1 | [Web Servers, URLs and GET](web-servers-urls-get.md) | Order-and-delivery model, document root, web shells with Event 4688 / Sysmon 1, module backdoors, URL anatomy (`@`, `#`, `%`, `file://`), Zeek http.log, GET logging, SQL injection, path traversal, C2 beacons, practice questions |
 | 2 | [POST, Other Methods and Request Headers](post-methods-headers.md) | POST and logging, malware and web-shell POSTs, CONNECT/HEAD/OPTIONS/PUT/DELETE/TRACE, Host, User-Agent, Referer, Cookie, Accept, X-Forwarded-For, header-order fingerprints, practice questions |
 | 3 | [Judging Requests](reading-requests.md) | Field-by-field checklist, random-but-normal strings, dissecting an Angler exploit-kit request, domain shadowing, URLs inside a Referer (Google Translate, Safe Links), ClickFix and `translate.goog` phishing, practice questions |
+| 4 | [Response Headers and Status Codes](responses.md) | Server, Date, Content-Type, Content-Length, Last-Modified, Set-Cookie, Location, Content-Disposition, magic bytes, 1xx–5xx from a SOC view, reading a silent 407, an 8-byte response, practice questions |
 
 ## Ten things to remember { #must-know }
 

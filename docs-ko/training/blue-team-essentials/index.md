@@ -26,14 +26,14 @@ tags:
 
     ---
 
-    웹 서버와 웹셸, URL 해부와 피싱 속임수, GET·POST와 로그, 그 밖의 메서드(CONNECT·HEAD·OPTIONS·PUT·DELETE·TRACE), 요청 헤더 읽기, 실제 악성 요청 판정 연습(익스플로잇 킷, URL 속 URL), 확인 문제와 해설.
+    웹 서버와 웹셸, URL 해부와 피싱 속임수, GET·POST와 로그, 그 밖의 메서드(CONNECT·HEAD·OPTIONS·PUT·DELETE·TRACE), 요청 헤더 읽기, 실제 악성 요청 판정 연습(익스플로잇 킷, URL 속 URL), 응답 헤더와 응답 코드, 확인 문제와 해설.
 
     [:octicons-arrow-right-24: HTTP](http/index.md)
 
 </div>
 
 !!! info "다음 주제"
-    HTTP 응답 헤더와 HTTPS 분석을 이어서 추가합니다.
+    새 HTTP 표준(웹소켓, HTTP/2, HTTP/3)과 HTTPS 분석을 이어서 추가합니다.
 
 !!! note "이 섹션에 대하여"
     개인 학습 노트이며 어떤 기관의 공식 지침도 아닙니다.
