@@ -22,9 +22,10 @@ tags:
 | 5 | [정상 사이트의 악성 파일, 파일 추출, 잦은 요청, IP 직접 접속](files-frequency-naked-ip.md) | 클라우드 공유로 배포되는 악성 파일, Wireshark·tshark·Zeek 파일 추출과 안전 수칙, 잦고 규칙적인 GET·POST 찾기, IP 직접 접속과 루트 POST, 확인 문제 |
 | 6 | [익스플로잇 킷 판별과 악성·수상·정상 판정 연습](exploit-kits-practice.md) | 익스플로잇 킷 감염 흐름, 트래픽 단서와 성공 여부 확인 순서, 판정 연습 3개(Log4Shell 유입 공격, 동적 DNS 리디렉션 사슬, jQuery 위장 C2), 확인 문제 |
 | 7 | [HTTPS — TLS 해독, 해독 없이 보는 법, 인증서 읽기](https-certificates.md) | 암호화가 보안팀을 가리는 이유, TLS 검사의 동작과 한계(고정·개인정보·루트 CA), 해독 없이 계층별로 보이는 것, 인증서 필드 읽기(openssl, Zeek ssl/x509), 수상한 인증서 신호, 확인 문제 |
+| 8 | [TLS 지문(JA3·JA3S·JARM·JA4)과 TLS 1.3, HTTP(S) 분석 정리](tls-fingerprints-tls13.md) | JA3·JA3S 계산법, JA3가 흔들린 이유와 JA4 읽는 법, JARM과 OPSEC 위험, TLS 1.3이 빼앗은 것(인증서·수동 해독·다운그레이드·ECH로 SNI까지), SSLKEYLOGFILE, 모듈 점검 순서, 확인 문제 |
 
 !!! info "이어서 추가될 내용"
-    JA3·JA3S·JARM 지문(과 JA4), TLS 1.3이 바꾼 것, 모듈 정리.
+    이 모듈은 끝났습니다. 다음은 새 섹션인 SMTP·이메일 분석입니다.
 
 ## 꼭 기억할 것 { #must-know }
 

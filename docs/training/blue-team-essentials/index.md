@@ -41,7 +41,7 @@ tags:
 </div>
 
 !!! info "Next topic"
-    HTTP(S) analysis and attacks continues, followed by SMTP and email analysis.
+    SMTP and email analysis (new section), followed by additional network protocols.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.
