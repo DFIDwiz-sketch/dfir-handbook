@@ -18,9 +18,10 @@ tags:
 | 1 | [HTTP 악용의 단계, 분석 방법, URL 평판](evil-http-and-reputation.md) | 킬 체인 단계별 HTTP 흔적, 자동·수동 분석 고르기, URL 평판 조회와 함정, OPSEC·디팽, 확인 문제 |
 | 2 | [스크린샷, 샌드박스, 수동 분석으로 넘어갈 때](screenshots-sandboxes.md) | 스크린샷으로 피싱 확인과 결과 읽기, 도구별 공유 여부, 네트워크형·VM형 샌드박스와 도구 고르기, 샌드박스 회피, 약한 신호를 모으는 수동 분석, 확인 문제 |
 | 3 | [User-Agent와 쿠키로 악성코드 찾기](user-agents-cookies.md) | User-Agent가 들키는 이유, 칸별 분해와 도구, 빈도 분석(요청 수와 PC 수), 버전 노화, 쿠키에 숨은 C2, 공급망 공격 사례, 쿠키 악용 판별표, 확인 문제 |
+| 4 | [Base64 — 원리, 알아보기, 수상한 Base64](base64.md) | 왜 생겼나, 비트 단위 변환과 패딩, 앞글자로 파일 종류 짐작하기, 디코딩 명령(PowerShell UTF-16LE 포함), 정상 사용처(JWT·Basic 인증·ViewState)와 수상한 Base64 판단, 확인 문제 |
 
 !!! info "이어서 추가될 내용"
-    Base64, 파일 추출, 잦은 GET/POST, IP 직접 접속, 익스플로잇 킷 판별, HTTPS·TLS 분석.
+    파일 추출, 잦은 GET/POST, IP 직접 접속, 익스플로잇 킷 판별, HTTPS·TLS 분석.
 
 ## 꼭 기억할 것 { #must-know }
 
