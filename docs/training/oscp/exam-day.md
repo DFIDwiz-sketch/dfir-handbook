@@ -7,14 +7,17 @@ tags:
 # Exam-Day Strategy
 
 <div class="dfir-meta" markdown>
-**Window:** 23 h 45 m hands-on + 24 h report · **Last updated:** 2026-10-23
+**Window:** 23 h 45 m hands-on + 24 h report · **Sources checked / Last updated:** 2026-11-04
 </div>
 
 !!! abstract "In one sentence"
-    Warm up on one standalone, take the 40-point AD set while still fresh, bank points early, and rest before frustration compounds into paralysis.
+    Warm up on one standalone, work on the AD set while still fresh, document objectives as you complete them, and rest before frustration compounds into paralysis.
 
 !!! note "How this page is organised"
-    A plan for the day plus a point tracker to copy into your notes. The exam has a large psychological component — managing energy and nerves is as important as technique.
+    A plan for the day plus a raw-point and evidence tracker to copy into your notes. The exam has a large psychological component — managing energy and nerves is as important as technique.
+
+!!! warning "Check the exam start time — scoring changes on 1 December 2026"
+    Attempts starting **before 1 December 2026 at 08:00 GMT** require at least **70 raw points**. Attempts starting **on or after that instant** require at least **400 scaled points on a 100–500 scale**. Under scaled scoring, 70 or 80 raw points does not guarantee a pass, and 400/500 does not mean 80% raw points. Check your booked start time; no exam date is assumed here. See [scoring details](exam-format.md#scaled-scoring) and the official [Scoring FAQ](https://help.offsec.com/hc/en-us/articles/54589877508884-OSCP-Equated-Scaled-Scoring-FAQ).
 
 ## Before the exam { #before }
 
@@ -30,10 +33,10 @@ tags:
 
 ## Order of attack { #order }
 
-1. **One standalone to warm up** (~2–3 h cap). Get into the flow — full enumeration, exploit, document — and ideally bank 10–20 points. If it's fighting you, take the foothold and move on.
+1. **One standalone to warm up** (~2–3 h cap). Get into the flow — full enumeration, exploit, document. If it's fighting you, document any foothold and move on.
 2. **The AD set, while fresh.** 40 chained points; a missed credential or pivot early blocks the rest, so do it with a clear head → [Active Directory](active-directory.md).
 3. **Back to the remaining standalones** with AD banked, fresh eyes on anything you parked.
-4. **Push past 70.** Aim for 80+ so a flaw in one report section doesn't fail you.
+4. **Keep completing and documenting objectives.** Under scaled scoring there is no published raw-point pass target. Use remaining time on promising leads, evidence checks and rest; an estimated total is not a reason to stop. For pre-change attempts, the [70-point combinations](exam-format.md#passing-combinations) apply only if OffSec accepts the evidence; extra raw points never replace valid documentation.
 
 ## Time-boxing and breaks { #breaks }
 
@@ -41,21 +44,21 @@ tags:
 - Take real breaks — eat lightly (heavy meals make you sluggish), step away, hydrate. Breakthroughs famously come after a break.
 - Get up roughly once an hour. The 23 h 45 m includes sleep — a short nap can be worth more than another hour of staring.
 
-## Point tracker { #point-tracker }
+## Raw-point and evidence tracker { #point-tracker }
 
-Copy this into your exam notes and keep it live:
+Copy this into your exam notes and keep it live. Use the control panel's objectives and raw-point values; your own total is only an estimate until grading, and cannot predict a scaled-scoring result.
 
-| Target | local.txt | proof.txt | Points | Time done |
-|---|---|---|---|---|
-| Standalone 1 |  |  |  |  |
-| Standalone 2 |  |  |  |  |
-| Standalone 3 |  |  |  |  |
-| AD #1 |  | — |  |  |
-| AD #2 |  | — |  |  |
-| AD DC |  | — |  |  |
-| **Total** | | | | |
+| Target | local.txt | proof.txt | Est. raw points | Evidence / panel / notes | Time done |
+|---|---|---|---|---|---|
+| Standalone 1 |  |  |  |  |  |
+| Standalone 2 |  |  |  |  |  |
+| Standalone 3 |  |  |  |  |  |
+| AD #1 |  | — |  |  |  |
+| AD #2 |  | — |  |  |  |
+| AD DC |  | — |  |  |  |
+| **Total** | | | | | |
 
-Checkpoint around the halfway mark against the [scoring strategy](exam-format.md#scoring-strategy) and decide where the next points are cheapest.
+At the halfway mark, use the [scoring strategy](exam-format.md#scoring-strategy) to review unfinished objectives, missing evidence, promising leads and energy. Do not convert this tracker to a scaled score or label it a pass/fail result.
 
 ## When stuck { #stuck }
 
@@ -68,7 +71,9 @@ Checkpoint around the halfway mark against the [scoring strategy](exam-format.md
 
 - Submit every flag in the control panel **before** the VPN closes.
 - Rest, then write the report in the 24-hour window → [Reporting](reporting.md). If your notes are good, this is mostly assembly.
+- **Submit the report even if your estimated raw points seem low.** Under scaled scoring, raw points alone cannot tell you whether you passed; without a submitted report, you cannot pass.
 - You cannot return to the machines, so a missing screenshot is unrecoverable — check the report against the [submission checklist](reporting.md#submission-checklist).
+- Allow up to **15 business days** for results by email after report submission, as stated in the Scoring FAQ (previously 10; the Exam Guide's Results section still lists 10).
 
 ## Related pages
 
@@ -76,4 +81,5 @@ Checkpoint around the halfway mark against the [scoring strategy](exam-format.md
 
 ## References
 
+- [OffSec — OSCP+ Equated Scaled Scoring FAQ](https://help.offsec.com/hc/en-us/articles/54589877508884-OSCP-Equated-Scaled-Scoring-FAQ)
 - [OffSec — OSCP+ Exam Guide](https://help.offsec.com/hc/en-us/articles/360040165632)

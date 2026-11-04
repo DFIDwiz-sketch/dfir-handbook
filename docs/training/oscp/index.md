@@ -7,7 +7,7 @@ tags:
 # OSCP+
 
 <div class="dfir-meta" markdown>
-**Exam:** OffSec PEN-200 → OSCP / OSCP+ · **Status:** Preparing · **Last updated:** 2026-11-03
+**Exam:** OffSec PEN-200 → OSCP / OSCP+ · **Status:** Preparing · **Last updated:** 2026-11-04
 </div>
 
 !!! abstract "What this section is"
@@ -34,7 +34,7 @@ tags:
 
     ---
 
-    3 standalones (60) + AD set (40), 70 to pass, no bonus points. What changed in November 2024 and the scoring combinations that pass.
+    3 standalones (60 raw points) + AD set (40), no bonus points. Before 1 Dec 2026, 08:00 GMT: 70 raw points to pass; from that start time: 400 on a 100–500 scaled score. Exam changes and date-specific scoring examples.
 
     [:octicons-arrow-right-24: Exam format & scoring](exam-format.md)
 

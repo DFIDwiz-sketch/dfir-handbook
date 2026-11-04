@@ -7,7 +7,7 @@ tags:
 # OSCP+ { #oscp }
 
 <div class="dfir-meta" markdown>
-**시험:** OffSec PEN-200 → OSCP / OSCP+ · **상태:** 준비 중 · **최종 수정:** 2026-11-03
+**시험:** OffSec PEN-200 → OSCP / OSCP+ · **상태:** 준비 중 · **최종 수정:** 2026-11-04
 </div>
 
 !!! abstract "이 섹션은"
@@ -34,7 +34,7 @@ tags:
 
     ---
 
-    standalone 3대(60점) + AD 세트(40점), 70점 합격, 보너스 점수 없음. 2024년 11월 변경 사항과 합격 점수 조합.
+    standalone 3대(원점수 60점) + AD 세트(40점), 보너스 점수 없음. 2026년 12월 1일 08:00 GMT 이전 시작은 원점수 70점, 그 시각부터 시작은 100~500점 척도의 400점이 합격 기준. 시험 변경 사항과 시기별 점수 예시.
 
     [:octicons-arrow-right-24: 시험 구조와 점수](exam-format.md)
 

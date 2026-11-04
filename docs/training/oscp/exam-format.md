@@ -7,14 +7,14 @@ tags:
 # Exam Format & Scoring
 
 <div class="dfir-meta" markdown>
-**Section:** OSCP+ · **Source:** OffSec OSCP+ Exam Guide (checked 2026-10-23) · **Last updated:** 2026-10-23
+**Section:** OSCP+ · **Sources:** OffSec OSCP+ Exam Guide & Scoring FAQ (checked 2026-11-04) · **Last updated:** 2026-11-04
 </div>
 
 !!! abstract "In one sentence"
-    23 h 45 m of hands-on hacking in a private VPN, then 24 h to upload the report; 100 points available, 70 to pass, no bonus points since 1 November 2024 — and a flag only counts if the report proves it was taken from an interactive shell.
+    23 h 45 m of hands-on hacking in a private VPN, then 24 h to upload the report; 100 raw points available, with the pass mark determined by the exam start time — and a flag only counts if the report proves it was taken from an interactive shell.
 
 !!! warning "Rules change — re-read before booking"
-    Everything on this page is summarised from the official [OSCP+ Exam Guide](https://help.offsec.com/hc/en-us/articles/360040165632). OffSec updates it without notice. Read the live guide again the week before the exam.
+    Check the official [OSCP+ Exam Guide](https://help.offsec.com/hc/en-us/articles/360040165632) and [Equated Scaled Scoring FAQ](https://help.offsec.com/hc/en-us/articles/54589877508884-OSCP-Equated-Scaled-Scoring-FAQ) again the week before the exam. The scoring method depends on when each attempt **starts**, not when it is booked. Check your booked start time; this page does not assume which method applies to you.
 
 ## Exam at a glance { #at-a-glance }
 
@@ -23,16 +23,17 @@ tags:
 | Hands-on window | 23 h 45 m (e.g. start 09:00, VPN closes 08:45 next day) |
 | Report window | 24 h after the hands-on window ends |
 | Machines | 3 standalone + 1 Active Directory set of 3 machines |
-| Points available | 100 |
-| **Pass mark** | **70** |
+| Raw points available | 100 |
+| **Pass mark — starts before 1 Dec 2026, 08:00 GMT** | **At least 70 raw points** |
+| **Pass mark — starts on or after 1 Dec 2026, 08:00 GMT** | **At least 400 scaled points on a 100–500 scale** |
 | Bonus points | None (removed 1 Nov 2024) |
 | Connection | Kali Linux + OpenVPN (OffSec only supports this setup) |
 | Proctoring | Webcam + screen sharing for the whole hands-on window |
-| Results | By email within 10 business days of submitting the report |
+| Results | By email after report submission: allow up to **15 business days** under the Scoring FAQ (previously 10; the Exam Guide's Results section still says 10) |
 
 ### Where the points come from { #points }
 
-| Target | Points | How |
+| Target | Raw points | How |
 |---|---|---|
 | Standalone 1 / 2 / 3 | 20 each | 10 for `local.txt` (low-privilege user) + 10 for `proof.txt` (root / Administrator) |
 | AD machine #1 | 10 | Full compromise of the first host |
@@ -40,6 +41,14 @@ tags:
 | AD machine #3 (Domain Controller) | 20 | Domain compromise |
 
 For the AD set you are given a **username and password** at the start, simulating a user whose account has already been phished ("assumed breach"). The exact objectives for each machine are shown in the **exam control panel** — read them at the start.
+
+### Scoring change from 1 December 2026 { #scaled-scoring }
+
+For attempts starting **on or after 1 December 2026 at 08:00 GMT**, OffSec converts the awarded raw points to an equated scaled score. The conversion accounts for the difficulty of the exam set; the raw points needed to reach 400 can be above or below 70 and are not published.
+
+**400/500 does not mean 80% raw points.** There is no fixed conversion ratio or raw-point total you can use to determine whether you passed. For example, 40 AD + 30 standalone = **70 raw points**, but that arithmetic does not establish a scaled score or a pass under the new method.
+
+The exam structure, objective raw-point values, proof requirements, time limits and report deadline stay the same. Graders assess the documented objectives first; scaling happens afterwards. Submit the report even if your estimated raw total seems low. The FAQ says successful candidates receive a pass notification; unsuccessful candidates receive their scaled score.
 
 ### What makes a flag count { #flag-rules }
 
@@ -84,16 +93,19 @@ A proof screenshot that satisfies rules 1–4 in one frame:
 !!! tip "Grading order"
     OffSec grades machines in the order they appear in your report. Put each target in its own clearly labelled section.
 
-## Passing combinations { #passing-combinations }
+## Passing combinations — before the scoring change only { #passing-combinations }
 
-From the official guide — each line is exactly 70 points:
+!!! warning "Only for exams starting before 1 December 2026 at 08:00 GMT"
+    This entire section uses the fixed 70-raw-point pass mark. These combinations and the table below are **not pass guarantees under scaled scoring**. All objectives must still be properly evidenced and awarded by OffSec.
+
+Each line totals exactly 70 raw points under the unchanged objective values:
 
 - 40 AD + 3 × `local.txt`
 - 40 AD + 2 × `local.txt` + 1 × `proof.txt`
 - 20 AD + 3 × `local.txt` + 2 × `proof.txt`
 - 10 AD + 3 fully completed standalones
 
-Reading the list the other way round shows why everyone says *"get the AD set"*:
+Under that fixed pass mark, the AD contribution determines the standalone points needed:
 
 | AD points | Standalone points needed | What that means |
 |---|---|---|
@@ -188,20 +200,22 @@ Details and checklist on the [Reporting](reporting.md) page.
 
 ## Scoring strategy { #scoring-strategy }
 
-**Primary plan: 40 AD + 30 standalone = 70, then build a buffer.**
+**Plan around completed, documented objectives and available time.** Identify the applicable scoring method from your exam start time using the [overview](#at-a-glance); under [scaled scoring](#scaled-scoring), neither 70 nor 80 raw points is a guaranteed pass or a stopping rule.
 
-1. **Warm up on one standalone** (time-box about 2–3 h). The aim is to get into a working rhythm and, ideally, bank 10–20 points.
+1. **Warm up on one standalone** (time-box about 2–3 h). Get into a working rhythm and document each completed objective as you go.
 2. **Move to the AD set while still fresh.** It is the largest single block of points and it is chained — every credential found matters for the next machine.
-3. **Go back to the remaining standalones** with the AD points banked. Each foothold is another 10.
-4. **Aim for 80, not 70.** A buffer protects against a flag that the report fails to prove.
+3. **Go back to the remaining standalones** and reassess parked leads. Raw-point values help track progress, but only documented objectives earn credit.
+4. **Complete as many objectives as you can while protecting evidence and rest.** Reserve time to verify screenshots, control-panel submissions and reproducible notes. Do not stop because an estimated total looks sufficient.
 
-**Fallback: if the AD set stalls.** With 20 AD points (two machines) you need 50 from standalones; with 10 you need all 60. If the AD set has stalled for a long time (several hours with no new information), switch to the standalones, bank everything you can, then return to AD with fresh eyes.
+**Fallback: if the AD set stalls.** If several hours pass with no new information, switch to promising standalone leads, document what you complete, then return to AD with fresh eyes. Under scaled scoring there is no fixed standalone total that makes up for a particular AD total.
 
-| Situation at about hour 12 | Points so far | Next move |
+| Situation at about hour 12 | Estimated raw points | Next move |
 |---|---|---|
-| AD 40, one standalone foothold | 50 | Two more footholds, or finish one box |
+| AD 40, one standalone foothold | 50 | Follow the strongest remaining foothold or privilege-escalation lead; check evidence first |
 | AD 20, nothing standalone | 20 | Standalones now; return to AD later |
-| AD 0, two full standalones | 40 | AD — 30 more points must come from the set |
+| AD 0, two full standalones | 40 | Revisit AD enumeration and credentials; assess the remaining standalone too |
+
+For **pre-change attempts only**, 40 AD + 30 standalone reaches the fixed 70-raw-point mark if all evidence is accepted. The old 80-point planning target provided room for lost credit; it was never a substitute for valid proof and must not be carried over as a scaled-scoring pass target. See the [pre-change combinations](#passing-combinations).
 
 ## Related pages
 
@@ -209,6 +223,7 @@ Details and checklist on the [Reporting](reporting.md) page.
 
 ## References
 
+- [OffSec — OSCP+ Equated Scaled Scoring FAQ](https://help.offsec.com/hc/en-us/articles/54589877508884-OSCP-Equated-Scaled-Scoring-FAQ)
 - [OffSec — OSCP+ Exam Guide](https://help.offsec.com/hc/en-us/articles/360040165632)
 - [OffSec — OSCP Exam with AD Preparation](https://help.offsec.com/hc/en-us/articles/4547917816468-Offensive-Security-OSCP-Exam-with-AD-Preparation)
 - [OffSec — OSCP exam change FAQ (Nov 2024)](https://help.offsec.com/hc/en-us/articles/29865898402836)
