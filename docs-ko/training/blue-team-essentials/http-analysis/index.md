@@ -16,9 +16,10 @@ tags:
 | # | 페이지 | 핵심 |
 | --- | --- | --- |
 | 1 | [HTTP 악용의 단계, 분석 방법, URL 평판](evil-http-and-reputation.md) | 킬 체인 단계별 HTTP 흔적, 자동·수동 분석 고르기, URL 평판 조회와 함정, OPSEC·디팽, 확인 문제 |
+| 2 | [스크린샷, 샌드박스, 수동 분석으로 넘어갈 때](screenshots-sandboxes.md) | 스크린샷으로 피싱 확인과 결과 읽기, 도구별 공유 여부, 네트워크형·VM형 샌드박스와 도구 고르기, 샌드박스 회피, 약한 신호를 모으는 수동 분석, 확인 문제 |
 
 !!! info "이어서 추가될 내용"
-    자격 증명 피싱 확인, 샌드박스, 수동 헤더·내용 분석, User-Agent 분석, 쿠키, Base64, 파일 추출, 잦은 GET/POST, IP 직접 접속, 익스플로잇 킷 판별, HTTPS·TLS 분석.
+    User-Agent 분석, 쿠키, Base64, 파일 추출, 잦은 GET/POST, IP 직접 접속, 익스플로잇 킷 판별, HTTPS·TLS 분석.
 
 ## 꼭 기억할 것 { #must-know }
 

@@ -16,9 +16,10 @@ tags:
 | # | Page | Key content |
 | --- | --- | --- |
 | 1 | [Attack Stages over HTTP, Analysis Methods, URL Reputation](evil-http-and-reputation.md) | HTTP traces per kill-chain stage, choosing automated vs manual analysis, URL reputation and its traps, OPSEC and defanging, practice questions |
+| 2 | [Screenshots, Sandboxes, and When to Go Manual](screenshots-sandboxes.md) | Confirming phishing with screenshots and reading results, which tools share, network-centric vs VM sandboxes and choosing one, sandbox evasion, combining weak signals manually, practice questions |
 
 !!! info "Coming next"
-    Checking for credential phishing, sandboxing, manual header and content analysis, User-Agent analysis, cookies, Base64, file extraction, high-frequency GET/POST, connections to bare IPs, spotting exploit kits, HTTPS/TLS analysis.
+    User-Agent analysis, cookies, Base64, file extraction, high-frequency GET/POST, connections to bare IPs, spotting exploit kits, HTTPS/TLS analysis.
 
 ## Things to remember { #must-know }
 
