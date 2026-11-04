@@ -19,9 +19,10 @@ tags:
 | 2 | [Screenshots, Sandboxes, and When to Go Manual](screenshots-sandboxes.md) | Confirming phishing with screenshots and reading results, which tools share, network-centric vs VM sandboxes and choosing one, sandbox evasion, combining weak signals manually, practice questions |
 | 3 | [Finding Malware through User-Agents and Cookies](user-agents-cookies.md) | Why malware is caught by its User-Agent, field-by-field breakdown and tools, frequency analysis (requests and PCs), version aging, C2 in cookies, a supply-chain case, cookie-abuse checklist, practice questions |
 | 4 | [Base64 — How It Works, Recognising It, Suspicious Base64](base64.md) | Why it exists, bit-level conversion and padding, guessing file types from prefixes, decoding commands (incl. PowerShell UTF-16LE), legitimate uses (JWT, Basic auth, ViewState) vs suspicious Base64, practice questions |
+| 5 | [Malicious Files on Good Sites, File Extraction, Frequent Requests, Bare-IP Connections](files-frequency-naked-ip.md) | Malware via cloud sharing, file extraction with Wireshark/tshark/Zeek and safety rules, spotting frequent regular GETs/POSTs, bare-IP connections and root POSTs, practice questions |
 
 !!! info "Coming next"
-    File extraction, high-frequency GET/POST, connections to bare IPs, spotting exploit kits, HTTPS/TLS analysis.
+    Spotting exploit kits, malicious/suspicious/benign practice, HTTPS/TLS analysis.
 
 ## Things to remember { #must-know }
 
