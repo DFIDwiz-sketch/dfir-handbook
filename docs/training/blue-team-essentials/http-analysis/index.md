@@ -21,9 +21,10 @@ tags:
 | 4 | [Base64 — How It Works, Recognising It, Suspicious Base64](base64.md) | Why it exists, bit-level conversion and padding, guessing file types from prefixes, decoding commands (incl. PowerShell UTF-16LE), legitimate uses (JWT, Basic auth, ViewState) vs suspicious Base64, practice questions |
 | 5 | [Malicious Files on Good Sites, File Extraction, Frequent Requests, Bare-IP Connections](files-frequency-naked-ip.md) | Malware via cloud sharing, file extraction with Wireshark/tshark/Zeek and safety rules, spotting frequent regular GETs/POSTs, bare-IP connections and root POSTs, practice questions |
 | 6 | [Spotting Exploit Kits, and Malicious/Suspicious/Benign Practice](exploit-kits-practice.md) | How exploit kits infect, traffic clues and how to confirm success, three practice judgements (inbound Log4Shell, dynamic-DNS redirect chain, jQuery-disguised C2), practice questions |
+| 7 | [HTTPS — TLS Decryption, Working Without It, Reading Certificates](https-certificates.md) | Why encryption blinds the SOC, how TLS inspection works and its limits (pinning, privacy, root CA), what each layer shows without decryption, reading certificate fields (openssl, Zeek ssl/x509), suspicious-certificate signals, practice questions |
 
 !!! info "Coming next"
-    HTTPS/TLS analysis (TLS decryption, working without decryption, reading certificates, JA3/JA4/JARM fingerprints, TLS 1.3).
+    JA3/JA3S/JARM fingerprints (and JA4), what TLS 1.3 changes, and the module summary.
 
 ## Things to remember { #must-know }
 
