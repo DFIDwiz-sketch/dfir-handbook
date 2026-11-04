@@ -20,9 +20,10 @@ tags:
 | 3 | [Finding Malware through User-Agents and Cookies](user-agents-cookies.md) | Why malware is caught by its User-Agent, field-by-field breakdown and tools, frequency analysis (requests and PCs), version aging, C2 in cookies, a supply-chain case, cookie-abuse checklist, practice questions |
 | 4 | [Base64 — How It Works, Recognising It, Suspicious Base64](base64.md) | Why it exists, bit-level conversion and padding, guessing file types from prefixes, decoding commands (incl. PowerShell UTF-16LE), legitimate uses (JWT, Basic auth, ViewState) vs suspicious Base64, practice questions |
 | 5 | [Malicious Files on Good Sites, File Extraction, Frequent Requests, Bare-IP Connections](files-frequency-naked-ip.md) | Malware via cloud sharing, file extraction with Wireshark/tshark/Zeek and safety rules, spotting frequent regular GETs/POSTs, bare-IP connections and root POSTs, practice questions |
+| 6 | [Spotting Exploit Kits, and Malicious/Suspicious/Benign Practice](exploit-kits-practice.md) | How exploit kits infect, traffic clues and how to confirm success, three practice judgements (inbound Log4Shell, dynamic-DNS redirect chain, jQuery-disguised C2), practice questions |
 
 !!! info "Coming next"
-    Spotting exploit kits, malicious/suspicious/benign practice, HTTPS/TLS analysis.
+    HTTPS/TLS analysis (TLS decryption, working without decryption, reading certificates, JA3/JA4/JARM fingerprints, TLS 1.3).
 
 ## Things to remember { #must-know }
 

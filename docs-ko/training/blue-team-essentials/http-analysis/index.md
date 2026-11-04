@@ -20,9 +20,10 @@ tags:
 | 3 | [User-Agent와 쿠키로 악성코드 찾기](user-agents-cookies.md) | User-Agent가 들키는 이유, 칸별 분해와 도구, 빈도 분석(요청 수와 PC 수), 버전 노화, 쿠키에 숨은 C2, 공급망 공격 사례, 쿠키 악용 판별표, 확인 문제 |
 | 4 | [Base64 — 원리, 알아보기, 수상한 Base64](base64.md) | 왜 생겼나, 비트 단위 변환과 패딩, 앞글자로 파일 종류 짐작하기, 디코딩 명령(PowerShell UTF-16LE 포함), 정상 사용처(JWT·Basic 인증·ViewState)와 수상한 Base64 판단, 확인 문제 |
 | 5 | [정상 사이트의 악성 파일, 파일 추출, 잦은 요청, IP 직접 접속](files-frequency-naked-ip.md) | 클라우드 공유로 배포되는 악성 파일, Wireshark·tshark·Zeek 파일 추출과 안전 수칙, 잦고 규칙적인 GET·POST 찾기, IP 직접 접속과 루트 POST, 확인 문제 |
+| 6 | [익스플로잇 킷 판별과 악성·수상·정상 판정 연습](exploit-kits-practice.md) | 익스플로잇 킷 감염 흐름, 트래픽 단서와 성공 여부 확인 순서, 판정 연습 3개(Log4Shell 유입 공격, 동적 DNS 리디렉션 사슬, jQuery 위장 C2), 확인 문제 |
 
 !!! info "이어서 추가될 내용"
-    익스플로잇 킷 판별, 악성·수상·정상 판정 연습, HTTPS·TLS 분석.
+    HTTPS·TLS 분석(TLS 해독, 해독 없이 보는 법, 인증서 읽기, JA3·JA4·JARM 지문, TLS 1.3).
 
 ## 꼭 기억할 것 { #must-know }
 
