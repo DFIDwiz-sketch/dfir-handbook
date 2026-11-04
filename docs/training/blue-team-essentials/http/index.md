@@ -20,6 +20,7 @@ tags:
 | 3 | [Judging Requests](reading-requests.md) | Field-by-field checklist, random-but-normal strings, dissecting an Angler exploit-kit request, domain shadowing, URLs inside a Referer (Google Translate, Safe Links), ClickFix and `translate.goog` phishing, practice questions |
 | 4 | [Response Headers and Status Codes](responses.md) | Server, Date, Content-Type, Content-Length, Last-Modified, Set-Cookie, Location, Content-Disposition, magic bytes, 1xx–5xx from a SOC view, reading a silent 407, an 8-byte response, practice questions |
 | 5 | [Header Reading Practice](header-practice.md) | Reading one request and one response with a question list, non-standard ports and compromised-forum redirects, IE8 vs Edge IE mode, Content-Type vs Content-Encoding, decompressing gzip by hand, practice questions |
+| 6 | [New HTTP Standards and Wrap-up](new-standards.md) | HTTP/2 streams, frames, HPACK and pseudo-headers, following an HTTP/2 transaction in Wireshark, HTTP/3/QUIC and Zeek quic.log, UDP 443 policy, SMB over QUIC, WebSocket, HTTP section wrap-up, practice questions |
 
 ## Ten things to remember { #must-know }
 

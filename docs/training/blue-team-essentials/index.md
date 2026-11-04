@@ -26,14 +26,14 @@ tags:
 
     ---
 
-    Web servers and web shells, URL anatomy and phishing tricks, GET/POST and what gets logged, the other methods (CONNECT, HEAD, OPTIONS, PUT, DELETE, TRACE), reading request headers, judging real malicious requests (exploit kits, URLs inside URLs), response headers and status codes, and practice questions with answers.
+    Web servers and web shells, URL anatomy and phishing tricks, GET/POST and what gets logged, the other methods (CONNECT, HEAD, OPTIONS, PUT, DELETE, TRACE), reading request headers, judging real malicious requests (exploit kits, URLs inside URLs), response headers and status codes, new standards (HTTP/2, HTTP/3/QUIC, WebSocket), and practice questions with answers.
 
     [:octicons-arrow-right-24: HTTP](http/index.md)
 
 </div>
 
 !!! info "Next topic"
-    New HTTP standards (WebSocket, HTTP/2, HTTP/3) and HTTPS analysis will follow.
+    HTTP(S) analysis and attacks will follow.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.
