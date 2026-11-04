@@ -30,10 +30,18 @@ tags:
 
     [:octicons-arrow-right-24: HTTP](http/index.md)
 
+-   :material-shield-search:{ .lg .middle } **HTTP(S) 분석과 공격**
+
+    ---
+
+    HTTP가 쓰이는 공격 단계, 자동·수동 분석 고르기, URL 평판 조회와 OPSEC, 그리고 이어서 피싱·샌드박스·헤더와 내용 분석·파일 추출·HTTPS 분석.
+
+    [:octicons-arrow-right-24: HTTP(S) 분석과 공격](http-analysis/index.md)
+
 </div>
 
 !!! info "다음 주제"
-    HTTP(S) 분석과 공격을 이어서 추가합니다.
+    HTTP(S) 분석과 공격을 계속 채우고, 이어서 SMTP·이메일 분석을 추가합니다.
 
 !!! note "이 섹션에 대하여"
     개인 학습 노트이며 어떤 기관의 공식 지침도 아닙니다.

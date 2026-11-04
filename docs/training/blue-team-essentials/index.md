@@ -30,10 +30,18 @@ tags:
 
     [:octicons-arrow-right-24: HTTP](http/index.md)
 
+-   :material-shield-search:{ .lg .middle } **HTTP(S) Analysis & Attacks**
+
+    ---
+
+    Attack stages over HTTP, choosing automated vs manual analysis, URL reputation and OPSEC, with phishing checks, sandboxing, header and content analysis, file extraction and HTTPS analysis to follow.
+
+    [:octicons-arrow-right-24: HTTP(S) Analysis & Attacks](http-analysis/index.md)
+
 </div>
 
 !!! info "Next topic"
-    HTTP(S) analysis and attacks will follow.
+    HTTP(S) analysis and attacks continues, followed by SMTP and email analysis.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.
