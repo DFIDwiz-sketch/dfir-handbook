@@ -419,25 +419,22 @@ jq -r --rawfile d dga24.txt '($d | split("\n") | map(select(length>0))) as $name
 
 `10.10.5.17` started asking for the same list **at 15:07:07**. Before that (09:00–15:05) it asked only for ordinary work sites. So this PC may have been **infected around 15:05–15:07** (hypothesis: check web access, email and USB use just before then in endpoint records). Searching by the name list catches even **freshly infected PCs** that haven't yet asked for the successful name.
 
-**Figure 9-1. What this lab found and how it connects** (upper boxes are names, lower boxes are PCs; arrows mean "asked for")
+**Figure 9-1. What this lab found and how it connects** (four groups, top to bottom; arrows mean "asked for")
 
 ```mermaid
 flowchart TD
-    subgraph N["Names found"]
-        D1["DGA list of 24<br/>success: owxdarkhbvi.com → 203.0.113.99"]
-        D2["sync.example.org<br/>127.0.0.1 → 198.51.100.7 (changed between 13:30 and 14:31)"]
-        D3["*.t.example.net<br/>258 TXT queries, base32 data"]
-        D4["outside resolver 192.0.2.53<br/>(bypass)"]
-    end
-    D1 --> P1["10.10.4.21<br/>all day, :07 every hour"]
+    D1["DGA list of 24<br/>success: owxdarkhbvi.com<br/>→ 203.0.113.99"] --> P1["10.10.4.21<br/>all day, :07 every hour"]
     D1 --> P2["10.10.5.17<br/>from 15:07 (new infection?)"]
+    P1 ~~~ D2["sync.example.org<br/>127.0.0.1 → 198.51.100.7<br/>(changed 13:30–14:31)"]
     D2 --> P3["10.10.2.30<br/>every 30 minutes"]
     D2 --> P4["10.10.4.22<br/>once at 14:31"]
+    P3 ~~~ D3["*.t.example.net<br/>258 TXT queries, base32 data"]
     D3 --> P5["10.10.7.8<br/>13:20–13:34"]
+    P5 ~~~ D4["outside resolver 192.0.2.53<br/>(bypass)"]
     D4 --> P6["10.10.9.9<br/>19:00–19:59"]
 ```
 
-**How to read it:** the upper boxes are the odd names (or destinations) found in this day, the lower ones the PCs that asked for them. Two arrows from one name mean the same thing happened on two PCs. Whether different names are related (the same attacker?) can't be told from this data alone.
+**How to read it:** four groups from top to bottom. The first box in each group is an odd name (or destination) found in this day; the boxes its arrows point to are the PCs that asked for it. Two arrows from one name mean the same thing happened on two PCs. There are no lines between groups: whether different names are related (the same attacker?) can't be told from this data alone.
 
 ## 10. Step 8: look-alike domains { #lookalike }
 
