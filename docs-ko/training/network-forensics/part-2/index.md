@@ -29,7 +29,7 @@ tags:
 | [2.11강](windows-event-logs.md) | Windows 이벤트 로그와 이벤트 전달 | 게시 |
 | [2.12강](log-aggregation.md) | 로그 집계: 왜 모으고, 어떻게 보내나 | 게시 |
 | [2.13강](elastic-stack-sof-elk.md) | Elastic Stack과 SOF-ELK | 게시 |
-| 2.14강 | 실습 가이드: 로그 집계와 분석 | 준비 중 |
+| [2.14강](lab-log-aggregation.md) | 실습 가이드: 로그 집계와 분석 | 게시 |
 
 ## 시리즈 처음으로 { #back }
 

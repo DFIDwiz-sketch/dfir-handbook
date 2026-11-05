@@ -29,7 +29,7 @@ Lessons are added one at a time, in order. Entries in the list below without a l
 | [2.11](windows-event-logs.md) | Windows event logs and event forwarding | Published |
 | [2.12](log-aggregation.md) | Log aggregation: why collect, and how to ship | Published |
 | [2.13](elastic-stack-sof-elk.md) | The Elastic Stack and SOF-ELK | Published |
-| 2.14 | Lab guide: log aggregation and analysis | In preparation |
+| [2.14](lab-log-aggregation.md) | Lab guide: log aggregation and analysis | Published |
 
 ## Back to the series { #back }
 
