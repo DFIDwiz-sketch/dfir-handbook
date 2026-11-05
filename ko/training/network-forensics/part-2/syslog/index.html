@@ -9434,17 +9434,20 @@
 <p class="admonition-title">[보충] <code>^</code> 프로그램 실행의 실제 동작</p>
 <p>교재의 <code>^/usr/local/bin/sms_send.py;smsTemplate</code>(옛 문법)도 rsyslog 8.2312에서 여전히 동작했습니다. 직접 실행해 보니 <strong>메시지마다 프로그램을 새로 실행하고, 메시지를 명령줄 인자로</strong> 넘겼어요(스크립트가 받은 인자: <code>CARET_TEST</code>). 메시지가 많으면 프로세스가 그만큼 생기고, 메시지 내용이 명령줄에 그대로 실리므로, rsyslog 설명서는 프로그램을 띄워 두고 표준 입력으로 넘기는 <code>omprog</code>를 권합니다.</p>
 </div>
-<p><strong>그림 5-1. 이 설정에서 로그가 가는 곳</strong> (위에서 아래로: 선택자 → 목적지 종류)</p>
+<p><strong>그림 5-1. 이 설정에서 로그가 가는 곳</strong> (선택자마다 한 묶음, 위에서 아래로: 선택자 → 목적지)</p>
 <pre class="mermaid"><code>flowchart TD
     A["*.info (mail·authpriv·cron 제외)"] --&gt; F1["파일: messages"]
     A --&gt; N1["UDP @ 수신 서버"]
-    B["authpriv.*"] --&gt; F2["파일: secure"]
-    C["authpriv.=warning"] --&gt; N2["TCP @@ 수신 서버"]
-    D["mail.* / local7.* / local3.*"] --&gt; F3["파일: maillog / dhcp.log / named.log"]
-    E["*.emerg"] --&gt; P1["프로그램: SMS 스크립트 (omprog)"]
-    E -.-&gt; F1
-    E -.-&gt; N1</code></pre>
-<p><strong>읽는 법:</strong> 왼쪽 위의 선택자에 맞는 메시지가 화살표 끝의 목적지로 갑니다. 한 메시지가 여러 선택자에 맞으면 <strong>모든</strong> 목적지로 가요(점선: <code>*.emerg</code> 메시지는 <code>*.info</code>에도 맞아 messages와 UDP 전송에도 감). 교재가 말하듯, "이 시스템의 로그 데이터는 어디로 가나?"는 단순한 설정에서도 답이 꽤 복잡합니다. 조사할 때는 설정 파일(그리고 <code>/etc/rsyslog.d/*.conf</code>처럼 <strong>포함된 파일들</strong>)을 모두 확보해 이런 그림을 직접 그려 보세요.</p>
+    F1 ~~~ B["authpriv.*"]
+    B --&gt; F2["파일: secure"]
+    F2 ~~~ C["authpriv.=warning"]
+    C --&gt; N2["TCP @@ 수신 서버"]
+    N2 ~~~ D["mail.* / local7.* / local3.*"]
+    D --&gt; F3["파일: maillog / dhcp.log / named.log"]
+    F3 ~~~ E["*.emerg"]
+    E --&gt; P1["프로그램: SMS 스크립트 (omprog)"]
+    E -.-&gt; X["*.info에도 맞으므로&lt;br/&gt;messages와 UDP 전송에도 감"]</code></pre>
+<p><strong>읽는 법:</strong> 왼쪽 위의 선택자에 맞는 메시지가 화살표 끝의 목적지로 갑니다. 한 메시지가 여러 선택자에 맞으면 <strong>모든</strong> 목적지로 가요(점선: <code>*.emerg</code> 메시지는 <code>*.info</code>에도 맞아 messages와 UDP 전송에도 감). 묶음 사이의 선 없는 간격은 위아래로 늘어놓기 위한 것일 뿐 순서를 뜻하지 않습니다. 교재가 말하듯, "이 시스템의 로그 데이터는 어디로 가나?"는 단순한 설정에서도 답이 꽤 복잡합니다. 조사할 때는 설정 파일(그리고 <code>/etc/rsyslog.d/*.conf</code>처럼 <strong>포함된 파일들</strong>)을 모두 확보해 이런 그림을 직접 그려 보세요.</p>
 <h2 id="transport">6. 전송: UDP, TCP, 그리고 그 너머<a class="headerlink" href="#transport" title="Permanent link">¶</a></h2>
 <h3 id="udp-loss">6.1 UDP는 잃어버려도 모른다<a class="headerlink" href="#udp-loss" title="Permanent link">¶</a></h3>
 <p>같은 컴퓨터 안(루프백)에서, 수신 서버에 짧은 메시지 20만 개를 UDP와 TCP로 한꺼번에 보냈습니다.</p>

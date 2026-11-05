@@ -9434,17 +9434,20 @@
 <p class="admonition-title">[Supplement] How <code>^</code> program execution actually behaves</p>
 <p>The book's <code>^/usr/local/bin/sms_send.py;smsTemplate</code> (legacy syntax) still worked in rsyslog 8.2312. Running it, <strong>a new program process was started for each message, with the message passed as a command-line argument</strong> (the script's arguments: <code>CARET_TEST</code>). Many messages mean as many processes, and message content lands on the command line verbatim, so rsyslog's documentation recommends <code>omprog</code>, which keeps the program running and passes messages on standard input.</p>
 </div>
-<p><strong>Figure 5-1. Where logs go in this configuration</strong> (top to bottom: selector → kind of destination)</p>
+<p><strong>Figure 5-1. Where logs go in this configuration</strong> (one group per selector, top to bottom: selector → destination)</p>
 <pre class="mermaid"><code>flowchart TD
     A["*.info (except mail, authpriv, cron)"] --&gt; F1["file: messages"]
     A --&gt; N1["UDP @ receiver"]
-    B["authpriv.*"] --&gt; F2["file: secure"]
-    C["authpriv.=warning"] --&gt; N2["TCP @@ receiver"]
-    D["mail.* / local7.* / local3.*"] --&gt; F3["files: maillog / dhcp.log / named.log"]
-    E["*.emerg"] --&gt; P1["program: SMS script (omprog)"]
-    E -.-&gt; F1
-    E -.-&gt; N1</code></pre>
-<p><strong>How to read it:</strong> a message matching a selector goes to the destinations its arrows point to. A message matching several selectors goes to <strong>all</strong> their destinations (dotted lines: an <code>*.emerg</code> message also matches <code>*.info</code>, so it also goes to messages and the UDP forward). As the book says, "where does this system's log data go?" is a deceptively complex question even for a basic configuration. During an investigation, collect the configuration (including <strong>included files</strong> such as <code>/etc/rsyslog.d/*.conf</code>) and draw a picture like this yourself.</p>
+    F1 ~~~ B["authpriv.*"]
+    B --&gt; F2["file: secure"]
+    F2 ~~~ C["authpriv.=warning"]
+    C --&gt; N2["TCP @@ receiver"]
+    N2 ~~~ D["mail.* / local7.* / local3.*"]
+    D --&gt; F3["files: maillog / dhcp.log / named.log"]
+    F3 ~~~ E["*.emerg"]
+    E --&gt; P1["program: SMS script (omprog)"]
+    E -.-&gt; X["also matches *.info, so it also goes&lt;br/&gt;to messages and the UDP forward"]</code></pre>
+<p><strong>How to read it:</strong> a message matching a selector goes to the destinations its arrows point to. A message matching several selectors goes to <strong>all</strong> their destinations (dotted line: an <code>*.emerg</code> message also matches <code>*.info</code>, so it also goes to messages and the UDP forward). The unlinked gaps between groups only stack them vertically and don't imply any order. As the book says, "where does this system's log data go?" is a deceptively complex question even for a basic configuration. During an investigation, collect the configuration (including <strong>included files</strong> such as <code>/etc/rsyslog.d/*.conf</code>) and draw a picture like this yourself.</p>
 <h2 id="transport">6. Transport: UDP, TCP and beyond<a class="headerlink" href="#transport" title="Permanent link">¶</a></h2>
 <h3 id="udp-loss">6.1 UDP loses messages silently<a class="headerlink" href="#udp-loss" title="Permanent link">¶</a></h3>
 <p>On the same computer (loopback), I fired 200,000 short messages at the receiver over UDP and over TCP.</p>
