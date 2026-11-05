@@ -42,7 +42,7 @@ flowchart TD
 
     HTTP와 DNS를 포렌식 관점에서 프로파일링하고, 여러 장비의 로그를 한곳에 모아 교차 분석하는 방법.
 
-    [:octicons-arrow-right-24: 2부](part-2/index.md)
+    :octicons-clock-24: 준비 중
 
 -   :material-chart-timeline-variant:{ .lg .middle } **3부 · NetFlow와 파일 공유 프로토콜**
 
@@ -50,7 +50,7 @@ flowchart TD
 
     플로우 기록의 원리와 수집·분석 도구, 시각적 분석과 내부 이동(lateral movement) 추적, SMB 같은 파일 공유 프로토콜 세션 재구성.
 
-    [:octicons-arrow-right-24: 3부](part-3/index.md)
+    :octicons-clock-24: 준비 중
 
 -   :material-tools:{ .lg .middle } **4부 · 분석 도구, 무선, 전체 패킷 헌팅**
 
@@ -58,7 +58,7 @@ flowchart TD
 
     자동 추출 도구, 명령줄 도구로 대량 분석하기, 무선 네트워크 증거, Arkime로 전체 패킷 헌팅.
 
-    [:octicons-arrow-right-24: 4부](part-4/index.md)
+    :octicons-clock-24: 준비 중
 
 -   :material-lock-open-variant:{ .lg .middle } **5부 · 암호화, 프로토콜 리버싱, OPSEC과 인텔리전스**
 
@@ -66,7 +66,7 @@ flowchart TD
 
     SSL/TLS 프로파일링과 복호화, 문서화되지 않은 프로토콜 분석, 조사자의 OPSEC과 위협 인텔리전스, 그리고 종합 조사 실습.
 
-    [:octicons-arrow-right-24: 5부](part-5/index.md)
+    :octicons-clock-24: 준비 중
 
 </div>
 

@@ -42,7 +42,7 @@ The diagram shows the flow of the series. Going down, it moves from "how to get 
 
     Profiling HTTP and DNS from a forensic angle, and pulling logs from many devices into one place for cross-analysis.
 
-    [:octicons-arrow-right-24: Part 2](part-2/index.md)
+    :octicons-clock-24: In preparation
 
 -   :material-chart-timeline-variant:{ .lg .middle } **Part 3 · NetFlow & File-Access Protocols**
 
@@ -50,7 +50,7 @@ The diagram shows the flow of the series. Going down, it moves from "how to get 
 
     How flow records work, collection and analysis tools, visual analysis and tracking lateral movement, and reconstructing sessions of file-access protocols such as SMB.
 
-    [:octicons-arrow-right-24: Part 3](part-3/index.md)
+    :octicons-clock-24: In preparation
 
 -   :material-tools:{ .lg .middle } **Part 4 · Analysis Tools, Wireless & Full-Packet Hunting**
 
@@ -58,7 +58,7 @@ The diagram shows the flow of the series. Going down, it moves from "how to get 
 
     Automated extraction tools, command-line analysis at scale, wireless network evidence, and full-packet hunting with Arkime.
 
-    [:octicons-arrow-right-24: Part 4](part-4/index.md)
+    :octicons-clock-24: In preparation
 
 -   :material-lock-open-variant:{ .lg .middle } **Part 5 · Encryption, Protocol Reversing, OPSEC & Intel**
 
@@ -66,7 +66,7 @@ The diagram shows the flow of the series. Going down, it moves from "how to get 
 
     SSL/TLS profiling and decryption, analysing undocumented protocols, investigator OPSEC and threat intelligence, and a comprehensive investigation lab.
 
-    [:octicons-arrow-right-24: Part 5](part-5/index.md)
+    :octicons-clock-24: In preparation
 
 </div>
 
