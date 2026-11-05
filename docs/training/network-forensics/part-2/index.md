@@ -12,7 +12,7 @@ tags:
 
 ## Lessons { #lessons }
 
-Lessons are added one at a time, in order. Entries in the list below without a link are still being prepared. Numbering may shift slightly with length.
+All 14 lessons of Part 2 are published. Reading in order is recommended, but the lab guides (lessons 2.4, 2.9 and 2.14) can be tried right after skimming the lessons just before them.
 
 | Lesson | Topic | Status |
 | --- | --- | --- |
@@ -30,6 +30,21 @@ Lessons are added one at a time, in order. Entries in the list below without a l
 | [2.12](log-aggregation.md) | Log aggregation: why collect, and how to ship | Published |
 | [2.13](elastic-stack-sof-elk.md) | The Elastic Stack and SOF-ELK | Published |
 | [2.14](lab-log-aggregation.md) | Lab guide: log aggregation and analysis | Published |
+
+
+## Wrapping up Part 2 { #wrap-up }
+
+After Part 2 you should be able to:
+
+- Read each part of HTTP requests and responses (methods, headers, status codes, cookies) with an investigator's eye, and know what is and isn't visible in HTTP/2 and HTTP/3 (lessons 2.1–2.3).
+- Separate people from programs by header combinations, time of day and intervals, and see beyond the evidence period with advertising cookies (lesson 2.4).
+- Know web server log formats and their pitfalls (reception time, size fields, escaping) and find traces of attacks (lesson 2.5).
+- Understand DNS messages, compression, hierarchy and caching, and — allowing for how vantage points change what's visible — find fast flux, DGAs, tunnelling, encrypted DNS and look-alike domains (lessons 2.6–2.7 and 2.9).
+- Turn pcaps into logs with Zeek, select and link them with jq, and move between tools with Community ID (lesson 2.8).
+- Know the format, timestamp and transport limits of syslog and Windows event logs, and find scrubbed traces using central copies (lessons 2.10–2.12).
+- Load multiple sources into the Elastic Stack (SOF-ELK), check that everything arrived and that time zones align, then tie the whole incident together from one clue (lessons 2.13–2.14).
+
+Each lesson's outputs were produced with the tool versions stated in that lesson; changes are marked **[Changed]** and corrections **[Correction]**.
 
 ## Back to the series { #back }
 
