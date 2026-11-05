@@ -19,7 +19,7 @@ tags:
 | [2.1강](http-requests.md) | HTTP 요청 읽기: 메서드, URI, 요청 헤더 | 게시 |
 | [2.2강](http-responses.md) | HTTP 응답 읽기: 상태 코드, 응답 헤더, 조사에서 쓰는 법 | 게시 |
 | [2.3강](tracking-cookies-http2-http3.md) | 추적 쿠키로 과거 보기, 그리고 HTTP/2·HTTP/3 | 게시 |
-| 2.4강 | 실습 가이드: HTTP 프로파일링 | 준비 중 |
+| [2.4강](lab-http-profiling.md) | 실습 가이드: HTTP 프로파일링 | 게시 |
 | 2.5강 | 웹 서버 로그: 형식, 읽기, 공격의 흔적 | 준비 중 |
 | 2.6강 | DNS의 구조: 레코드, 메시지, 압축, 위계 | 준비 중 |
 | 2.7강 | DNS 조사: 로그, 빠른 플럭스, DGA, 암호화 DNS, 퓨니코드 | 준비 중 |
