@@ -22,7 +22,7 @@ Lessons are added one at a time, in order. Entries in the list below without a l
 | [2.4](lab-http-profiling.md) | Lab guide: HTTP profiling | Published |
 | [2.5](web-server-logs.md) | Web server logs: formats, reading them, traces of attacks | Published |
 | [2.6](dns-structure.md) | DNS structure: records, messages, compression, hierarchy | Published |
-| 2.7 | DNS investigation: logs, fast flux, DGAs, encrypted DNS, punycode | In preparation |
+| [2.7](dns-investigation.md) | DNS investigation: logs, fast flux, DGAs, encrypted DNS, punycode | Published |
 | 2.8 | Turning packets into logs with Zeek: log structure, jq, Community ID | In preparation |
 | 2.9 | Lab guide: DNS profiling, anomalies and scoping | In preparation |
 | 2.10 | syslog: daemon and protocol, facility and severity, reading configuration | In preparation |
