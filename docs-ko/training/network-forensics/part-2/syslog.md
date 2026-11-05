@@ -349,21 +349,24 @@ SMS-GATEWAY got: Nov  5 08:00:28 vm root:  LAB_EMERGENCY_TEST
 !!! info "[보충] `^` 프로그램 실행의 실제 동작"
     교재의 `^/usr/local/bin/sms_send.py;smsTemplate`(옛 문법)도 rsyslog 8.2312에서 여전히 동작했습니다. 직접 실행해 보니 **메시지마다 프로그램을 새로 실행하고, 메시지를 명령줄 인자로** 넘겼어요(스크립트가 받은 인자: ` CARET_TEST`). 메시지가 많으면 프로세스가 그만큼 생기고, 메시지 내용이 명령줄에 그대로 실리므로, rsyslog 설명서는 프로그램을 띄워 두고 표준 입력으로 넘기는 `omprog`를 권합니다.
 
-**그림 5-1. 이 설정에서 로그가 가는 곳** (위에서 아래로: 선택자 → 목적지 종류)
+**그림 5-1. 이 설정에서 로그가 가는 곳** (선택자마다 한 묶음, 위에서 아래로: 선택자 → 목적지)
 
 ```mermaid
 flowchart TD
     A["*.info (mail·authpriv·cron 제외)"] --> F1["파일: messages"]
     A --> N1["UDP @ 수신 서버"]
-    B["authpriv.*"] --> F2["파일: secure"]
-    C["authpriv.=warning"] --> N2["TCP @@ 수신 서버"]
-    D["mail.* / local7.* / local3.*"] --> F3["파일: maillog / dhcp.log / named.log"]
-    E["*.emerg"] --> P1["프로그램: SMS 스크립트 (omprog)"]
-    E -.-> F1
-    E -.-> N1
+    F1 ~~~ B["authpriv.*"]
+    B --> F2["파일: secure"]
+    F2 ~~~ C["authpriv.=warning"]
+    C --> N2["TCP @@ 수신 서버"]
+    N2 ~~~ D["mail.* / local7.* / local3.*"]
+    D --> F3["파일: maillog / dhcp.log / named.log"]
+    F3 ~~~ E["*.emerg"]
+    E --> P1["프로그램: SMS 스크립트 (omprog)"]
+    E -.-> X["*.info에도 맞으므로<br/>messages와 UDP 전송에도 감"]
 ```
 
-**읽는 법:** 왼쪽 위의 선택자에 맞는 메시지가 화살표 끝의 목적지로 갑니다. 한 메시지가 여러 선택자에 맞으면 **모든** 목적지로 가요(점선: `*.emerg` 메시지는 `*.info`에도 맞아 messages와 UDP 전송에도 감). 교재가 말하듯, "이 시스템의 로그 데이터는 어디로 가나?"는 단순한 설정에서도 답이 꽤 복잡합니다. 조사할 때는 설정 파일(그리고 `/etc/rsyslog.d/*.conf`처럼 **포함된 파일들**)을 모두 확보해 이런 그림을 직접 그려 보세요.
+**읽는 법:** 왼쪽 위의 선택자에 맞는 메시지가 화살표 끝의 목적지로 갑니다. 한 메시지가 여러 선택자에 맞으면 **모든** 목적지로 가요(점선: `*.emerg` 메시지는 `*.info`에도 맞아 messages와 UDP 전송에도 감). 묶음 사이의 선 없는 간격은 위아래로 늘어놓기 위한 것일 뿐 순서를 뜻하지 않습니다. 교재가 말하듯, "이 시스템의 로그 데이터는 어디로 가나?"는 단순한 설정에서도 답이 꽤 복잡합니다. 조사할 때는 설정 파일(그리고 `/etc/rsyslog.d/*.conf`처럼 **포함된 파일들**)을 모두 확보해 이런 그림을 직접 그려 보세요.
 
 ## 6. 전송: UDP, TCP, 그리고 그 너머 { #transport }
 

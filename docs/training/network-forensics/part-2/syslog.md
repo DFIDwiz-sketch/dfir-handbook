@@ -349,21 +349,24 @@ How to read it:
 !!! info "[Supplement] How `^` program execution actually behaves"
     The book's `^/usr/local/bin/sms_send.py;smsTemplate` (legacy syntax) still worked in rsyslog 8.2312. Running it, **a new program process was started for each message, with the message passed as a command-line argument** (the script's arguments: ` CARET_TEST`). Many messages mean as many processes, and message content lands on the command line verbatim, so rsyslog's documentation recommends `omprog`, which keeps the program running and passes messages on standard input.
 
-**Figure 5-1. Where logs go in this configuration** (top to bottom: selector → kind of destination)
+**Figure 5-1. Where logs go in this configuration** (one group per selector, top to bottom: selector → destination)
 
 ```mermaid
 flowchart TD
     A["*.info (except mail, authpriv, cron)"] --> F1["file: messages"]
     A --> N1["UDP @ receiver"]
-    B["authpriv.*"] --> F2["file: secure"]
-    C["authpriv.=warning"] --> N2["TCP @@ receiver"]
-    D["mail.* / local7.* / local3.*"] --> F3["files: maillog / dhcp.log / named.log"]
-    E["*.emerg"] --> P1["program: SMS script (omprog)"]
-    E -.-> F1
-    E -.-> N1
+    F1 ~~~ B["authpriv.*"]
+    B --> F2["file: secure"]
+    F2 ~~~ C["authpriv.=warning"]
+    C --> N2["TCP @@ receiver"]
+    N2 ~~~ D["mail.* / local7.* / local3.*"]
+    D --> F3["files: maillog / dhcp.log / named.log"]
+    F3 ~~~ E["*.emerg"]
+    E --> P1["program: SMS script (omprog)"]
+    E -.-> X["also matches *.info, so it also goes<br/>to messages and the UDP forward"]
 ```
 
-**How to read it:** a message matching a selector goes to the destinations its arrows point to. A message matching several selectors goes to **all** their destinations (dotted lines: an `*.emerg` message also matches `*.info`, so it also goes to messages and the UDP forward). As the book says, "where does this system's log data go?" is a deceptively complex question even for a basic configuration. During an investigation, collect the configuration (including **included files** such as `/etc/rsyslog.d/*.conf`) and draw a picture like this yourself.
+**How to read it:** a message matching a selector goes to the destinations its arrows point to. A message matching several selectors goes to **all** their destinations (dotted line: an `*.emerg` message also matches `*.info`, so it also goes to messages and the UDP forward). The unlinked gaps between groups only stack them vertically and don't imply any order. As the book says, "where does this system's log data go?" is a deceptively complex question even for a basic configuration. During an investigation, collect the configuration (including **included files** such as `/etc/rsyslog.d/*.conf`) and draw a picture like this yourself.
 
 ## 6. Transport: UDP, TCP and beyond { #transport }
 
