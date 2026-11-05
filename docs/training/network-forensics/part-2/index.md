@@ -17,7 +17,7 @@ Lessons are added one at a time, in order. Entries in the list below without a l
 | Lesson | Topic | Status |
 | --- | --- | --- |
 | [2.1](http-requests.md) | Reading HTTP requests: methods, URIs, request headers | Published |
-| 2.2 | Reading HTTP responses: status codes, response headers, investigative use | In preparation |
+| [2.2](http-responses.md) | Reading HTTP responses: status codes, response headers, investigative use | Published |
 | 2.3 | Seeing the past through tracking cookies, and HTTP/2 and HTTP/3 | In preparation |
 | 2.4 | Lab guide: HTTP profiling | In preparation |
 | 2.5 | Web server logs: formats, reading them, traces of attacks | In preparation |
