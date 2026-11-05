@@ -1,0 +1,9684 @@
+<!DOCTYPE html><html lang="ko" class="no-js"><head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="개인 디지털 포렌식·침해사고 대응(DFIR) 레퍼런스">
+      
+      
+        <meta name="author" content="Comwhiz">
+      
+      
+        <link rel="canonical" href="https://DFIDwiz-sketch.github.io/dfir-handbook/ko/training/network-forensics/part-2/syslog/">
+      
+      
+        <link rel="prev" href="../lab-dns-profiling/">
+      
+      
+        <link rel="next" href="../../../oscp/">
+      
+      
+        
+          <link rel="alternate" href="/dfir-handbook/" hreflang="en">
+        
+          <link rel="alternate" href="/dfir-handbook/ko/" hreflang="ko">
+        
+      
+      
+      <link rel="icon" href="../../../../assets/favicon.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+    
+    
+      
+        <title>2.10강 — syslog: 메시지 형식, facility와 severity, 설정 파일 읽기 - DFIR 핸드북</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/extra.css">
+    
+      <link rel="stylesheet" href="../../../../assets/redteam-navigation.css">
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  <link href="../../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+            html.glightbox-open { overflow: initial; height: 100%; }
+            .gslide-title { margin-top: 0px; user-select: text; }
+            .gslide-desc { color: #666; user-select: text; }
+            .gslide-image img { background: white; }
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
+        </style></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#syslog" class="md-skip">
+          콘텐츠로 이동
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="상단/헤더">
+    <a href="../../../.." title="DFIR 핸드북" class="md-header__button md-logo" aria-label="DFIR 핸드북" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 9a3 3 0 0 1 3 3 3 3 0 0 1-3 3 3 3 0 0 1-3-3 3 3 0 0 1 3-3m5.86 10.31C16.23 21.22 14.28 22.45 12 23c-2.56-.61-4.7-2.07-6.42-4.37C3.86 16.34 3 13.8 3 11V5l9-4 9 4v6c0 2.39-.64 4.61-1.92 6.67l-2.91-2.91c.52-.79.83-1.76.83-2.76a5 5 0 0 0-5-5 5 5 0 0 0-5 5 5 5 0 0 0 5 5c1 0 1.97-.31 2.76-.83z"></path></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            DFIR 핸드북
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              2.10강 — syslog: 메시지 형식, facility와 severity, 설정 파일 읽기
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom" aria-label="Switch to dark mode" type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom" aria-label="Switch to light mode" type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"></path></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="언어설정">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"></path></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/dfir-handbook/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/dfir-handbook/ko/" hreflang="ko" class="md-select__link">
+              한국어
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="검색" placeholder="검색" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required="">
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+      </label>
+      <nav class="md-search__options" aria-label="검색">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="공유" aria-label="공유" data-clipboard="" data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"></path></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="지우기" aria-label="지우기" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix="">
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            검색 초기화
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/DFIDwiz-sketch/dfir-handbook" title="저장소로 이동" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    dfir-handbook
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="탭" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  홈
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../basics/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  기초
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../windows/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Windows
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../linux/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Linux
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../network/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  네트워크
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../memory/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  메모리
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../splunk/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Splunk
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../adversary/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  공격 기법
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../pentesting/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  펜테스팅
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../redteam/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  레드팀
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../threat-intel/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  위협 인텔리전스
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../tools/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  도구
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../playbooks/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  플레이북
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../learning/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  학습
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  트레이닝
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../../tags/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  태그
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="네비게이션" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../.." title="DFIR 핸드북" class="md-nav__button md-logo" aria-label="DFIR 핸드북" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 9a3 3 0 0 1 3 3 3 3 0 0 1-3 3 3 3 0 0 1-3-3 3 3 0 0 1 3-3m5.86 10.31C16.23 21.22 14.28 22.45 12 23c-2.56-.61-4.7-2.07-6.42-4.37C3.86 16.34 3 13.8 3 11V5l9-4 9 4v6c0 2.39-.64 4.61-1.92 6.67l-2.91-2.91c.52-.79.83-1.76.83-2.76a5 5 0 0 0-5-5 5 5 0 0 0-5 5 5 5 0 0 0 5 5c1 0 1.97-.31 2.76-.83z"></path></svg>
+
+    </a>
+    DFIR 핸드북
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/DFIDwiz-sketch/dfir-handbook" title="저장소로 이동" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    dfir-handbook
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix="">
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    홈
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../basics/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    기초
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    기초
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../basics/http-status-codes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP 상태 코드
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../basics/linux-commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    필수 Linux 명령어
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../basics/well-known-ports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    잘 알려진 포트
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../basics/windows-event-ids/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows 이벤트 ID
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../windows/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Windows
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../windows/artefact-identification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    시나리오별 아티팩트 식별
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../windows/prefetch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Prefetch
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../windows/amcache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Amcache
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../windows/shimcache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shimcache (AppCompatCache)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../windows/registry-keys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DFIR용 레지스트리 키
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../windows/lnk-jumplists/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LNK 파일과 Jump Lists
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../windows/mft-usn/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    $MFT, $UsnJrnl, $LogFile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../windows/srum/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SRUM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../windows/event-logs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows 이벤트 로그 (EVTX)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../linux/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linux
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Linux
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../linux/auth-and-history/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    인증과 셸 히스토리
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../linux/persistence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linux 지속성
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../linux/filesystem-timestamps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    파일시스템과 타임스탬프
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../linux/logs-and-triage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    로그, 프로세스, 라이브 트리아지
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../network/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    네트워크
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    네트워크
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_2">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../network/zeek/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Zeek
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Zeek
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../network/zeek/conn-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    conn.log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../network/zeek/dns-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    dns.log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../network/zeek/http-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    http.log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../network/zeek/ssl-x509/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ssl.log와 x509.log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../network/zeek/files-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    files.log와 pe.log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_3">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../network/arkime/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arkime
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Arkime
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../network/arkime/search-syntax/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arkime 검색 문법
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../network/arkime/hunting-workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arkime로 침입 탐지
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../network/wireshark-tshark/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wireshark와 tshark
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../network/beaconing-c2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    비코닝과 C2 탐지
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../memory/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    메모리
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    메모리
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../memory/volatility-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Volatility 3 워크플로
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../memory/processes-injection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    프로세스와 코드 인젝션
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../memory/credentials-registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    자격증명, 레지스트리, 루트킷
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../splunk/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Splunk
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Splunk
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../splunk/spl-cheatsheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SPL 치트시트
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../splunk/data-discovery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    데이터 탐색과 시간
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../splunk/rex-and-fields/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    rex, 필드 추출, eval
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../splunk/security-searches/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    질문별 보안 검색
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../splunk/hunting-patterns/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SPL 헌팅 패턴
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../splunk/botsv3-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    BOTSv3 조사 워크플로
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../adversary/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    공격 기법
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    공격 기법
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/hardening-by-version/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows 버전별 강화
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/phishing-delivery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    피싱 전달과 최초 실행
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/powershell-cradles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PowerShell 다운로드 크래들과 인코딩된 명령
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/lolbins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LOLBins — 서명된 바이너리를 통한 프록시 실행
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/lsass-dumping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LSASS 자격증명 덤프
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/sam-ntds-extraction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SAM, LSA Secrets 및 NTDS.dit 추출
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/dcsync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DCSync
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/kerberoasting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kerberoasting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/asrep-roasting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AS-REP Roasting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/golden-silver-tickets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Golden, Silver 티켓과 Pass-the-Ticket
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/llmnr-ntlm-relay/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLMNR/NBT-NS 포이즈닝과 NTLM 릴레이
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/adcs-abuse/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AD 인증서 서비스 악용 (ESC1 / ESC8)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/pass-the-hash/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pass-the-Hash
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/psexec-smb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PsExec와 SMB 횡적 이동
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/wmi-winrm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WMI와 WinRM 실행
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/rdp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RDP — 원격 데스크톱 악용
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/uac-bypass/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UAC 우회
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/token-impersonation-potato/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    토큰 가장과 Potato 공격
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/process-injection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    프로세스 인젝션
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/impair-defenses-log-clearing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    방어 무력화와 로그 삭제
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/persistence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    지속성 — 서비스, 작업, Run 키
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/eternalblue-smbv1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EternalBlue와 SMBv1 익스플로잇
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adversary/printnightmare/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PrintNightmare와 Print Spooler 악용
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../pentesting/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    펜테스팅
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    펜테스팅
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_2">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../pentesting/recon/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    정찰 (Recon)
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9_2" id="__nav_9_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    정찰 (Recon)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_2_2">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../pentesting/recon/nmap/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nmap
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9_2_2" id="__nav_9_2_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_9_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Nmap
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../pentesting/recon/nmap/scanning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nmap 호스트 탐색 &amp; 포트 스캔
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../pentesting/recon/nmap/service-nse/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nmap 서비스 열거 &amp; NSE
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../pentesting/recon/nmap/output-performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nmap 출력 &amp; 성능
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../redteam/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    레드팀
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    레드팀
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../redteam/initial-access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1 초기 침투 (Initial Access)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../redteam/persistence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2 지속성 유지 (Persistence)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10_4">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../redteam/post-exploitation/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3 Post-Exploitation
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10_4" id="__nav_10_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_10_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    3 Post-Exploitation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../redteam/post-exploitation/fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.1 구조와 명령어 실행 모델
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../redteam/post-exploitation/sessions-files/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.2 세션과 파일 시스템
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../redteam/post-exploitation/processes-collection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.3 프로세스와 정보 수집
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../redteam/post-exploitation/execution-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.4 명령 실행과 외부 도구
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../redteam/post-exploitation/modern-defense/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3.5 최신 방어 관점과 복습
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../threat-intel/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    위협 인텔리전스
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    위협 인텔리전스
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../threat-intel/dprk-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    북한(DPRK) — 그룹과 사건
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../threat-intel/dprk-ttps-hunting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    북한 — TTP와 헌팅
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../tools/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    도구
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    도구
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../tools/imaging-collection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    디스크와 메모리 이미징
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../tools/kape/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    KAPE
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../tools/velociraptor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Velociraptor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../tools/zimmerman-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Eric Zimmerman 도구
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../tools/plaso-timelines/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plaso와 슈퍼 타임라인
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../playbooks/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    플레이북
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    플레이북
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../playbooks/ransomware/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    랜섬웨어
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../playbooks/compromised-workstation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    침해된 워크스테이션
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../playbooks/account-compromise/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    계정 탈취와 BEC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../playbooks/lateral-domain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    횡적 이동과 도메인 침해
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../playbooks/data-exfiltration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    데이터 유출
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../playbooks/webshell-server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    웹셸과 서버 침해
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_14">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../../learning/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    학습
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    학습
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../learning/roadmap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    로드맵
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../learning/purple-team-loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    퍼플팀 주간 루프
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../learning/curriculum-24-months/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    24개월 커리큘럼
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../learning/resources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    학습 자료
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15" checked="">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    트레이닝
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    트레이닝
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15_2">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../antisyphon/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Antisyphon
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15_2" id="__nav_15_2_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_15_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Antisyphon
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15_2_2">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../antisyphon/iscs/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Information Security Core Skills
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15_2_2" id="__nav_15_2_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_15_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Information Security Core Skills
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../antisyphon/iscs/day-1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 1 — 허용 목록과 패스워드 공격
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../antisyphon/iscs/day-2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 2 — 나가는 트래픽 분석과 로깅
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../antisyphon/iscs/day-3/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 3 — EDR, 위협 에뮬레이션, 호스트 방화벽
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../antisyphon/iscs/day-4/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Day 4 — Responder, 인터넷 허용 목록, 취약점 관리, 웹 보안, AD 하드닝
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15_3">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../blue-team-essentials/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Blue Team Essentials
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15_3" id="__nav_15_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_15_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Blue Team Essentials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15_3_2">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../blue-team-essentials/dns/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DNS
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15_3_2" id="__nav_15_3_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_15_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    DNS
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/dns/understanding-dns/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Understanding DNS — 기본 구조와 레코드
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/dns/collection-and-investigation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DNS 기록 수집과 안전한 조사
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/dns/domain-signals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    도메인 신호 — TLD·평판·나이·무작위성·ASN·위치
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/dns/dns-abuse/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DNS 악용 공격 — 비인가 DNS·공유 호스팅·레코드 변조·터널링
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/dns/blockchain-dns-and-idn/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    블록체인 DNS와 IDN(퓨니코드)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/dns/encrypted-dns/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    암호화 DNS — DoT·DoH·DoQ·DNSSEC와 수집 전략
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/dns/triage-sheet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    수상한 DNS 기록 판별표 · 정정 · 헷갈리는 포인트
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15_3_3">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../blue-team-essentials/http/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15_3_3" id="__nav_15_3_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_15_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    HTTP
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/http/web-servers-urls-get/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    웹 서버, URL, GET 요청
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/http/post-methods-headers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    POST, 그 밖의 메서드, 요청 헤더
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/http/reading-requests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    요청 판정 연습 — 점검법, 익스플로잇 킷, URL 속 URL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/http/responses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    응답 헤더와 응답 코드
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/http/header-practice/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    헤더 판독 실전 연습 — 요청 하나, 응답 하나
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/http/new-standards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    새 HTTP 표준 — HTTP/2, HTTP/3·QUIC, 웹소켓, 그리고 HTTP 정리
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15_3_4">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../blue-team-essentials/http-analysis/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP(S) 분석과 공격
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15_3_4" id="__nav_15_3_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_15_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    HTTP(S) 분석과 공격
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/http-analysis/evil-http-and-reputation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTP 악용의 단계, 분석 방법 고르기, URL 평판 확인
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/http-analysis/screenshots-sandboxes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    스크린샷, 샌드박스, 그리고 수동 분석으로 넘어갈 때
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/http-analysis/user-agents-cookies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User-Agent와 쿠키로 악성코드 찾기
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/http-analysis/base64/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Base64 — 원리, 알아보기, 수상한 Base64
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/http-analysis/files-frequency-naked-ip/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    정상 사이트의 악성 파일, 파일 추출, 잦은 요청, IP 직접 접속
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/http-analysis/exploit-kits-practice/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    익스플로잇 킷 판별과 악성·수상·정상 판정 연습
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/http-analysis/https-certificates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTTPS — TLS 해독, 해독 없이 보는 법, 인증서 읽기
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blue-team-essentials/http-analysis/tls-fingerprints-tls13/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TLS 지문(JA3·JA3S·JARM·JA4)과 TLS 1.3, HTTP(S) 분석 정리
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15_4" checked="">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Network Forensics
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15_4" id="__nav_15_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_15_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_15_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Network Forensics
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15_4_2">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part-1/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1부 · 증거의 기초
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15_4_2" id="__nav_15_4_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_15_4_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    1부 · 증거의 기초
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part-1/why-network-forensics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.1강 — 디스크 밖에 남는 증거: 네트워크 포렌식이 필요한 이유와 조사자의 자세
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part-1/web-proxies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.2강 — 웹 프록시: 동작 원리, 종류, 그리고 설정 파일이 증거인 이유
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part-1/proxy-logs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.3강 — 프록시 로그 읽기: 기본 형식의 열 개 필드, 맞춤 형식, 유닉스 시간
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part-1/proxy-log-walkthrough/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.4강 — 프록시 로그만으로 사건 재구성하기: 조사 실습
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part-1/proxy-cache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.5강 — 상용 프록시 로그, 그리고 프록시 캐시에서 응답 꺼내기
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part-1/pcap-and-tcpdump/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.6강 — 패킷을 담는 그릇: libpcap, tcpdump, 그리고 pcap·pcapng 파일 구조
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part-1/bpf/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.7강 — BPF로 필요한 패킷만 고르기
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part-1/tcpdump-options-wireshark-ui/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.8강 — tcpdump 실전 옵션과 Wireshark 화면 읽기
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part-1/wireshark-display-filters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.9강 — Wireshark 디스플레이 필터와 스트림 따라가기
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part-1/lab-tcpdump-wireshark-tshark/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.10강 — 실습 가이드: tcpdump와 Wireshark 손에 익히기
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part-1/network-evidence-acquisition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.11강 — 증거 수집: 어디서, 어떤 장비로 패킷을 모으나
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part-1/challenges-and-opportunities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.12강 — 네트워크 조사의 어려움과 기회
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part-1/lab-carving-exfiltrated-data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1.13강 — 실습 가이드: 유출된 데이터 카빙하기
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15_4_3" checked="">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2부 · 핵심 프로토콜과 로그
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15_4_3" id="__nav_15_4_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_15_4_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_15_4_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    2부 · 핵심 프로토콜과 로그
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../http-requests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.1강 — HTTP 요청 읽기: 메서드, URI, 요청 헤더
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../http-responses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.2강 — HTTP 응답 읽기: 상태 코드, 응답 헤더, 조사에서 쓰는 법
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tracking-cookies-http2-http3/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.3강 — 추적 쿠키로 과거 보기, 그리고 HTTP/2·HTTP/3
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-http-profiling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.4강 — 실습 가이드: HTTP 프로파일링
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../web-server-logs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.5강 — 웹 서버 로그: 형식, 읽기, 공격의 흔적
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dns-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.6강 — DNS의 구조: 레코드, 메시지, 압축, 계층, 관측 지점
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dns-investigation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.7강 — DNS 조사: 로그, 빠른 플럭스, DGA, 암호화 DNS, 퓨니코드
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../zeek/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.8강 — Zeek: 네트워크 보안 모니터링, 로그 구조, jq, Community ID
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-dns-profiling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.9강 — 실습 가이드: DNS 프로파일링, 이상 징후, 범위 산정
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.10강 — syslog: 메시지 형식, facility와 severity, 설정 파일 읽기
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2.10강 — syslog: 메시지 형식, facility와 severity, 설정 파일 읽기
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="목차">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      목차
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#what-is-syslog" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. syslog: 데몬이자 프로토콜
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sources-destinations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 누가 보내고, 누가 받는가
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#message-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 메시지 읽기
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. 메시지 읽기">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rfc3164" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 선 위의 모양: 전통 형식(RFC 3164)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rfc5424" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 현재 표준: RFC 5424
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#no-year" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 [주의] 연도와 시간대가 없다
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sender-controlled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 [주의] 시각과 호스트 이름은 보낸 쪽이 정한다
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 메시지의 크기
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#facility-severity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. facility와 severity, 그리고 PRI
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 설정 파일 읽기: "이 시스템의 로그는 어디로 가나"
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. 설정 파일 읽기: &quot;이 시스템의 로그는 어디로 가나&quot;">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#selectors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 선택자(왼쪽)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 동작(오른쪽)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#config-lab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 실제로 보내 보기
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#transport" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. 전송: UDP, TCP, 그리고 그 너머
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. 전송: UDP, TCP, 그리고 그 너머">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#udp-loss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 UDP는 잃어버려도 모른다
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tcp-tls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 TCP, TLS, RELP
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#journald" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. [변경됨] journald 시대의 syslog
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-practice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. 실제 조사에서는 이렇게 씁니다
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. 정리
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        복습 문제
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        참고 자료
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15_5">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../oscp/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OSCP+
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15_5" id="__nav_15_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_15_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    OSCP+
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../oscp/exam-format/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    시험 구조와 점수
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../oscp/practical-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OSCP 실전 종합 가이드
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../oscp/exam-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    시험 흐름
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15_5_5">
+        
+          
+          <label class="md-nav__link" for="__nav_15_5_5" id="__nav_15_5_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    공부 항목
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_15_5_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15_5_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    공부 항목
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../oscp/recon-enumeration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    정찰과 정보 수집
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../oscp/web-initial-access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    웹과 초기 침투
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../oscp/shells-file-transfer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    셸과 파일 전송
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../oscp/privesc-linux/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linux 권한 상승
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../oscp/privesc-windows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows 권한 상승
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../oscp/password-attacks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    패스워드 공격
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../oscp/active-directory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Active Directory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../oscp/impacket/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Impacket 실전 집중 가이드
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../oscp/pivoting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    피벗팅과 터널링
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../oscp/methodology/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    방법론과 습관
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../oscp/reporting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    리포트
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../oscp/practice-labs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    실습 랩과 머신 리스트
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15_5_7">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../oscp/labs/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    랩 실습
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15_5_7" id="__nav_15_5_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_15_5_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15_5_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    랩 실습
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../oscp/labs/tool-practice/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tool practice
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../oscp/labs/kerberoasting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    랩: Kerberoasting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../oscp/exam-day/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    시험 당일 전략
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../oscp/study-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    나의 공부 계획
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15_6">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../silver-c2/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Silver C2
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15_6" id="__nav_15_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_15_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Silver C2
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15_6_2">
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../silver-c2/practical-introduction/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    A Practical Introduction with Silver
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15_6_2" id="__nav_15_6_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_15_6_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15_6_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    A Practical Introduction with Silver
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../silver-c2/practical-introduction/lesson-1-c2-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1강 — C2 기본 원리
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../silver-c2/practical-introduction/lesson-2-components-and-commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2강 — 구성 요소와 명령어
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../silver-c2/practical-introduction/lesson-3-sessions-and-beacons/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3강 — Session과 Beacon
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../silver-c2/practical-introduction/lesson-4-payloads-stagers-and-loaders/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    4강 — Payload, Stager, Loader
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../silver-c2/practical-introduction/lesson-5-reading-generation-commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    5강 — 생성 명령 읽기
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../silver-c2/practical-introduction/lesson-6-delivery-execution-and-evidence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    6강 — 전달·실행·연결 증거
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../silver-c2/practical-introduction/lesson-7-antivirus-edr-and-detection-evidence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    7강 — 백신·EDR과 탐지 증거
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../silver-c2/practical-introduction/lesson-8-identity-tokens-and-permissions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    8강 — 계정·토큰·접근 권한
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../silver-c2/practical-introduction/lesson-9-port-forwarding-and-socks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    9강 — 포트포워딩과 SOCKS5
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../silver-c2/practical-introduction/lesson-10-web-server-to-internal-ssh-lab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    10강 — 웹 서버를 경유한 내부 SSH 가상환경 실습
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../silver-c2/practical-introduction/lesson-11-pivot-connections-and-ssh-evidence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    11강 — 피벗 연결과 SSH 증거
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../silver-c2/practical-introduction/lesson-12-network-interfaces-and-sockets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    12강 — 인터페이스·소켓·연결 가능성
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../silver-c2/practical-introduction/lesson-13-armory-and-bof-basics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    13강 — 기본 명령·Armory·BOF
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../silver-c2/practical-introduction/bof-coff-and-object-files-questions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    문답 — BOF·COFF·로더·OBJ 파일
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../silver-c2/practical-introduction/lesson-14-exe-dotnet-and-bof-execution/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    14강 — EXE·.NET Assembly·BOF 실행
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../silver-c2/practical-introduction/lesson-15-windows-tokens-and-privileges/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    15강 — Windows 토큰·Deny only·특권
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../silver-c2/practical-introduction/lesson-16-windows-services-and-diagnostic-findings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    16강 — Windows 서비스·권한·진단 결과
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../silver-c2/practical-introduction/course-coverage-and-next-steps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    문답 — 학습 범위와 다음 단계
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../tags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    태그
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="목차">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      목차
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#what-is-syslog" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. syslog: 데몬이자 프로토콜
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sources-destinations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 누가 보내고, 누가 받는가
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#message-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 메시지 읽기
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. 메시지 읽기">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rfc3164" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 선 위의 모양: 전통 형식(RFC 3164)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rfc5424" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 현재 표준: RFC 5424
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#no-year" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 [주의] 연도와 시간대가 없다
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sender-controlled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 [주의] 시각과 호스트 이름은 보낸 쪽이 정한다
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 메시지의 크기
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#facility-severity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. facility와 severity, 그리고 PRI
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 설정 파일 읽기: "이 시스템의 로그는 어디로 가나"
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. 설정 파일 읽기: &quot;이 시스템의 로그는 어디로 가나&quot;">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#selectors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 선택자(왼쪽)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 동작(오른쪽)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#config-lab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 실제로 보내 보기
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#transport" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. 전송: UDP, TCP, 그리고 그 너머
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. 전송: UDP, TCP, 그리고 그 너머">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#udp-loss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 UDP는 잃어버려도 모른다
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tcp-tls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 TCP, TLS, RELP
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#journald" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. [변경됨] journald 시대의 syslog
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-practice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. 실제 조사에서는 이렇게 씁니다
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. 정리
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        복습 문제
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        참고 자료
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  <nav class="md-tags">
+    
+      
+      
+      
+      
+        <a href="../../../../tags/#tag:logs" class="md-tag">logs</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../tags/#tag:network-forensics" class="md-tag">network-forensics</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../tags/#tag:syslog" class="md-tag">syslog</a>
+      
+    
+      
+      
+      
+      
+        <a href="../../../../tags/#tag:training" class="md-tag">training</a>
+      
+    
+  </nav>
+
+
+  
+    <a href="https://github.com/DFIDwiz-sketch/dfir-handbook/edit/main/docs-ko/training/network-forensics/part-2/syslog.md" title="이 페이지를 편집" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75z"></path></svg>
+    </a>
+  
+  
+    
+      
+    
+    <a href="https://github.com/DFIDwiz-sketch/dfir-handbook/raw/main/docs-ko/training/network-forensics/part-2/syslog.md" title="페이지소스 보기" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5 5 5 0 0 1 5-5 5 5 0 0 1 5 5 5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5"></path></svg>
+    </a>
+  
+
+
+<h1 id="syslog">2.10강 — syslog: 메시지 형식, facility와 severity, 설정 파일 읽기<a class="headerlink" href="#syslog" title="Permanent link">¶</a></h1>
+<div class="admonition abstract">
+<p class="admonition-title">이번 회차의 범위</p>
+<ul>
+<li>syslog는 <strong>데몬</strong>이자 <strong>프로토콜</strong>이다. 그리고 왜 조사자에게 귀한가</li>
+<li>누가 syslog를 보내고, 누가 받는가</li>
+<li>메시지 읽기: 전통 형식(RFC 3164)과 현재 표준(RFC 5424). [주의] 연도와 시간대가 없다, 시각과 호스트 이름은 <strong>보낸 쪽이 정한다</strong></li>
+<li>facility, severity, 그리고 PRI 계산</li>
+<li>설정 파일 읽기: 선택자(selector)와 동작(action). [정정] <code>!</code> 선택자는 혼자서는 아무것도 고르지 않는다</li>
+<li>전송: UDP의 손실, TCP, 그리고 [변경됨] journald 시대의 syslog</li>
+</ul>
+</div>
+<div class="admonition note">
+<p class="admonition-title">실습 환경과 표기</p>
+<p>**(직접 실행 결과)**는 이 작업 환경(Ubuntu 24.04)의 <strong>rsyslog 8.2312.0</strong>과 util-linux의 <code>logger</code> 2.39.3, TShark 4.2.2로 얻었습니다. 수신 서버 역할의 rsyslog를 <code>127.0.0.30</code>의 10514번 포트(UDP·TCP)에 띄우고, 보내는 쪽 역할의 rsyslog는 별도의 소켓으로 메시지를 받게 해 두 인스턴스 사이의 흐름을 봤습니다. 컨테이너의 호스트 이름이 <code>vm</code>이라 메시지에 <code>vm</code>이 찍힙니다. 연도 넘김 실험은 <code>faketime</code>으로 <strong>수신 서버의 시계만</strong> 2027-01-01로 흉내 냈습니다. 메시지 내용(로그인 실패, DHCP 등)은 모두 연습용으로 지어낸 것입니다.</p>
+</div>
+<h2 id="what-is-syslog">1. syslog: 데몬이자 프로토콜<a class="headerlink" href="#what-is-syslog" title="Permanent link">¶</a></h2>
+<p>이름 그대로 syslog는 시스템의 로그 이벤트를 다룹니다. 그런데 이 말은 <strong>두 가지</strong>를 가리켜요.</p>
+<ul>
+<li><strong>데몬</strong>: 오래된 유닉스 프로그램으로, 로그 메시지를 받아 설정 파일에 따라 <strong>하나 이상의 목적지</strong>(파일, 다른 프로그램, 네트워크의 다른 시스템)로 보냅니다. rsyslog, syslog-ng 같은 것이 오늘날의 구현이에요.</li>
+<li><strong>프로토콜</strong>: 네트워크로 메시지를 보낼 때 <strong>선 위에서 어떤 모양인지</strong>를 정한 약속입니다.</li>
+</ul>
+<p>비유하면 syslog 데몬은 <strong>회사 우편실</strong>이고, 프로토콜은 <strong>봉투 양식</strong>입니다. 각 부서(프로그램)가 쪽지를 우편실에 넘기면, 우편실은 봉투 겉의 표시(facility와 severity, 4절)를 보고 어느 서류함(파일)에 넣을지, 본사(원격 서버)로 보낼지, 급하면 사장실 전화(모든 사용자의 화면)로 알릴지 정해요. 비유가 깨지는 곳: 진짜 우편실은 보낸 사람을 확인하지만, syslog는 봉투에 적힌 <strong>보낸 사람과 날짜를 그대로 믿습니다</strong>(3.4절). 그리고 UDP로 보낸 봉투는 <strong>잃어버려도 아무도 모릅니다</strong>(6절).</p>
+<p>syslog는 원래 관리자의 운영을 돕기 위해 만들어졌지만, 보안 분야도 곧 그 가치를 알아봤습니다. 로그는 과거 사건의 <strong>부분적인 기록</strong>이에요. 로그의 한계를 알고 확인하며 쓴다면, 증거 묶음에 넣었을 때 과거를 훨씬 잘 이해하게 해 주고, <strong>더 찾아야 할 증거</strong>가 무엇인지도 알려 줍니다. 그래서 오래 남는 로그는 보안의 핵심 요소이고, 교재는 모든 조직이 <strong>적어도 1년치 로그를 바로 꺼내 볼 수 있게</strong> 두라고 권합니다. 저장 공간은 싸지고 있고 로그는 압축이 잘 되니 더 오래 보관하는 것도 좋아요. PCI-DSS, HIPAA, SOX, FISMA 같은 규제가 적용되는 환경이라면 요구 사항이 분명하고 융통성이 없으며, 일부는 네트워크로 로그를 모아(2.12강) <strong>여러 곳에 보관</strong>하라고까지 요구합니다.</p>
+<h2 id="sources-destinations">2. 누가 보내고, 누가 받는가<a class="headerlink" href="#sources-destinations" title="Permanent link">¶</a></h2>
+<p><strong>보내는 쪽</strong></p>
+<ul>
+<li><strong>유닉스·리눅스·BSD</strong>: 원래 syslog를 아는 시스템입니다. 개발자가 기능을 넣은 사용자 프로그램도 마찬가지예요.</li>
+<li><strong>네트워크 장비</strong>: 라우터, 스위치, IDS, 방화벽, 무선 AP 등 대부분의 핵심 장비가 오래전부터 로그를 syslog 프로토콜로 다른 호스트에 보낼 수 있었습니다. 장비 안에서는 syslog 데몬을 쓰지 않더라도요. 요즘은 가정용 장비도 이 기능이 늘고 있습니다.</li>
+<li><strong>그 밖의 장비</strong>: NAS, 대형 SAN의 디스크 묶음, 시야의 변화를 감지하면 이벤트를 보내는 감시 카메라, 문·창문 이벤트를 남기는 경보 시스템, 동작 감지기까지. 많은 장비가 내장형 유닉스 계열 운영체제를 쓰니 syslog를 넣기가 쉽습니다.</li>
+<li><strong>Windows</strong>: 자체 로그 형식(2.11강)을 쓰지만, 서드파티 서비스 프로그램으로 syslog 목적지에 "밀어 보낼" 수 있습니다.</li>
+</ul>
+<p>조사자에게 편리한 점은, 이렇게 다양한 장비가 <strong>공통의 로그 수단</strong>을 갖는다는 것입니다. 새 도구를 배우거나 수많은 형식을 손으로 해석하는 대신, syslog를 완전히 다룰 줄 알면 수천 가지 장비의 로그를 한꺼번에 들여다볼 수 있어요. 포렌식에서 이런 행운은 흔치 않습니다.</p>
+<p><strong>받는 쪽</strong></p>
+<ul>
+<li><strong>syslog 데몬 자체</strong>: 원격에서 오는 메시지를 받도록 쉽게 설정할 수 있습니다(이 실습의 수신 서버처럼).</li>
+<li><strong>NAS</strong>: 내장형 유닉스 기반에 저장 공간이 많으니, 수신 기능을 넣은 제품이 많습니다.</li>
+<li><strong>로그 집계 플랫폼</strong>: 무료 SOF-ELK(2.13강)나 상용 Splunk 같은 집계 도구, 그리고 조사자가 주로 만나는 <strong>SIEM</strong>(Security Information and Event Management)은 syslog 수신이 기본 기능입니다. 가능한 한 많은 로그를 빨아들이도록 만든 도구가 가장 오래되고 검증된 로그 프로토콜을 무시할 리 없죠.</li>
+<li><strong>Windows 서버</strong>: SolarWinds Kiwi Syslog Server나 Snare Server 같은 서드파티 프로그램으로 원격 syslog를 받을 수 있습니다.</li>
+</ul>
+<h2 id="message-format">3. 메시지 읽기<a class="headerlink" href="#message-format" title="Permanent link">¶</a></h2>
+<h3 id="rfc3164">3.1 선 위의 모양: 전통 형식(RFC 3164)<a class="headerlink" href="#rfc3164" title="Permanent link">¶</a></h3>
+<p><code>logger</code>로 수신 서버에 UDP 메시지를 하나 보내고, 선 위의 바이트를 캡처했습니다.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>logger<span class="w"> </span>--rfc3164<span class="w"> </span>-n<span class="w"> </span><span class="m">127</span>.0.0.30<span class="w"> </span>-P<span class="w"> </span><span class="m">10514</span><span class="w"> </span>-d<span class="w"> </span>-p<span class="w"> </span>local7.info<span class="w"> </span>-t<span class="w"> </span>dhcpd<span class="w"> </span><span class="s2">"DHCPACK on 10.10.1.19 to 02:00:00:00:01:19 via eth0"</span>
+</span></code></pre></div>
+<p><code>-n</code>은 보낼 서버, <code>-P</code>는 포트, <code>-d</code>는 UDP, <code>-p</code>는 facility.severity(4절), <code>-t</code>는 태그(프로그램 이름)입니다.</p>
+<p><strong>(직접 실행 결과, UDP 페이로드)</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>&lt;190&gt;Nov  5 07:59:40 vm dhcpd: DHCPACK on 10.10.1.19 to 02:00:00:00:01:19 via eth0
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>부분</th>
+<th>값</th>
+<th>뜻</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PRI</td>
+<td><code>&lt;190&gt;</code></td>
+<td>facility와 severity를 합친 숫자(4절). 190 = local7.info</td>
+</tr>
+<tr>
+<td>시각</td>
+<td><code>Nov  5 07:59:40</code></td>
+<td>메시지를 <strong>만든 쪽</strong>의 시계. <strong>연도와 시간대가 없다</strong></td>
+</tr>
+<tr>
+<td>호스트 이름</td>
+<td><code>vm</code></td>
+<td>메시지를 <strong>만든 쪽</strong>이 적은 이름</td>
+</tr>
+<tr>
+<td>태그</td>
+<td><code>dhcpd:</code></td>
+<td>보통 프로그램 이름과 프로세스 ID(<code>sshd[999]:</code> 같은). 하지만 프로그램이 <strong>아무 문자열이나</strong> 적을 수 있다</td>
+</tr>
+<tr>
+<td>메시지</td>
+<td><code>DHCPACK on …</code></td>
+<td>자유로운 글</td>
+</tr>
+</tbody>
+</table>
+<p>이 형식은 BSD 시스템에서 쓰던 관행을 나중에 정리한 것(RFC 3164, 2001년, 정보 제공용 문서)이라, 엄밀한 "표준"이라기보다 <strong>관행</strong>입니다. 그래서 장비마다 조금씩 다른 변형이 많아요.</p>
+<p>수신 서버의 전통 형식 파일(<code>RSYSLOG_TraditionalFileFormat</code>)에는 PRI가 빠진 채 이렇게 남았습니다.</p>
+<p><strong>(직접 실행 결과)</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>Nov  5 07:59:40 vm dhcpd: DHCPACK on 10.10.1.19 to 02:00:00:00:01:19 via eth0
+</span></code></pre></div>
+<h3 id="rfc5424">3.2 현재 표준: RFC 5424<a class="headerlink" href="#rfc5424" title="Permanent link">¶</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>logger<span class="w"> </span>--rfc5424<span class="w"> </span>-n<span class="w"> </span><span class="m">127</span>.0.0.30<span class="w"> </span>-P<span class="w"> </span><span class="m">10514</span><span class="w"> </span>-d<span class="w"> </span>-p<span class="w"> </span>authpriv.warning<span class="w"> </span>-t<span class="w"> </span>sshd<span class="w"> </span><span class="s2">"Failed password for invalid user admin from 198.51.100.23 port 51122 ssh2"</span>
+</span></code></pre></div>
+<p><strong>(직접 실행 결과, UDP 페이로드)</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>&lt;84&gt;1 2026-11-05T07:59:40.968247+00:00 vm sshd - - [timeQuality tzKnown="1" isSynced="0"] Failed password for invalid user admin from 198.51.100.23 port 51122 ssh2
+</span></code></pre></div>
+<p><code>&lt;84&gt;</code>(PRI) 다음의 <code>1</code>은 <strong>형식 버전</strong>, 그 뒤로 <strong>연도와 시간대가 있는 시각</strong>(마이크로초까지), 호스트 이름, 앱 이름(<code>sshd</code>), 프로세스 ID(<code>-</code> = 없음), 메시지 ID(<code>-</code>), <strong>구조화된 데이터</strong>(<code>[timeQuality …]</code>), 메시지가 옵니다.</p>
+<div class="admonition info">
+<p class="admonition-title">[보충] RFC 5424(2009)가 현재 표준이다</p>
+<p>교재는 기본 형식과 "강화된 형식(ISO 8601 시각과 PRI를 넣은 것)"을 나눠 보여 주는데, 선 위의 형식으로는 2009년의 <strong>RFC 5424</strong>가 RFC 3164를 대신하는 표준입니다. 위 결과의 구조화된 데이터 <code>timeQuality</code>에서 <code>tzKnown="1"</code>은 "시간대를 안다", **<code>isSynced="0"</code>은 "보낸 쪽의 시계가 시간 동기화(NTP 등)되어 있지 않다"**는 뜻이에요. 보낸 쪽이 스스로 시계의 품질을 알려 주는 셈이라, 조사자에게 쓸모 있는 단서입니다(이 컨테이너는 실제로 시간 동기화 정보를 갖고 있지 않았음). 다만 아직 많은 장비가 RFC 3164 모양이나 그 변형을 보냅니다.</p>
+</div>
+<h3 id="no-year">3.3 [주의] 연도와 시간대가 없다<a class="headerlink" href="#no-year" title="Permanent link">¶</a></h3>
+<p>RFC 3164 모양의 시각에는 <strong>연도와 시간대가 없습니다</strong>. 받는 쪽은 연도를 <strong>짐작</strong>해서 채워야 해요. rsyslog가 어떻게 채우는지 시험했습니다.</p>
+<p>먼저 수신 서버의 실제 시계(2026-11-05)로, 시각만 바꾼 메시지 세 개를 보냈습니다.</p>
+<p><strong>(직접 실행 결과, 받은 쪽이 해석한 "보고된 시각"과 실제로 받은 시각)</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>&lt;14&gt; reported=2026-12-31T23:59:59+00:00 received=2026-11-05T07:59:53.993084+00:00
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>&lt;14&gt; reported=2026-11-30T12:00:00+00:00 received=2026-11-05T07:59:53.993084+00:00
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>&lt;14&gt; reported=2026-11-04T23:00:00+00:00 received=2026-11-05T07:59:53.993149+00:00
+</span></code></pre></div>
+<p>다음으로 <code>faketime</code>으로 <strong>수신 서버의 시계를 2027-01-01 00:00:30으로</strong> 흉내 내고, 연말 직전에 만들어진 메시지가 해를 넘겨 도착하는 상황을 만들었습니다.</p>
+<p><strong>(직접 실행 결과)</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>&lt;14&gt; reported=2027-12-31T23:59:58+00:00 received=2027-01-01T00:00:32.516385+00:00
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>&lt;14&gt; reported=2027-01-01T00:00:29+00:00 received=2027-01-01T00:00:32.516385+00:00
+</span></code></pre></div>
+<p><code>Dec 31 23:59:58</code>로 만들어진 메시지가 <strong>2027-12-31</strong>, 즉 받은 시각보다 <strong>1년 가까이 미래</strong>로 해석됐습니다. 이 버전의 rsyslog는 연도가 없는 시각에 <strong>받는 쪽의 현재 연도</strong>를 붙였어요. 실제로는 2026-12-31에 만들어진 메시지일 텐데요.</p>
+<p><strong>조사에서의 의미:</strong> 연말연시에 걸친 사건에서 RFC 3164 모양의 로그를 시간순으로 정렬하면 순서가 크게 어긋날 수 있습니다. 파일의 <code>Dec 31</code> 줄이 사실은 작년의 것인지, 파일의 마지막 수정 시각, 로그 회전 날짜, 앞뒤 줄의 흐름으로 확인하세요. 그리고 <strong>시간대도 없으니</strong>, 보낸 장비가 지역 시각을 쓰는지 UTC를 쓰는지 장비 설정으로 확인해야 합니다.</p>
+<h3 id="sender-controlled">3.4 [주의] 시각과 호스트 이름은 보낸 쪽이 정한다<a class="headerlink" href="#sender-controlled" title="Permanent link">¶</a></h3>
+<p>메시지의 시각과 호스트 이름은 <strong>메시지를 만든 쪽이</strong> 적고, 받는 쪽은 그 값을 <strong>그대로</strong> 기록합니다. 그래서 시계가 틀린 장비의 시각은 틀린 채로 남고, 마음먹으면 <strong>꾸밀 수도</strong> 있어요. 다른 호스트 이름과 올해 초의 시각을 적은 메시지를 직접 만들어 보냈습니다.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nb">printf</span><span class="w"> </span><span class="s1">'&lt;38&gt;Jan  2 03:04:05 fw-core-01 sshd[999]: Accepted password for root from 203.0.113.9 port 4444 ssh2'</span><span class="w"> </span>&gt;<span class="w"> </span>/dev/udp/127.0.0.30/10514
+</span></code></pre></div>
+<p><code>/dev/udp/주소/포트</code>는 bash의 기능으로, 그 주소로 UDP 데이터그램을 보냅니다. 아무 프로그램 없이도 syslog 메시지를 "지어서" 보낼 수 있다는 뜻이에요.</p>
+<p><strong>(직접 실행 결과)</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>전통 형식 파일:
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>Jan  2 03:04:05 fw-core-01 sshd[999]: Accepted password for root from 203.0.113.9 port 4444 ssh2
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>받는 쪽의 정보를 함께 남긴 파일:
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>&lt;38&gt; reported=2026-01-02T03:04:05+00:00 received=2026-11-05T07:59:40.970961+00:00 claimed_host=fw-core-01 from_ip=127.0.0.1 proto=imudp tag=sshd[999]: msg= Accepted password for root from 203.0.113.9 port 4444 ssh2
+</span></code></pre></div>
+<p>전통 형식 파일만 보면 "1월 2일 새벽, 핵심 방화벽 <code>fw-core-01</code>에 root가 로그인했다"는 기록으로 보입니다. 하지만 받는 쪽 정보를 함께 남긴 줄에는 <strong>실제로 받은 시각</strong>(11월 5일)과 <strong>실제로 보낸 주소</strong>(<code>127.0.0.1</code>, 방화벽이 아님)가 있어요.</p>
+<p>이 두 번째 파일은 수신 서버에 이런 <strong>템플릿</strong>(출력 모양)을 정의해 만든 것입니다.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>template(name="Forensic" type="string"
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>  string="&lt;%PRI%&gt; reported=%timereported:::date-rfc3339% received=%timegenerated:::date-rfc3339% claimed_host=%HOSTNAME% from_ip=%fromhost-ip% proto=%inputname% tag=%syslogtag% msg=%msg:::drop-last-lf%\n")
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>속성</th>
+<th>뜻</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>%timereported%</code></td>
+<td>메시지 안에 <strong>적혀 있던</strong> 시각(보낸 쪽이 정함)</td>
+</tr>
+<tr>
+<td><code>%timegenerated%</code></td>
+<td>수신 서버가 메시지를 <strong>받은</strong> 시각(받는 쪽의 시계)</td>
+</tr>
+<tr>
+<td><code>%HOSTNAME%</code></td>
+<td>메시지 안에 <strong>적혀 있던</strong> 호스트 이름</td>
+</tr>
+<tr>
+<td><code>%fromhost-ip%</code></td>
+<td>메시지를 <strong>실제로 보낸</strong> 네트워크 주소</td>
+</tr>
+<tr>
+<td><code>%inputname%</code></td>
+<td>받은 입력 모듈(<code>imudp</code>, <code>imtcp</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>조사에서의 의미:</strong> 중앙 수집 서버를 운영한다면, 이처럼 <strong>받은 시각과 보낸 주소를 함께 남기도록</strong> 설정해 두세요. 남겨져 있지 않다면, 기록된 호스트 이름과 시각은 <strong>주장</strong>일 뿐이라는 점을 보고서에 밝히고, 그 장비 자체의 로그나 네트워크 기록(syslog 패킷의 실제 출발지)으로 확인합니다. 교재의 개선된 형식 예(<code>&lt;%PRI%&gt;%timegenerated:::date-rfc3339% …</code>)가 <code>timegenerated</code>를 쓰는 것도 같은 이유예요. 둘 중 하나만 고른다면 그 선택의 의미를 알고 있어야 합니다.</p>
+<h3 id="size">3.5 메시지의 크기<a class="headerlink" href="#size" title="Permanent link">¶</a></h3>
+<p>메시지의 최대 길이는 syslog 구현마다 다릅니다. 많은 옛 구현은 메시지를 <strong>1,024바이트</strong>로 잘랐어요(RFC 3164가 말하는 한계). UDP 자체의 한계도 있는데, IPv4에서 UDP 데이터그램 하나에 담을 수 있는 데이터는 최대 65,507바이트입니다(65,535 − IP 헤더 20 − UDP 헤더 8). 교재의 65,527은 IP 헤더를 빼지 않은 값이에요.</p>
+<p>이 rsyslog에 여러 길이의 메시지를 UDP로 보냈습니다.</p>
+<p><strong>(직접 실행 결과, 메시지의 앞부분과 수신 파일에 남은 줄의 길이)</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>LEN01000  1156
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>LEN02000  2156
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>LEN08000  8156
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>LEN09000  8210
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>LEN20000  8210
+</span></code></pre></div>
+<p>9,000바이트와 20,000바이트 메시지는 <strong>똑같이 8,210바이트 줄</strong>로 잘렸습니다(줄에는 템플릿이 붙인 앞부분이 포함됨). 이 rsyslog의 기본 최대 메시지 크기가 8KB이기 때문이고, 잘렸다는 표시는 줄에 남지 않았어요. 긴 명령줄, 웹 요청 전체, 스택 추적처럼 긴 내용을 담는 로그라면 <strong>끝부분이 사라졌을 수 있다</strong>는 점을 기억하세요. 필요하면 송·수신 양쪽의 <code>maxMessageSize</code>를 확인합니다.</p>
+<h2 id="facility-severity">4. facility와 severity, 그리고 PRI<a class="headerlink" href="#facility-severity" title="Permanent link">¶</a></h2>
+<p>모든 syslog 메시지에는 데몬이 메시지를 어떻게 처리하고 <strong>어디에 저장할지</strong> 정하는 두 값이 있습니다.</p>
+<ul>
+<li><strong>facility</strong>: 메시지의 <strong>출처</strong>를 나타내는 표시. 데몬은 이 값으로 어느 파일에 넣을지 정합니다. 관리자가 쓰라고 남겨 둔 <code>local0</code>~<code>local7</code>이 있고, 시간이 지나며 관행도 생겼어요(예: 많은 리눅스 배포판이 DHCP 메시지에 <code>local7</code>을 씀). 하지만 <strong>할당은 임의적</strong>이라, FTP 메시지에 <code>mail</code>을 붙이는 것도 막을 수 없고, 복잡한 구성에서는 <code>news</code>, <code>uucp</code> 같은 옛 facility를 다른 용도로 쓰기도 합니다. 그래서 조사할 때 <strong>관련 서비스의 설정 파일</strong>을 꼭 확보해야 해요.</li>
+<li><strong>severity</strong>: <strong>중요도</strong>. 뜻은 더 단순하지만 이것도 보내는 쪽이 임의로 정합니다. 데몬은 이 값으로 할 일을 정해요. 예를 들어 debug는 버리고, info는 자주 비우는 파일로, error는 관리자에게 메일로, alert·emergency는 로컬·원격 터미널을 포함한 모든 목적지로 보내는 식입니다.</li>
+</ul>
+<p><strong>facility (RFC 5424)</strong></p>
+<table>
+<thead>
+<tr>
+<th>번호</th>
+<th>이름</th>
+<th>뜻</th>
+<th>번호</th>
+<th>이름</th>
+<th>뜻</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>kern</td>
+<td>커널</td>
+<td>12</td>
+<td>(없음)</td>
+<td>NTP</td>
+</tr>
+<tr>
+<td>1</td>
+<td>user</td>
+<td>사용자 수준</td>
+<td>13</td>
+<td>(없음)</td>
+<td>로그 감사</td>
+</tr>
+<tr>
+<td>2</td>
+<td>mail</td>
+<td>메일</td>
+<td>14</td>
+<td>(없음)</td>
+<td>로그 경보</td>
+</tr>
+<tr>
+<td>3</td>
+<td>daemon</td>
+<td>시스템 데몬</td>
+<td>15</td>
+<td>cron</td>
+<td>예약 작업(clock daemon)</td>
+</tr>
+<tr>
+<td>4</td>
+<td>auth</td>
+<td>보안·인증</td>
+<td>16</td>
+<td>local0</td>
+<td>로컬 용도</td>
+</tr>
+<tr>
+<td>5</td>
+<td>syslog</td>
+<td>syslogd 자체</td>
+<td>17</td>
+<td>local1</td>
+<td>로컬 용도</td>
+</tr>
+<tr>
+<td>6</td>
+<td>lpr</td>
+<td>프린터</td>
+<td>18</td>
+<td>local2</td>
+<td>로컬 용도</td>
+</tr>
+<tr>
+<td>7</td>
+<td>news</td>
+<td>네트워크 뉴스</td>
+<td>19</td>
+<td>local3</td>
+<td>로컬 용도</td>
+</tr>
+<tr>
+<td>8</td>
+<td>uucp</td>
+<td>UUCP</td>
+<td>20</td>
+<td>local4</td>
+<td>로컬 용도</td>
+</tr>
+<tr>
+<td>9</td>
+<td>(없음)</td>
+<td>clock daemon</td>
+<td>21</td>
+<td>local5</td>
+<td>로컬 용도</td>
+</tr>
+<tr>
+<td>10</td>
+<td>authpriv</td>
+<td>보안·인증(비공개)</td>
+<td>22</td>
+<td>local6</td>
+<td>로컬 용도</td>
+</tr>
+<tr>
+<td>11</td>
+<td>ftp</td>
+<td>FTP</td>
+<td>23</td>
+<td>local7</td>
+<td>로컬 용도</td>
+</tr>
+</tbody>
+</table>
+<p><strong>severity (RFC 5424)</strong></p>
+<table>
+<thead>
+<tr>
+<th>번호</th>
+<th>이름</th>
+<th>뜻</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>emerg (panic)</td>
+<td>시스템을 쓸 수 없음</td>
+</tr>
+<tr>
+<td>1</td>
+<td>alert</td>
+<td>즉시 조치 필요</td>
+</tr>
+<tr>
+<td>2</td>
+<td>crit</td>
+<td>치명적인 상태</td>
+</tr>
+<tr>
+<td>3</td>
+<td>err (error)</td>
+<td>오류</td>
+</tr>
+<tr>
+<td>4</td>
+<td>warning (warn)</td>
+<td>경고</td>
+</tr>
+<tr>
+<td>5</td>
+<td>notice</td>
+<td>정상이지만 중요한 상태</td>
+</tr>
+<tr>
+<td>6</td>
+<td>info</td>
+<td>정보</td>
+</tr>
+<tr>
+<td>7</td>
+<td>debug</td>
+<td>디버그</td>
+</tr>
+</tbody>
+</table>
+<p><strong>PRI</strong>는 둘을 하나의 숫자로 합친 것입니다.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>PRI = facility × 8 + severity
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>facility = PRI ÷ 8 의 몫,  severity = PRI ÷ 8 의 나머지
+</span></code></pre></div>
+<p><strong>(직접 실행 결과, Python의 <code>divmod</code>로 풀기)</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>190 -&gt; facility 23 severity 6     # local7.info  (3.1절의 DHCP 메시지)
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>84 -&gt; facility 10 severity 4      # authpriv.warning  (3.2절의 sshd 메시지)
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>8 -&gt; facility 1 severity 0        # user.emerg
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>38 -&gt; facility 4 severity 6       # auth.info  (3.4절의 꾸민 메시지)
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>13 -&gt; facility 1 severity 5       # user.notice  (logger의 기본값)
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>165 -&gt; facility 20 severity 5     # local4.notice
+</span></code></pre></div>
+<p>TShark도 syslog를 해석할 때 PRI를 facility와 level로 나눠 보여 줍니다(이 실습은 10514번 포트라 <code>-d udp.port==10514,syslog</code>로 해석기를 지정했음). 기본 파일 형식에는 PRI가 빠지므로(3.1절의 전통 형식 파일), 로그만 보고는 그 메시지가 어떤 facility·severity였는지 알기 어렵습니다. 그래서 관리자들은 설정에서 PRI를 함께 남기곤 해요.</p>
+<h2 id="config">5. 설정 파일 읽기: "이 시스템의 로그는 어디로 가나"<a class="headerlink" href="#config" title="Permanent link">¶</a></h2>
+<p>교재의 예를 이 환경에 맞게 옮긴 보내는 쪽 설정입니다(경로와 주소만 바꿈).</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>template(name="FullDateWithPRI" type="string" string="&lt;%PRI%&gt;%timegenerated:::date-rfc3339% %HOSTNAME% %syslogtag%%msg:::drop-last-lf%\n")
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>template(name="smsTemplate" type="string" string="%TIMESTAMP% %HOSTNAME% %syslogtag% %msg%\n")
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>$ActionFileDefaultTemplate FullDateWithPRI
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>*.info;mail.none;authpriv.none;cron.none     /…/log/messages
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>*.info;mail.none;authpriv.none;cron.none     @127.0.0.30:10514
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>authpriv.*                                   /…/log/secure
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>authpriv.=warning                            @@127.0.0.30:10514
+</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>mail.*                                       /…/log/maillog
+</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>local7.*                                     /…/log/dhcp.log
+</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>local3.*                                     /…/log/named.log
+</span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>local6.!notice                               /…/log/clamd_debug.log
+</span><span id="__span-13-13"><a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>*.emerg                                      action(type="omprog" binary="/…/sms_send.sh" template="smsTemplate")
+</span></code></pre></div>
+<h3 id="selectors">5.1 선택자(왼쪽)<a class="headerlink" href="#selectors" title="Permanent link">¶</a></h3>
+<p><code>facility.severity</code> 꼴이고, 세미콜론(<code>;</code>)으로 이어 붙이며 와일드카드(<code>*</code>)를 쓸 수 있습니다.</p>
+<ul>
+<li><strong>severity는 "그 이상"</strong>: <code>*.info</code>는 info와 그보다 중요한 notice, warning, err, crit, alert, emerg를 모두 고릅니다.</li>
+<li><strong><code>none</code></strong>: <code>mail.none</code>은 "mail은 빼라".</li>
+<li><strong><code>=</code></strong>: 딱 그 severity만. <code>authpriv.=warning</code>은 warning만.</li>
+<li><strong><code>!</code></strong>: 그 severity 이상을 <strong>뺀다</strong>. 아래 [정정]을 보세요.</li>
+</ul>
+<h3 id="actions">5.2 동작(오른쪽)<a class="headerlink" href="#actions" title="Permanent link">¶</a></h3>
+<table>
+<thead>
+<tr>
+<th>모양</th>
+<th>뜻</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/경로/파일</code></td>
+<td>그 파일에 쓴다</td>
+</tr>
+<tr>
+<td><code>@호스트:포트</code></td>
+<td><strong>UDP</strong>로 원격 서버에 보낸다</td>
+</tr>
+<tr>
+<td><code>@@호스트:포트</code></td>
+<td><strong>TCP</strong>로 보낸다 ([보충] 교재의 예에는 <code>@</code>만 있음)</td>
+</tr>
+<tr>
+<td><code>^/경로/프로그램;템플릿</code></td>
+<td>메시지마다 프로그램을 실행한다(옛 문법)</td>
+</tr>
+<tr>
+<td><code>action(type="omprog" …)</code></td>
+<td>프로그램을 띄워 두고 표준 입력으로 메시지를 넘긴다(rsyslog의 현재 방식)</td>
+</tr>
+<tr>
+<td><code>:omusrmsg:*</code></td>
+<td>로그인한 <strong>모든 사용자의 터미널</strong>에 띄운다(<code>wall</code>처럼)</td>
+</tr>
+</tbody>
+</table>
+<p><code>$ActionFileDefaultTemplate</code>은 파일에 쓸 때의 기본 템플릿을 정합니다. 템플릿을 여러 개 쓰면 <strong>같은 이벤트가 목적지마다 다른 모양으로</strong> 남는다는 점을 기억하세요.</p>
+<h3 id="config-lab">5.3 실제로 보내 보기<a class="headerlink" href="#config-lab" title="Permanent link">¶</a></h3>
+<p>보내는 쪽 rsyslog에 여덟 개의 메시지를 넣었습니다.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="nv">L</span><span class="o">=</span><span class="s2">"logger -u …/dev-log"</span><span class="w">                    </span><span class="c1"># 보내는 쪽 rsyslog의 소켓</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="nv">$L</span><span class="w"> </span>-p<span class="w"> </span>local7.info<span class="w">     </span>-t<span class="w"> </span>dhcpd<span class="w">   </span><span class="s2">"DHCPACK on 10.10.1.19"</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="nv">$L</span><span class="w"> </span>-p<span class="w"> </span>authpriv.info<span class="w">   </span>-t<span class="w"> </span>sshd<span class="w">    </span><span class="s2">"Accepted publickey for jkim from 10.10.1.19"</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="nv">$L</span><span class="w"> </span>-p<span class="w"> </span>authpriv.warning<span class="w"> </span>-t<span class="w"> </span>sshd<span class="w">   </span><span class="s2">"Failed password for root from 198.51.100.23"</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="nv">$L</span><span class="w"> </span>-p<span class="w"> </span>mail.err<span class="w">        </span>-t<span class="w"> </span>postfix<span class="w"> </span><span class="s2">"connect to mx.example.net: Connection timed out"</span>
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="nv">$L</span><span class="w"> </span>-p<span class="w"> </span>local6.debug<span class="w">    </span>-t<span class="w"> </span>clamd<span class="w">   </span><span class="s2">"scan detail"</span>
+</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="nv">$L</span><span class="w"> </span>-p<span class="w"> </span>local6.warning<span class="w">  </span>-t<span class="w"> </span>clamd<span class="w">   </span><span class="s2">"Eicar-Test-Signature FOUND"</span>
+</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="nv">$L</span><span class="w"> </span>-p<span class="w"> </span>user.emerg<span class="w">      </span>-t<span class="w"> </span>root<span class="w">    </span><span class="s2">"LAB_EMERGENCY_TEST"</span>
+</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="nv">$L</span><span class="w"> </span>-p<span class="w"> </span>user.debug<span class="w">      </span>-t<span class="w"> </span>app<span class="w">     </span><span class="s2">"debug noise"</span>
+</span></code></pre></div>
+<p><strong>(직접 실행 결과, 파일별로 남은 줄)</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>== dhcp.log
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>&lt;190&gt;2026-11-05T08:00:28.816246+00:00 vm dhcpd: DHCPACK on 10.10.1.19
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>== maillog
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>&lt;19&gt;2026-11-05T08:00:28.821820+00:00 vm postfix: connect to mx.example.net: Connection timed out
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>== messages
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>&lt;190&gt;2026-11-05T08:00:28.816246+00:00 vm dhcpd: DHCPACK on 10.10.1.19
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>&lt;180&gt;2026-11-05T08:00:28.825199+00:00 vm clamd: Eicar-Test-Signature FOUND
+</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>&lt;8&gt;2026-11-05T08:00:28.826954+00:00 vm root: LAB_EMERGENCY_TEST
+</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>== secure
+</span><span id="__span-15-10"><a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>&lt;86&gt;2026-11-05T08:00:28.818307+00:00 vm sshd: Accepted publickey for jkim from 10.10.1.19
+</span><span id="__span-15-11"><a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>&lt;84&gt;2026-11-05T08:00:28.820128+00:00 vm sshd: Failed password for root from 198.51.100.23
+</span><span id="__span-15-12"><a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a>== sms.out  (omprog로 띄운 스크립트가 받은 것)
+</span><span id="__span-15-13"><a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>SMS-GATEWAY got: Nov  5 08:00:28 vm root:  LAB_EMERGENCY_TEST
+</span><span id="__span-15-14"><a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a>== 수신 서버(127.0.0.30)
+</span><span id="__span-15-15"><a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a>&lt;190&gt; … proto=imudp tag=dhcpd: …
+</span><span id="__span-15-16"><a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>&lt;84&gt;  … proto=imtcp tag=sshd: …
+</span><span id="__span-15-17"><a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a>&lt;180&gt; … proto=imudp tag=clamd: …
+</span><span id="__span-15-18"><a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a>&lt;8&gt;   … proto=imudp tag=root: …
+</span></code></pre></div>
+<p>읽는 법:</p>
+<ul>
+<li>DHCP 메시지(<code>local7.info</code>)는 <code>dhcp.log</code>와 <code>messages</code> <strong>두 곳</strong>에, 그리고 수신 서버에도 갔습니다(<code>*.info</code>가 local7도 고르므로).</li>
+<li>인증 메시지는 <code>messages</code>에 <strong>없고</strong>(<code>authpriv.none</code>) <code>secure</code>에만 있습니다. 그중 warning인 실패 로그인만 <strong>TCP로</strong>(<code>proto=imtcp</code>) 수신 서버에 갔어요(<code>authpriv.=warning</code> → <code>@@</code>). 성공 로그인은 원격에 없습니다.</li>
+<li>메일 오류는 <code>maillog</code>에만, 수신 서버에는 없습니다(<code>mail.none</code>).</li>
+<li>긴급 메시지(<code>user.emerg</code>)는 <code>messages</code>, 수신 서버, 그리고 SMS 스크립트로 갔고, 스크립트에는 <code>smsTemplate</code> 모양(PRI 없음, 연도 없는 시각)으로 넘어갔습니다. <strong>같은 이벤트가 세 가지 모양</strong>으로 남았어요.</li>
+<li><code>user.debug</code>는 어디에도 없습니다(<code>*.info</code> 미만).</li>
+<li><code>local6.debug</code>를 받으려던 <code>clamd_debug.log</code>는 <strong>만들어지지도 않았습니다.</strong> 다음 상자를 보세요.</li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">[정정] <code>kern.!notice</code>는 혼자서는 아무것도 고르지 않는다</p>
+<p>교재는 "<code>kern.!notice</code>는 notice보다 낮은 severity의 모든 커널 메시지와 맞는다"고 설명합니다. rsyslog(그리고 그 바탕인 sysklogd)의 규칙에서 <code>!</code>는 <strong>이미 고른 것에서 빼는</strong> 표시라, 앞에 고른 것이 없으면 결과가 비어 있어요. 직접 확인했습니다.</p>
+<p><strong>(직접 실행 결과, local6의 debug·info·notice·warning·err를 하나씩 보냄)</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>local6.!notice              → 파일이 만들어지지 않음(아무것도 안 맞음)
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>local6.*;local6.!notice     → debug, info  (notice 미만)
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>local6.=warning             → warning
+</span></code></pre></div>
+<p>"notice 미만"을 고르려면 <code>local6.*;local6.!notice</code>처럼 <strong>먼저 전부 고르고 뺍니다</strong>. 조사에서 남의 설정 파일을 읽을 때, <code>!</code> 줄이 의도와 달리 아무것도 남기지 않았을 수 있다는 점을 기억하세요. 확인할 수 있다면 <code>rsyslogd -N1 -f 설정파일</code>(설정 검사)과 실제 파일의 존재로 확인합니다.</p>
+</div>
+<div class="admonition info">
+<p class="admonition-title">[보충] <code>^</code> 프로그램 실행의 실제 동작</p>
+<p>교재의 <code>^/usr/local/bin/sms_send.py;smsTemplate</code>(옛 문법)도 rsyslog 8.2312에서 여전히 동작했습니다. 직접 실행해 보니 <strong>메시지마다 프로그램을 새로 실행하고, 메시지를 명령줄 인자로</strong> 넘겼어요(스크립트가 받은 인자: <code>CARET_TEST</code>). 메시지가 많으면 프로세스가 그만큼 생기고, 메시지 내용이 명령줄에 그대로 실리므로, rsyslog 설명서는 프로그램을 띄워 두고 표준 입력으로 넘기는 <code>omprog</code>를 권합니다.</p>
+</div>
+<p><strong>그림 5-1. 이 설정에서 로그가 가는 곳</strong> (위에서 아래로: 선택자 → 목적지 종류)</p>
+<pre class="mermaid"><code>flowchart TD
+    A["*.info (mail·authpriv·cron 제외)"] --&gt; F1["파일: messages"]
+    A --&gt; N1["UDP @ 수신 서버"]
+    B["authpriv.*"] --&gt; F2["파일: secure"]
+    C["authpriv.=warning"] --&gt; N2["TCP @@ 수신 서버"]
+    D["mail.* / local7.* / local3.*"] --&gt; F3["파일: maillog / dhcp.log / named.log"]
+    E["*.emerg"] --&gt; P1["프로그램: SMS 스크립트 (omprog)"]
+    E -.-&gt; F1
+    E -.-&gt; N1</code></pre>
+<p><strong>읽는 법:</strong> 왼쪽 위의 선택자에 맞는 메시지가 화살표 끝의 목적지로 갑니다. 한 메시지가 여러 선택자에 맞으면 <strong>모든</strong> 목적지로 가요(점선: <code>*.emerg</code> 메시지는 <code>*.info</code>에도 맞아 messages와 UDP 전송에도 감). 교재가 말하듯, "이 시스템의 로그 데이터는 어디로 가나?"는 단순한 설정에서도 답이 꽤 복잡합니다. 조사할 때는 설정 파일(그리고 <code>/etc/rsyslog.d/*.conf</code>처럼 <strong>포함된 파일들</strong>)을 모두 확보해 이런 그림을 직접 그려 보세요.</p>
+<h2 id="transport">6. 전송: UDP, TCP, 그리고 그 너머<a class="headerlink" href="#transport" title="Permanent link">¶</a></h2>
+<h3 id="udp-loss">6.1 UDP는 잃어버려도 모른다<a class="headerlink" href="#udp-loss" title="Permanent link">¶</a></h3>
+<p>같은 컴퓨터 안(루프백)에서, 수신 서버에 짧은 메시지 20만 개를 UDP와 TCP로 한꺼번에 보냈습니다.</p>
+<p><strong>(직접 실행 결과)</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>UDP: sent 200000 in 0.63s   → received: 196760
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>TCP: sent 200000 over TCP in 0.19s → received: 200000
+</span></code></pre></div>
+<p>UDP는 **3,240개(약 1.6%)**를 잃었고, 보낸 쪽도 받은 쪽도 그 사실을 기록하지 않았습니다. 네트워크도 거치지 않은 루프백에서조차요. 수신 버퍼가 넘치면 운영체제가 조용히 버리기 때문입니다. TCP는 모두 도착했어요.</p>
+<p><strong>조사에서의 의미:</strong> 중앙 syslog 서버의 기록에 <strong>빈틈이 있다고 해서 그 시간에 아무 일도 없었던 것은 아닙니다.</strong> 특히 사건 중처럼 로그가 폭증할 때 손실이 커요. 가능하면 원래 장비의 로컬 로그와 맞대어 보고, UDP 수신 서버라면 운영체제의 UDP 수신 오류 통계(<code>netstat -su</code>의 receive buffer errors 같은)도 확인합니다.</p>
+<h3 id="tcp-tls">6.2 TCP, TLS, RELP<a class="headerlink" href="#tcp-tls" title="Permanent link">¶</a></h3>
+<div class="admonition info">
+<p class="admonition-title">[보충] 전송 방식의 선택지(2026-11-05 기준)</p>
+<ul>
+<li><strong>UDP 514</strong>(RFC 5426): 가장 흔하고, 가장 잃어버리기 쉽고, <strong>평문</strong>입니다.</li>
+<li><strong>TCP</strong>(관행은 514, RFC 6587이 틀짓기 방식을 정리): 연결이 끊기지 않는 한 잃지 않지만, 수신 서버가 내려가면 보내는 쪽 버퍼에 쌓이다 넘칠 수 있습니다. 이 실습의 TCP 메시지는 줄바꿈(<code>\n</code>)으로 메시지를 구분하는 방식이었습니다.</li>
+<li><strong>TLS 위의 syslog</strong>(RFC 5425, 보통 6514번): 암호화와 상대 인증.</li>
+<li><strong>RELP</strong>(rsyslog의 신뢰 전송 프로토콜): 응용 계층에서 받았다는 확인을 주고받아 손실을 막습니다.</li>
+</ul>
+<p><strong>네트워크 포렌식의 관점:</strong> 평문 syslog(UDP·TCP 514)는 <strong>패킷 캡처로 그대로 읽힙니다.</strong> 이 실습에서도 선 위의 메시지를 TShark로 그대로 봤어요. 중앙 서버의 로그가 지워졌거나 조작됐다면, 그 사이 구간의 pcap이 <strong>두 번째 사본</strong> 역할을 할 수 있습니다. 반대로 그 안에 인증 실패 기록, 사용자 이름, 내부 주소 같은 민감한 정보가 평문으로 흐른다는 뜻이기도 합니다.</p>
+</div>
+<h2 id="journald">7. [변경됨] journald 시대의 syslog<a class="headerlink" href="#journald" title="Permanent link">¶</a></h2>
+<div class="admonition warning">
+<p class="admonition-title">[변경됨] 요즘 리눅스에는 <code>/var/log/messages</code>가 없을 수 있다</p>
+<p>systemd를 쓰는 리눅스는 <strong>systemd-journald</strong>가 로그를 먼저 받아 자체 <strong>이진 형식</strong>(저널)으로 저장하고, <code>journalctl</code>로 읽습니다. 그리고 배포판에 따라 전통적인 syslog 데몬을 기본으로 깔지 않기 시작했어요. 예를 들어 <strong>Debian 12(2023년)는 rsyslog를 기본 설치에서 뺐고</strong>, 저널을 디스크(<code>/var/log/journal</code>)에 영구 저장하는 쪽으로 바꿨습니다(Debian 메일링 리스트의 논의와 관련 보도로 확인. 공식 릴리스 노트는 이 환경에서 열리지 않았음, 2026-11-05). 반면 이 실습의 Ubuntu 24.04처럼 rsyslog를 함께 쓰는 배포판도 있습니다.</p>
+<p><strong>조사에서의 의미:</strong> ① 리눅스 서버를 조사할 때 <code>/var/log/messages</code>나 <code>/var/log/syslog</code>가 없다고 "로그가 없다"고 결론 내리면 안 됩니다. <code>/var/log/journal/</code>의 저널 파일을 확보하고 <code>journalctl --file</code>로 읽으세요. ② 저널은 syslog와 달리 각 항목에 <strong>보낸 프로세스의 정보</strong>(PID, UID, 실행 파일 경로, systemd 유닛)를 커널이 확인한 값으로 남겨, 3.4절의 "꾸민 태그" 문제에 더 강합니다. ③ 중앙 수집으로 보내려면 rsyslog·syslog-ng가 저널에서 읽어 보내거나(<code>imjournal</code>), systemd-journal-remote 같은 도구를 씁니다. 이때 네트워크 위에서는 다시 syslog 형식이 됩니다.</p>
+</div>
+<h2 id="in-practice">8. 실제 조사에서는 이렇게 씁니다<a class="headerlink" href="#in-practice" title="Permanent link">¶</a></h2>
+<ol>
+<li><strong>설정 파일부터 확보한다.</strong> <code>/etc/rsyslog.conf</code>와 <code>/etc/rsyslog.d/*.conf</code>(또는 syslog-ng 설정)로 "무엇이 어디로 가나"를 그립니다(5절). facility 할당은 관행일 뿐입니다.</li>
+<li><strong>보낸 쪽이 정한 값과 받은 쪽이 확인한 값을 구분한다.</strong> 시각과 호스트 이름은 주장이고, 받은 시각과 보낸 주소가 있다면 그것과 비교합니다(3.4절).</li>
+<li><strong>연도와 시간대를 확인한다.</strong> RFC 3164 모양이면 연도는 받는 쪽의 짐작이고, 연말연시에 어긋날 수 있습니다(3.3절). 장비의 시간대 설정을 확인합니다.</li>
+<li><strong>빈틈과 잘림을 의심한다.</strong> UDP 손실(6.1절), 최대 메시지 크기(3.5절).</li>
+<li><strong>원본과 사본을 맞댄다.</strong> 장비의 로컬 로그, 중앙 서버의 로그, 그 사이의 pcap.</li>
+<li><strong>저널을 잊지 않는다.</strong> systemd 시스템은 <code>/var/log/journal/</code>(7절).</li>
+</ol>
+<h2 id="summary">9. 정리<a class="headerlink" href="#summary" title="Permanent link">¶</a></h2>
+<ul>
+<li>syslog는 메시지를 받아 목적지로 나누는 <strong>데몬</strong>이자 네트워크 위의 <strong>프로토콜</strong>이고, 유닉스, 네트워크 장비, 각종 내장형 장비, (서드파티로) Windows까지 공통으로 씁니다. 받는 쪽은 syslog 데몬, NAS, 집계 플랫폼, SIEM입니다.</li>
+<li>전통 형식(RFC 3164)은 PRI, 시각, 호스트 이름, 태그, 메시지. <strong>연도와 시간대가 없고</strong>, 직접 확인한 결과 rsyslog는 받는 쪽의 연도를 붙여 해를 넘긴 <code>Dec 31</code> 메시지가 <strong>1년 뒤</strong>로 해석됐습니다. <strong>[보충]</strong> 현재 표준 RFC 5424는 연도·시간대·구조화된 데이터(<code>timeQuality isSynced</code>)를 담습니다.</li>
+<li>시각과 호스트 이름은 보낸 쪽이 정하므로 꾸밀 수 있습니다. 직접 꾸민 메시지가 전통 형식 파일에 그대로 남았고, <code>timegenerated</code>와 <code>fromhost-ip</code>가 진실을 보여 줬습니다.</li>
+<li>메시지 크기: 옛 구현은 1,024바이트, 이 rsyslog는 기본 8KB에서 <strong>표시 없이</strong> 잘랐습니다. IPv4 UDP의 최대 데이터는 65,507바이트입니다.</li>
+<li>PRI = facility × 8 + severity. 190 = local7.info. facility 할당은 임의적이라 설정 파일이 필요합니다.</li>
+<li>선택자는 "그 이상", <code>none</code>, <code>=</code>, <code>!</code>. <strong>[정정]</strong> <code>!</code>는 혼자서는 아무것도 고르지 않고, <code>local6.*;local6.!notice</code>처럼 써야 "notice 미만"입니다. 동작은 파일, <code>@</code> UDP, <code>@@</code> TCP, 프로그램(<code>^</code>는 메시지마다 실행, <code>omprog</code> 권장), 모든 사용자 터미널.</li>
+<li>UDP는 루프백에서도 20만 개 중 3,240개를 조용히 잃었고, TCP는 모두 도착했습니다. <strong>[보충]</strong> TLS(RFC 5425), RELP. 평문 syslog는 pcap으로 읽히는 두 번째 사본입니다.</li>
+<li><strong>[변경됨]</strong> journald가 기본인 배포판이 늘었고, Debian 12는 rsyslog를 기본 설치에서 뺐습니다.</li>
+</ul>
+<h2 id="review">복습 문제<a class="headerlink" href="#review" title="Permanent link">¶</a></h2>
+<p><strong>문제 1. (기본)</strong> 다음 줄의 각 부분을 설명하고, 이 줄만으로 알 수 없는 것을 두 가지 이상 말해 보세요.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>&lt;86&gt;Mar  3 02:17:44 web-03 sshd[2231]: Accepted password for deploy from 203.0.113.50 port 50122 ssh2
+</span></code></pre></div>
+<details class="success">
+<summary>정답과 해설</summary>
+<p><code>&lt;86&gt;</code>: PRI. 86 = 10 × 8 + 6이므로 facility 10(authpriv), severity 6(info). <code>Mar  3 02:17:44</code>: 보낸 쪽 시계의 시각. <code>web-03</code>: 보낸 쪽이 적은 호스트 이름. <code>sshd[2231]:</code>: 태그(프로그램 이름과 PID). 나머지는 메시지로, <code>deploy</code> 계정이 <code>203.0.113.50</code>에서 비밀번호로 로그인에 성공했다는 내용입니다. <strong>알 수 없는 것:</strong> ① <strong>연도</strong>(3.3절), ② <strong>시간대</strong>(그 서버가 UTC인지 지역 시각인지), ③ 그 서버의 시계가 맞았는지, ④ 이 메시지를 <strong>정말 <code>web-03</code>이 보냈는지</strong>(3.4절. 받은 쪽의 <code>fromhost-ip</code>가 필요), ⑤ 이 메시지가 원래 장비의 로그인지, 중앙 서버의 사본인지.</p>
+</details>
+<p><strong>문제 2. (변경된 조건)</strong> 사건은 2026년 12월 31일 밤부터 2027년 1월 1일 새벽에 걸쳐 일어났습니다. 중앙 syslog 서버의 파일(RFC 3164 모양으로 받아 RFC 3339 시각으로 저장)을 시각순으로 정렬했더니, 사건의 시작으로 보이는 줄들이 맨 끝(2027-12-31)에 갔습니다. 무엇이 일어났고 어떻게 바로잡겠습니까?</p>
+<details class="success">
+<summary>정답과 해설</summary>
+<p>RFC 3164 모양의 메시지에는 연도가 없어서, 받는 쪽이 연도를 채웠습니다. 3.3절의 실험처럼 이 rsyslog는 **받은 순간의 연도(2027)**를 붙여, 2026-12-31에 만들어진 메시지가 2027-12-31로 저장된 거예요. 바로잡기: ① 받은 시각(<code>timegenerated</code>)이 함께 남아 있다면 그것과 비교해 "보고된 시각이 받은 시각보다 훨씬 미래"인 줄의 연도를 하나 줄입니다. ② 받은 시각이 없다면 파일 안의 줄 순서(받은 순서로 쓰임), 로그 회전 시각, 다른 장비의 로그와의 대조로 판단합니다. ③ 바로잡은 방법과 근거를 보고서에 적습니다. 앞으로를 위해서는 장비가 RFC 5424(연도·시간대 포함)로 보내게 하고, 수신 서버가 받은 시각을 함께 남기게 합니다.</p>
+</details>
+<p><strong>문제 3. (흔한 오해)</strong> "중앙 syslog 서버에 <code>fw-core-01</code>의 로그인 성공 기록이 있으니, 그 방화벽에 누군가 로그인한 것이 확실하다." 무엇을 더 확인해야 하나요?</p>
+<details class="success">
+<summary>정답과 해설</summary>
+<p>syslog 메시지의 호스트 이름과 시각은 <strong>보낸 쪽이 적은 값</strong>이라 꾸밀 수 있습니다(3.4절에서 직접 꾸민 메시지가 전통 형식 파일에 그대로 남았음). 확인할 것: ① 그 줄을 <strong>실제로 보낸 주소</strong>(<code>fromhost-ip</code>가 남아 있는지, 없다면 그 시간대의 syslog 패킷 pcap이나 방화벽의 세션 기록), ② <strong>방화벽 자체의 로컬 로그</strong>에 같은 기록이 있는지, ③ 방화벽의 인증 서버(RADIUS, TACACS+) 기록, ④ 메시지의 형식이 그 장비가 평소 보내는 모양과 같은지(태그, 필드 순서, 공백). 수신 서버가 아무 주소에서나 UDP 514를 받는다면, 같은 망의 누구든 이런 줄을 "지어 넣을" 수 있습니다.</p>
+</details>
+<p><strong>문제 4. (설정 읽기)</strong> 다음 설정에서 <code>authpriv.info</code> 메시지와 <code>authpriv.err</code> 메시지는 각각 어디로 가나요?</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>*.info;authpriv.none        /var/log/messages
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>authpriv.*                  /var/log/secure
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>authpriv.=err               @@198.51.100.5:514
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>*.err                       @198.51.100.6:514
+</span></code></pre></div>
+<details class="success">
+<summary>정답과 해설</summary>
+<p><strong><code>authpriv.info</code></strong>: <code>messages</code>에는 안 감(<code>authpriv.none</code>), <code>secure</code>에 감(<code>authpriv.*</code>), <code>=err</code>가 아니므로 <code>198.51.100.5</code>에는 안 감, <code>*.err</code>는 err 이상이라 info는 해당 없음 → <strong><code>secure</code>에만</strong>. <strong><code>authpriv.err</code></strong>: <code>messages</code>에는 안 감, <code>secure</code>에 감, <code>198.51.100.5</code>로 <strong>TCP</strong>(<code>@@</code>)로 감, <code>*.err</code>에 맞으므로 <code>198.51.100.6</code>으로 <strong>UDP</strong>(<code>@</code>)로도 감 → <strong>세 곳</strong>. 이처럼 한 메시지가 여러 줄에 맞으면 모든 목적지로 가고, <code>*.err</code>의 <code>*</code>에는 <code>authpriv</code>도 포함된다는 점(첫 줄의 <code>authpriv.none</code>은 그 줄에만 적용)을 기억하세요.</p>
+</details>
+<p><strong>문제 5. (정정된 내용)</strong> 동료가 디버그 메시지만 따로 모으려고 <code>kern.!info /var/log/kern-debug.log</code>를 넣었는데 파일이 비어 있다고 합니다. 왜 그렇고, 어떻게 고쳐야 하나요?</p>
+<details class="success">
+<summary>정답과 해설</summary>
+<p><code>!</code>는 <strong>이미 고른 것에서 빼는</strong> 표시라, 앞에 고른 것이 없으면 아무것도 맞지 않습니다(5.3절의 [정정]: <code>local6.!notice</code> 혼자서는 파일이 만들어지지도 않았음). "info 미만(= debug)"을 고르려면 <code>kern.*;kern.!info</code>처럼 먼저 전부 고르고 빼거나, 딱 debug만 원한다면 <code>kern.=debug</code>를 씁니다. 바꾼 뒤에는 <code>rsyslogd -N1</code>로 설정을 검사하고, <code>logger -p kern.debug</code>는 사용자 프로그램이 kern facility로 보내기 어려우니 다른 facility로 같은 문법을 시험해 보는 것이 안전합니다.</p>
+</details>
+<p><strong>문제 6. (해석)</strong> 사건 당일 중앙 syslog 서버(UDP 수신)에서 한 웹 서버의 로그가 14:02부터 14:09까지 듬성듬성 비어 있습니다. 그 시각은 공격자의 스캔으로 웹 서버 로그가 폭증한 때였어요. 어떤 가능성을 생각하고, 무엇으로 확인하겠습니까?</p>
+<details class="success">
+<summary>정답과 해설</summary>
+<p><strong>UDP 손실</strong>을 먼저 생각합니다(6.1절: 루프백에서조차 20만 개 중 1.6%를 조용히 잃었음). 로그가 폭증하면 수신 버퍼가 넘치거나, 중간 네트워크에서 버려질 수 있어요. 그 밖에 보내는 쪽의 속도 제한(rsyslog의 rate limiting), 공격자가 로그 전송을 막았을 가능성도 있습니다. 확인: ① 웹 서버 <strong>자체의 로컬 로그</strong>(같은 시간에 줄이 연속적인가), ② 수신 서버 운영체제의 UDP 수신 오류 통계와 rsyslog 자체의 통계(impstats를 켰다면), ③ 그 구간의 pcap(실제로 syslog 패킷이 왔는가), ④ 보내는 쪽 rsyslog의 내부 메시지("messages lost due to rate-limiting" 같은). 빈틈을 "아무 일도 없었다"로 해석하지 않습니다.</p>
+</details>
+<p><strong>문제 7. (변경된 조건)</strong> Debian 12 서버를 조사하는데 <code>/var/log/syslog</code>도 <code>/var/log/auth.log</code>도 없습니다. 로그가 지워진 걸까요?</p>
+<details class="success">
+<summary>정답과 해설</summary>
+<p>꼭 그렇지는 않습니다. Debian 12는 rsyslog를 기본 설치에서 뺐고 저널을 <code>/var/log/journal/</code>에 영구 저장합니다(7절). 먼저 <code>/var/log/journal/</code> 아래의 <code>*.journal</code> 파일을 확보하고(이미지에서라면 <code>journalctl --file</code> 또는 <code>--directory</code>로 읽음), 시스템에 rsyslog가 설치된 적이 있는지(패키지 기록, 설정 파일)도 확인합니다. rsyslog가 설치돼 있었는데 파일이 없다면 그때 삭제나 회전 설정을 의심해요. 저널에는 각 항목의 PID, UID, 실행 파일, 유닛 같은 정보가 함께 있어 오히려 더 많은 것을 알 수 있습니다. 저널 파일 자체의 무결성 검사(<code>journalctl --verify</code>)도 해 둡니다.</p>
+</details>
+<p><strong>문제 8. (적용)</strong> 새로 중앙 syslog 서버를 설계한다면, 조사를 위해 어떤 원칙을 넣겠습니까? 네 가지 이상 들어 보세요.</p>
+<details class="success">
+<summary>정답과 해설</summary>
+<p>예: ① <strong>받은 시각과 보낸 주소를 함께 저장</strong>(<code>timegenerated</code>, <code>fromhost-ip</code>)하고, 보고된 시각·호스트 이름과 구분해 남긴다(3.4절). ② 장비에 <strong>RFC 5424</strong>(연도·시간대 포함)와 <strong>UTC</strong>, 시간 동기화를 요구한다(3.3절). ③ 중요한 출처는 <strong>TCP나 TLS(RFC 5425), RELP</strong>로 받아 손실과 도청을 줄인다(6절). ④ <strong>받을 주소를 제한</strong>하고(방화벽, rsyslog의 허용 목록), 처음 보는 출처를 경보한다(꾸민 메시지 방지). ⑤ 최대 메시지 크기를 충분히 키운다(3.5절). ⑥ 수신 통계(impstats)를 남겨 손실을 측정한다. ⑦ <strong>1년 이상</strong> 보관하고, 규제에 따라 다른 장소에도 사본을 둔다(1절). ⑧ 원본 장비의 로컬 로그도 일정 기간 남게 해 대조할 수 있게 한다.</p>
+</details>
+<h2 id="references">참고 자료<a class="headerlink" href="#references" title="Permanent link">¶</a></h2>
+<ul>
+<li>작업 환경에서 쓴 도구: rsyslog 8.2312.0(Ubuntu 24.04 패키지, <code>imudp</code>·<code>imtcp</code>·<code>imuxsock</code>·<code>omprog</code>), util-linux <code>logger</code> 2.39.3, faketime(수신 서버의 시계 흉내), TShark 4.2.2, tcpdump, bash의 <code>/dev/udp</code>, Python 3.13. 실행 결과는 2026-11-05에 얻었습니다.</li>
+<li>IETF, <a href="https://www.rfc-editor.org/rfc/rfc3164">RFC 3164</a> (BSD syslog 프로토콜, 2001, 정보 제공용), <a href="https://www.rfc-editor.org/rfc/rfc5424">RFC 5424</a> (syslog 프로토콜, 2009: facility·severity 표, PRI, 형식 버전, 구조화된 데이터, <code>timeQuality</code>), <a href="https://www.rfc-editor.org/rfc/rfc5426">RFC 5426</a> (UDP 전송), <a href="https://www.rfc-editor.org/rfc/rfc5425">RFC 5425</a> (TLS 전송), <a href="https://www.rfc-editor.org/rfc/rfc6587">RFC 6587</a> (TCP 전송의 틀짓기).</li>
+<li>rsyslog, <a href="https://www.rsyslog.com/doc/">설명서</a> (선택자 문법, 속성 <code>timereported</code>·<code>timegenerated</code>·<code>fromhost-ip</code>, 템플릿, <code>omprog</code>, <code>maxMessageSize</code>, RELP).</li>
+<li>Debian 12의 로깅 변경: Debian 개발자 메일링 리스트의 2021년 11월 논의와 관련 보도(2026-11-05 검색 결과로 확인. 공식 <a href="https://www.debian.org/releases/bookworm/amd64/release-notes/ch-information.en.html">릴리스 노트</a>는 이 환경에서 열리지 않음).</li>
+<li>systemd, <a href="https://www.freedesktop.org/software/systemd/man/latest/journalctl.html">journalctl 설명서</a>.</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">이 페이지에 대하여</p>
+<p>여러 학습 자료를 바탕으로 직접 다시 쓴 개인 학습 노트입니다. 설정과 메시지는 직접 만들었고, 사례는 가상입니다.</p>
+</div>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden="">
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"></path></svg>
+  맨위로
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="하단/푸터">
+        
+          
+          <a href="../lab-dns-profiling/" class="md-footer__link md-footer__link--prev" aria-label="이전: 2.9강 — 실습 가이드: DNS 프로파일링, 이상 징후, 범위 산정">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                이전
+              </span>
+              <div class="md-ellipsis">
+                2.9강 — 실습 가이드: DNS 프로파일링, 이상 징후, 범위 산정
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../../oscp/" class="md-footer__link md-footer__link--next" aria-label="다음: OSCP+">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                다음
+              </span>
+              <div class="md-ellipsis">
+                OSCP+
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"></path></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      개인 학습 노트입니다. 어떤 기관의 공식 지침도 아닙니다.
+    </div>
+  
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/DFIDwiz-sketch" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.footer", "search.suggest", "search.highlight", "search.share", "toc.follow", "content.code.copy", "content.code.annotate", "content.action.edit", "content.action.view", "content.tabs.link", "content.tooltips"], "search": "../../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "\ud074\ub9bd\ubcf4\ub4dc\uc5d0 \ubcf5\uc0ac\ub428", "clipboard.copy": "\ud074\ub9bd\ubcf4\ub4dc\ub85c \ubcf5\uc0ac", "search.result.more.one": "\uc774 \ubb38\uc11c\uc5d0\uc11c 1\uac1c\uc758 \uac80\uc0c9 \uacb0\uacfc \ub354 \ubcf4\uae30", "search.result.more.other": "\uc774 \ubb38\uc11c\uc5d0\uc11c #\uac1c\uc758 \uac80\uc0c9 \uacb0\uacfc \ub354 \ubcf4\uae30", "search.result.none": "\uac80\uc0c9\uc5b4\uc640 \uc77c\uce58\ud558\ub294 \ubb38\uc11c\uac00 \uc5c6\uc2b5\ub2c8\ub2e4", "search.result.one": "1\uac1c\uc758 \uc77c\uce58\ud558\ub294 \ubb38\uc11c", "search.result.other": "#\uac1c\uc758 \uc77c\uce58\ud558\ub294 \ubb38\uc11c", "search.result.placeholder": "\uac80\uc0c9\uc5b4\ub97c \uc785\ub825\ud558\uc138\uc694", "search.result.term.missing": "\ud3ec\ud568\ub418\uc9c0 \uc54a\uc740 \uac80\uc0c9\uc5b4", "select.version": "\ubc84\uc804 \uc120\ud0dd"}, "version": null}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.c21346df.min.js"></script>
+      
+        <script src="../../../../assets/lang-switch.js"></script>
+      
+        <script src="../../../../assets/theme.js"></script>
+      
+        <script src="../../../../assets/redteam-navigation.js"></script>
+      
+    
+  
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(()=>{ lightbox.reload(); });
+</script></body></html>
