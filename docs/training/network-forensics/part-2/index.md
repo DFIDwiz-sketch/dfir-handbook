@@ -25,7 +25,7 @@ Lessons are added one at a time, in order. Entries in the list below without a l
 | [2.7](dns-investigation.md) | DNS investigation: logs, fast flux, DGAs, encrypted DNS, punycode | Published |
 | [2.8](zeek.md) | Turning packets into logs with Zeek: log structure, jq, Community ID | Published |
 | [2.9](lab-dns-profiling.md) | Lab guide: DNS profiling, anomalies and scoping | Published |
-| 2.10 | syslog: daemon and protocol, facility and severity, reading configuration | In preparation |
+| [2.10](syslog.md) | syslog: daemon and protocol, facility and severity, reading configuration | Published |
 | 2.11 | Windows event logs and event forwarding | In preparation |
 | 2.12 | Log aggregation: why collect, and how to ship | In preparation |
 | 2.13 | The Elastic Stack and SOF-ELK | In preparation |
