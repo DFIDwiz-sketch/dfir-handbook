@@ -26,6 +26,14 @@ title: 트레이닝
 
     [:octicons-arrow-right-24: Blue Team Essentials](blue-team-essentials/index.md)
 
+-   :material-lan:{ .lg .middle } **Network Forensics**
+
+    ---
+
+    네트워크 포렌식 강의 시리즈(한국어 중심, 영어 번역 포함) — 프록시 로그, pcap과 수집, 핵심 프로토콜과 로그 집계, NetFlow와 파일 공유 프로토콜, 분석 도구, 무선, 전체 패킷 헌팅, 암호화, 프로토콜 리버싱, OPSEC과 인텔리전스. 실습 가이드와 복습 문제 포함.
+
+    [:octicons-arrow-right-24: Network Forensics](network-forensics/index.md)
+
 -   :material-certificate:{ .lg .middle } **OffSec OSCP+ (PEN-200)**
 
     ---

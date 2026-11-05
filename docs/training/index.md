@@ -26,6 +26,14 @@ Notes from courses and training I've taken, re-worked into my own reference and 
 
     [:octicons-arrow-right-24: Blue Team Essentials](blue-team-essentials/index.md)
 
+-   :material-lan:{ .lg .middle } **Network Forensics**
+
+    ---
+
+    A Korean-first lecture series (with English translation) on network forensics: proxy logs, pcap and capture, core protocols and log aggregation, NetFlow and file-access protocols, analysis tools, wireless, full-packet hunting, encryption, protocol reversing, OPSEC and intel — with hands-on lab guides and review questions.
+
+    [:octicons-arrow-right-24: Network Forensics](network-forensics/index.md)
+
 -   :material-certificate:{ .lg .middle } **OffSec OSCP+ (PEN-200)**
 
     ---
