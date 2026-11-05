@@ -27,7 +27,7 @@ tags:
 | [1.9강](wireshark-display-filters.md) | Wireshark 디스플레이 필터와 스트림 따라가기 | 게시 |
 | [1.10강](lab-tcpdump-wireshark-tshark.md) | 실습 가이드: tcpdump와 Wireshark 손에 익히기 | 게시 |
 | [1.11강](network-evidence-acquisition.md) | 증거 수집: 어디서, 어떤 장비로 패킷을 모으나 | 게시 |
-| 1.12강 | 네트워크 조사의 어려움과 기회 | 준비 중 |
+| [1.12강](challenges-and-opportunities.md) | 네트워크 조사의 어려움과 기회 | 게시 |
 | 1.13강 | 실습 가이드: 유출된 데이터 카빙하기 | 준비 중 |
 
 ## 시리즈 처음으로 { #back }

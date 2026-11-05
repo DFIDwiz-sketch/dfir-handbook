@@ -27,7 +27,7 @@ Lessons are added one at a time, in order. Entries in the list below without a l
 | [1.9](wireshark-display-filters.md) | Wireshark display filters and following streams | Published |
 | [1.10](lab-tcpdump-wireshark-tshark.md) | Lab guide: getting hands-on with tcpdump and Wireshark | Published |
 | [1.11](network-evidence-acquisition.md) | Evidence acquisition: where, and with what equipment, to collect packets | Published |
-| 1.12 | Challenges and opportunities in network investigations | In preparation |
+| [1.12](challenges-and-opportunities.md) | Challenges and opportunities in network investigations | Published |
 | 1.13 | Lab guide: carving exfiltrated data | In preparation |
 
 ## Back to the series { #back }
