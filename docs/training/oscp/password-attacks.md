@@ -13,6 +13,9 @@ tags:
 !!! abstract "In one sentence"
     Identify the hash, pick the right cracking mode, crack offline with hashcat / john — and spray online carefully, because one lockout can cost you the AD set.
 
+!!! tip "Practical companion"
+    For command selection, output interpretation and failure diagnosis, use the [practical field guide](practical-guide.md#cracking); for Windows/AD protocol detail, use the [Impacket handbook](impacket.md).
+
 ## 1. Concept { #concept }
 
 | Attack | Where | Risk | Tool |

@@ -13,6 +13,9 @@ tags:
 !!! abstract "한 문장 요약"
     낮은 권한 사용자에서 Administrator / SYSTEM으로: 토큰 권한부터 읽고(SeImpersonate → potato), WinPEAS를 돌린 뒤 서비스, 예약 작업, 저장된 크리덴셜, 설치 정책을 확인 — 커널 익스플로잇은 마지막.
 
+!!! tip "실전 실행 참고"
+    명령 선택·출력 해석·실패 진단은 [실전 종합 가이드](practical-guide.md#privesc), Windows·AD 프로토콜별 상세 사용법은 [Impacket 집중 가이드](impacket.md)를 참고하세요.
+
 ## 1. 개념 { #concept }
 
 | 출처 | 왜 통하나 |

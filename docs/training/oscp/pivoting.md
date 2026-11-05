@@ -13,6 +13,9 @@ tags:
 !!! abstract "In one sentence"
     The failure that shows up most in 2025–2026 write-ups: owning the first machine but never getting traffic into the internal network behind it. Pivoting is the fix — make the compromised host carry your tools' traffic onward.
 
+!!! tip "Practical companion"
+    For command selection, output interpretation and failure diagnosis, use the [practical field guide](practical-guide.md#pivot); for Windows/AD protocol detail, use the [Impacket handbook](impacket.md).
+
 ## 1. Concept { #concept }
 
 ### When you need to pivot { #when-to-pivot }

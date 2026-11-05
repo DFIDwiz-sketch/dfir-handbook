@@ -13,6 +13,9 @@ tags:
 !!! abstract "한 문장 요약"
     낮은 권한 셸에서 root로: 먼저 꼼꼼히 정보 수집하고, 흔한 설정 오류를 순서대로(sudo → SUID / capabilities → cron → 크리덴셜 → 서비스) 확인하고, 커널 익스플로잇은 마지막으로 남겨 둡니다.
 
+!!! tip "실전 실행 참고"
+    명령 선택·출력 해석·실패 진단은 [실전 종합 가이드](practical-guide.md#privesc), Windows·AD 프로토콜별 상세 사용법은 [Impacket 집중 가이드](impacket.md)를 참고하세요.
+
 ## 1. 개념 { #concept }
 
 리눅스 박스의 root는 몇 군데에서만 나옵니다.

@@ -13,6 +13,9 @@ tags:
 !!! abstract "In one sentence"
     Low-privilege shell to root: enumerate thoroughly first, work the common misconfigurations in order (sudo → SUID / capabilities → cron → credentials → services), and keep kernel exploits for last.
 
+!!! tip "Practical companion"
+    For command selection, output interpretation and failure diagnosis, use the [practical field guide](practical-guide.md#privesc); for Windows/AD protocol detail, use the [Impacket handbook](impacket.md).
+
 ## 1. Concept { #concept }
 
 Root on a Linux box comes from one of a few places:

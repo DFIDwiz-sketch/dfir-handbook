@@ -16,6 +16,9 @@ tags:
 !!! warning "Rules first"
     Several common tools are **banned or limited** in the exam (sqlmap, Nessus-style scanners, Burp Pro, spoofing/poisoning, AI chatbots, Metasploit beyond one target). They are flagged with red boxes on each page and summarised on [Exam format › Restricted](exam-format.md#restricted). Always re-read the official **OSCP+ Exam Guide** before you sit the exam — the rules change.
 
+!!! tip "Practical companion"
+    For command selection, output interpretation and failure diagnosis, use the [practical field guide](practical-guide.md#workspace); for Windows/AD protocol detail, use the [Impacket handbook](impacket.md).
+
 ## The pipeline at a glance { #pipeline }
 
 ```mermaid

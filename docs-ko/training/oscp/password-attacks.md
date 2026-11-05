@@ -13,6 +13,9 @@ tags:
 !!! abstract "한 문장 요약"
     해시 종류를 알아내고, 맞는 크랙 모드를 골라 hashcat / john으로 오프라인 크랙 — 온라인 스프레이는 조심해서. 계정 잠금 한 번이 AD 세트 전체를 날릴 수 있어요.
 
+!!! tip "실전 실행 참고"
+    명령 선택·출력 해석·실패 진단은 [실전 종합 가이드](practical-guide.md#cracking), Windows·AD 프로토콜별 상세 사용법은 [Impacket 집중 가이드](impacket.md)를 참고하세요.
+
 ## 1. 개념 { #concept }
 
 | 공격 | 대상 | 위험 | 도구 |

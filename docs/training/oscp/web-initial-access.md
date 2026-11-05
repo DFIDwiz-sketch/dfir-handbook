@@ -13,6 +13,9 @@ tags:
 !!! abstract "In one sentence"
     Getting the first shell on a standalone: usually a web application or an exposed service, often a public exploit that needs fixing before it runs — found by thorough content discovery and manual testing, not by automated scanners.
 
+!!! tip "Practical companion"
+    For command selection, output interpretation and failure diagnosis, use the [practical field guide](practical-guide.md#burp); for Windows/AD protocol detail, use the [Impacket handbook](impacket.md).
+
 ## 1. Concept { #concept }
 
 Initial access on OSCP machines almost always falls into one of these buckets, roughly in order of how often they appear:

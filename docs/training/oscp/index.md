@@ -7,7 +7,7 @@ tags:
 # OSCP+
 
 <div class="dfir-meta" markdown>
-**Exam:** OffSec PEN-200 → OSCP / OSCP+ · **Status:** Preparing · **Last updated:** 2026-11-04
+**Exam:** OffSec PEN-200 → OSCP / OSCP+ · **Status:** Preparing · **Last updated:** 2026-11-05
 </div>
 
 !!! abstract "What this section is"
@@ -45,6 +45,36 @@ tags:
     The whole exam as one pipeline: recon → foothold → stable shell → privesc → AD assumed breach → pivot → lateral movement → domain. Links every stage to its page.
 
     [:octicons-arrow-right-24: Exam workflow](exam-workflow.md)
+
+</div>
+
+## Start with the practical guides { #practical-start }
+
+<div class="grid cards" markdown>
+
+-   :material-console:{ .lg .middle } **Practical field guide**
+
+    ---
+
+    Essential tools → workspace → command and output → failure diagnosis → evidence. Connect Nmap, ffuf, Burp, NetExec, shells, privesc, AD and pivoting.
+
+    [:octicons-arrow-right-24: Practical field guide](practical-guide.md)
+
+-   :material-domain:{ .lg .middle } **Impacket handbook**
+
+    ---
+
+    14 scripts, identity grammar, prerequisites, worked commands and troubleshooting, with actual help and local-execution output images.
+
+    [:octicons-arrow-right-24: Impacket handbook](impacket.md)
+
+-   :material-flask-outline:{ .lg .middle } **Reproducible tool lab**
+
+    ---
+
+    Local HTTP discovery, fuzzing, SMB authentication, file transfer and integrity checks without a Windows VM. Includes images and raw logs.
+
+    [:octicons-arrow-right-24: HTTP and SMB practice](labs/tool-practice.md)
 
 </div>
 

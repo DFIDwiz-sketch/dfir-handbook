@@ -13,6 +13,9 @@ tags:
 !!! abstract "In one sentence"
     The AD set starts from a supplied domain user (assumed breach) and chains through two machines to the Domain Controller. Partial points count, but most passing write-ups clear all 40 — and the usual blocker is not a missing technique but a missed credential or a missed pivot.
 
+!!! tip "Practical companion"
+    For command selection, output interpretation and failure diagnosis, use the [practical field guide](practical-guide.md#ad); for Windows/AD protocol detail, use the [Impacket handbook](impacket.md).
+
 ## 1. Concept { #concept }
 
 ### The AD loop { #ad-loop }

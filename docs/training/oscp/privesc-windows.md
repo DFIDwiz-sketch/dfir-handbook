@@ -13,6 +13,9 @@ tags:
 !!! abstract "In one sentence"
     Low-privilege user to Administrator / SYSTEM: read your token privileges first (SeImpersonate → potato), run WinPEAS, then work services, scheduled tasks, stored credentials and installer policies — kernel exploits last.
 
+!!! tip "Practical companion"
+    For command selection, output interpretation and failure diagnosis, use the [practical field guide](practical-guide.md#privesc); for Windows/AD protocol detail, use the [Impacket handbook](impacket.md).
+
 ## 1. Concept { #concept }
 
 | Source | Why it works |

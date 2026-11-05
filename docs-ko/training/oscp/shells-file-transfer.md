@@ -13,6 +13,9 @@ tags:
 !!! abstract "한 문장 요약"
     "명령을 실행할 수 있다"를 스크린샷 찍을 수 있는 안정적인 대화형 셸로 바꾸고, 도구를 대상에 옮깁니다 — 페이로드는 직접 만들고(`msfvenom` 은 언제나 허용), Metasploit은 많아야 한 대에만.
 
+!!! tip "실전 실행 참고"
+    명령 선택·출력 해석·실패 진단은 [실전 종합 가이드](practical-guide.md#shell), Windows·AD 프로토콜별 상세 사용법은 [Impacket 집중 가이드](impacket.md)를 참고하세요.
+
 ## 1. 개념 { #concept }
 
 순서대로 푸는 세 가지 문제입니다.

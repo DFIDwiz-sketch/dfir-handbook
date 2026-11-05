@@ -13,6 +13,9 @@ tags:
 !!! abstract "In one sentence"
     Find every open port, name every service and version, and pull everything an unauthenticated (or low-privileged) user can read — most OSCP footholds are sitting in this output, unnoticed.
 
+!!! tip "Practical companion"
+    For command selection, output interpretation and failure diagnosis, use the [practical field guide](practical-guide.md#nmap); for Windows/AD protocol detail, use the [Impacket handbook](impacket.md).
+
 ## 1. Concept { #concept }
 
 Enumeration is two passes:

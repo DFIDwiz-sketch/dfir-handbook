@@ -1,0 +1,57 @@
+$ getST.py -h
+Impacket v0.13.1 - Copyright Fortra, LLC and its affiliated companies
+
+usage: getST.py [-h] [-spn SPN] [-altservice ALTSERVICE] [-dmsa]
+                [-impersonate IMPERSONATE] [-additional-ticket ticket.ccache]
+                [-ts] [-debug] [-u2u] [-self] [-force-forwardable] [-renew]
+                [-hashes LMHASH:NTHASH] [-no-pass] [-k] [-aesKey hex key]
+                [-dc-ip ip address]
+                identity
+
+Given a password, hash or aesKey, it will request a Service Ticket and save it
+as ccache
+
+positional arguments:
+  identity              [domain/]username[:password]
+
+options:
+  -h, --help            show this help message and exit
+  -spn SPN              SPN (service/server) of the target service the service
+                        ticket will be generated for
+  -altservice ALTSERVICE
+                        New sname/SPN to set in the ticket
+  -dmsa                 Use DMSA (Delegated Managed Service Accounts)
+  -impersonate IMPERSONATE
+                        target username that will be impersonated (thru
+                        S4U2Self) for quering the ST. Keep in mind this will
+                        only work if the identity provided in this scripts is
+                        allowed for delegation to the SPN specified
+  -additional-ticket ticket.ccache
+                        include a forwardable service ticket in a S4U2Proxy
+                        request for RBCD + KCD Kerberos only
+  -ts                   Adds timestamp to every logging output
+  -debug                Turn DEBUG output ON
+  -u2u                  Request User-to-User ticket
+  -self                 Only do S4U2self, no S4U2proxy
+  -force-forwardable    Force the service ticket obtained through S4U2Self to
+                        be forwardable. For best results, the -hashes and
+                        -aesKey values for the specified -identity should be
+                        provided. This allows impresonation of protected users
+                        and bypass of "Kerberos-only" constrained delegation
+                        restrictions. See CVE-2020-17049
+  -renew                Sets the RENEW ticket option to renew the TGT used for
+                        authentication. Set -spn to 'krbtgt/DOMAINFQDN'
+
+authentication:
+  -hashes LMHASH:NTHASH
+                        NTLM hashes, format is LMHASH:NTHASH
+  -no-pass              don't ask for password (useful for -k)
+  -k                    Use Kerberos authentication. Grabs credentials from
+                        ccache file (KRB5CCNAME) based on target parameters.
+                        If valid credentials cannot be found, it will use the
+                        ones specified in the command line
+  -aesKey hex key       AES key to use for Kerberos Authentication (128 or 256
+                        bits)
+  -dc-ip ip address     IP Address of the domain controller. If omitted it use
+                        the domain part (FQDN) specified in the target
+                        parameter

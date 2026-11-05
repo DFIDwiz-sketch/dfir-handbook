@@ -16,6 +16,9 @@ tags:
 !!! warning "규칙부터"
     자주 쓰는 도구 중 여러 개가 시험에서 **금지되거나 제한됩니다**(sqlmap, Nessus류 스캐너, Burp Pro, 스푸핑/포이즈닝, AI 챗봇, 한 대를 넘는 Metasploit). 각 페이지에 빨간 박스로 표시했고, [시험 구조 › 금지 도구](exam-format.md#restricted)에 요약돼 있어요. 시험 전에는 꼭 공식 **OSCP+ Exam Guide** 를 다시 읽으세요 — 규칙은 바뀝니다.
 
+!!! tip "실전 실행 참고"
+    명령 선택·출력 해석·실패 진단은 [실전 종합 가이드](practical-guide.md#workspace), Windows·AD 프로토콜별 상세 사용법은 [Impacket 집중 가이드](impacket.md)를 참고하세요.
+
 ## 파이프라인 한눈에 보기 { #pipeline }
 
 ```mermaid

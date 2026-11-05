@@ -13,6 +13,9 @@ tags:
 !!! abstract "In one sentence"
     Turn "I can run a command" into a stable, interactive shell you can screenshot, and move your tools onto the target — with payloads you build yourself (`msfvenom` is always allowed) and Metasploit kept for at most one machine.
 
+!!! tip "Practical companion"
+    For command selection, output interpretation and failure diagnosis, use the [practical field guide](practical-guide.md#shell); for Windows/AD protocol detail, use the [Impacket handbook](impacket.md).
+
 ## 1. Concept { #concept }
 
 Three separate problems, solved in order:

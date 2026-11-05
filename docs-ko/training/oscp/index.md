@@ -7,7 +7,7 @@ tags:
 # OSCP+ { #oscp }
 
 <div class="dfir-meta" markdown>
-**시험:** OffSec PEN-200 → OSCP / OSCP+ · **상태:** 준비 중 · **최종 수정:** 2026-11-04
+**시험:** OffSec PEN-200 → OSCP / OSCP+ · **상태:** 준비 중 · **최종 수정:** 2026-11-05
 </div>
 
 !!! abstract "이 섹션은"
@@ -45,6 +45,36 @@ tags:
     시험 전체를 하나의 파이프라인으로: 정찰 → 발판 → 셸 안정화 → 권한 상승 → AD assumed breach → 피벗 → 횡적 이동 → 도메인. 단계마다 해당 페이지로 연결.
 
     [:octicons-arrow-right-24: 시험 흐름](exam-workflow.md)
+
+</div>
+
+## 실전 가이드부터 시작하기 { #practical-start }
+
+<div class="grid cards" markdown>
+
+-   :material-console:{ .lg .middle } **실전 종합 가이드**
+
+    ---
+
+    필수 도구 선정 → 설치·작업 환경 → 명령·출력 해석 → 실패 진단 → 증빙. Nmap·ffuf·Burp·NetExec·셸·권한 상승·AD·피벗을 연결합니다.
+
+    [:octicons-arrow-right-24: 실전 종합 가이드](practical-guide.md)
+
+-   :material-domain:{ .lg .middle } **Impacket 집중 가이드**
+
+    ---
+
+    14개 스크립트의 역할과 인증 문법, 필요한 권한, 실행 예제, 오류 해결. 실제 도움말·로컬 실행 출력 이미지 포함.
+
+    [:octicons-arrow-right-24: Impacket 실전 가이드](impacket.md)
+
+-   :material-flask-outline:{ .lg .middle } **직접 재현하는 도구 실습**
+
+    ---
+
+    Windows 없이 로컬 HTTP 탐색·퍼징·SMB 인증·파일 전송·해시 비교를 실행하고 화면과 원본 로그를 확인합니다.
+
+    [:octicons-arrow-right-24: HTTP·SMB 실습](labs/tool-practice.md)
 
 </div>
 

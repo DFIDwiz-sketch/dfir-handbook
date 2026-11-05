@@ -16,6 +16,9 @@ tags:
 !!! note "How this page is organised"
     What the report must contain, how to take notes so the report is 80% written before you start, and a submission checklist. Practising the report is part of practising the exam — see [Practice labs › mock exams](practice-labs.md#mock-exams).
 
+!!! tip "Practical companion"
+    For command selection, output interpretation and failure diagnosis, use the [practical field guide](practical-guide.md#evidence); for Windows/AD protocol detail, use the [Impacket handbook](impacket.md).
+
 ## What the report is for { #purpose }
 
 A grader reads it and must be able to **reproduce every step**. If they can't follow it, or a flag isn't proven, that target scores reduced or zero points — regardless of whether you actually rooted it. Treat the exam network like a client engagement and write the report you'd hand a client.
