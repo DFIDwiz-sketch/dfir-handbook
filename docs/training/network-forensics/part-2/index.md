@@ -24,7 +24,7 @@ Lessons are added one at a time, in order. Entries in the list below without a l
 | [2.6](dns-structure.md) | DNS structure: records, messages, compression, hierarchy | Published |
 | [2.7](dns-investigation.md) | DNS investigation: logs, fast flux, DGAs, encrypted DNS, punycode | Published |
 | [2.8](zeek.md) | Turning packets into logs with Zeek: log structure, jq, Community ID | Published |
-| 2.9 | Lab guide: DNS profiling, anomalies and scoping | In preparation |
+| [2.9](lab-dns-profiling.md) | Lab guide: DNS profiling, anomalies and scoping | Published |
 | 2.10 | syslog: daemon and protocol, facility and severity, reading configuration | In preparation |
 | 2.11 | Windows event logs and event forwarding | In preparation |
 | 2.12 | Log aggregation: why collect, and how to ship | In preparation |
