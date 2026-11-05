@@ -28,7 +28,7 @@ tags:
 | [2.10강](syslog.md) | syslog: 데몬과 프로토콜, 시설과 심각도, 설정 읽기 | 게시 |
 | [2.11강](windows-event-logs.md) | Windows 이벤트 로그와 이벤트 전달 | 게시 |
 | [2.12강](log-aggregation.md) | 로그 집계: 왜 모으고, 어떻게 보내나 | 게시 |
-| 2.13강 | Elastic Stack과 SOF-ELK | 준비 중 |
+| [2.13강](elastic-stack-sof-elk.md) | Elastic Stack과 SOF-ELK | 게시 |
 | 2.14강 | 실습 가이드: 로그 집계와 분석 | 준비 중 |
 
 ## 시리즈 처음으로 { #back }

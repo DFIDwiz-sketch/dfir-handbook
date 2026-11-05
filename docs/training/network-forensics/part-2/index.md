@@ -28,7 +28,7 @@ Lessons are added one at a time, in order. Entries in the list below without a l
 | [2.10](syslog.md) | syslog: daemon and protocol, facility and severity, reading configuration | Published |
 | [2.11](windows-event-logs.md) | Windows event logs and event forwarding | Published |
 | [2.12](log-aggregation.md) | Log aggregation: why collect, and how to ship | Published |
-| 2.13 | The Elastic Stack and SOF-ELK | In preparation |
+| [2.13](elastic-stack-sof-elk.md) | The Elastic Stack and SOF-ELK | Published |
 | 2.14 | Lab guide: log aggregation and analysis | In preparation |
 
 ## Back to the series { #back }
