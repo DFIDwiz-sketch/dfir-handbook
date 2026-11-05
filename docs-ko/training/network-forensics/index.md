@@ -42,7 +42,7 @@ flowchart TD
 
     HTTP와 DNS를 포렌식 관점에서 프로파일링하고, 여러 장비의 로그를 한곳에 모아 교차 분석하는 방법.
 
-    :octicons-clock-24: 준비 중
+    [:octicons-arrow-right-24: 2부](part-2/index.md)
 
 -   :material-chart-timeline-variant:{ .lg .middle } **3부 · NetFlow와 파일 공유 프로토콜**
 

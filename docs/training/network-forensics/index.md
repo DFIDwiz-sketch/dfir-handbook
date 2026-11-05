@@ -42,7 +42,7 @@ The diagram shows the flow of the series. Going down, it moves from "how to get 
 
     Profiling HTTP and DNS from a forensic angle, and pulling logs from many devices into one place for cross-analysis.
 
-    :octicons-clock-24: In preparation
+    [:octicons-arrow-right-24: Part 2](part-2/index.md)
 
 -   :material-chart-timeline-variant:{ .lg .middle } **Part 3 · NetFlow & File-Access Protocols**
 
