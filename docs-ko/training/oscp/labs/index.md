@@ -22,3 +22,6 @@ tags:
     [:octicons-arrow-right-24: Kerberoasting](kerberoasting.md)
 
 </div>
+
+
+로컬 도구 기초부터 연습하려면 [HTTP·SMB 재현 실습](tool-practice.md)을 먼저 하세요. 도메인 랩 없이 가능하며 실행 로그와 이미지 출처가 포함됩니다.

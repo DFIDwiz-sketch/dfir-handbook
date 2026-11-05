@@ -22,3 +22,6 @@ Full worked examples run in my home lab (`lab.local`) — the attack executed en
     [:octicons-arrow-right-24: Kerberoasting](kerberoasting.md)
 
 </div>
+
+
+Start with [reproducible HTTP and SMB tool practice](tool-practice.md) for local fundamentals without a domain. It includes raw execution logs and image provenance.

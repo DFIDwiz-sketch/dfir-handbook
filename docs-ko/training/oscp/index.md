@@ -7,11 +7,24 @@ tags:
 # OSCP+ { #oscp }
 
 <div class="dfir-meta" markdown>
-**시험:** OffSec PEN-200 → OSCP / OSCP+ · **상태:** 준비 중 · **최종 수정:** 2026-10-23
+**시험:** OffSec PEN-200 → OSCP / OSCP+ · **상태:** 준비 중 · **최종 수정:** 2026-11-05
 </div>
 
 !!! abstract "이 섹션은"
     OSCP+ 시험(PEN-200) 공부 허브입니다. 구성은 2025–2026년 합격·불합격 후기들이 공통으로 말하는 내용을 따릅니다. **Active Directory 세트를 확실히 잡고, standalone 머신은 탄탄한 기본기로 버틴다.** 이 핸드북에 이미 페이지가 있는 기법은 반복해서 쓰지 않고 링크로 연결합니다. 그래서 여기의 공격자 관점과 공격 기법 / Windows / 네트워크 섹션의 탐지 관점이 서로 이어집니다.
+
+!!! warning "시험 전에: 공식 OSCP+ Exam Guide를 꼭 확인하세요"
+    시험 규칙 — 금지 도구, Metasploit 제한, proof 요건, 리포트 형식 — 은 **시간이 지나며 바뀝니다**. 시험을 보기 전에 최신 [OffSec OSCP+ Exam Guide](https://help.offsec.com/hc/en-us/articles/360040165632)를 직접 읽으세요. 이 섹션의 규칙 메모는 공부용 보조 자료일 뿐, 기준이 아닙니다.
+
+!!! danger "시험에서 제한되는 것 (요약)"
+    - **자동 익스플로잇 도구** — sqlmap, SQLninja, db_autopwn, browser_autopwn → SQLi는 손으로([수동 SQLi](web-initial-access.md#sqli)).
+    - **대량 취약점 스캐너** — Nessus, OpenVAS, NeXpose, Core Impact → `nmap -sV` / NSE + `searchsploit`([정찰](recon-enumeration.md)).
+    - **상용 도구** — Burp Suite Pro, Metasploit Pro → Burp Community, 수동 테스트.
+    - **스푸핑** — ARP / DNS / NBNS / LLMNR 포이즈닝(Responder 포이즈닝, mitm6, bettercap) → [내 SMB 서버로의 coercion](active-directory.md#coercion).
+    - **AI / 챗봇** — ChatGPT, Claude, Gemini, OffSec KAI 등 → 내 노트와 공개 자료.
+    - **Metasploit / Meterpreter** — 한 대에만, Metasploit으로 피벗 금지; `msfvenom` 과 (Meterpreter가 아닌) `multi/handler` 는 어디서나 허용([셸](shells-file-transfer.md)).
+
+    자세히: [시험 구조 › 금지 도구](exam-format.md#restricted) · [Metasploit](exam-format.md#metasploit).
 
 ## 1. 시험 알기 { #1-know-the-exam }
 
@@ -21,21 +34,109 @@ tags:
 
     ---
 
-    standalone 3대(60점) + AD 세트(40점), 70점 합격, 보너스 점수 없음. 2024년 11월 변경 사항과 합격 점수 조합.
+    standalone 3대(원점수 60점) + AD 세트(40점), 보너스 점수 없음. 2026년 12월 1일 08:00 GMT 이전 시작은 원점수 70점, 그 시각부터 시작은 100~500점 척도의 400점이 합격 기준. 시험 변경 사항과 시기별 점수 예시.
 
     [:octicons-arrow-right-24: 시험 구조와 점수](exam-format.md)
+
+-   :material-transit-connection-variant:{ .lg .middle } **시험 흐름**
+
+    ---
+
+    시험 전체를 하나의 파이프라인으로: 정찰 → 발판 → 셸 안정화 → 권한 상승 → AD assumed breach → 피벗 → 횡적 이동 → 도메인. 단계마다 해당 페이지로 연결.
+
+    [:octicons-arrow-right-24: 시험 흐름](exam-workflow.md)
+
+</div>
+
+## 실전 가이드부터 시작하기 { #practical-start }
+
+<div class="grid cards" markdown>
+
+-   :material-console:{ .lg .middle } **실전 종합 가이드**
+
+    ---
+
+    필수 도구 선정 → 설치·작업 환경 → 명령·출력 해석 → 실패 진단 → 증빙. Nmap·ffuf·Burp·NetExec·셸·권한 상승·AD·피벗을 연결합니다.
+
+    [:octicons-arrow-right-24: 실전 종합 가이드](practical-guide.md)
+
+-   :material-domain:{ .lg .middle } **Impacket 집중 가이드**
+
+    ---
+
+    14개 스크립트의 역할과 인증 문법, 필요한 권한, 실행 예제, 오류 해결. 실제 도움말·로컬 실행 출력 이미지 포함.
+
+    [:octicons-arrow-right-24: Impacket 실전 가이드](impacket.md)
+
+-   :material-flask-outline:{ .lg .middle } **직접 재현하는 도구 실습**
+
+    ---
+
+    Windows 없이 로컬 HTTP 탐색·퍼징·SMB 인증·파일 전송·해시 비교를 실행하고 화면과 원본 로그를 확인합니다.
+
+    [:octicons-arrow-right-24: HTTP·SMB 실습](labs/tool-practice.md)
 
 </div>
 
 ## 2. 공부 항목 { #2-study-areas }
 
+각 공부 항목 페이지는 같은 구성입니다: **개념 → 주요 도구 → 시나리오(상황 → 명령 → 볼 것 → 다음 단계) → 자주 하는 실수 → 시험 팁**.
+
 <div class="grid cards" markdown>
+
+-   :material-radar:{ .lg .middle } **정찰과 정보 수집**
+
+    ---
+
+    nmap, NetExec, smbclient, enum4linux-ng, SNMP, NFS — 모든 포트와 그 포트가 흘리는 정보를 찾기.
+
+    [:octicons-arrow-right-24: 정찰과 정보 수집](recon-enumeration.md)
+
+-   :material-web:{ .lg .middle } **웹과 초기 침투**
+
+    ---
+
+    ffuf / feroxbuster / gobuster, nikto, Burp Community, searchsploit, 수동 SQLi, 업로드, LFI, 클라이언트 사이드.
+
+    [:octicons-arrow-right-24: 웹과 초기 침투](web-initial-access.md)
+
+-   :material-console:{ .lg .middle } **셸과 파일 전송**
+
+    ---
+
+    리버스 셸, msfvenom 페이로드, TTY 업그레이드, 도구 올리기와 루팅 자료 내리기, Metasploit 한 대 규칙.
+
+    [:octicons-arrow-right-24: 셸과 파일 전송](shells-file-transfer.md)
+
+-   :material-linux:{ .lg .middle } **Linux 권한 상승**
+
+    ---
+
+    LinPEAS, pspy, GTFOBins — sudo, SUID, capabilities, cron, 크리덴셜, NFS, 커널은 마지막.
+
+    [:octicons-arrow-right-24: Linux 권한 상승](privesc-linux.md)
+
+-   :material-microsoft-windows:{ .lg .middle } **Windows 권한 상승**
+
+    ---
+
+    WinPEAS, PrintSpoofer / GodPotato, LOLBAS — 토큰, 서비스, 예약 작업, AlwaysInstallElevated, 저장된 크리덴셜.
+
+    [:octicons-arrow-right-24: Windows 권한 상승](privesc-windows.md)
+
+-   :material-lock-open-variant:{ .lg .middle } **패스워드 공격**
+
+    ---
+
+    hashcat / john 모드, 커스텀 워드리스트, NetExec & Kerbrute 스프레이, hydra — 그리고 잠금 계산.
+
+    [:octicons-arrow-right-24: 패스워드 공격](password-attacks.md)
 
 -   :material-domain:{ .lg .middle } **Active Directory**
 
     ---
 
-    최우선. assumed breach 시작, 정보 수집, Kerberos 공격, 수평 이동, 도메인 장악.
+    최우선. assumed breach → NetExec, BloodHound CE, Kerberoast / AS-REP, ACL 악용, Impacket 횡적 이동, mimikatz, DCSync.
 
     [:octicons-arrow-right-24: Active Directory](active-directory.md)
 
@@ -46,30 +147,6 @@ tags:
     가장 많이 막히는 곳: 내부 서브넷 접근. Ligolo-ng, Chisel, SSH 포워딩, proxychains.
 
     [:octicons-arrow-right-24: 피벗팅과 터널링](pivoting.md)
-
--   :material-linux:{ .lg .middle } **Linux 권한 상승**
-
-    ---
-
-    sudo, SUID, capabilities, cron, 시스템 안의 크리덴셜, 커널 익스플로잇.
-
-    [:octicons-arrow-right-24: Linux 권한 상승](privesc-linux.md)
-
--   :material-microsoft-windows:{ .lg .middle } **Windows 권한 상승**
-
-    ---
-
-    토큰 권한과 potato, 서비스, 예약 작업, AlwaysInstallElevated, 저장된 크리덴셜.
-
-    [:octicons-arrow-right-24: Windows 권한 상승](privesc-windows.md)
-
--   :material-web:{ .lg .middle } **웹과 초기 침투**
-
-    ---
-
-    수동 SQLi, 업로드 우회, LFI → RCE, SSRF, CMS, 공개 익스플로잇 수정, 클라이언트 사이드.
-
-    [:octicons-arrow-right-24: 웹과 초기 침투](web-initial-access.md)
 
 -   :material-format-list-checks:{ .lg .middle } **방법론과 습관**
 

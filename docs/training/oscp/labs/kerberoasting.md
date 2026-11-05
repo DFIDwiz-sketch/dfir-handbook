@@ -15,7 +15,7 @@ tags:
     A full Kerberoasting walkthrough in the home lab — the principle, setting up a vulnerable SPN account, roasting and cracking from Kali, and detecting it in Splunk via Windows event 4769.
 
 !!! note "Study side vs. detection side"
-    This is the hands-on version. The mechanism and detection reference lives at [Adversary › Kerberoasting](../../../adversary/kerberoasting.md); the exam-strategy view is on [Active Directory](../active-directory.md#credential-attacks).
+    This is the hands-on version. The mechanism and detection reference lives at [Adversary › Kerberoasting](../../../adversary/kerberoasting.md); the exam-strategy view is on [Active Directory](../active-directory.md#kerberoasting).
 
 ## 1. Why it works { #how-it-works }
 
@@ -215,7 +215,7 @@ Once the Zeek sensor is up, Kerberos traffic is in `kerberos.log` with `request_
 
 ## Related pages
 
-- [Adversary › Kerberoasting](../../../adversary/kerberoasting.md) (detection reference) · [Active Directory](../active-directory.md#credential-attacks) · [Exam format › restrictions](../exam-format.md#restricted)
+- [Adversary › Kerberoasting](../../../adversary/kerberoasting.md) (detection reference) · [Active Directory](../active-directory.md#kerberoasting) · [Exam format › restrictions](../exam-format.md#restricted)
 - Next cousin technique: AS-REP Roasting (no password needed) — [Adversary › AS-REP Roasting](../../../adversary/asrep-roasting.md)
 
 ## References
