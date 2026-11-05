@@ -25,7 +25,7 @@ Lessons are added one at a time, in order. Entries in the list below without a l
 | [1.7](bpf.md) | Selecting only the packets you need with BPF | Published |
 | [1.8](tcpdump-options-wireshark-ui.md) | Practical tcpdump options and reading the Wireshark window | Published |
 | [1.9](wireshark-display-filters.md) | Wireshark display filters and following streams | Published |
-| 1.10 | Lab guide: getting hands-on with tcpdump and Wireshark | In preparation |
+| [1.10](lab-tcpdump-wireshark-tshark.md) | Lab guide: getting hands-on with tcpdump and Wireshark | Published |
 | 1.11 | Evidence acquisition: where, and with what equipment, to collect packets | In preparation |
 | 1.12 | Challenges and opportunities in network investigations | In preparation |
 | 1.13 | Lab guide: carving exfiltrated data | In preparation |

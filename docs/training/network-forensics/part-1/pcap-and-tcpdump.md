@@ -297,7 +297,7 @@ tcpdump: listening on lo, link-type EN10MB (Ethernet), snapshot length 262144 by
 | `packets received by filter` | **Meaning varies by OS.** It may count packets regardless of the filter, or include packets that matched but haven't been processed yet |
 | `packets dropped by kernel` | Packets the OS capture mechanism **discarded** for lack of buffer space. 0 if the OS doesn't report it |
 
-In this lab, 72 "received" versus 36 "captured" looks odd, but as documented, the meaning of this number depends on the OS and configuration. I didn't separately determine why it was exactly double in this environment. The important point is not to read it as "36 were missed". **To see missed packets, look at the last line, `dropped by kernel`.**
+In this lab, 72 "received" versus 36 "captured" looks odd, but as documented, the meaning of this number depends on the OS and configuration. The reason it was exactly double here is a property of the loopback interface, confirmed from the libpcap source in lesson 1.10, section 5.1. The important point is not to read it as "36 were missed". **To see missed packets, look at the last line, `dropped by kernel`.**
 
 And `0 dropped` **doesn't guarantee nothing was missed.** It counts only what was discarded **inside** the capturing machine. Packets discarded before that, for example by an overflowing switch mirror port, are invisible to this machine. And even with `-s 0` to keep whole packets, packets are lost if the capture machine's **CPU** can't keep up, or if the **storage** can't write as fast as the link delivers. So test capture equipment **at real speed and scale** before relying on it in operations.
 
