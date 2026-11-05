@@ -15,7 +15,7 @@ tags:
     - What can each kind of evidence tell you, and what can't it?
     - What attitude should an investigator bring to the evidence?
 
-    It also introduces the time, scope and scale pressures on a response team, and the **hypothetical organisation network** used throughout the series. There are almost no commands or tools yet. This lesson is about **why** we will spend the next lessons on proxy logs, pcap and flows.
+    It also introduces how threat hunting and threat intelligence link security operations (the SOC) with incident response, the time, scope and scale pressures on a response team, the **hypothetical organisation network** used throughout the series, and the series goals. There are almost no commands or tools yet. This lesson is about **why** we will spend the next lessons on proxy logs, pcap and flows.
 
 !!! note "Notation"
     **(Hypothetical)** = a story made up to aid understanding, **(Illustrative output)** = output that shows the shape only and was not actually run, **[Changed]** = something that differs from older material, **[Supplement]** = a practical addition. External addresses use documentation ranges (192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24) and `example` domains. Internal addresses use the private 10.0.0.0/8 range so they cannot collide with any real network.
@@ -30,6 +30,15 @@ If you were the responder, where would you start? The first idea is probably **"
 - **The PC may already be gone.** It may have been rebuilt, the laptop lost, or it was a cloud instance that has since been deleted.
 - **Touching it may tip off the attacker.** If the attacker is still inside, suddenly seizing a PC or running security tools signals "an investigation has started". The attacker may wipe traces or hide through another path. Acting so that the investigation doesn't leak to the adversary is called **OPSEC** (operational security). It comes up throughout this series.
 - **It may not be just one machine.** Attackers don't stop at the first PC; they move on to other systems inside. This is **lateral movement**. In an organisation with tens of thousands of staff, answering "how far did it spread?" by imaging one disk at a time is simply not realistic.
+
+To be fair, the disk side still has chances. Even disk encryption can sometimes be defeated with keys left in memory (RAM) or the page file, if the system that did the encrypting wasn't carefully sanitised. The catch is that you have to be able to touch that system.
+
+The network side, on the other hand, has two advantages the disk doesn't.
+
+- **The evidence may already be collected.** Packet sensors, flow collectors and proxy and firewall logs that were running before the incident may already hold records of that moment. Unlike disk forensics, where you image a PC after the fact, you don't have to "create" the evidence; you just have to pull it out.
+- **You can look for attackers you don't yet know exist.** Going out to look for "is there an attacker already inside?" before any alert fires is called **threat hunting**. Network data, which carries the whole organisation's communication, is an excellent place to hunt. You can't look at tens of thousands of disks, but you can see those machines' outbound traffic all at once at a few points.
+
+And the skills you learn here aren't only for incident response. The same skills apply to alert analysis in security operations (the SOC), detection rule development and hunting. Section 7 returns to this link.
 
 So what do you look at when you can't look at the disk? The answer is **the path the communication took**. For a PC to talk to an external server, data must pass through switches, proxies, firewalls and routers. Some of those devices record the conversation in their own way. Network forensics is collecting those records, reading them, and fitting them together.
 
@@ -180,7 +189,21 @@ flowchart TD
 
 **How to read the diagram:** an investigation isn't a one-way task; it's a loop. When new evidence supports a hypothesis, you make it more specific and go back to observing. When it contradicts, you drop it and form a new one. The key is that the "contradicts → abandon" arrow exists at all.
 
-### 6.3 Be careful when there are no results, too { #absence }
+### 6.3 Who receives the findings { #customers }
+
+The people who use a network forensic investigation's results, its "customers", are more varied than you might think. Even for the same incident, each asks different questions.
+
+| Who receives the findings | What they mainly ask |
+| --- | --- |
+| Incident response team | How far has it spread, what do we block, what do we isolate |
+| Management | How bad is the damage, do we stop operations, where do we spend budget |
+| Legal · HR | Who broke which rule, does this support discipline or litigation |
+| Law enforcement · regulators | Was there a crime or a breach of reporting duty, is the evidence legally usable |
+| SOC · intelligence team | Which indicators and TTPs should become detection rules |
+
+Missions and priorities differ, but they all share one need: to know **what actually happened**. So the investigator must keep strictly to process and doggedly pull threads even when current tools don't handle them well. The work product must rest on **data that withstands challenge**, not on conjecture or unfounded opinion. When legal, or the other side's expert, asks "how do you know that?", you must be able to answer with evidence and process.
+
+### 6.4 Be careful when there are no results, too { #absence }
 
 "I searched the proxy logs for that C2 address and found nothing" is not the same as "there was no communication with that address". First check:
 
@@ -197,16 +220,20 @@ Only after checking these can you say "no trace of communication within the scop
 
 ```mermaid
 flowchart TD
-    D["Detection<br/>(SOC · alerts)"] --> I["Response · forensics<br/>host · network · memory · malware"]
-    I --> T["Threat intelligence<br/>(indicators · TTPs)"]
-    T --> S["Detection rules · block policies"]
-    S --> D
-    T -.external intel.-> I
+    M["SOC · continuous monitoring"] --> DET["SOC · detection<br/>probable adversary behaviour"]
+    DET -->|"alert"| IR["DFIR · incident response<br/>host · network"]
+    IR --> TG["DFIR · intelligence generation"]
+    TG -->|"CTI: behavioural signatures · TTPs"| SC["SOC · intelligence consumption<br/>SIEM analysis"]
+    SC --> M
+    TG --> HU["DFIR · threat hunting"]
+    HU --> IR
 ```
 
-**How to read the diagram:** follow the arrows around the loop (from detection rules at the bottom back to detection at the top). There's no fixed starting point. An incident may start from a SOC (security operations centre) detection alert, or from internally or externally generated threat intelligence (like the phone call in section 1).
+**How to read the diagram:** "SOC" and "DFIR" at the start of each box name the function that does that work. The **SOC** (security operations centre) monitors and, when it **detects** probable adversary behaviour, hands an alert to DFIR. **DFIR** responds to and analyses incidents and **generates intelligence** about the attacker. That intelligence is used two ways. One is **CTI** (cyber threat intelligence) passed to the SOC, where it becomes detection signatures and feeds back into monitoring (the big outer loop). The other is reused inside DFIR as the starting point for **threat hunting**, and what hunting finds leads back into incident response (the small inner loop). Threat intelligence ties the SOC and DFIR into one cycle. There's no fixed starting point. An incident may start from a SOC detection alert, or from internally or externally generated threat intelligence (like the phone call in section 1).
 
-Findings from network forensics flow around this cycle. For example, a C2 address and traffic pattern found during analysis are written up as threat intelligence, which then becomes a detection rule in the SIEM (a system that collects many logs for search and alerting) or a firewall block policy. The next time the same attacker shows up, they're detected sooner.
+Findings from network forensics flow around this cycle. For example, a C2 address and traffic pattern found during analysis are written up as threat intelligence, which becomes a detection rule in the SIEM (a system that collects many logs for search and alerting) or a firewall block policy. With the same information, the hunting team looks for "does any other PC show this pattern?" The next time the same attacker shows up, they're detected sooner.
+
+Note the phrase "behavioural signatures". Attackers change IP addresses and domains easily, but rarely change how they work (their TTPs). So a rule that catches **behaviour**, such as "alert on same-size POSTs to the outside every 5 minutes", stays useful far longer than "alert on this address".
 
 DFIR itself has several specialities: host, network, memory, malware analysis, mobile and more. No one person knows them all in depth, but they overlap a lot. The network knowledge in this series is useful when looking at network-related artifacts left on Windows, Linux, macOS or mobile devices, and when adding context to SIEM alerts. Conversely, someone who knows Windows file system artifacts will understand SMB (the Windows file-sharing protocol, covered in Part 3) traffic far faster. Building a broad bench of knowledge, alone or as a team, pays off.
 
@@ -222,7 +249,17 @@ The time an attacker stays inside before being discovered is called **dwell time
 | Share first detected internally | 53% (47% external notification) | 52% (up from 43% the year before) |
 | Notable detail | 8% undetected for over a year | Median of 122 days for cyber espionage and North Korean IT worker cases |
 
-A few cautions when reading this table.
+The year-by-year trend from the same report cited in the older material shows the direction more clearly (values are the median for that year's investigations, in days).
+
+| Investigation year | 2011 | 2013 | 2015 | 2017 | 2019 | 2020 | 2021 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| All | 416 | 229 | 146 | 101 | 56 | 24 | 21 |
+| Found via external notification | — | — | 320 | 186 | 141 | 73 | 28 |
+| Found internally | — | — | 56 | 57.5 | 30 | 12 | 18 |
+
+In ten years the median dropped from over a year to about three weeks, which says the industry's detection and response improved that much. And in every year, **cases learned of through outside notification had stayed hidden longer** than those found internally. Outside notification comes from law enforcement, security researchers or regulators, and by the time they notice, the intrusion is often long under way.
+
+A few cautions when reading these tables.
 
 First, a **median** is "the middle value when the cases are lined up". A median of 14 days means half were found faster than 14 days and **half were found later**. Because it isn't a mean, cases that hid for months or years (the long tail) barely show in it. The 122 days for espionage cases shows how long that tail can be.
 
@@ -250,7 +287,17 @@ A response team ready to deploy doesn't mean things will go smoothly. A vague tr
 
 **Scale.** Many tools simply don't work at that size. So the team splits the environment into manageable chunks, and complexity grows with the number of chunks.
 
-Network data eases all three pressures at once. Full packets, flows, logs from devices like proxies, and logs from endpoints show many systems at once from one place. The scoping in section 4 is exactly that. How much it helps, though, depends on how well this data is woven into the investigative process.
+These three boil down to two questions. **"How do we know we've found every affected system?"** and **"If hundreds are affected, how do we remediate them at scale?"** Miss even one, and the attacker comes back through it. That's why remediation is often done all at once after scoping is complete, and until then it matters to investigate without the attacker noticing (the OPSEC from section 1).
+
+Network data eases this pressure. The key is to start with **the data that's most readily accessible right now**. This series groups that data into three kinds:
+
+| Label | Kind | Example |
+| --- | --- | --- |
+| **P** | Full-packet capture stores | pcap saved by taps and sensors |
+| **F** | Flow-based traffic summaries | NetFlow exported by routers and firewalls |
+| **L** | Infrastructure and endpoint logs | Proxy, firewall, DNS, event logs |
+
+These show many systems at once from one place, so they directly reduce the scope and scale problems. The scoping in section 4 is exactly that. How much it helps, though, depends on how well this data is woven into the investigative process. And the investigator's most important skill is balance: adapting the method to the situation while sticking to established process and policy.
 
 **[Supplement] What to check on day one.** Later lessons cover these in detail, but here's what's worth checking as soon as a response starts:
 
@@ -262,45 +309,66 @@ Network data eases all three pressures at once. Full packets, flows, logs from d
 
 ## 10. The hypothetical organisation used in this series { #lab-environment }
 
-Many lessons will use the same hypothetical organisation as their stage. **(Hypothetical)** It's a mid-sized research institute working on specialised materials. Recently the industry's information-sharing body (an ISAC, where organisations in the same sector share threat information) circulated a warning that activity by a state-backed group targeting the sector had increased. Then the mail server started dropping out intermittently, after similar odd behaviour on the Internet-facing web server. While looking for the cause, IT suspected malicious activity and a full incident response began. Another team handles the hosts; we investigate using **only the collected network data**.
+Many lessons will use the same hypothetical organisation as their stage. **(Hypothetical)** It's a government-funded institute researching specialised alloys and bioengineering. Recently the industry's information-sharing body (an ISAC, where organisations in the same sector share threat information) circulated a warning that activity by a state-backed group targeting the sector had risen sharply. This group is known to move freely once inside, and to use both freely available public tools and custom-built ones.
+
+Then the mail server started dropping out intermittently, after similar odd behaviour on the Internet-facing web server. In other words, **anomalies on DMZ servers** were the first clue. While looking for the cause, IT suspected malicious activity and a full incident response began. Another team is running host forensics across the whole organisation; we investigate using **only the collected network data**.
 
 ```mermaid
-flowchart TB
-    NET(("Internet")) --- IR["Internet router"]
-    IR --- FW["Firewall"]
-    FW --- DMZ["DMZ<br/>web · mail servers"]
-    FW --- CR["Core router"]
-    CR --- S1["User segment"]
-    CR --- S2["Research segment"]
-    CR --- S3["Management segment<br/>sensors · log collection"]
-    T1(["Tap ①"]) -.- IR
-    T2(["Tap ②"]) -.- DMZ
-    T3(["Tap ③"]) -.- CR
-    T4(["Tap ④"]) -.- S2
-    FW -.NetFlow.-> S3
-    CR -.NetFlow.-> S3
+flowchart TD
+    NET(("Internet")) ---|"Tap A"| FW["Firewall"]
+    VPN["VPN users"] --- FW
+    FW ---|"Tap B"| DMZ["DMZ<br/>mail relay · DNS<br/>FTP · web"]
+    FW ---|"Tap C"| CR["Core router"]
+    CR ---|"Tap D"| SV["Services segment<br/>DC · file · mail<br/>collaboration · proxy"]
+    CR --- MG["Management segment<br/>sensors · log collection"]
+    CR --- PC["Research segment<br/>User segment"]
 ```
 
-**How to read the diagram:** solid lines are real connections. The dotted circles mark **taps** (devices placed in a link that copy the traffic passing through). Packets copied by the taps are stored on sensors in the management segment. The firewall and core router summarise traffic through all their interfaces as NetFlow and send it to the management segment, and server and device logs are gathered in one place too.
+**How to read the diagram:** lines are real connections, and "Tap A–D" on a line means a **tap** (a device placed in a link that copies the traffic passing through) sits on that link. DC is the domain controller (the server that handles account authentication). The management segment holds two sensors, an AV server, an event log collector, a log aggregator, and the admin and security analyst PCs. The proxy has TLS inspection enabled. The tap positions in a table:
 
-One question worth asking straight away: **"Which tap would see traffic between two PCs inside the user segment?"** The answer is "probably none". Traffic within one segment goes straight through that segment's switch and never reaches the core router. Traffic moving sideways inside the organisation is called **east-west traffic**; traffic between inside and outside is **north-south traffic**. If collection is concentrated on the north-south path, the lateral movement from section 4 is hard to see. How to fill this blind spot (switch mirroring, endpoint logs, etc.) is covered in the evidence-collection lesson later in Part 1.
+| Tap | Where it sits | Traffic it sees | Sensor that stores it |
+| --- | --- | --- | --- |
+| A | Between the Internet and the firewall | The whole organisation's Internet traffic (seen as the firewall's outside address) | Sensor 1 |
+| B | Between the firewall and the DMZ | Traffic to and from DMZ servers, from the Internet and from inside | Sensor 1 |
+| C | Between the firewall and the core router | All internal segments to and from the firewall (internal addresses as-is) | Sensor 2 |
+| D | Between the core router and the services segment | User and research PCs talking to servers (domain controller, file, mail, proxy) | Sensor 2 |
+
+Packets copied by the taps are stored on the two sensors in the management segment. The firewall and core router summarise traffic through all their interfaces as NetFlow, and server and device logs are gathered on the log aggregator in the management segment. Note also that the web proxy has TLS inspection enabled. From lesson 1.2 you'll read this proxy's logs directly.
+
+One question worth asking straight away: **"Which tap would see traffic between two PCs inside the user segment?"** The answer is "none". Traffic within one segment goes straight through that segment's switch and never reaches the core router. Traffic moving sideways inside the organisation is called **east-west traffic**; traffic between inside and outside is **north-south traffic**. Thanks to tap D, this organisation sees some east-west traffic in the "PC → server" direction, but "PC → PC" is still a blind spot. The lateral movement from section 4 can pass right through it. How to fill this gap (switch mirroring, endpoint logs, etc.) is covered in the evidence-collection lesson later in Part 1.
 
 The organisation's key users and endpoints are below. These addresses come back in later lessons.
 
 | Role | Hostname | Address | Notes |
 | --- | --- | --- | --- |
 | CEO | hq-wkstn-01 | 10.10.7.11 | User segment |
+| Senior manager | hq-wkstn-05 | 10.10.7.15 | User segment, out-of-support legacy OS |
 | Senior researcher | hq-rd-01 | 10.10.6.11 | Research segment, access to sensitive material |
 | Programme manager | hq-rd-04 | 10.10.6.14 | Research segment |
 | IT administrator (separate normal and domain admin accounts) | hq-admin | 10.10.5.26 | Management segment |
-| Security analyst | hq-hunt | 10.10.5.25 | Management segment |
+| Security analyst (separate normal and security admin accounts) | hq-hunt | 10.10.5.25 | Management segment |
 
-## 11. Summary { #summary }
+Notice that the administrators use separate normal and admin accounts. That's good security practice, and in an investigation "when and where was the admin account used?" becomes an important lead. If an admin account logs on from a PC where it's never normally used, that's a reason to suspect the lateral movement from section 4.
+
+## 11. Goals of this series { #series-goals }
+
+Finally, here's what you should be able to do by the end of this series. Every lesson that follows serves at least one of these five.
+
+1. **Apply forensic methods to network investigations.** Evidence preservation, separating facts from hypotheses, and repeatable procedures apply to network data just the same.
+2. **Find and use evidence containing artifacts of communication.** Treat every place that records "who talked to whom" as an evidence source: not only packets, but proxy, DNS, flow and device logs.
+3. **Carve payloads when needed.** Extract the files and data that actually crossed the wire from packets or caches (carving). You'll do this hands-on in the lab at the end of Part 1.
+4. **Build sound OPSEC habits.** Habits that avoid signalling the attacker while you investigate, starting with small settings such as turning off name lookups in your tools.
+5. **Build an activity timeline.** Aligning the times from several evidence sources into one timeline is how you understand the whole incident.
+
+## 12. Summary { #summary }
 
 - Disk forensics hits a wall when the system is gone, when touching it tips off the attacker, or when there are too many systems. Even then, the path the traffic took keeps records.
 - Network evidence forms a spectrum from summaries (statistics, flows, logs) to a complete copy (full packets). Each source answers different questions, so you need to fit several witnesses together.
 - The cable remembers nothing. Collection must start before you need it; if nothing was prepared, rush to secure the logs devices were already writing.
 - Network evidence sometimes reaches conclusions on its own, but more often it acts as the lead that picks which systems to examine closely.
+- The network may already hold collected evidence, and because it shows the whole organisation at once, it suits threat hunting for attackers you don't yet know exist.
+- Threat intelligence ties SOC detection and DFIR response and hunting into one cycle. Rules that catch behaviour (TTPs) outlast rules that catch addresses.
+- Reduce scope and scale problems by starting with the most readily accessible data: packets (P), flows (F) and logs (L).
 - Write observed facts, hypotheses and conclusions needing more evidence separately, and drop a hypothesis when contradicting evidence appears. When there are no results, first suspect collection scope, retention, encryption and tool settings.
 - Median dwell time is 14 days per the 2026 report, but espionage-type cases run far longer. Design retention against these numbers.
 
@@ -355,12 +423,20 @@ In the next lesson (1.2) we start with the witness that answered "which PC was i
 
     In (b), it's hard to establish the entry path from network evidence alone; you rely more on endpoint traces or outside information. Given the long dwell times of espionage-style attacks, this is a reason to consider keeping summarised evidence (flows, DNS logs) for longer.
 
-**Question 7. (Application)** In the section 10 organisation, research-segment PC `10.10.6.14` connects via RDP to `10.10.6.11` in the same research segment. Which tap in the diagram might see this? If no tap does, what evidence should you look for?
+**Question 7. (Application)** In the section 10 organisation, (a) research-segment PC `10.10.6.14` connects via RDP to `10.10.6.11` in the same research segment. (b) The same PC `10.10.6.14` connects via SMB to the file server in the services segment. Which tap sees each? If no tap does, what evidence should you look for?
 
 ??? success "Answer and explanation"
-    The research segment has **tap ④**, so if that tap sits where it can see traffic within the segment (for example between the research switch and the PCs, or at a point mirroring the whole segment), it may see it. But if tap ④ is on the link between the research segment and the core router, traffic between two PCs in the same segment never crosses that link, so it **won't be seen**, and it won't appear in the core router's NetFlow either. So first check "where, and in which direction" the tap is placed. If it isn't captured, look for endpoint-side evidence such as the research switch's logs or mirroring settings, and both PCs' Windows event logs (RDP logon records). East-west traffic like this easily becomes a blind spot for north-south collection.
+    - (a) **No tap sees it.** Traffic between PCs in the same research segment goes straight through the research switch and never crosses the core router. Tap C (firewall–core router) and tap D (core router–services segment) aren't on that path, and it won't appear in the core router's NetFlow either. Look for endpoint-side evidence such as the research switch's logs or mirroring settings, and both PCs' Windows event logs (RDP logon records).
+    - (b) Going from the research segment to the services segment crosses the core router into the services segment, so **tap D sees it**. The core router's NetFlow records it too.
 
-**Question 8. (Mindset)** During analysis you find, in the packets, a string from a tool known to be used by a particular state-backed group. Can you conclude "this is that group's attack"?
+    Internal traffic from the same PC can be visible or invisible depending on its destination. So before investigating, check "where, and in which direction" each tap sits, and never conclude "it's not on the tap, so it didn't happen".
+
+**Question 8. (Concept)** How does threat hunting differ from incident response? Why is network data especially well suited to hunting?
+
+??? success "Answer and explanation"
+    Incident response starts from **an already known event**, such as an alert or an outside notification. Threat hunting starts with no alert, forms the hypothesis "is there an attacker already inside that we haven't found?", and **goes looking first**. As in the section 7 diagram, hunting hypotheses mostly come from threat intelligence (TTPs from other incidents), and once hunting finds something, it becomes incident response. Network data fits well because although you can't look at tens of thousands of disks one by one, you can see those endpoints' communication **all at once** at a few collection points (the taps in section 10, firewall and router NetFlow, proxy logs). For example, you can search the whole organisation in one go for "endpoints sending same-size POSTs every 5 minutes".
+
+**Question 9. (Mindset)** During analysis you find, in the packets, a string from a tool known to be used by a particular state-backed group. Can you conclude "this is that group's attack"?
 
 ??? success "Answer and explanation"
     Not yet. The observed fact is "that string was in the packets"; "that group's attack" is a hypothesis. As in section 6.1, skilled attackers sometimes plant other groups' traces to send investigators the wrong way. Tools are also often public or leaked and used by several groups. Judging who is behind it means checking whether infrastructure (addresses, domain registration), timing, targeted information and TTPs across several stages all fit, and cross-checking with the threat intelligence team. The accurate report states the observation as is, e.g. "a tool string reported to be associated with group X was observed".

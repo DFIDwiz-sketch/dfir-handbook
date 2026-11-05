@@ -12,7 +12,7 @@ tags:
 
 ## Lessons { #lessons }
 
-Lessons are added one at a time, in order. Entries in the list below without a link are still being prepared. Titles and order may shift slightly as the rest of the source material is reviewed.
+Lessons are added one at a time, in order. Entries in the list below without a link are still being prepared. Numbering may shift slightly, for example if one lesson is split in two for length.
 
 | Lesson | Topic | Status |
 | --- | --- | --- |
@@ -25,6 +25,10 @@ Lessons are added one at a time, in order. Entries in the list below without a l
 | 1.7 | Selecting only the packets you need with BPF | In preparation |
 | 1.8 | Practical tcpdump options and reading the Wireshark window | In preparation |
 | 1.9 | Wireshark display filters and following streams | In preparation |
+| 1.10 | Lab guide: getting hands-on with tcpdump and Wireshark | In preparation |
+| 1.11 | Evidence acquisition: where, and with what equipment, to collect packets | In preparation |
+| 1.12 | Challenges and opportunities in network investigations | In preparation |
+| 1.13 | Lab guide: carving exfiltrated data | In preparation |
 
 ## Back to the series { #back }
 
