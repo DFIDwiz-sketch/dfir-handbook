@@ -26,7 +26,7 @@ tags:
 | [2.8강](zeek.md) | Zeek로 패킷을 로그로: 로그 구조, jq, Community ID | 게시 |
 | [2.9강](lab-dns-profiling.md) | 실습 가이드: DNS 프로파일링, 이상 징후, 범위 산정 | 게시 |
 | [2.10강](syslog.md) | syslog: 데몬과 프로토콜, 시설과 심각도, 설정 읽기 | 게시 |
-| 2.11강 | Windows 이벤트 로그와 이벤트 전달 | 준비 중 |
+| [2.11강](windows-event-logs.md) | Windows 이벤트 로그와 이벤트 전달 | 게시 |
 | 2.12강 | 로그 집계: 왜 모으고, 어떻게 보내나 | 준비 중 |
 | 2.13강 | Elastic Stack과 SOF-ELK | 준비 중 |
 | 2.14강 | 실습 가이드: 로그 집계와 분석 | 준비 중 |
