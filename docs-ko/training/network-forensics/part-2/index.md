@@ -23,7 +23,7 @@ tags:
 | [2.5강](web-server-logs.md) | 웹 서버 로그: 형식, 읽기, 공격의 흔적 | 게시 |
 | [2.6강](dns-structure.md) | DNS의 구조: 레코드, 메시지, 압축, 위계 | 게시 |
 | [2.7강](dns-investigation.md) | DNS 조사: 로그, 빠른 플럭스, DGA, 암호화 DNS, 퓨니코드 | 게시 |
-| 2.8강 | Zeek로 패킷을 로그로: 로그 구조, jq, Community ID | 준비 중 |
+| [2.8강](zeek.md) | Zeek로 패킷을 로그로: 로그 구조, jq, Community ID | 게시 |
 | 2.9강 | 실습 가이드: DNS 프로파일링, 이상 징후, 범위 산정 | 준비 중 |
 | 2.10강 | syslog: 데몬과 프로토콜, 시설과 심각도, 설정 읽기 | 준비 중 |
 | 2.11강 | Windows 이벤트 로그와 이벤트 전달 | 준비 중 |
