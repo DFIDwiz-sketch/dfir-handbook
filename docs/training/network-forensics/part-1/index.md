@@ -23,7 +23,7 @@ Lessons are added one at a time, in order. Entries in the list below without a l
 | [1.5](proxy-cache.md) | Commercial proxy logs, and pulling responses out of the proxy cache | Published |
 | [1.6](pcap-and-tcpdump.md) | libpcap, tcpdump, and the pcap/pcapng file format | Published |
 | [1.7](bpf.md) | Selecting only the packets you need with BPF | Published |
-| 1.8 | Practical tcpdump options and reading the Wireshark window | In preparation |
+| [1.8](tcpdump-options-wireshark-ui.md) | Practical tcpdump options and reading the Wireshark window | Published |
 | 1.9 | Wireshark display filters and following streams | In preparation |
 | 1.10 | Lab guide: getting hands-on with tcpdump and Wireshark | In preparation |
 | 1.11 | Evidence acquisition: where, and with what equipment, to collect packets | In preparation |

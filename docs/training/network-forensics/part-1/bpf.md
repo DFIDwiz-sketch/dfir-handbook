@@ -180,6 +180,21 @@ Look at these two filters:
 '(ip and tcp port 80) or (ip and udp port 53)'
 ```
 
+Drawn as a picture, one packet passes through the first filter in this order:
+
+```mermaid
+flowchart TD
+    P["One packet arrives"] --> A{"IPv4?"}
+    A -->|"no"| R["Reject"]
+    A -->|"yes"| B{"TCP 80?"}
+    B -->|"yes"| K["Accept (store · show)"]
+    B -->|"no"| C{"UDP 53?"}
+    C -->|"yes"| K
+    C -->|"no"| R
+```
+
+**How to read the diagram:** each diamond is one decision, asked in turn from top to bottom. Once a decision reaches a conclusion (accept or reject), that packet's evaluation ends, and the next packet starts again from the top. Section 2's "each bag on its own" property is right there in the picture.
+
 They mean the same. Both matched 5 packets in the practice file, and comparing the compiled output from `tcpdump -d` showed **exactly the same 21-line** program (actual output):
 
 ```console
