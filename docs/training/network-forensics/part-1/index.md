@@ -17,7 +17,7 @@ Lessons are added one at a time, in order. Entries in the list below without a l
 | Lesson | Topic | Status |
 | --- | --- | --- |
 | [1.1](why-network-forensics.md) | Evidence beyond the disk: why network forensics, and the investigator's mindset | Published |
-| 1.2 | Web proxies: how they work, the main products, why the config file is evidence | In preparation |
+| [1.2](web-proxies.md) | Web proxies: how they work, the main products, why the config file is evidence | Published |
 | 1.3 | Reading proxy logs: default and custom formats, Unix time conversion, commercial logs | In preparation |
 | 1.4 | Reconstructing an incident from proxy logs alone (investigation walkthrough) | In preparation |
 | 1.5 | Pulling responses out of the proxy cache | In preparation |
