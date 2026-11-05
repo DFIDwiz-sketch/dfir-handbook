@@ -9039,21 +9039,18 @@
 </span><span id="__span-31-3"><a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>2026-11-03T15:07:07Z
 </span></code></pre></div>
 <p><code>10.10.5.17</code> started asking for the same list <strong>at 15:07:07</strong>. Before that (09:00–15:05) it asked only for ordinary work sites. So this PC may have been <strong>infected around 15:05–15:07</strong> (hypothesis: check web access, email and USB use just before then in endpoint records). Searching by the name list catches even <strong>freshly infected PCs</strong> that haven't yet asked for the successful name.</p>
-<p><strong>Figure 9-1. What this lab found and how it connects</strong> (upper boxes are names, lower boxes are PCs; arrows mean "asked for")</p>
+<p><strong>Figure 9-1. What this lab found and how it connects</strong> (four groups, top to bottom; arrows mean "asked for")</p>
 <pre class="mermaid"><code>flowchart TD
-    subgraph N["Names found"]
-        D1["DGA list of 24&lt;br/&gt;success: owxdarkhbvi.com → 203.0.113.99"]
-        D2["sync.example.org&lt;br/&gt;127.0.0.1 → 198.51.100.7 (changed between 13:30 and 14:31)"]
-        D3["*.t.example.net&lt;br/&gt;258 TXT queries, base32 data"]
-        D4["outside resolver 192.0.2.53&lt;br/&gt;(bypass)"]
-    end
-    D1 --&gt; P1["10.10.4.21&lt;br/&gt;all day, :07 every hour"]
+    D1["DGA list of 24&lt;br/&gt;success: owxdarkhbvi.com&lt;br/&gt;→ 203.0.113.99"] --&gt; P1["10.10.4.21&lt;br/&gt;all day, :07 every hour"]
     D1 --&gt; P2["10.10.5.17&lt;br/&gt;from 15:07 (new infection?)"]
+    P1 ~~~ D2["sync.example.org&lt;br/&gt;127.0.0.1 → 198.51.100.7&lt;br/&gt;(changed 13:30–14:31)"]
     D2 --&gt; P3["10.10.2.30&lt;br/&gt;every 30 minutes"]
     D2 --&gt; P4["10.10.4.22&lt;br/&gt;once at 14:31"]
+    P3 ~~~ D3["*.t.example.net&lt;br/&gt;258 TXT queries, base32 data"]
     D3 --&gt; P5["10.10.7.8&lt;br/&gt;13:20–13:34"]
+    P5 ~~~ D4["outside resolver 192.0.2.53&lt;br/&gt;(bypass)"]
     D4 --&gt; P6["10.10.9.9&lt;br/&gt;19:00–19:59"]</code></pre>
-<p><strong>How to read it:</strong> the upper boxes are the odd names (or destinations) found in this day, the lower ones the PCs that asked for them. Two arrows from one name mean the same thing happened on two PCs. Whether different names are related (the same attacker?) can't be told from this data alone.</p>
+<p><strong>How to read it:</strong> four groups from top to bottom. The first box in each group is an odd name (or destination) found in this day; the boxes its arrows point to are the PCs that asked for it. Two arrows from one name mean the same thing happened on two PCs. There are no lines between groups: whether different names are related (the same attacker?) can't be told from this data alone.</p>
 <h2 id="lookalike">10. Step 8: look-alike domains<a class="headerlink" href="#lookalike" title="Permanent link">¶</a></h2>
 <p>Finally, find names starting with <code>xn--</code> and decode them (lesson 2.7, section 7).</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">'select(.query|startswith("xn--")) | [(.ts|todate), ."id.orig_h", .query, (.answers|join(","))] | @tsv'</span><span class="w"> </span>dns.log
