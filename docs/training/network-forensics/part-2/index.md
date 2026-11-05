@@ -20,7 +20,7 @@ Lessons are added one at a time, in order. Entries in the list below without a l
 | [2.2](http-responses.md) | Reading HTTP responses: status codes, response headers, investigative use | Published |
 | [2.3](tracking-cookies-http2-http3.md) | Seeing the past through tracking cookies, and HTTP/2 and HTTP/3 | Published |
 | [2.4](lab-http-profiling.md) | Lab guide: HTTP profiling | Published |
-| 2.5 | Web server logs: formats, reading them, traces of attacks | In preparation |
+| [2.5](web-server-logs.md) | Web server logs: formats, reading them, traces of attacks | Published |
 | 2.6 | DNS structure: records, messages, compression, hierarchy | In preparation |
 | 2.7 | DNS investigation: logs, fast flux, DGAs, encrypted DNS, punycode | In preparation |
 | 2.8 | Turning packets into logs with Zeek: log structure, jq, Community ID | In preparation |
