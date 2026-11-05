@@ -21,7 +21,7 @@ Lessons are added one at a time, in order. Entries in the list below without a l
 | [1.3](proxy-logs.md) | Reading proxy logs: default and custom formats, Unix time | Published |
 | [1.4](proxy-log-walkthrough.md) | Reconstructing an incident from proxy logs alone (investigation walkthrough) | Published |
 | [1.5](proxy-cache.md) | Commercial proxy logs, and pulling responses out of the proxy cache | Published |
-| 1.6 | libpcap, tcpdump, and the pcap/pcapng file format | In preparation |
+| [1.6](pcap-and-tcpdump.md) | libpcap, tcpdump, and the pcap/pcapng file format | Published |
 | 1.7 | Selecting only the packets you need with BPF | In preparation |
 | 1.8 | Practical tcpdump options and reading the Wireshark window | In preparation |
 | 1.9 | Wireshark display filters and following streams | In preparation |

@@ -21,7 +21,7 @@ tags:
 | [1.3강](proxy-logs.md) | 프록시 로그 읽기: 기본·맞춤 형식, 유닉스 시간 | 게시 |
 | [1.4강](proxy-log-walkthrough.md) | 프록시 로그만으로 사건 재구성하기(조사 실습) | 게시 |
 | [1.5강](proxy-cache.md) | 상용 프록시 로그와 프록시 캐시에서 응답 꺼내기 | 게시 |
-| 1.6강 | libpcap, tcpdump, pcap·pcapng 파일 구조 | 준비 중 |
+| [1.6강](pcap-and-tcpdump.md) | libpcap, tcpdump, pcap·pcapng 파일 구조 | 게시 |
 | 1.7강 | BPF로 필요한 패킷만 고르기 | 준비 중 |
 | 1.8강 | tcpdump 실전 옵션과 Wireshark 화면 읽기 | 준비 중 |
 | 1.9강 | Wireshark 디스플레이 필터와 스트림 따라가기 | 준비 중 |
