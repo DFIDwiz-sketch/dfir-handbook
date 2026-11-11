@@ -42,6 +42,14 @@ Notes from courses and training I've taken, re-worked into my own reference and 
 
     [:octicons-arrow-right-24: OSCP+](oscp/index.md)
 
+-   :material-file-search-outline:{ .lg .middle } **PCAP Incident Response Labs**
+
+    ---
+
+    Eight hands-on PCAP investigations merged into one method: identifying hosts and devices, extracting and hashing downloads safely, Zeek UID correlation, delivery and C2, spread to the DC over SMB, and writing Snort rules — each step in tshark, Zeek and Wireshark, with a lab-by-lab guide and English answer templates.
+
+    [:octicons-arrow-right-24: PCAP IR Labs](pcap-ir-labs/index.md)
+
 -   :material-console:{ .lg .middle } **Silver C2**
 
     ---

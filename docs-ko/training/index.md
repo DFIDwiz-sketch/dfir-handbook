@@ -42,6 +42,14 @@ title: 트레이닝
 
     [:octicons-arrow-right-24: OSCP+](oscp/index.md)
 
+-   :material-file-search-outline:{ .lg .middle } **PCAP 침해사고 분석 실습**
+
+    ---
+
+    PCAP 분석 실습 8개를 하나의 방법으로 정리 — 호스트·기기 판별, 다운로드를 안전하게 꺼내 해시 구하기, Zeek UID 연결, 전달 방식과 C2, SMB를 통한 DC 전파, Snort 규칙 작성. 모든 단계를 tshark·Zeek·Wireshark로 보여 주고, 실습별 안내와 영어 답안 틀을 포함합니다.
+
+    [:octicons-arrow-right-24: PCAP IR Labs](pcap-ir-labs/index.md)
+
 -   :material-console:{ .lg .middle } **Silver C2**
 
     ---
