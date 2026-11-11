@@ -17,23 +17,23 @@ Pick the variant that matches the lab, then trim.
 
 ### Generic infection { #generic-template }
 
-> At <time> UTC, Windows host <hostname> (<IP>, <MAC>), used by <username>, downloaded <file> from <URL> (<size> bytes; SHA256 <hash>). IDS alerts and hash lookups identify it as <family> (<type>). The host then <contacted <C2 IP/domain> / showed no further malicious traffic in the capture>. The host should be isolated and reimaged, the URL and C2 blocked, and the user's credentials reset.
+> At &lt;time&gt; UTC, Windows host &lt;hostname&gt; (&lt;IP&gt;, &lt;MAC&gt;), used by &lt;username&gt;, downloaded &lt;file&gt; from &lt;URL&gt; (&lt;size&gt; bytes; SHA256 &lt;hash&gt;). IDS alerts and hash lookups identify it as &lt;family&gt; (&lt;type&gt;). The host then &lt;contacted &lt;C2 IP/domain&gt; / showed no further malicious traffic in the capture&gt;. The host should be isolated and reimaged, the URL and C2 blocked, and the user's credentials reset.
 
 ### Malicious Word document (macro downloader) { #macro-template }
 
-> At <time> UTC, user <username> on Windows client <hostname> (<IP>, <MAC>) in the <domain> domain downloaded a malicious Word document (SHA256 <hash>) from <URL>. When opened, its auto-executing VBA macro downloaded <family / second-stage malware> from <URL>. The host then checked its public IP (<public IP>) via <service> and began C2 traffic to <C2 IP/domain>. The host should be isolated and reimaged, the URLs and C2 blocked, and the user's credentials reset.
+> At &lt;time&gt; UTC, user &lt;username&gt; on Windows client &lt;hostname&gt; (&lt;IP&gt;, &lt;MAC&gt;) in the &lt;domain&gt; domain downloaded a malicious Word document (SHA256 &lt;hash&gt;) from &lt;URL&gt;. When opened, its auto-executing VBA macro downloaded &lt;family / second-stage malware&gt; from &lt;URL&gt;. The host then checked its public IP (&lt;public IP&gt;) via &lt;service&gt; and began C2 traffic to &lt;C2 IP/domain&gt;. The host should be isolated and reimaged, the URLs and C2 blocked, and the user's credentials reset.
 
 ### Two families (e.g. a loader followed by a banking trojan) { #two-families-template }
 
-> Windows host <hostname> (<IP>) downloaded a malicious file from <domain> at <time> UTC and was infected with <family A>. The host sent repeated HTTP POST beacons to <family A> C2 at <C2 IP:port>. <Family A> then installed <family B>, which communicated with its C2 over HTTPS at <domain>. No signs of infection were found on the other devices (<list>).
+> Windows host &lt;hostname&gt; (&lt;IP&gt;) downloaded a malicious file from &lt;domain&gt; at &lt;time&gt; UTC and was infected with &lt;family A&gt;. The host sent repeated HTTP POST beacons to &lt;family A&gt; C2 at &lt;C2 IP:port&gt;. &lt;Family A&gt; then installed &lt;family B&gt;, which communicated with its C2 over HTTPS at &lt;domain&gt;. No signs of infection were found on the other devices (&lt;list&gt;).
 
 ### Spread to the Domain Controller { #dc-template }
 
-> At <time> UTC, user <username> on Windows client <hostname> (<IP>, <MAC>) downloaded a malicious <Word document / EXE> from <URL> and was infected with <family A>. The client then downloaded further executables disguised as image files (<names>), identified as <family B>. At <time> UTC, the client copied <file> to the Domain Controller (<DC IP>, <DC hostname>) over SMB and executed it, spreading <family> to the DC. Both hosts should be isolated and reimaged, and the affected credentials reset.
+> At &lt;time&gt; UTC, user &lt;username&gt; on Windows client &lt;hostname&gt; (&lt;IP&gt;, &lt;MAC&gt;) downloaded a malicious &lt;Word document / EXE&gt; from &lt;URL&gt; and was infected with &lt;family A&gt;. The client then downloaded further executables disguised as image files (&lt;names&gt;), identified as &lt;family B&gt;. At &lt;time&gt; UTC, the client copied &lt;file&gt; to the Domain Controller (&lt;DC IP&gt;, &lt;DC hostname&gt;) over SMB and executed it, spreading &lt;family&gt; to the DC. Both hosts should be isolated and reimaged, and the affected credentials reset.
 
 ### Delivery via exploit kit, link or email { #delivery-template }
 
-> At <time> UTC, Windows host <hostname> (<IP>, <MAC>), used by <username>, was infected via <delivery method>. <Delivery sentence>. The payload (SHA256 <hash>) was identified by IDS alerts as <family / type>. After infection, the host began post-infection (C2) traffic to <C2 IP> (<C2 domain>) over <protocol/port>. The host should be isolated and reimaged, the C2 IP and domain blocked, and the user's credentials reset.
+> At &lt;time&gt; UTC, Windows host &lt;hostname&gt; (&lt;IP&gt;, &lt;MAC&gt;), used by &lt;username&gt;, was infected via &lt;delivery method&gt;. &lt;Delivery sentence&gt;. The payload (SHA256 &lt;hash&gt;) was identified by IDS alerts as &lt;family / type&gt;. After infection, the host began post-infection (C2) traffic to &lt;C2 IP&gt; (&lt;C2 domain&gt;) over &lt;protocol/port&gt;. The host should be isolated and reimaged, the C2 IP and domain blocked, and the user's credentials reset.
 
 Delivery sentence:
 
@@ -43,11 +43,11 @@ Delivery sentence:
 
 ### Downloads, direction and tool { #direction-template }
 
-> At <time> UTC, host <hostname> (<IP>, <MAC>), running <OS>, downloaded <N> item(s) of concern: <file 1> from <URL/IP 1> and <file 2> from <URL/IP 2>. The downloads were started with <tool, e.g. PowerShell Invoke-WebRequest>, identified from <User-Agent / commands seen in a plaintext shell session>. The malicious communications were with <external/internal> address <IP>, and the connection was initiated by <the compromised host / the remote host>. After the downloads, the host <began beaconing to / scanned / transferred data to> <IP/domain>. The host should be isolated and the files and IPs blocked as IOCs.
+> At &lt;time&gt; UTC, host &lt;hostname&gt; (&lt;IP&gt;, &lt;MAC&gt;), running &lt;OS&gt;, downloaded &lt;N&gt; item(s) of concern: &lt;file 1&gt; from &lt;URL/IP 1&gt; and &lt;file 2&gt; from &lt;URL/IP 2&gt;. The downloads were started with &lt;tool, e.g. PowerShell Invoke-WebRequest&gt;, identified from &lt;User-Agent / commands seen in a plaintext shell session&gt;. The malicious communications were with &lt;external/internal&gt; address &lt;IP&gt;, and the connection was initiated by &lt;the compromised host / the remote host&gt;. After the downloads, the host &lt;began beaconing to / scanned / transferred data to&gt; &lt;IP/domain&gt;. The host should be isolated and the files and IPs blocked as IOCs.
 
 ### Multiple executables and a failed DC attempt { #multi-exe-template }
 
-> Windows host <hostname> (<IP>, <MAC>), used by <username>, was infected with <family/families>. Starting at <time> UTC, the host downloaded six Windows executables over HTTP from <domains/IPs>, including files disguised as <e.g. images>. The host then <C2 activity>, and at <time> UTC attempted <what was attempted> against the Domain Controller (<DC IP>) over SMB (TCP 445), which failed (<evidence>). The host should be isolated and reimaged, the IOCs blocked, and the DC checked and patched (e.g. MS17-010) if applicable.
+> Windows host &lt;hostname&gt; (&lt;IP&gt;, &lt;MAC&gt;), used by &lt;username&gt;, was infected with &lt;family/families&gt;. Starting at &lt;time&gt; UTC, the host downloaded six Windows executables over HTTP from &lt;domains/IPs&gt;, including files disguised as &lt;e.g. images&gt;. The host then &lt;C2 activity&gt;, and at &lt;time&gt; UTC attempted &lt;what was attempted&gt; against the Domain Controller (&lt;DC IP&gt;) over SMB (TCP 445), which failed (&lt;evidence&gt;). The host should be isolated and reimaged, the IOCs blocked, and the DC checked and patched (e.g. MS17-010) if applicable.
 
 ## Key network information { #network-info-template }
 
@@ -114,15 +114,15 @@ Short form: `<family> (<type, e.g. information stealer>), per Snort alert "<aler
 
 ## Internal or external source { #source-template }
 
-> External. The malicious traffic was between <host IP> and <external IP> (a public, non-RFC1918 address). The compromised host initiated the connection (SYN from <host IP>:<port> to <external IP>:<port> at <time> UTC), so the host reached out to the external source.
+> External. The malicious traffic was between &lt;host IP&gt; and &lt;external IP&gt; (a public, non-RFC1918 address). The compromised host initiated the connection (SYN from &lt;host IP&gt;:&lt;port&gt; to &lt;external IP&gt;:&lt;port&gt; at &lt;time&gt; UTC), so the host reached out to the external source.
 
 ## Failed attempt on the DC { #failed-attempt-template }
 
-> At <time> UTC, <host IP> attempted <an MS17-010 (EternalBlue) exploit / SMB logon attempts / copying <file> to \\<DC>\ADMIN$> against the DC (<DC IP>) over TCP 445. It failed: <evidence, e.g. the DC returned STATUS_ACCESS_DENIED / no DoublePulsar response>.
+> At &lt;time&gt; UTC, &lt;host IP&gt; attempted &lt;an MS17-010 (EternalBlue) exploit / SMB logon attempts / copying &lt;file&gt; to \\&lt;DC&gt;\ADMIN$&gt; against the DC (&lt;DC IP&gt;) over TCP 445. It failed: &lt;evidence, e.g. the DC returned STATUS_ACCESS_DENIED / no DoublePulsar response&gt;.
 
 ## Public IP { #public-ip-template }
 
-> Public IP: x.x.x.x (returned by <service> in frame <N> when the malware checked the host's external IP).
+> Public IP: x.x.x.x (returned by &lt;service&gt; in frame &lt;N&gt; when the malware checked the host's external IP).
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.
