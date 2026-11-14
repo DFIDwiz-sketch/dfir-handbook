@@ -474,7 +474,7 @@ data=aG9zdD1hZG1pbi1QQzEmb3M9V2luMTEmdXNlcj1qc21pdGg=
     - "**The User-Agent only says Mozila/5.0**" → read inside the brackets too. The typo, IE8 and Windows 7 are all there.
     - **Missing the interval** → look at the pattern, not one line.
 
-    **Next steps:** isolate the PC → find **which program made the connection** (EDR, or **Sysmon Event ID 3**: "Network connection", recording which executable connected to which IP and port — normally `chrome.exe` / `msedge.exe`; for a beacon, something like `C:\Users\jsmith\AppData\Roaming\...\update.exe` in an odd location) → look for other PCs talking to the same domain → block the domain. See the [Compromised workstation playbook](../../../playbooks/compromised-workstation.md).
+    **Next steps:** isolate the PC → find **which program made the connection** (EDR, or **Sysmon Event ID 3**: "Network connection", recording which executable connected to which IP and port — normally `chrome.exe` / `msedge.exe`; for a beacon, something like `C:\Users\jsmith\AppData\Roaming\...\update.exe` in an odd location) → look for other PCs talking to the same domain → block the domain. See the [Compromised workstation playbook](../../../blueteam/playbooks/compromised-workstation.md).
 
 ### Question 3
 
@@ -512,4 +512,4 @@ response status:  201
     4. On the host: the Java web server process (`java.exe`, `tomcat*.exe`) spawning `cmd.exe` / `powershell.exe` (4688, Sysmon 1); on Linux, `java` → `sh` / `bash`
     5. Prevent recurrence: disable unneeded PUT, make the app trust **only the right-most value added by our load balancer**, patch the web server (e.g. Tomcat CVE-2025-24813)
 
-    Decide on isolating or stopping the server per the incident response process, weighing evidence preservation against business impact. See the [Web shell / server playbook](../../../playbooks/webshell-server.md).
+    Decide on isolating or stopping the server per the incident response process, weighing evidence preservation against business impact. See the [Web shell / server playbook](../../../blueteam/playbooks/webshell-server.md).

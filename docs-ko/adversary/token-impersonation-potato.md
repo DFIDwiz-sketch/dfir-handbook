@@ -70,7 +70,7 @@ incognito list_tokens -u ; impersonate_token "CORP\\da_user"
 | Security 로그 | 웹/SQL 프로세스 체인에 묶인 SYSTEM 세션의 **4672** (새 로그온에 특수 권한 할당) | 특권 토큰 사용 |
 | Security 로그 | `SYSTEM`이나 컴퓨터 계정으로 `127.0.0.1` / `::1`에 대한 **4624 Type 3**, 뒤이어 프로세스 생성 | 로컬 NTLM 반사 (옛 Potato) |
 | 파일 시스템 | IIS 웹 루트, `C:\ProgramData`, `C:\Users\Public`의 도구; [Prefetch](../windows/prefetch.md) / [Amcache](../windows/amcache.md) | Potato 바이너리는 작고 이름을 자주 바꿈 |
-| IIS 로그 | 직전의 웹 셸 요청 | 최초 거점 — [웹 셸 플레이북](../playbooks/webshell-server.md) 참고 |
+| IIS 로그 | 직전의 웹 셸 요청 | 최초 거점 — [웹 셸 플레이북](../blueteam/playbooks/webshell-server.md) 참고 |
 
 ## 탐지 { #detection }
 
@@ -123,4 +123,4 @@ incognito list_tokens -u ; impersonate_token "CORP\\da_user"
 
 - [MITRE ATT&CK — T1134](https://attack.mitre.org/techniques/T1134/)
 - [itm4n — PrintSpoofer: abusing impersonation privileges](https://itm4n.github.io/printspoofer-abusing-impersonate-privileges/)
-- 관련 페이지: [UAC 우회](uac-bypass.md) · [웹 셸 플레이북](../playbooks/webshell-server.md) · [PrintNightmare와 Spooler](printnightmare.md)
+- 관련 페이지: [UAC 우회](uac-bypass.md) · [웹 셸 플레이북](../blueteam/playbooks/webshell-server.md) · [PrintNightmare와 Spooler](printnightmare.md)

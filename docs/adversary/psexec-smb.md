@@ -110,4 +110,4 @@ Isolate both hosts (source and target), and treat the admin credential used as c
 
 - [MITRE ATT&CK — T1021.002](https://attack.mitre.org/techniques/T1021/002/) · [T1569.002](https://attack.mitre.org/techniques/T1569/002/)
 - [JPCERT — Detecting lateral movement (tool analysis)](https://jpcertcc.github.io/ToolAnalysisResultSheet/)
-- Pages: [Pass-the-Hash](pass-the-hash.md) · [WMI & WinRM](wmi-winrm.md) · [MFT/USN](../windows/mft-usn.md) · [Zeek SMB](../network/zeek/index.md) · [Security searches](../splunk/security-searches.md)
+- Pages: [Pass-the-Hash](pass-the-hash.md) · [WMI & WinRM](wmi-winrm.md) · [MFT/USN](../windows/mft-usn.md) · [Zeek SMB](../network/zeek/index.md) · [Security searches](../blueteam/splunk/security-searches.md)

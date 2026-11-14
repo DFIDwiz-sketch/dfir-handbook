@@ -106,4 +106,4 @@ Assume **every credential cached on that host is compromised** — this is the h
 
 - [MITRE ATT&CK — T1003.001](https://attack.mitre.org/techniques/T1003/001/)
 - [Microsoft — Configuring additional LSA protection (RunAsPPL)](https://learn.microsoft.com/en-us/windows-server/security/credentials-protection-and-management/configuring-additional-lsa-protection)
-- Pages: [Pass-the-Hash](pass-the-hash.md) · [Registry keys](../windows/registry-keys.md) · [SRUM](../windows/srum.md) · [Security searches](../splunk/security-searches.md)
+- Pages: [Pass-the-Hash](pass-the-hash.md) · [Registry keys](../windows/registry-keys.md) · [SRUM](../windows/srum.md) · [Security searches](../blueteam/splunk/security-searches.md)

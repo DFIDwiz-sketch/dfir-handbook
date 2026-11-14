@@ -15,7 +15,7 @@ Artifacts and log sources on Linux hosts — servers, containers hosts, and the 
 | **When was this file created/modified — was it timestomped?** | [Filesystem & timestamps](filesystem-timestamps.md) — MACB, ctime, ext4 birth | Sleuth Kit timeline, ext4 journal |
 | **What ran / what's running / what's listening?** | [Logs, processes & triage](logs-and-triage.md) — `ps`, `ss`, `/proc`, auditd | deleted-but-open binaries in `/proc` |
 | **What was installed and when?** | [Logs & triage](logs-and-triage.md) — `dpkg.log`/`apt history`/`yum.log` | package integrity |
-| **Web server on Linux got popped** | [Web shell playbook](../playbooks/webshell-server.md) | Apache/Nginx logs, [logs & triage](logs-and-triage.md) |
+| **Web server on Linux got popped** | [Web shell playbook](../blueteam/playbooks/webshell-server.md) | Apache/Nginx logs, [logs & triage](logs-and-triage.md) |
 | **Collect it all** | [UAC / CatScale / Velociraptor](../tools/velociraptor.md) | [Imaging](../tools/imaging-collection.md) |
 
 ## Pages
@@ -39,7 +39,7 @@ The investigative *method* is the same — timeline, pivot on keys, cross-check 
 2. Auth story — [who got in](auth-and-history.md).
 3. Persistence sweep — [where they hid](persistence.md), plus package integrity.
 4. File-system timeline — [what changed, when](filesystem-timestamps.md).
-5. Correlate; escalate to the matching [playbook](../playbooks/index.md) if it's more than one host.
+5. Correlate; escalate to the matching [playbook](../blueteam/playbooks/index.md) if it's more than one host.
 
 !!! info "Adding a page here"
     `python new.py linux/<name> -t artifact` (or `-t concept`) — it appears in the sidebar automatically.

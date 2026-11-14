@@ -57,7 +57,7 @@ hashcat -m 13100 hashes.txt wordlist.txt
 | DC event log | **4768** (TGT requested) preceding the spree; **4769** volume spike | The account authenticated, then harvested |
 | DC / LDAP | **4662** or directory-service logs: LDAP query filtering `servicePrincipalName=*` | The enumeration step (PowerView/Rubeus discovering SPNs) |
 | Network | [Zeek `kerberos.log`](../network/zeek/index.md) — `request_type=TGS`, `cipher` RC4, many distinct `service` from one `client` | Same pattern on the wire; and [`ldap.log`](../network/zeek/index.md) for the SPN enumeration |
-| Host | [Prefetch](../windows/prefetch.md)/[Amcache](../windows/amcache.md) for `Rubeus.exe`/renamed; [PowerShell 4104](../splunk/security-searches.md) for PowerView | Where the tool ran |
+| Host | [Prefetch](../windows/prefetch.md)/[Amcache](../windows/amcache.md) for `Rubeus.exe`/renamed; [PowerShell 4104](../blueteam/splunk/security-searches.md) for PowerView | Where the tool ran |
 
 !!! warning "AES-only environments change the signal"
     If the domain enforces AES, RC4 tickets (0x17) become the anomaly by themselves. But attackers can still Kerberoast with AES (`-m 19700`) — slower to crack, and the RC4 filter misses it. Fall back to the **behavioural** signal: one account requesting service tickets for an unusually large number of distinct SPNs in a short window, regardless of etype.
@@ -109,4 +109,4 @@ The cracked credential is a service account password, so **rotate every SPN acco
 
 - [MITRE ATT&CK — T1558.003](https://attack.mitre.org/techniques/T1558/003/)
 - [Microsoft — Detecting Kerberoasting activity](https://techcommunity.microsoft.com/t5/microsoft-security-baselines/bg-p/Microsoft-Security-Baselines)
-- Pages: [Windows Event IDs](../basics/windows-event-ids.md) · [Zeek kerberos/ldap](../network/zeek/index.md) · [Security searches](../splunk/security-searches.md)
+- Pages: [Windows Event IDs](../basics/windows-event-ids.md) · [Zeek kerberos/ldap](../network/zeek/index.md) · [Security searches](../blueteam/splunk/security-searches.md)

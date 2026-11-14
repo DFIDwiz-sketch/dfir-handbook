@@ -57,7 +57,7 @@ hashcat -m 13100 hashes.txt wordlist.txt
 | DC 이벤트 로그 | 몰아치기 직전의 **4768** (TGT 요청); **4769** 양 급증 | 계정이 인증한 뒤 수확함 |
 | DC / LDAP | **4662** 또는 디렉터리 서비스 로그: `servicePrincipalName=*`로 거르는 LDAP 쿼리 | 열거 단계 (PowerView/Rubeus가 SPN을 찾음) |
 | 네트워크 | [Zeek `kerberos.log`](../network/zeek/index.md) — `request_type=TGS`, `cipher` RC4, 한 `client`에서 서로 다른 `service` 다수 | 네트워크상의 같은 패턴; SPN 열거는 [`ldap.log`](../network/zeek/index.md) |
-| 호스트 | `Rubeus.exe`/이름 바꾼 것의 [Prefetch](../windows/prefetch.md)/[Amcache](../windows/amcache.md); PowerView는 [PowerShell 4104](../splunk/security-searches.md) | 도구가 실행된 곳 |
+| 호스트 | `Rubeus.exe`/이름 바꾼 것의 [Prefetch](../windows/prefetch.md)/[Amcache](../windows/amcache.md); PowerView는 [PowerShell 4104](../blueteam/splunk/security-searches.md) | 도구가 실행된 곳 |
 
 !!! warning "AES만 쓰는 환경에서는 신호가 달라집니다"
     도메인이 AES를 강제하면 RC4 티켓(0x17) 자체가 이상 징후가 됩니다. 하지만 공격자는 여전히 AES로 Kerberoasting할 수 있고(`-m 19700`) — 크랙은 느리지만 RC4 필터는 놓칩니다. 그럴 땐 **행동** 신호로 돌아가세요: etype과 상관없이 한 계정이 짧은 시간에 유난히 많은 서로 다른 SPN의 서비스 티켓을 요청하는 것.
@@ -109,4 +109,4 @@ hashcat -m 13100 hashes.txt wordlist.txt
 
 - [MITRE ATT&CK — T1558.003](https://attack.mitre.org/techniques/T1558/003/)
 - [Microsoft — Detecting Kerberoasting activity](https://techcommunity.microsoft.com/t5/microsoft-security-baselines/bg-p/Microsoft-Security-Baselines)
-- 관련 페이지: [Windows 이벤트 ID](../basics/windows-event-ids.md) · [Zeek kerberos/ldap](../network/zeek/index.md) · [보안 검색](../splunk/security-searches.md)
+- 관련 페이지: [Windows 이벤트 ID](../basics/windows-event-ids.md) · [Zeek kerberos/ldap](../network/zeek/index.md) · [보안 검색](../blueteam/splunk/security-searches.md)

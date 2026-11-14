@@ -102,10 +102,10 @@ nxc smb 10.0.0.0/24 -u Administrator -H <NThash> --local-auth
 
 ## 대응 { #response }
 
-출발지 호스트를 격리하고 탈취된 계정을 비활성화/교체해서 봉쇄하세요 — **두 번 재설정하세요**, 그러지 않으면 예전 NT 해시가 계속 통합니다. 해시가 곧 자격증명이므로 대응은 비밀번호 복잡도가 아니라 **자격증명 위생**입니다: 계정을 교체하고(`krbtgt` 관련 계정과 특권 계정은 두 번), 그 계정이 건드린 모든 호스트를 헌팅하세요. 출발지 호스트에서 수집할 것: LSASS 접근 이벤트, 덤프 도구([Prefetch](../windows/prefetch.md)/[Amcache](../windows/amcache.md)), 전체 [호스트 타임라인](../splunk/security-searches.md#build-a-host-timeline-everything-about-one-machine). 앞으로의 강화: LSASS 보호(RunAsPPL, Credential Guard), WDigest 끄기, 가능하면 NTLM 거부, 워크스테이션 해시가 서버에 닿지 못하게 관리자 계정 계층화, 로컬 관리자 해시가 머신 간에 공유되지 않도록 **Protected Users** 그룹과 LAPS 사용.
+출발지 호스트를 격리하고 탈취된 계정을 비활성화/교체해서 봉쇄하세요 — **두 번 재설정하세요**, 그러지 않으면 예전 NT 해시가 계속 통합니다. 해시가 곧 자격증명이므로 대응은 비밀번호 복잡도가 아니라 **자격증명 위생**입니다: 계정을 교체하고(`krbtgt` 관련 계정과 특권 계정은 두 번), 그 계정이 건드린 모든 호스트를 헌팅하세요. 출발지 호스트에서 수집할 것: LSASS 접근 이벤트, 덤프 도구([Prefetch](../windows/prefetch.md)/[Amcache](../windows/amcache.md)), 전체 [호스트 타임라인](../blueteam/splunk/security-searches.md#build-a-host-timeline-everything-about-one-machine). 앞으로의 강화: LSASS 보호(RunAsPPL, Credential Guard), WDigest 끄기, 가능하면 NTLM 거부, 워크스테이션 해시가 서버에 닿지 못하게 관리자 계정 계층화, 로컬 관리자 해시가 머신 간에 공유되지 않도록 **Protected Users** 그룹과 LAPS 사용.
 
 ## 참고 자료 { #references }
 
 - [MITRE ATT&CK — T1550.002](https://attack.mitre.org/techniques/T1550/002/)
 - [Microsoft — Mitigating Pass-the-Hash and Other Credential Theft (v2)](https://www.microsoft.com/en-us/download/details.aspx?id=36036)
-- 관련 페이지: [LSASS 덤프](lsass-dumping.md) · [PsExec와 SMB](psexec-smb.md) · [Windows 이벤트 ID](../basics/windows-event-ids.md) · [보안 검색](../splunk/security-searches.md)
+- 관련 페이지: [LSASS 덤프](lsass-dumping.md) · [PsExec와 SMB](psexec-smb.md) · [Windows 이벤트 ID](../basics/windows-event-ids.md) · [보안 검색](../blueteam/splunk/security-searches.md)

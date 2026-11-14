@@ -107,4 +107,4 @@ evil-winrm -i 10.0.0.5 -u admin -H <hash>            # PtH over WinRM
 
 - [MITRE ATT&CK — T1047](https://attack.mitre.org/techniques/T1047/) · [T1021.006](https://attack.mitre.org/techniques/T1021/006/)
 - [Mandiant — WMI for detection and response](https://www.mandiant.com/resources/blog)
-- 관련 페이지: [PsExec와 SMB](psexec-smb.md) · [PowerShell 크래들](powershell-cradles.md) · [Windows 이벤트 ID](../basics/windows-event-ids.md) · [보안 검색](../splunk/security-searches.md)
+- 관련 페이지: [PsExec와 SMB](psexec-smb.md) · [PowerShell 크래들](powershell-cradles.md) · [Windows 이벤트 ID](../basics/windows-event-ids.md) · [보안 검색](../blueteam/splunk/security-searches.md)

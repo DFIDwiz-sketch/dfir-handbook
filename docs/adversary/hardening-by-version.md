@@ -119,4 +119,4 @@ Legacy Windows (XP/2003/7) survives in OT, labs, medical and embedded systems. M
 - [Microsoft — Windows lifecycle fact sheet](https://learn.microsoft.com/lifecycle/faq/windows)
 - [Microsoft — Mitigating Pass-the-Hash and other credential theft v2](https://www.microsoft.com/download/details.aspx?id=36036)
 - [Microsoft — Securing privileged access (enterprise access model)](https://learn.microsoft.com/security/privileged-access-workstations/privileged-access-access-model)
-- Pages: [Adversary index](index.md) · [Windows Event IDs](../basics/windows-event-ids.md) · [Playbooks](../playbooks/index.md)
+- Pages: [Adversary index](index.md) · [Windows Event IDs](../basics/windows-event-ids.md) · [Playbooks](../blueteam/playbooks/index.md)

@@ -119,4 +119,4 @@ tags:
 - [Microsoft — Windows lifecycle fact sheet](https://learn.microsoft.com/lifecycle/faq/windows)
 - [Microsoft — Mitigating Pass-the-Hash and other credential theft v2](https://www.microsoft.com/download/details.aspx?id=36036)
 - [Microsoft — Securing privileged access (enterprise access model)](https://learn.microsoft.com/security/privileged-access-workstations/privileged-access-access-model)
-- 관련 페이지: [공격 기법 목록](index.md) · [Windows 이벤트 ID](../basics/windows-event-ids.md) · [플레이북](../playbooks/index.md)
+- 관련 페이지: [공격 기법 목록](index.md) · [Windows 이벤트 ID](../basics/windows-event-ids.md) · [플레이북](../blueteam/playbooks/index.md)

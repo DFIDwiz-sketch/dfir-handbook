@@ -135,4 +135,4 @@ netsh advfirewall set allprofiles state off
 - [MITRE ATT&CK — T1562.001](https://attack.mitre.org/techniques/T1562/001/) · [T1070.001](https://attack.mitre.org/techniques/T1070/001/)
 - [LOLDrivers — vulnerable driver list](https://www.loldrivers.io/)
 - [Microsoft — Vulnerable driver blocklist](https://learn.microsoft.com/windows/security/application-security/application-control/app-control-for-business/design/microsoft-recommended-driver-block-rules)
-- 관련 페이지: [이벤트 로그](../windows/event-logs.md) · [랜섬웨어 플레이북](../playbooks/ransomware.md) · [Windows 이벤트 ID](../basics/windows-event-ids.md)
+- 관련 페이지: [이벤트 로그](../windows/event-logs.md) · [랜섬웨어 플레이북](../blueteam/playbooks/ransomware.md) · [Windows 이벤트 ID](../basics/windows-event-ids.md)

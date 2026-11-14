@@ -70,7 +70,7 @@ The underlying privilege model is unchanged in Windows 11 / Server 2025 — new 
 | Security log | **4672** (special privileges assigned to new logon) for SYSTEM sessions tied to a web/SQL process chain | Privileged token use |
 | Security log | **4624 Type 3** to `127.0.0.1` / `::1` as `SYSTEM` or machine account, followed by process creation | Local NTLM reflection (older Potatoes) |
 | File system | Tool on disk in IIS webroot, `C:\ProgramData`, `C:\Users\Public`; [Prefetch](../windows/prefetch.md) / [Amcache](../windows/amcache.md) | Potato binaries are small and often renamed |
-| IIS logs | Web shell request immediately before | The initial foothold — see [Web shell playbook](../playbooks/webshell-server.md) |
+| IIS logs | Web shell request immediately before | The initial foothold — see [Web shell playbook](../blueteam/playbooks/webshell-server.md) |
 
 ## Detection
 
@@ -123,4 +123,4 @@ Treat the server as SYSTEM-compromised: from SYSTEM the attacker can dump LSASS 
 
 - [MITRE ATT&CK — T1134](https://attack.mitre.org/techniques/T1134/)
 - [itm4n — PrintSpoofer: abusing impersonation privileges](https://itm4n.github.io/printspoofer-abusing-impersonate-privileges/)
-- Pages: [UAC bypass](uac-bypass.md) · [Web shell playbook](../playbooks/webshell-server.md) · [PrintNightmare & Spooler](printnightmare.md)
+- Pages: [UAC bypass](uac-bypass.md) · [Web shell playbook](../blueteam/playbooks/webshell-server.md) · [PrintNightmare & Spooler](printnightmare.md)

@@ -41,4 +41,4 @@ tags:
 - [Beaconing & C2 탐지](../../../network/beaconing-c2.md) — 규칙적인 간격의 연결
 - [HTTP 상태 코드](../../../basics/http-status-codes.md) — 응답 코드 정리
 - [Windows 이벤트 로그](../../../windows/event-logs.md) — 4688·Sysmon 이벤트
-- [Web shell / server 플레이북](../../../playbooks/webshell-server.md) — 웹셸 대응 흐름
+- [Web shell / server 플레이북](../../../blueteam/playbooks/webshell-server.md) — 웹셸 대응 흐름

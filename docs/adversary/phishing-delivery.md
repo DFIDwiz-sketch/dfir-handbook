@@ -108,4 +108,4 @@ Preserve the lure and the message: pull the email (sender, subject, headers, att
 
 - [MITRE ATT&CK — T1566](https://attack.mitre.org/techniques/T1566/) · [T1204](https://attack.mitre.org/techniques/T1204/)
 - [Microsoft — Attack Surface Reduction rules reference](https://learn.microsoft.com/en-us/defender-endpoint/attack-surface-reduction-rules-reference)
-- Pages: [PowerShell cradles](powershell-cradles.md) · [MFT/USN — Zone.Identifier](../windows/mft-usn.md) · [Zeek http.log](../network/zeek/http-log.md) · [Security searches](../splunk/security-searches.md)
+- Pages: [PowerShell cradles](powershell-cradles.md) · [MFT/USN — Zone.Identifier](../windows/mft-usn.md) · [Zeek http.log](../network/zeek/http-log.md) · [Security searches](../blueteam/splunk/security-searches.md)

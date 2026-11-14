@@ -7,7 +7,7 @@
     python new.py windows/prefetch -t artifact     # 아티팩트 템플릿
     python new.py tools/kape -t tool
     python new.py adversary/pass-the-hash -t technique
-    python new.py playbooks/ransomware -t playbook
+    python new.py blueteam/playbooks/ransomware -t playbook
     python new.py network/zeek/conn-log -t artifact --title "Zeek conn.log"
 
 템플릿 종류: concept(기본) / artifact / tool / technique / playbook

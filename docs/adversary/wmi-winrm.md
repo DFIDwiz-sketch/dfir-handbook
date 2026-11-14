@@ -107,4 +107,4 @@ Isolate the target, rotate the account used, and hunt every host where that acco
 
 - [MITRE ATT&CK — T1047](https://attack.mitre.org/techniques/T1047/) · [T1021.006](https://attack.mitre.org/techniques/T1021/006/)
 - [Mandiant — WMI for detection and response](https://www.mandiant.com/resources/blog)
-- Pages: [PsExec & SMB](psexec-smb.md) · [PowerShell cradles](powershell-cradles.md) · [Windows Event IDs](../basics/windows-event-ids.md) · [Security searches](../splunk/security-searches.md)
+- Pages: [PsExec & SMB](psexec-smb.md) · [PowerShell cradles](powershell-cradles.md) · [Windows Event IDs](../basics/windows-event-ids.md) · [Security searches](../blueteam/splunk/security-searches.md)

@@ -89,6 +89,9 @@ A Word document leads to a first executable, more executables disguised as `.png
 
 ## Lab 6 — Safe document handling and public IP { #lab-6 }
 
+!!! example "Full walkthrough"
+    A complete worked solution of this lab, with every command and its output, is in [Blue Team → Investigations → PCAP Lab 06](../../blueteam/investigations/pcap-lab-06-invoice-macro-c2.md).
+
 - **Q1** — Time and date of infection → time of the document download ([Listing downloads](files-and-hashes.md#listing-downloads))
 - **Q2–5** — IP, hostname, MAC, user account → [IP, MAC and hostname](host-identification.md#ip-mac-hostname), [Windows user account](host-identification.md#user-account)
 - **Q6** — Safely hash the Word document and explain the steps → [Handling samples safely](files-and-hashes.md#safe-handling), [template](report-templates.md#safe-handling-template)

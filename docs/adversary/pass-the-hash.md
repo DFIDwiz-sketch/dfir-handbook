@@ -102,10 +102,10 @@ nxc smb 10.0.0.0/24 -u Administrator -H <NThash> --local-auth
 
 ## Response
 
-Contain by isolating the source host and disabling/rotating the compromised account — **and reset it twice** or the old NT hash still works. Because the hash is the credential, remediation means **credential hygiene**, not password complexity: rotate the account (twice for `krbtgt`-adjacent and privileged accounts), and hunt every host that account touched. Collect from the source host: LSASS access events, the dumping tool ([Prefetch](../windows/prefetch.md)/[Amcache](../windows/amcache.md)), and the full [host timeline](../splunk/security-searches.md#build-a-host-timeline-everything-about-one-machine). Harden going forward: LSASS protection (RunAsPPL, Credential Guard), disable WDigest, deny NTLM where possible, tier admin accounts so a workstation hash can't reach a server, and use the **Protected Users** group and LAPS so local admin hashes aren't shared across machines.
+Contain by isolating the source host and disabling/rotating the compromised account — **and reset it twice** or the old NT hash still works. Because the hash is the credential, remediation means **credential hygiene**, not password complexity: rotate the account (twice for `krbtgt`-adjacent and privileged accounts), and hunt every host that account touched. Collect from the source host: LSASS access events, the dumping tool ([Prefetch](../windows/prefetch.md)/[Amcache](../windows/amcache.md)), and the full [host timeline](../blueteam/splunk/security-searches.md#build-a-host-timeline-everything-about-one-machine). Harden going forward: LSASS protection (RunAsPPL, Credential Guard), disable WDigest, deny NTLM where possible, tier admin accounts so a workstation hash can't reach a server, and use the **Protected Users** group and LAPS so local admin hashes aren't shared across machines.
 
 ## References
 
 - [MITRE ATT&CK — T1550.002](https://attack.mitre.org/techniques/T1550/002/)
 - [Microsoft — Mitigating Pass-the-Hash and Other Credential Theft (v2)](https://www.microsoft.com/en-us/download/details.aspx?id=36036)
-- Pages: [LSASS dumping](lsass-dumping.md) · [PsExec & SMB](psexec-smb.md) · [Windows Event IDs](../basics/windows-event-ids.md) · [Security searches](../splunk/security-searches.md)
+- Pages: [LSASS dumping](lsass-dumping.md) · [PsExec & SMB](psexec-smb.md) · [Windows Event IDs](../basics/windows-event-ids.md) · [Security searches](../blueteam/splunk/security-searches.md)

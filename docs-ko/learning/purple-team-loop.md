@@ -158,7 +158,7 @@ index=botsv3 sourcetype="XmlWinEventLog:Microsoft-Windows-PowerShell/Operational
 | 12 | WinRM | T1021.006 | [WMI와 WinRM](../adversary/wmi-winrm.md) |
 | 13 | LOLBins (certutil, mshta, rundll32) | T1218, T1105 | [LOLBins](../adversary/lolbins.md) |
 | 14 | 피싱 → 사용자 실행 | T1566, T1204 | [피싱 유포](../adversary/phishing-delivery.md) |
-| 15 | 웹 셸 | T1505.003 | [웹 셸 플레이북](../playbooks/webshell-server.md) |
+| 15 | 웹 셸 | T1505.003 | [웹 셸 플레이북](../blueteam/playbooks/webshell-server.md) |
 | 16 | HTTP(S) C2와 비커닝 | T1071.001 | [비커닝과 C2](../network/beaconing-c2.md) |
 | 17 | DNS C2 / 터널링 | T1071.004 | [Zeek dns.log](../network/zeek/dns-log.md) |
 | 18 | 프로세스 인젝션 | T1055 | [프로세스 인젝션](../adversary/process-injection.md) |
@@ -167,7 +167,7 @@ index=botsv3 sourcetype="XmlWinEventLog:Microsoft-Windows-PowerShell/Operational
 | 21 | LLMNR 포이즈닝과 NTLM relay | T1557.001 | [LLMNR과 NTLM relay](../adversary/llmnr-ntlm-relay.md) |
 | 22 | DCSync | T1003.006 | [DCSync](../adversary/dcsync.md) |
 | 23 | 방어 무력화와 로그 삭제 | T1562, T1070.001 | [방어 무력화](../adversary/impair-defenses-log-clearing.md) |
-| 24 | 웹 서비스를 통한 유출 | T1567 | [데이터 유출 플레이북](../playbooks/data-exfiltration.md) |
+| 24 | 웹 서비스를 통한 유출 | T1567 | [데이터 유출 플레이북](../blueteam/playbooks/data-exfiltration.md) |
 
 24주차가 끝나면 이것들을 연결하세요: 14 → 1 → 2 → 7 → 9 → 16 → 24주차를 **하나의 침입**으로 실행하고, 처음부터 끝까지 하나의 사건으로 조사합니다.
 
@@ -176,4 +176,4 @@ index=botsv3 sourcetype="XmlWinEventLog:Microsoft-Windows-PowerShell/Operational
 - [MITRE ATT&CK — T1059.001 PowerShell](https://attack.mitre.org/techniques/T1059/001/)
 - [Atomic Red Team](https://github.com/redcanaryco/atomic-red-team) — ATT&CK 기법별로 정리된 작은 테스트 모음
 - [Microsoft — about_Logging_Windows (script block logging)](https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_logging_windows)
-- 관련 페이지: [로드맵](roadmap.md) · [24개월 커리큘럼](curriculum-24-months.md) · [헌팅 패턴](../splunk/hunting-patterns.md)
+- 관련 페이지: [로드맵](roadmap.md) · [24개월 커리큘럼](curriculum-24-months.md) · [헌팅 패턴](../blueteam/splunk/hunting-patterns.md)

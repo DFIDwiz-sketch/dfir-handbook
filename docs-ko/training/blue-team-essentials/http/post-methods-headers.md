@@ -474,7 +474,7 @@ data=aG9zdD1hZG1pbi1QQzEmb3M9V2luMTEmdXNlcj1qc21pdGg=
     - "**User-Agent에 Mozila/5.0밖에 없다**" → 괄호 안까지 읽어야 합니다. 오타, IE8, 윈도우 7 세 가지 단서가 다 거기 있습니다.
     - **주기를 놓침** → 요청 한 줄이 아니라 패턴을 봐야 합니다.
 
-    **다음 행동:** PC 격리 → **어떤 프로그램이 이 연결을 만들었는지** 확인(EDR 또는 **Sysmon Event ID 3**: "네트워크 연결" 이벤트로, 어떤 실행 파일이 어느 IP·포트로 연결했는지 기록. 정상이면 `chrome.exe`·`msedge.exe`, 비콘이면 `C:\Users\jsmith\AppData\Roaming\...\update.exe` 같은 낯선 위치의 프로그램) → 같은 도메인으로 연결하는 다른 PC 찾기 → 도메인 차단. [Compromised workstation 플레이북](../../../playbooks/compromised-workstation.md) 참고.
+    **다음 행동:** PC 격리 → **어떤 프로그램이 이 연결을 만들었는지** 확인(EDR 또는 **Sysmon Event ID 3**: "네트워크 연결" 이벤트로, 어떤 실행 파일이 어느 IP·포트로 연결했는지 기록. 정상이면 `chrome.exe`·`msedge.exe`, 비콘이면 `C:\Users\jsmith\AppData\Roaming\...\update.exe` 같은 낯선 위치의 프로그램) → 같은 도메인으로 연결하는 다른 PC 찾기 → 도메인 차단. [Compromised workstation 플레이북](../../../blueteam/playbooks/compromised-workstation.md) 참고.
 
 ### 문제 3
 
@@ -512,4 +512,4 @@ response status:  201
     4. 호스트에서 Java 웹 서버 프로세스(`java.exe`, `tomcat*.exe`)가 `cmd.exe`·`powershell.exe`를 띄운 기록(4688, Sysmon 1). 리눅스면 `java` → `sh`/`bash`
     5. 재발 방지: 불필요한 PUT 끄기, 앱이 **로드밸런서가 붙인 맨 오른쪽 값만** 믿도록 수정, 웹 서버 패치(예: Tomcat CVE-2025-24813)
 
-    서버 격리·중지 결정은 증거 보존과 업무 영향을 함께 따져 사고 대응 절차에 맞게 내립니다. [Web shell / server 플레이북](../../../playbooks/webshell-server.md) 참고.
+    서버 격리·중지 결정은 증거 보존과 업무 영향을 함께 따져 사고 대응 절차에 맞게 내립니다. [Web shell / server 플레이북](../../../blueteam/playbooks/webshell-server.md) 참고.

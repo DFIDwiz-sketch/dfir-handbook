@@ -15,7 +15,7 @@ Linux 호스트(서버, 컨테이너 호스트, 가끔은 워크스테이션)의
 | **이 파일은 언제 생성/수정됐나 — 타임스톰핑됐나?** | [파일시스템과 타임스탬프](filesystem-timestamps.md) — MACB, ctime, ext4 birth | Sleuth Kit 타임라인, ext4 저널 |
 | **무엇이 실행됐고 / 실행 중이고 / 리스닝 중인가?** | [로그, 프로세스, 트리아지](logs-and-triage.md) — `ps`, `ss`, `/proc`, auditd | `/proc`의 삭제됐지만 열려 있는 바이너리 |
 | **무엇이 언제 설치됐나?** | [로그와 트리아지](logs-and-triage.md) — `dpkg.log`/`apt history`/`yum.log` | 패키지 무결성 |
-| **Linux 웹 서버가 뚫렸다** | [웹셸 플레이북](../playbooks/webshell-server.md) | Apache/Nginx 로그, [로그와 트리아지](logs-and-triage.md) |
+| **Linux 웹 서버가 뚫렸다** | [웹셸 플레이북](../blueteam/playbooks/webshell-server.md) | Apache/Nginx 로그, [로그와 트리아지](logs-and-triage.md) |
 | **전부 수집하기** | [UAC / CatScale / Velociraptor](../tools/velociraptor.md) | [이미징](../tools/imaging-collection.md) |
 
 ## 페이지 { #pages }
@@ -39,7 +39,7 @@ Linux 호스트(서버, 컨테이너 호스트, 가끔은 워크스테이션)의
 2. 인증 이야기 — [누가 들어왔나](auth-and-history.md).
 3. 지속성 훑기 — [어디에 숨었나](persistence.md), 패키지 무결성 포함.
 4. 파일시스템 타임라인 — [무엇이 언제 바뀌었나](filesystem-timestamps.md).
-5. 상관분석; 호스트가 하나 이상이면 맞는 [플레이북](../playbooks/index.md)으로 확대.
+5. 상관분석; 호스트가 하나 이상이면 맞는 [플레이북](../blueteam/playbooks/index.md)으로 확대.
 
 !!! info "이 섹션에 페이지 추가하기"
     `python new.py linux/<name> -t artifact` (또는 `-t concept`) — 사이드바에 자동으로 나타납니다.

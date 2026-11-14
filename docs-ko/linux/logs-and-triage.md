@@ -27,7 +27,7 @@ tags:
 | auditd | `/var/log/audit/audit.log` | execve, 파일 접근, 시스템 콜 — 켜져 있다면 가장 풍부 |
 | 패키지 관리자 | `/var/log/dpkg.log`, `/var/log/apt/history.log`, `/var/log/yum.log`/`dnf.rpm.log` | 무엇이 언제 설치/제거됐나 |
 | Cron | `/var/log/cron` (RHEL), syslog (Debian) | cron 작업 실행 |
-| 웹/앱 | `/var/log/apache2/`, `/var/log/nginx/`, 앱 폴더 | [웹셸 플레이북](../playbooks/webshell-server.md) 참고 |
+| 웹/앱 | `/var/log/apache2/`, `/var/log/nginx/`, 앱 폴더 | [웹셸 플레이북](../blueteam/playbooks/webshell-server.md) 참고 |
 | Wtmp/btmp/lastlog | `/var/log/wtmp` 등 | 로그인 데이터베이스 — [인증과 히스토리](auth-and-history.md) |
 | 방화벽 | `journalctl -u firewalld` / `ufw.log` / `iptables` syslog | 차단/허용된 연결 |
 

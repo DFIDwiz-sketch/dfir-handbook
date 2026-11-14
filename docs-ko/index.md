@@ -57,13 +57,13 @@ hide:
 
     [:octicons-arrow-right-24: 메모리](memory/index.md)
 
--   :material-magnify-scan:{ .lg .middle } **Splunk**
+-   :material-shield-check:{ .lg .middle } **블루팀**
 
     ---
 
-    SPL 치트시트, 유용한 검색, BOTS 풀이, 데이터 모델 노트.
+    패킷·로그 분석 사례, Splunk(SPL 치트시트, 검색, 헌팅), 침해사고 대응 플레이북.
 
-    [:octicons-arrow-right-24: Splunk](splunk/index.md)
+    [:octicons-arrow-right-24: 블루팀](blueteam/index.md)
 
 -   :material-sword-cross:{ .lg .middle } **공격 기법**
 
@@ -104,14 +104,6 @@ hide:
     KAPE, Velociraptor, Eric Zimmerman 도구, Plaso, Wireshark, tshark 등의 치트시트.
 
     [:octicons-arrow-right-24: 도구](tools/index.md)
-
--   :material-clipboard-list:{ .lg .middle } **플레이북**
-
-    ---
-
-    자주 만나는 상황별 단계적 대응 절차.
-
-    [:octicons-arrow-right-24: 플레이북](playbooks/index.md)
 
 -   :material-school:{ .lg .middle } **학습**
 

@@ -112,4 +112,4 @@ copy payload.exe "%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\"
 
 - [MITRE ATT&CK — T1543.003](https://attack.mitre.org/techniques/T1543/003/) · [T1053.005](https://attack.mitre.org/techniques/T1053/005/) · [T1547.001](https://attack.mitre.org/techniques/T1547/001/)
 - [Sysinternals Autoruns](https://learn.microsoft.com/en-us/sysinternals/downloads/autoruns)
-- 관련 페이지: [레지스트리 키 — ASEP](../windows/registry-keys.md#autostart-persistence-asep) · [이벤트 로그](../windows/event-logs.md) · [보안 검색](../splunk/security-searches.md)
+- 관련 페이지: [레지스트리 키 — ASEP](../windows/registry-keys.md#autostart-persistence-asep) · [이벤트 로그](../windows/event-logs.md) · [보안 검색](../blueteam/splunk/security-searches.md)

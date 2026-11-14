@@ -57,13 +57,13 @@ Personal reference for digital forensics and incident response — everything I 
 
     [:octicons-arrow-right-24: Memory](memory/index.md)
 
--   :material-magnify-scan:{ .lg .middle } **Splunk**
+-   :material-shield-check:{ .lg .middle } **Blue Team**
 
     ---
 
-    SPL cheat sheet, useful searches, BOTS write-ups, data model notes.
+    Packet and log investigation walkthroughs, Splunk (SPL cheat sheet, searches, hunting) and incident response playbooks.
 
-    [:octicons-arrow-right-24: Splunk](splunk/index.md)
+    [:octicons-arrow-right-24: Blue Team](blueteam/index.md)
 
 -   :material-sword-cross:{ .lg .middle } **Adversary**
 
@@ -104,14 +104,6 @@ Personal reference for digital forensics and incident response — everything I 
     Cheat sheets for KAPE, Velociraptor, Eric Zimmerman tools, Plaso, Wireshark, tshark and friends.
 
     [:octicons-arrow-right-24: Tools](tools/index.md)
-
--   :material-clipboard-list:{ .lg .middle } **Playbooks**
-
-    ---
-
-    Step-by-step response procedures for common scenarios.
-
-    [:octicons-arrow-right-24: Playbooks](playbooks/index.md)
 
 -   :material-school:{ .lg .middle } **Learning**
 

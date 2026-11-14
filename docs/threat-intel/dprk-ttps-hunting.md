@@ -64,7 +64,7 @@ This is where DPRK operations differ from commodity crime: they go after **devel
 | Multi-hop proxies, VPNs, residential IPs | T1090.003 (Multi-hop Proxy) | Login geolocation / ASN anomalies |
 | Tampering with a transaction front-end or signing flow (Bybit) | T1565 (Data Manipulation) | File integrity monitoring on web assets / S3 buckets |
 | Financial theft | T1657 (Financial Theft) | Business process monitoring |
-| Wipers / ransomware (Sony, Maui) | T1485, T1486 | [Ransomware playbook](../playbooks/ransomware.md) |
+| Wipers / ransomware (Sony, Maui) | T1485, T1486 | [Ransomware playbook](../blueteam/playbooks/ransomware.md) |
 
 ## Hunts
 
@@ -154,4 +154,4 @@ Use it with the [weekly purple-team loop](../learning/purple-team-loop.md):
 - [FBI PSA I-022625-PSA — Bybit](https://www.ic3.gov/PSA/2025/PSA250226)
 - [Wiz — TraderTraitor deep dive (Bybit attack chain)](https://www.wiz.io/blog/north-korean-tradertraitor-crypto-heist)
 - [Unit 42 — North Korean threat groups](https://unit42.paloaltonetworks.com/threat-assessment-north-korean-threat-groups-2024)
-- Pages: [Groups & incidents](dprk-overview.md) · [Hunting patterns](../splunk/hunting-patterns.md) · [Zeek](../network/zeek/index.md)
+- Pages: [Groups & incidents](dprk-overview.md) · [Hunting patterns](../blueteam/splunk/hunting-patterns.md) · [Zeek](../network/zeek/index.md)
