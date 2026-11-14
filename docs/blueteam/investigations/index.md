@@ -18,6 +18,7 @@ Zeek is the main tool. Where tshark gets the same answer more simply, a **tshark
 | Case | Evidence | What it teaches |
 |---|---|---|
 | [PCAP Lab 06 — Invoice Word macro to Hancitor-style C2](pcap-lab-06-invoice-macro-c2.md) | PCAP, 21 min, one Windows client in an AD domain | Single-host triage, safe handling and hashing of a Word document, finding macros without Office, public IP from an IP-check service, beacon pattern and User-Agent comparison, DHCP and Kerberos for network facts |
+| [PCAP Lab 07 — Webmail to AutoIt downloader and multi-C2 traffic](pcap-lab-07-autoit-downloader-multi-c2.md) | PCAP, 18.5 min, one stand-alone Windows 7 PC | OS without a domain (User-Agent, TTL, DHCP vendor class), non-browser downloads, capture loss and why hashes are missing, User-Agents read with destinations, unknown-service connections, SMTP exfiltration signs |
 
 More cases from the same lab series will be added here as they are completed.
 
