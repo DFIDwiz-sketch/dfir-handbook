@@ -110,4 +110,4 @@ jump psexec HOST2 smb              # or psexec64 / psexec_psh (no binary on disk
 
 - [MITRE ATT&CK — T1021.002](https://attack.mitre.org/techniques/T1021/002/) · [T1569.002](https://attack.mitre.org/techniques/T1569/002/)
 - [JPCERT — Detecting lateral movement (tool analysis)](https://jpcertcc.github.io/ToolAnalysisResultSheet/)
-- 관련 페이지: [Pass-the-Hash](pass-the-hash.md) · [WMI와 WinRM](wmi-winrm.md) · [MFT/USN](../windows/mft-usn.md) · [Zeek SMB](../network/zeek/index.md) · [보안 검색](../splunk/security-searches.md)
+- 관련 페이지: [Pass-the-Hash](pass-the-hash.md) · [WMI와 WinRM](wmi-winrm.md) · [MFT/USN](../windows/mft-usn.md) · [Zeek SMB](../network/zeek/index.md) · [보안 검색](../blueteam/splunk/security-searches.md)

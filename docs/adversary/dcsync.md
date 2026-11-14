@@ -122,4 +122,4 @@ Assume every hash requested is compromised. If `krbtgt` was pulled, start the **
 
 - [MITRE ATT&CK — T1003.006](https://attack.mitre.org/techniques/T1003/006/)
 - [Microsoft — MS-DRSR IDL_DRSGetNCChanges](https://learn.microsoft.com/openspecs/windows_protocols/ms-drsr/)
-- Pages: [SAM & NTDS extraction](sam-ntds-extraction.md) · [Golden & Silver tickets](golden-silver-tickets.md) · [Lateral movement / domain playbook](../playbooks/lateral-domain.md)
+- Pages: [SAM & NTDS extraction](sam-ntds-extraction.md) · [Golden & Silver tickets](golden-silver-tickets.md) · [Lateral movement / domain playbook](../blueteam/playbooks/lateral-domain.md)

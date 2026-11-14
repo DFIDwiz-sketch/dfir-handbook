@@ -25,7 +25,7 @@ pip install -r requirements.txt
 python new.py windows/prefetch -t artifact
 python new.py tools/kape -t tool
 python new.py adversary/pass-the-hash -t technique
-python new.py playbooks/ransomware -t playbook
+python new.py blueteam/playbooks/ransomware -t playbook
 python new.py basics/base64 -t concept        # -t 생략하면 concept
 
 # 2. 생긴 파일을 열어서 내용 채우기 (docs/windows/prefetch.md)
@@ -74,7 +74,8 @@ docs/                 ← 영어 글
     index.md          ←   섹션 첫 페이지
     .pages            ←   "index.md 먼저, 나머지는 알파벳순"
     *.md              ←   페이지들
-  windows/  linux/  network/  memory/  splunk/  adversary/  tools/  playbooks/
+  windows/  linux/  network/  memory/  adversary/  tools/
+  blueteam/           ← 블루팀 탭: investigations/(패킷·로그 분석 사례) splunk/ playbooks/
   assets/             ← extra.css(디자인), theme.js, lang-switch.js, 아이콘, 이미지
 docs-ko/              ← 한국어 글 (docs/ 와 같은 구조, assets/ 도 같은 파일 복사본)
 templates/            ← new.py 가 쓰는 페이지 템플릿 5종

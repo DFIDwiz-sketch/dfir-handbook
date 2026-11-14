@@ -158,7 +158,7 @@ Each row links to the page on this site that already holds the attacker and dete
 | 12 | WinRM | T1021.006 | [WMI & WinRM](../adversary/wmi-winrm.md) |
 | 13 | LOLBins (certutil, mshta, rundll32) | T1218, T1105 | [LOLBins](../adversary/lolbins.md) |
 | 14 | Phishing → user execution | T1566, T1204 | [Phishing delivery](../adversary/phishing-delivery.md) |
-| 15 | Web shell | T1505.003 | [Web shell playbook](../playbooks/webshell-server.md) |
+| 15 | Web shell | T1505.003 | [Web shell playbook](../blueteam/playbooks/webshell-server.md) |
 | 16 | HTTP(S) C2 & beaconing | T1071.001 | [Beaconing & C2](../network/beaconing-c2.md) |
 | 17 | DNS C2 / tunnelling | T1071.004 | [Zeek dns.log](../network/zeek/dns-log.md) |
 | 18 | Process injection | T1055 | [Process injection](../adversary/process-injection.md) |
@@ -167,7 +167,7 @@ Each row links to the page on this site that already holds the attacker and dete
 | 21 | LLMNR poisoning & NTLM relay | T1557.001 | [LLMNR & NTLM relay](../adversary/llmnr-ntlm-relay.md) |
 | 22 | DCSync | T1003.006 | [DCSync](../adversary/dcsync.md) |
 | 23 | Impair defenses & log clearing | T1562, T1070.001 | [Impair defenses](../adversary/impair-defenses-log-clearing.md) |
-| 24 | Exfiltration over web services | T1567 | [Data exfiltration playbook](../playbooks/data-exfiltration.md) |
+| 24 | Exfiltration over web services | T1567 | [Data exfiltration playbook](../blueteam/playbooks/data-exfiltration.md) |
 
 After week 24, chain them: run weeks 14 → 1 → 2 → 7 → 9 → 16 → 24 as **one intrusion** and investigate it end to end as a case.
 
@@ -176,4 +176,4 @@ After week 24, chain them: run weeks 14 → 1 → 2 → 7 → 9 → 16 → 24 as
 - [MITRE ATT&CK — T1059.001 PowerShell](https://attack.mitre.org/techniques/T1059/001/)
 - [Atomic Red Team](https://github.com/redcanaryco/atomic-red-team) — small, documented tests per ATT&CK technique
 - [Microsoft — about_Logging_Windows (script block logging)](https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_logging_windows)
-- Pages: [Roadmap](roadmap.md) · [24-month curriculum](curriculum-24-months.md) · [Hunting patterns](../splunk/hunting-patterns.md)
+- Pages: [Roadmap](roadmap.md) · [24-month curriculum](curriculum-24-months.md) · [Hunting patterns](../blueteam/splunk/hunting-patterns.md)

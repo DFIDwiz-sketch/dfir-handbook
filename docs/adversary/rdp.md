@@ -131,4 +131,4 @@ Disable/reset the accounts used, block the source IPs, and close external exposu
 
 - [MITRE ATT&CK — T1021.001](https://attack.mitre.org/techniques/T1021/001/) · [T1563.002](https://attack.mitre.org/techniques/T1563/002/)
 - [Microsoft — CVE-2019-0708 (BlueKeep)](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2019-0708)
-- Pages: [Event logs](../windows/event-logs.md) · [Registry keys](../windows/registry-keys.md) · [Lateral movement playbook](../playbooks/lateral-domain.md)
+- Pages: [Event logs](../windows/event-logs.md) · [Registry keys](../windows/registry-keys.md) · [Lateral movement playbook](../blueteam/playbooks/lateral-domain.md)

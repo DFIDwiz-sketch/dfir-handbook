@@ -4,7 +4,7 @@ title: Adversary Techniques
 
 # Adversary Techniques
 
-Attack techniques mapped to MITRE ATT&CK, each written the same way: **how the attack works → attacker commands → affected Windows versions → artifacts left behind (host + network) → detection (Splunk/Zeek) → response and remediation by Windows version**. Every page links back to the [Windows](../windows/index.md), [Network](../network/index.md) and [Splunk](../splunk/index.md) sections where the underlying artifacts and queries live.
+Attack techniques mapped to MITRE ATT&CK, each written the same way: **how the attack works → attacker commands → affected Windows versions → artifacts left behind (host + network) → detection (Splunk/Zeek) → response and remediation by Windows version**. Every page links back to the [Windows](../windows/index.md), [Network](../network/index.md) and [Splunk](../blueteam/splunk/index.md) sections where the underlying artifacts and queries live.
 
 !!! tip "Start here for mixed-version environments"
     [Hardening by Windows version](hardening-by-version.md) is the cross-reference: every control from XP / 2003 to 11 / Server 2025 in one matrix, plus a technique → control map.
@@ -95,7 +95,7 @@ Read left to right: a lure or exposed RDP gives a foothold, the operator elevate
 
 ## How to use these pages in an investigation
 
-Start from what you observed (a suspicious process, an alert, a beacon) and read the matching page's **artifacts** table to know what else to collect, then run its **detection** queries to scope how far it spread. The **response** section says what to contain and rotate, and the **remediation by Windows version** table says which fixes the affected hosts can actually take. For the underlying mechanics — what a given event ID means, how an artifact is parsed, the exact SPL commands — follow the links into [Windows](../windows/index.md), [Network](../network/index.md) and [Splunk](../splunk/index.md).
+Start from what you observed (a suspicious process, an alert, a beacon) and read the matching page's **artifacts** table to know what else to collect, then run its **detection** queries to scope how far it spread. The **response** section says what to contain and rotate, and the **remediation by Windows version** table says which fixes the affected hosts can actually take. For the underlying mechanics — what a given event ID means, how an artifact is parsed, the exact SPL commands — follow the links into [Windows](../windows/index.md), [Network](../network/index.md) and [Splunk](../blueteam/splunk/index.md).
 
 !!! info "Adding a technique"
     `python new.py adversary/<name> -t technique` — the template already has the five-part structure. Add an *Affected Windows versions* section and a *Remediation by Windows version* table to match the pages above, then add a row to [Hardening by version](hardening-by-version.md#technique-controls). It appears in the sidebar automatically.

@@ -135,4 +135,4 @@ A 1102/104 or Defender disable during an incident means the attacker is active *
 - [MITRE ATT&CK — T1562.001](https://attack.mitre.org/techniques/T1562/001/) · [T1070.001](https://attack.mitre.org/techniques/T1070/001/)
 - [LOLDrivers — vulnerable driver list](https://www.loldrivers.io/)
 - [Microsoft — Vulnerable driver blocklist](https://learn.microsoft.com/windows/security/application-security/application-control/app-control-for-business/design/microsoft-recommended-driver-block-rules)
-- Pages: [Event logs](../windows/event-logs.md) · [Ransomware playbook](../playbooks/ransomware.md) · [Windows Event IDs](../basics/windows-event-ids.md)
+- Pages: [Event logs](../windows/event-logs.md) · [Ransomware playbook](../blueteam/playbooks/ransomware.md) · [Windows Event IDs](../basics/windows-event-ids.md)

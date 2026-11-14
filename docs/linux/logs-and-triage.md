@@ -27,7 +27,7 @@ tags:
 | auditd | `/var/log/audit/audit.log` | execve, file access, syscalls — richest, if enabled |
 | Package manager | `/var/log/dpkg.log`, `/var/log/apt/history.log`, `/var/log/yum.log`/`dnf.rpm.log` | What was installed/removed and when |
 | Cron | `/var/log/cron` (RHEL), syslog (Debian) | Cron job execution |
-| Web/app | `/var/log/apache2/`, `/var/log/nginx/`, app dirs | See [Web shell playbook](../playbooks/webshell-server.md) |
+| Web/app | `/var/log/apache2/`, `/var/log/nginx/`, app dirs | See [Web shell playbook](../blueteam/playbooks/webshell-server.md) |
 | Wtmp/btmp/lastlog | `/var/log/wtmp` etc. | Login database — [Auth & history](auth-and-history.md) |
 | Firewall | `journalctl -u firewalld` / `ufw.log` / `iptables` syslog | Blocked/allowed connections |
 

@@ -113,4 +113,4 @@ Decode and read the script block (the `4104`/decoded-launcher output) to underst
 - [MITRE ATT&CK — T1059.001](https://attack.mitre.org/techniques/T1059/001/) · [T1027](https://attack.mitre.org/techniques/T1027/)
 - [Microsoft — About PowerShell script block logging](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_logging_windows)
 - [Red Canary — PowerShell threat detection](https://redcanary.com/threat-detection-report/techniques/powershell/)
-- Pages: [Phishing delivery](phishing-delivery.md) · [Beaconing & C2](../network/beaconing-c2.md) · [Event logs](../windows/event-logs.md) · [Security searches](../splunk/security-searches.md)
+- Pages: [Phishing delivery](phishing-delivery.md) · [Beaconing & C2](../network/beaconing-c2.md) · [Event logs](../windows/event-logs.md) · [Security searches](../blueteam/splunk/security-searches.md)

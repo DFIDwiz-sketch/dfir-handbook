@@ -106,4 +106,4 @@ procdump.exe -accepteula -ma lsass.exe lsass.dmp
 
 - [MITRE ATT&CK — T1003.001](https://attack.mitre.org/techniques/T1003/001/)
 - [Microsoft — Configuring additional LSA protection (RunAsPPL)](https://learn.microsoft.com/en-us/windows-server/security/credentials-protection-and-management/configuring-additional-lsa-protection)
-- 관련 페이지: [Pass-the-Hash](pass-the-hash.md) · [레지스트리 키](../windows/registry-keys.md) · [SRUM](../windows/srum.md) · [보안 검색](../splunk/security-searches.md)
+- 관련 페이지: [Pass-the-Hash](pass-the-hash.md) · [레지스트리 키](../windows/registry-keys.md) · [SRUM](../windows/srum.md) · [보안 검색](../blueteam/splunk/security-searches.md)

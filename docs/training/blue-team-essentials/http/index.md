@@ -41,4 +41,4 @@ tags:
 - [Beaconing & C2 detection](../../../network/beaconing-c2.md) — regular-interval connections
 - [HTTP status codes](../../../basics/http-status-codes.md) — response codes
 - [Windows event logs](../../../windows/event-logs.md) — 4688 and Sysmon events
-- [Web shell / server playbook](../../../playbooks/webshell-server.md) — web-shell response flow
+- [Web shell / server playbook](../../../blueteam/playbooks/webshell-server.md) — web-shell response flow

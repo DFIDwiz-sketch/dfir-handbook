@@ -76,7 +76,7 @@ gantt
 
 | 월 | 공부 | 실습 | 체크포인트 |
 |---|---|---|---|
-| 17–18 | Detection-as-code: Sigma, SPL 모범 사례, 오탐 테스트; [헌팅 패턴](../splunk/hunting-patterns.md) | 퍼플 루프 쿼리 10개를 Sigma로 변환하고 Git으로 버전 관리 | 테스트가 포함된 탐지 라이브러리 |
+| 17–18 | Detection-as-code: Sigma, SPL 모범 사례, 오탐 테스트; [헌팅 패턴](../blueteam/splunk/hunting-patterns.md) | 퍼플 루프 쿼리 10개를 Sigma로 변환하고 Git으로 버전 관리 | 테스트가 포함된 탐지 라이브러리 |
 | 19–20 | 위협 인텔리전스 기반 헌팅: [북한 TTP](../threat-intel/dprk-ttps-hunting.md), 다른 위협 행위자 보고서 | 행위자 하나를 골라 기법 5개짜리 에뮬레이션 계획을 세우고, 실행하고, 헌팅하기 | 공백과 새 탐지를 담은 헌팅 보고서 |
 | 21–22 | DFIR 사례 실습: CyberDefenders / BTLO 사례, [Plaso](../tools/plaso-timelines.md)와 [KAPE](../tools/kape.md)로 전체 타임라인 작성 | 2주에 사례 하나, 실제 사고 보고서처럼 작성 | 사례 보고서 4개 |
 | 23–24 | **캡스톤**: 랩에서 피싱 → 유출까지 전체 침입을 만들고, 사전 정보 없이 조사하기(가능하면 친구가 공격을 실행) | 이 사이트의 모든 도구 활용 | 처음부터 끝까지의 사고 보고서 + 탐지 + 교훈 |

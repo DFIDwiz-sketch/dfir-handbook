@@ -102,7 +102,7 @@ The protocol, not just the bug, is the problem: SMBv1 also lacks pre-auth integr
 
 ## Response
 
-Isolate infected hosts at the network level immediately — this is wormable. Block 445 between workstation subnets, patch or isolate every host found with SMBv1 + missing MS17-010, and scan memory of suspect hosts for DoublePulsar. For WannaCry-type ransomware, follow the [Ransomware playbook](../playbooks/ransomware.md).
+Isolate infected hosts at the network level immediately — this is wormable. Block 445 between workstation subnets, patch or isolate every host found with SMBv1 + missing MS17-010, and scan memory of suspect hosts for DoublePulsar. For WannaCry-type ransomware, follow the [Ransomware playbook](../blueteam/playbooks/ransomware.md).
 
 ### Remediation by Windows version
 
@@ -120,4 +120,4 @@ Isolate infected hosts at the network level immediately — this is wormable. Bl
 - [Microsoft — MS17-010](https://learn.microsoft.com/security-updates/securitybulletins/2017/ms17-010)
 - [Microsoft — Customer guidance for WannaCrypt (XP/2003 OOB patch)](https://msrc.microsoft.com/blog/2017/05/customer-guidance-for-wannacrypt-attacks/)
 - [Microsoft — How to detect, enable and disable SMBv1](https://learn.microsoft.com/windows-server/storage/file-server/troubleshoot/detect-enable-and-disable-smbv1-v2-v3)
-- Pages: [PsExec & SMB](psexec-smb.md) · [Zeek conn.log](../network/zeek/conn-log.md) · [Ransomware playbook](../playbooks/ransomware.md)
+- Pages: [PsExec & SMB](psexec-smb.md) · [Zeek conn.log](../network/zeek/conn-log.md) · [Ransomware playbook](../blueteam/playbooks/ransomware.md)

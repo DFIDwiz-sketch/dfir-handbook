@@ -122,4 +122,4 @@ DCSync는 OS 버그가 아닙니다 — 복제 프로토콜이 설계대로 동�
 
 - [MITRE ATT&CK — T1003.006](https://attack.mitre.org/techniques/T1003/006/)
 - [Microsoft — MS-DRSR IDL_DRSGetNCChanges](https://learn.microsoft.com/openspecs/windows_protocols/ms-drsr/)
-- 관련 페이지: [SAM 및 NTDS 추출](sam-ntds-extraction.md) · [Golden & Silver 티켓](golden-silver-tickets.md) · [횡적 이동 / 도메인 플레이북](../playbooks/lateral-domain.md)
+- 관련 페이지: [SAM 및 NTDS 추출](sam-ntds-extraction.md) · [Golden & Silver 티켓](golden-silver-tickets.md) · [횡적 이동 / 도메인 플레이북](../blueteam/playbooks/lateral-domain.md)

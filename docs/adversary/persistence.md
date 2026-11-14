@@ -112,4 +112,4 @@ Remove the persistence (delete the service/task/value **after** capturing it), t
 
 - [MITRE ATT&CK — T1543.003](https://attack.mitre.org/techniques/T1543/003/) · [T1053.005](https://attack.mitre.org/techniques/T1053/005/) · [T1547.001](https://attack.mitre.org/techniques/T1547/001/)
 - [Sysinternals Autoruns](https://learn.microsoft.com/en-us/sysinternals/downloads/autoruns)
-- Pages: [Registry keys — ASEP](../windows/registry-keys.md#autostart-persistence-asep) · [Event logs](../windows/event-logs.md) · [Security searches](../splunk/security-searches.md)
+- Pages: [Registry keys — ASEP](../windows/registry-keys.md#autostart-persistence-asep) · [Event logs](../windows/event-logs.md) · [Security searches](../blueteam/splunk/security-searches.md)

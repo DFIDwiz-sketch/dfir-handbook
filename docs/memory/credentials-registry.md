@@ -38,7 +38,7 @@ pypykatz lsa minidump ./lsass/*.dmp
 ```
 
 !!! tip "Whose creds, and were they used?"
-    Anything recoverable here, the attacker who imaged (or dumped) this box also got. Treat every credential in the output as compromised, cross-reference to [lateral movement](../adversary/pass-the-hash.md) to see if they were reused, and rotate — see the [domain compromise playbook](../playbooks/lateral-domain.md).
+    Anything recoverable here, the attacker who imaged (or dumped) this box also got. Treat every credential in the output as compromised, cross-reference to [lateral movement](../adversary/pass-the-hash.md) to see if they were reused, and rotate — see the [domain compromise playbook](../blueteam/playbooks/lateral-domain.md).
 
 ## The registry, live
 
@@ -95,4 +95,4 @@ Memory answers "what secrets were exposed, what config was live, and is somethin
 - [Volatility 3 — registry, hashdump, lsadump, modscan, ssdt, psxview](https://volatility3.readthedocs.io/en/latest/volatility3.plugins.html)
 - [pypykatz (parse LSASS offline)](https://github.com/skelsec/pypykatz)
 - [The Art of Memory Forensics](https://www.memoryanalysis.net/amf)
-- Pages: [LSASS dumping](../adversary/lsass-dumping.md) · [Pass-the-Hash](../adversary/pass-the-hash.md) · [Registry keys](../windows/registry-keys.md) · [Domain compromise playbook](../playbooks/lateral-domain.md) · [Imaging](../tools/imaging-collection.md)
+- Pages: [LSASS dumping](../adversary/lsass-dumping.md) · [Pass-the-Hash](../adversary/pass-the-hash.md) · [Registry keys](../windows/registry-keys.md) · [Domain compromise playbook](../blueteam/playbooks/lateral-domain.md) · [Imaging](../tools/imaging-collection.md)

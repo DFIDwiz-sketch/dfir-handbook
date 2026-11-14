@@ -64,7 +64,7 @@ tags:
 | 다중 홉 프록시, VPN, 가정용 IP | T1090.003 (Multi-hop Proxy) | 로그인 지리 정보 / ASN 이상 징후 |
 | 거래 프런트엔드나 서명 흐름 변조 (Bybit) | T1565 (Data Manipulation) | 웹 자산 / S3 버킷에 대한 파일 무결성 모니터링 |
 | 금전 탈취 | T1657 (Financial Theft) | 업무 프로세스 모니터링 |
-| 와이퍼 / 랜섬웨어 (Sony, Maui) | T1485, T1486 | [랜섬웨어 플레이북](../playbooks/ransomware.md) |
+| 와이퍼 / 랜섬웨어 (Sony, Maui) | T1485, T1486 | [랜섬웨어 플레이북](../blueteam/playbooks/ransomware.md) |
 
 ## 헌팅 { #hunts }
 
@@ -154,4 +154,4 @@ tags:
 - [FBI PSA I-022625-PSA — Bybit](https://www.ic3.gov/PSA/2025/PSA250226)
 - [Wiz — TraderTraitor deep dive (Bybit attack chain)](https://www.wiz.io/blog/north-korean-tradertraitor-crypto-heist)
 - [Unit 42 — North Korean threat groups](https://unit42.paloaltonetworks.com/threat-assessment-north-korean-threat-groups-2024)
-- 페이지: [그룹과 사건](dprk-overview.md) · [헌팅 패턴](../splunk/hunting-patterns.md) · [Zeek](../network/zeek/index.md)
+- 페이지: [그룹과 사건](dprk-overview.md) · [헌팅 패턴](../blueteam/splunk/hunting-patterns.md) · [Zeek](../network/zeek/index.md)

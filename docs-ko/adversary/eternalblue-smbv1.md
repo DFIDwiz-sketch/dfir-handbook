@@ -102,7 +102,7 @@ msfconsole: exploit/windows/smb/ms17_010_eternalblue    # 7 / 2008 R2 x64 most r
 
 ## 대응 { #response }
 
-감염된 호스트를 즉시 네트워크 수준에서 격리하세요 — 웜처럼 퍼질 수 있습니다. 워크스테이션 서브넷 사이의 445를 차단하고, SMBv1이 켜져 있으면서 MS17-010이 누락된 호스트는 모두 패치하거나 격리하고, 의심 호스트의 메모리에서 DoublePulsar를 검사하세요. WannaCry 유형의 랜섬웨어라면 [랜섬웨어 플레이북](../playbooks/ransomware.md)을 따르세요.
+감염된 호스트를 즉시 네트워크 수준에서 격리하세요 — 웜처럼 퍼질 수 있습니다. 워크스테이션 서브넷 사이의 445를 차단하고, SMBv1이 켜져 있으면서 MS17-010이 누락된 호스트는 모두 패치하거나 격리하고, 의심 호스트의 메모리에서 DoublePulsar를 검사하세요. WannaCry 유형의 랜섬웨어라면 [랜섬웨어 플레이북](../blueteam/playbooks/ransomware.md)을 따르세요.
 
 ### Windows 버전별 대응책 { #remediation-by-windows-version }
 
@@ -120,4 +120,4 @@ msfconsole: exploit/windows/smb/ms17_010_eternalblue    # 7 / 2008 R2 x64 most r
 - [Microsoft — MS17-010](https://learn.microsoft.com/security-updates/securitybulletins/2017/ms17-010)
 - [Microsoft — Customer guidance for WannaCrypt (XP/2003 OOB patch)](https://msrc.microsoft.com/blog/2017/05/customer-guidance-for-wannacrypt-attacks/)
 - [Microsoft — How to detect, enable and disable SMBv1](https://learn.microsoft.com/windows-server/storage/file-server/troubleshoot/detect-enable-and-disable-smbv1-v2-v3)
-- 관련 페이지: [PsExec와 SMB](psexec-smb.md) · [Zeek conn.log](../network/zeek/conn-log.md) · [랜섬웨어 플레이북](../playbooks/ransomware.md)
+- 관련 페이지: [PsExec와 SMB](psexec-smb.md) · [Zeek conn.log](../network/zeek/conn-log.md) · [랜섬웨어 플레이북](../blueteam/playbooks/ransomware.md)

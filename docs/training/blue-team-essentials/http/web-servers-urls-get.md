@@ -428,7 +428,7 @@ A company IIS web server log contains this line. What is most likely going on, a
 
     **Time trap:** IIS logs default to **UTC**, while Event Viewer shows the **server's local time**. On a Sydney server, IIS `07:42:11` appears around **18:42:11** in Event Viewer. Search for 07:42 and you'll wrongly conclude "no trace".
 
-    **Next steps:** find when `avatar.aspx` was created → look around that time for the same IP uploading it (usually a POST) → pull every other command from that IP → decide on isolating the server. See the [Web shell / server playbook](../../../playbooks/webshell-server.md).
+    **Next steps:** find when `avatar.aspx` was created → look around that time for the same IP uploading it (usually a POST) → pull every other command from that IP → decide on isolating the server. See the [Web shell / server playbook](../../../blueteam/playbooks/webshell-server.md).
 
 ### Question 3
 

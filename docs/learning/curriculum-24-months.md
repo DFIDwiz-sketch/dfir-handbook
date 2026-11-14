@@ -76,7 +76,7 @@ The bar dates are an example start of November; shift them to your own start mon
 
 | Month | Study | Practise | Checkpoint |
 |---|---|---|---|
-| 17–18 | Detection-as-code: Sigma, SPL best practice, testing for false positives; [hunting patterns](../splunk/hunting-patterns.md) | Convert 10 of your purple-loop queries to Sigma; version them in Git | Detection library with tests |
+| 17–18 | Detection-as-code: Sigma, SPL best practice, testing for false positives; [hunting patterns](../blueteam/splunk/hunting-patterns.md) | Convert 10 of your purple-loop queries to Sigma; version them in Git | Detection library with tests |
 | 19–20 | Threat-intel driven hunting: [DPRK TTPs](../threat-intel/dprk-ttps-hunting.md), other actor reports | Pick one actor, build a 5-technique emulation plan, run it, hunt it | Hunt report with gaps and new detections |
 | 21–22 | DFIR case work: CyberDefenders / BTLO cases, full timelines with [Plaso](../tools/plaso-timelines.md) and [KAPE](../tools/kape.md) | One case per fortnight, written as a real incident report | 4 case reports |
 | 23–24 | **Capstone**: a full intrusion in your lab, phishing → exfiltration, then investigate it cold (ideally a friend runs the attack) | Use every tool on this site | End-to-end incident report + detections + lessons learned |

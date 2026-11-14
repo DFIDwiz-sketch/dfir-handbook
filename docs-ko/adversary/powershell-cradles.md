@@ -113,4 +113,4 @@ $b=(New-Object Net.WebClient).DownloadData('...'); [AppDomain]::CurrentDomain.Lo
 - [MITRE ATT&CK — T1059.001](https://attack.mitre.org/techniques/T1059/001/) · [T1027](https://attack.mitre.org/techniques/T1027/)
 - [Microsoft — About PowerShell script block logging](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_logging_windows)
 - [Red Canary — PowerShell threat detection](https://redcanary.com/threat-detection-report/techniques/powershell/)
-- 관련 페이지: [피싱 전달](phishing-delivery.md) · [비코닝과 C2](../network/beaconing-c2.md) · [이벤트 로그](../windows/event-logs.md) · [보안 검색](../splunk/security-searches.md)
+- 관련 페이지: [피싱 전달](phishing-delivery.md) · [비코닝과 C2](../network/beaconing-c2.md) · [이벤트 로그](../windows/event-logs.md) · [보안 검색](../blueteam/splunk/security-searches.md)

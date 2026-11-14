@@ -428,7 +428,7 @@ http://portal.office.com@198.51.100.7:8080/login?next=%2Fmail%2Finbox#step2
 
     **시간 함정:** IIS 로그는 기본값이 **UTC**이고, 이벤트 뷰어는 **서버 현지 시각**으로 보여 줍니다. 시드니 서버라면 IIS의 `07:42:11`은 이벤트 뷰어에서 **18:42:11** 근처입니다. 07:42를 찾으면 "흔적이 없네"라고 잘못 결론 내리기 쉽습니다.
 
-    **다음 행동:** `avatar.aspx` 생성 시각 확인 → 그 앞뒤로 같은 IP가 이 파일을 업로드한 요청(보통 POST) 찾기 → 같은 IP의 다른 명령 전부 추출 → 서버 격리 여부 결정. 대응 흐름은 [Web shell / server 플레이북](../../../playbooks/webshell-server.md)을 봅니다.
+    **다음 행동:** `avatar.aspx` 생성 시각 확인 → 그 앞뒤로 같은 IP가 이 파일을 업로드한 요청(보통 POST) 찾기 → 같은 IP의 다른 명령 전부 추출 → 서버 격리 여부 결정. 대응 흐름은 [Web shell / server 플레이북](../../../blueteam/playbooks/webshell-server.md)을 봅니다.
 
 ### 문제 3
 
