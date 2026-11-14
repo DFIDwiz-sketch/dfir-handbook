@@ -18,6 +18,7 @@ tags:
 | 사례 | 증거 | 배우는 것 |
 |---|---|---|
 | [PCAP 실습 06 — 청구서 Word 매크로에서 Hancitor 유형 C2까지](pcap-lab-06-invoice-macro-c2.md) | PCAP 21분, AD 도메인의 윈도우 PC 한 대 | 단일 호스트 트리아지, Word 문서를 안전하게 다루고 해시 구하기, Office 없이 매크로 찾기, IP 확인 서비스로 공인 IP 찾기, 비콘 패턴과 User-Agent 비교, DHCP·Kerberos로 네트워크 정보 찾기 |
+| [PCAP 실습 07 — 웹메일 이후 AutoIt 다운로더와 여러 C2](pcap-lab-07-autoit-downloader-multi-c2.md) | PCAP 18.5분, 도메인에 속하지 않은 윈도우 7 PC 한 대 | 도메인 없이 OS 찾기(User-Agent, TTL, DHCP 벤더 클래스), 브라우저가 아닌 다운로드, 캡처 손실과 해시가 없는 이유, 목적지와 함께 읽는 User-Agent, 알 수 없는 연결, SMTP 유출 징후 |
 
 같은 실습 시리즈의 다른 사례도 끝나는 대로 여기에 추가합니다.
 

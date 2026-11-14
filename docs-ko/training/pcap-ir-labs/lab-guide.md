@@ -102,6 +102,9 @@ Word 문서 → 첫 실행파일 → `.png`로 위장한 추가 실행파일 →
 
 ## 실습 7 — 방향과 다운로드 도구 { #lab-7 }
 
+!!! example "전체 풀이"
+    이 실습의 전체 풀이(모든 명령과 실제 출력)는 [블루팀 → 분석 사례 → PCAP 실습 07](../../blueteam/investigations/pcap-lab-07-autoit-downloader-multi-c2.md)에 있습니다.
+
 침해 호스트가 윈도우라는 전제가 없습니다.
 
 - **Q1–3** — IP, MAC, 호스트 이름 → [감염 호스트 찾기](host-identification.md#infected-host), [IP, MAC, 호스트 이름](host-identification.md#ip-mac-hostname)(mDNS·LLMNR 포함)

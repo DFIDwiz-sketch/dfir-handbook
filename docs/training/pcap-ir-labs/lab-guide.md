@@ -102,6 +102,9 @@ A Word document leads to a first executable, more executables disguised as `.png
 
 ## Lab 7 — Direction and download tool { #lab-7 }
 
+!!! example "Full walkthrough"
+    A complete worked solution of this lab, with every command and its output, is in [Blue Team → Investigations → PCAP Lab 07](../../blueteam/investigations/pcap-lab-07-autoit-downloader-multi-c2.md).
+
 The compromised host is not assumed to be Windows.
 
 - **Q1–3** — IP, MAC, hostname → [Finding the infected host](host-identification.md#infected-host), [IP, MAC and hostname](host-identification.md#ip-mac-hostname) (also mDNS/LLMNR)
