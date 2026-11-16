@@ -67,7 +67,7 @@ ls
 
 | Part | Why |
 |---|---|
-| `sha256sum ... \| tee pcap.sha256` | Proves later that the evidence did not change during analysis. `tee` prints the hash and saves it. |
+| <code>sha256sum ... &#124; tee pcap.sha256</code> | Proves later that the evidence did not change during analysis. `tee` prints the hash and saves it. |
 | `mkdir zeek_full && cd zeek_full` | Zeek writes its logs into the **current folder**. A dedicated folder keeps them together and stops a later Zeek run from overwriting them. |
 | `-C` | Ignore bad checksums. Captures taken on the sending host often have "wrong" checksums because the network card calculates them; without `-C` Zeek can drop those packets. |
 | `-r ../Phase1_PCAP_6.pcap` | Read a file instead of a live interface. |

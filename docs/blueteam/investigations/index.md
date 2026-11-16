@@ -43,3 +43,4 @@ Each finding is marked as **confirmed** (seen directly in the evidence) or **inf
 
 - [PCAP IR Labs — setup and workflow](../../training/pcap-ir-labs/setup-and-workflow.md): the repeatable method these cases follow
 - [Zeek logs](../../network/zeek/index.md) · [Wireshark & tshark](../../network/wireshark-tshark.md) · [Beaconing & C2](../../network/beaconing-c2.md)
+- [Arkime offline PCAP guide](../../network/arkime/offline-pcap-guide.md): the same lab questions answered in Arkime

@@ -96,6 +96,7 @@ curl -s -u admin:pass 'http://localhost:8005/api/sessions?date=-1&expression=tag
 
 - [검색 문법 치트시트](search-syntax.md) — 검색식 언어, 필드 이름, 시간 요령
 - [침입 탐지와 헌팅 워크플로](hunting-workflows.md) — Sessions, SPIView, SPIGraph, Connections, Hunt로 침입 찾기; Suricata/WISE 연동
+- [PCAP 분석 초보자 가이드](offline-pcap-guide.md) — 실습 PCAP 넣기, 화면과 검색 기초, 질문별 찾는 법, 실습 06·07을 Arkime로 다시 풀기, 한계와 Zeek·tshark로 넘기기
 
 ## 참고 자료 { #references }
 

@@ -56,7 +56,7 @@ ls -lat --time-style=full-iso /tmp | head
 | `echo >` | 새 파일에 텍스트 쓰기 | `echo "first line" > notes.txt` |
 | `printf >` | echo와 비슷하지만 형식을 정확히 지정 | `printf "a\nb\n" > list.txt` |
 | `cat >` | 파일에 직접 내용 입력 (++ctrl+d++로 끝냄) | `cat > notes.txt` 입력 후 ++ctrl+d++ |
-| `tee` | 파일**과** 화면에 동시에 쓰기 | `echo hi \| tee notes.txt` |
+| `tee` | 파일**과** 화면에 동시에 쓰기 | <code>echo hi &#124; tee notes.txt</code> |
 
 ```bash
 # Make a nested folder structure in one go
@@ -134,8 +134,8 @@ sed -i 's/old/new/g' file.txt      # -i edits the file directly; s/old/new/g rep
 | `less` | 페이지 단위로 보기 (검색 가능) | `less /var/log/auth.log` — `/pattern` 검색, `q` 종료, `G` 끝, `g` 처음 |
 | `head` / `tail` | 처음 / 마지막 N줄 | `head -50 file` · `tail -100 file` · `tail -f file` (실시간 따라가기) |
 | `nl` | 줄 번호 붙이기 | `nl script.sh` |
-| `strings` | 바이너리에서 출력 가능한 문자열 추출 | `strings -a malware.bin \| grep -iE "http\|cmd\|\.dll"` |
-| `xxd` / `hexdump` | 16진수 보기 | `xxd file \| head` · `xxd -s 0 -l 64 file` (오프셋 0부터 64바이트) |
+| `strings` | 바이너리에서 출력 가능한 문자열 추출 | <code>strings -a malware.bin &#124; grep -iE "http&#124;cmd&#124;\.dll"</code> |
+| `xxd` / `hexdump` | 16진수 보기 | <code>xxd file &#124; head</code> · `xxd -s 0 -l 64 file` (오프셋 0부터 64바이트) |
 | `zcat` / `zless` / `zgrep` | gzip 로그를 압축 풀지 않고 읽기 | `zgrep "Failed" /var/log/auth.log.*.gz` |
 
 ```bash
@@ -192,7 +192,7 @@ find / -xdev -name ".*" -type f 2>/dev/null    # hidden files, stay on one files
 | `2>/dev/null` | 오류 버리기 | `find / -name x 2>/dev/null` ("permission denied" 숨기기) |
 | `&>` | stdout+stderr 둘 다 → 파일 | `command &> all.txt` |
 | `<` | 파일 → stdin | `sort < names.txt` |
-| `\|` | 앞 명령의 stdout → 다음 명령의 stdin ("파이프") | `ps aux \| grep ssh` |
+| <code>&#124;</code> | 앞 명령의 stdout → 다음 명령의 stdin ("파이프") | <code>ps aux &#124; grep ssh</code> |
 
 한 줄에서 명령 연결하기:
 
@@ -200,7 +200,7 @@ find / -xdev -name ".*" -type f 2>/dev/null    # hidden files, stay on one files
 |---|---|---|
 | `;` | 결과와 상관없이 순서대로 실행 | `cd /tmp ; ls` |
 | `&&` | 앞 명령이 성공했을 **때만** 다음 실행 | `mkdir out && cd out` |
-| `\|\|` | 앞 명령이 실패했을 **때만** 다음 실행 | `ping -c1 host \|\| echo "down"` |
+| <code>&#124;&#124;</code> | 앞 명령이 실패했을 **때만** 다음 실행 | <code>ping -c1 host &#124;&#124; echo "down"</code> |
 | `&` | 백그라운드 실행 | `long-job &` |
 
 ```bash

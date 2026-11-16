@@ -75,7 +75,7 @@ nmap -sT -Pn -p 445 --script smb-os-discovery,smb2-security-mode   -oN nmap/ms01
 | `-sV` / `-oA` | 서비스 식별 / 일반·XML·grepable 결과 저장 |
 | `open` | 서비스 응답. 프로토콜별 조사로 진행 |
 | `filtered` | 필터링 또는 유용한 응답 없음. 미사용 포트라는 증거가 아님 |
-| UDP `open\|filtered` | 애매한 상태. 프로토콜에 맞는 추가 요청 필요 |
+| UDP <code>open&#124;filtered</code> | 애매한 상태. 프로토콜에 맞는 추가 요청 필요 |
 
 열린 포트가 없으면 공격적인 스캔부터 하지 말고 대상 IP·경로·VPN·시간 초과·대상 상태를 확인하세요. 버전 배너는 단서이지 CVE 적용 증거가 아닙니다. 다음은 HTTP면 curl/Burp, SMB면 공유 권한, MSSQL이면 인증입니다. [Nmap 심화](recon-enumeration.md)를 참고하세요.
 

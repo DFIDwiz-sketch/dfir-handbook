@@ -19,11 +19,11 @@ tags:
 
 | 모양 | 질문 | 핵심 SPL |
 |---|---|---|
-| **드묾** | 아주 적은 호스트 / 아주 적은 횟수로만 나오는 값은? | `stats dc(host) count by X \| where dc <= 2` |
+| **드묾** | 아주 적은 호스트 / 아주 적은 횟수로만 나오는 값은? | <code>stats dc(host) count by X &#124; where dc &lt;= 2</code> |
 | **새로움** | 기준선에 없다가 오늘 나타난 것은? | 기준선 `stats … by X` + 오늘을 `append` + `where seen=="today"` (또는 기준선 `outputlookup`) |
 | **급증** | 자기 평소보다 훨씬 높은 것은? | `timechart` + `eventstats avg stdev` + `where value > avg + 3*stdev` |
 | **규칙적** | 일정한 간격으로 반복되는 것은? | `streamstats` 간격 + 낮은 `stdev(gap)/avg(gap)` |
-| **긴 꼬리** | 잡음이 많은 필드에서 가장 드문 값 | `rare` / `stats count by X \| sort count` |
+| **긴 꼬리** | 잡음이 많은 필드에서 가장 드문 값 | `rare` / <code>stats count by X &#124; sort count</code> |
 | **동료 집단 내 이상치** | 동료와 다르게 행동하는 호스트/사용자는? | `stats by entity` → `eventstats` 집단 통계 → z-점수 |
 
 ## 1. 희소성 (가장 드문 값) { #1-rarity-least-common-value }

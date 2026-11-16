@@ -23,8 +23,8 @@ tags:
 | `==` | equals (case-insensitive for strings) | `ip.dst == 203.0.113.7` |
 | `!=` | not equals | `port.dst != 443` |
 | `<` `<=` `>` `>=` | numeric compare | `databytes.src > 1000000` |
-| `&&` `\|\|` `!` | and / or / not | `port.dst == 443 && !(protocols == tls)` |
-| `( )` | grouping | `(port.dst == 80 \|\| port.dst == 8080) && ip.src == 10.0.0.0/8` |
+| `&&` <code>&#124;&#124;</code> `!` | and / or / not | `port.dst == 443 && !(protocols == tls)` |
+| `( )` | grouping | <code>(port.dst == 80 &#124;&#124; port.dst == 8080) &amp;&amp; ip.src == 10.0.0.0/8</code> |
 | `[a, b, c]` | list — any of | `port.dst == [445, 135, 3389, 5985]` |
 | `*` | wildcard (strings) | `host.http == *.ngrok.io` |
 | `/regex/` | regex (strings; slow on big ranges) | `host.dns == /^[a-z0-9]{25,}\./` |

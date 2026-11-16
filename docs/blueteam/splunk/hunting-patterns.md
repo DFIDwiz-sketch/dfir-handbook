@@ -19,11 +19,11 @@ tags:
 
 | Shape | Question | Core SPL |
 |---|---|---|
-| **Rare** | What values occur on very few hosts / very few times? | `stats dc(host) count by X \| where dc <= 2` |
+| **Rare** | What values occur on very few hosts / very few times? | <code>stats dc(host) count by X &#124; where dc &lt;= 2</code> |
 | **New** | What appeared today that never appeared in the baseline? | baseline `stats … by X` + `append` today + `where seen=="today"` (or `outputlookup` baseline) |
 | **Spike** | What is far above its own normal? | `timechart` + `eventstats avg stdev` + `where value > avg + 3*stdev` |
 | **Regular** | What repeats at a fixed interval? | `streamstats` gap + low `stdev(gap)/avg(gap)` |
-| **Long tail** | Least common values of a noisy field | `rare` / `stats count by X \| sort count` |
+| **Long tail** | Least common values of a noisy field | `rare` / <code>stats count by X &#124; sort count</code> |
 | **Outlier in peer group** | Which host/user behaves unlike its peers? | `stats by entity` → `eventstats` group stats → z-score |
 
 ## 1. Rarity (least-common-value)

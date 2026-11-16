@@ -113,7 +113,7 @@ index=botsv3 sourcetype=WinEventLog EventCode=4624
 | `earliest=0` | 지금까지 색인된 전부 (랩 데이터는 괜찮지만 운영 환경에서는 절대 금지) |
 | `earliest="08/20/2018:00:00:00" latest="08/21/2018:00:00:00"` | 절대 시각, `%m/%d/%Y:%H:%M:%S` |
 | `_index_earliest=-1h` | **색인** 시각 기준 (Splunk가 받은 시각) — 늦게 도착한 이벤트 찾기 |
-| `\| where _time > relative_time(now(), "-1h")` | 파이프라인 안에서 같은 일 |
+| <code>&#124; where _time &gt; relative_time(now(), "-1h")</code> | 파이프라인 안에서 같은 일 |
 
 맞춤(`@`) 단위: `s m h d w mon q y`, 요일은 `@w0`…`@w6` (`@w1` 월요일). 수식어는 왼쪽에서 오른쪽으로 이어집니다: `-7d@d+9h` = 7일 전 09:00.
 

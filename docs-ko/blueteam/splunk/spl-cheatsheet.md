@@ -56,61 +56,61 @@ index=botsv3 sourcetype=WinEventLog EventCode=4625 earliest=-24h latest=now
 
 | 명령 | 하는 일 | 예시 |
 |---|---|---|
-| `search` | 파이프라인 중간에 다시 거르기 (검색창과 같은 문법) | `… \| search count > 5 user!=svc*` |
-| `where` | **식**으로 거르기 (함수, 필드 간 비교) | `\| where bytes_out > 10*bytes_in AND like(dest, "10.%")` |
-| `dedup` | 고유 값마다 첫 이벤트만 남기기 | `\| dedup user, host` · `\| dedup 3 host sortby -_time` |
-| `head` / `tail` | 처음 / 마지막 N행 | `\| head 50` |
-| `sort` | 행 정렬 (`-` = 내림차순; `0` = 1만 행 제한 없음) | `\| sort 0 - count, +user` |
+| `search` | 파이프라인 중간에 다시 거르기 (검색창과 같은 문법) | <code>… &#124; search count &gt; 5 user!=svc*</code> |
+| `where` | **식**으로 거르기 (함수, 필드 간 비교) | <code>&#124; where bytes_out &gt; 10*bytes_in AND like(dest, "10.%")</code> |
+| `dedup` | 고유 값마다 첫 이벤트만 남기기 | <code>&#124; dedup user, host</code> · <code>&#124; dedup 3 host sortby -_time</code> |
+| `head` / `tail` | 처음 / 마지막 N행 | <code>&#124; head 50</code> |
+| `sort` | 행 정렬 (`-` = 내림차순; `0` = 1만 행 제한 없음) | <code>&#124; sort 0 - count, +user</code> |
 | `reverse` | 순서 뒤집기 | |
-| `fields` | 열 남기기 (또는 `-`로 제거) — 속도를 높임 | `\| fields _time, host, user, CommandLine` · `\| fields - _raw` |
-| `table` | 열을 표로 보여 주기 (표시 전용) | `\| table _time host user CommandLine` |
-| `rename` | 필드 이름 바꾸기 (와일드카드 가능) | `\| rename Account_Name as user, "Source Network Address" as src_ip` |
-| `regex` | 필드에 정규식을 걸어 행 거르기 | `\| regex CommandLine="(?i)-enc\|-e\s+[A-Za-z0-9+/]{20,}"` |
+| `fields` | 열 남기기 (또는 `-`로 제거) — 속도를 높임 | <code>&#124; fields _time, host, user, CommandLine</code> · <code>&#124; fields - _raw</code> |
+| `table` | 열을 표로 보여 주기 (표시 전용) | <code>&#124; table _time host user CommandLine</code> |
+| `rename` | 필드 이름 바꾸기 (와일드카드 가능) | <code>&#124; rename Account_Name as user, "Source Network Address" as src_ip</code> |
+| `regex` | 필드에 정규식을 걸어 행 거르기 | <code>&#124; regex CommandLine="(?i)-enc&#124;-e\s+[A-Za-z0-9+/]{20,}"</code> |
 
 ### 새 필드 계산 { #compute-new-fields }
 
 | 명령 | 하는 일 | 예시 |
 |---|---|---|
-| `eval` | 함수로 필드 만들기/수정 | `\| eval MB=round(bytes/1024/1024,2), user=lower(user)` |
-| `eval` + `if` / `case` | 조건에 따른 값 | `\| eval type=case(Logon_Type==10,"RDP", Logon_Type==3,"Network", true(),"Other")` |
-| `eval` + `coalesce` | 여러 필드 중 처음으로 null이 아닌 값 | `\| eval user=coalesce(Account_Name, user, User)` |
-| `eval` + 문자열 함수 | `len`, `upper`, `lower`, `substr`, `replace`, `split`, `mvindex`, `trim`, `urldecode` | `\| eval domain=mvindex(split(query,"."),-2)` |
-| `eval` + 시간 함수 | `strftime`, `strptime`, `relative_time`, `now()` | `\| eval day=strftime(_time,"%Y-%m-%d")` |
-| `eval` + `match` / `like` / `cidrmatch` | 패턴 검사 (true/false 반환) | `\| eval internal=if(cidrmatch("10.0.0.0/8",dest_ip),"yes","no")` |
-| `rex` | 정규식 이름 그룹으로 필드 추출 | `\| rex field=CommandLine "-enc\s+(?<b64>[A-Za-z0-9+/=]+)"` — [rex와 필드](rex-and-fields.md) 참고 |
-| `rex mode=sed` | 필드 안에서 찾아 바꾸기 | `\| rex field=user mode=sed "s/^CORP\\\\//"` |
-| `spath` | JSON/XML에서 필드 꺼내기 | `\| spath input=_raw path=Event.EventData.Data{@Name}` |
-| `lookup` | CSV/KV 룩업으로 보강 | `\| lookup asset_inventory ip as dest_ip OUTPUT owner, criticality` |
-| `iplocation` | GeoIP 위치 | `\| iplocation src_ip` |
-| `fillnull` | null 값 채우기 | `\| fillnull value="-" user, src_ip` |
-| `makemv` / `mvexpand` | 문자열을 다중값으로 쪼개기 / 값마다 한 행으로 | `\| makemv delim="," answers \| mvexpand answers` |
-| `convert` | 포맷 변환 (epoch → 읽기 쉬운 형식 등) | `\| convert ctime(first) ctime(last)` |
+| `eval` | 함수로 필드 만들기/수정 | <code>&#124; eval MB=round(bytes/1024/1024,2), user=lower(user)</code> |
+| `eval` + `if` / `case` | 조건에 따른 값 | <code>&#124; eval type=case(Logon_Type==10,"RDP", Logon_Type==3,"Network", true(),"Other")</code> |
+| `eval` + `coalesce` | 여러 필드 중 처음으로 null이 아닌 값 | <code>&#124; eval user=coalesce(Account_Name, user, User)</code> |
+| `eval` + 문자열 함수 | `len`, `upper`, `lower`, `substr`, `replace`, `split`, `mvindex`, `trim`, `urldecode` | <code>&#124; eval domain=mvindex(split(query,"."),-2)</code> |
+| `eval` + 시간 함수 | `strftime`, `strptime`, `relative_time`, `now()` | <code>&#124; eval day=strftime(_time,"%Y-%m-%d")</code> |
+| `eval` + `match` / `like` / `cidrmatch` | 패턴 검사 (true/false 반환) | <code>&#124; eval internal=if(cidrmatch("10.0.0.0/8",dest_ip),"yes","no")</code> |
+| `rex` | 정규식 이름 그룹으로 필드 추출 | <code>&#124; rex field=CommandLine "-enc\s+(?&lt;b64&gt;[A-Za-z0-9+/=]+)"</code> — [rex와 필드](rex-and-fields.md) 참고 |
+| `rex mode=sed` | 필드 안에서 찾아 바꾸기 | <code>&#124; rex field=user mode=sed "s/^CORP\\\\//"</code> |
+| `spath` | JSON/XML에서 필드 꺼내기 | <code>&#124; spath input=_raw path=Event.EventData.Data{@Name}</code> |
+| `lookup` | CSV/KV 룩업으로 보강 | <code>&#124; lookup asset_inventory ip as dest_ip OUTPUT owner, criticality</code> |
+| `iplocation` | GeoIP 위치 | <code>&#124; iplocation src_ip</code> |
+| `fillnull` | null 값 채우기 | <code>&#124; fillnull value="-" user, src_ip</code> |
+| `makemv` / `mvexpand` | 문자열을 다중값으로 쪼개기 / 값마다 한 행으로 | <code>&#124; makemv delim="," answers &#124; mvexpand answers</code> |
+| `convert` | 포맷 변환 (epoch → 읽기 쉬운 형식 등) | <code>&#124; convert ctime(first) ctime(last)</code> |
 
 ### 묶기, 세기, 요약 (SPL의 핵심) { #group-count-summarise-the-heart-of-spl }
 
 | 명령 | 하는 일 | 예시 |
 |---|---|---|
-| `stats` | 모든 행을 집계, `by`로 묶음 지정 가능 | `\| stats count, dc(dest) as hosts, values(CommandLine) as cmds by user` |
-| `stats` 함수 | `count`, `dc` (고유 개수), `sum`, `avg`, `min`, `max`, `stdev`, `median`, `perc95`, `values` (고유 목록), `list` (전부, 순서대로), `first`, `last`, `earliest`, `latest`, `range` | `\| stats earliest(_time) as first, latest(_time) as last, count by host` |
-| `eventstats` | `stats`와 같지만 **모든 행을 유지**하고 결과를 덧붙임 | `\| eventstats avg(count) as avg_count by user` |
-| `streamstats` | 행 순서대로 누적/이동 계산 | `\| streamstats current=f last(_time) as prev by src, dest \| eval gap=_time-prev` |
-| `timechart` | 시간 구간으로 집계 (차트용) | `\| timechart span=1h count by EventCode` |
-| `bin` (a.k.a. `bucket`) | `_time`(또는 숫자)을 구간으로 반올림한 뒤 `stats` | `\| bin _time span=10m \| stats count by _time, src_ip` |
-| `chart` | 2차원 피벗 표 | `\| chart count over user by Logon_Type` |
-| `top` / `rare` | 가장 흔한 / 가장 드문 값과 개수, 비율 | `\| top limit=20 Image` · `\| rare limit=20 parent_process` |
-| `tstats` | 색인된 필드 / 데이터 모델 / 가속 데이터에 대한 **빠른** 통계 | `\| tstats count where index=botsv3 sourcetype=WinEventLog by _time span=1h, host` |
-| `transaction` | 필드 + 시간 간격으로 이벤트를 세션으로 묶기 (**느림**; `stats` 선호) | `\| transaction Logon_ID maxspan=8h` |
+| `stats` | 모든 행을 집계, `by`로 묶음 지정 가능 | <code>&#124; stats count, dc(dest) as hosts, values(CommandLine) as cmds by user</code> |
+| `stats` 함수 | `count`, `dc` (고유 개수), `sum`, `avg`, `min`, `max`, `stdev`, `median`, `perc95`, `values` (고유 목록), `list` (전부, 순서대로), `first`, `last`, `earliest`, `latest`, `range` | <code>&#124; stats earliest(_time) as first, latest(_time) as last, count by host</code> |
+| `eventstats` | `stats`와 같지만 **모든 행을 유지**하고 결과를 덧붙임 | <code>&#124; eventstats avg(count) as avg_count by user</code> |
+| `streamstats` | 행 순서대로 누적/이동 계산 | <code>&#124; streamstats current=f last(_time) as prev by src, dest &#124; eval gap=_time-prev</code> |
+| `timechart` | 시간 구간으로 집계 (차트용) | <code>&#124; timechart span=1h count by EventCode</code> |
+| `bin` (a.k.a. `bucket`) | `_time`(또는 숫자)을 구간으로 반올림한 뒤 `stats` | <code>&#124; bin _time span=10m &#124; stats count by _time, src_ip</code> |
+| `chart` | 2차원 피벗 표 | <code>&#124; chart count over user by Logon_Type</code> |
+| `top` / `rare` | 가장 흔한 / 가장 드문 값과 개수, 비율 | <code>&#124; top limit=20 Image</code> · <code>&#124; rare limit=20 parent_process</code> |
+| `tstats` | 색인된 필드 / 데이터 모델 / 가속 데이터에 대한 **빠른** 통계 | <code>&#124; tstats count where index=botsv3 sourcetype=WinEventLog by _time span=1h, host</code> |
+| `transaction` | 필드 + 시간 간격으로 이벤트를 세션으로 묶기 (**느림**; `stats` 선호) | <code>&#124; transaction Logon_ID maxspan=8h</code> |
 | `addtotals` / `addcoltotals` | 행/열 합계 | |
 
 ### 검색 합치기 { #combine-searches }
 
 | 명령 | 하는 일 | 예시 |
 |---|---|---|
-| `append` | 서브서치 결과를 아래에 붙이기 | `\| append [search index=zeek sourcetype=zeek:conn …]` |
-| `join` | 필드로 SQL식 조인 (제한: 5만 행, 느림) | `\| join type=left uid [search index=zeek sourcetype=zeek:http \| fields uid, host, uri]` |
-| 검색창의 `[ subsearch ]` | 한 검색의 결과를 다른 검색의 필터로 사용 (1만 행 제한) | `index=botsv3 sourcetype=WinEventLog [search index=botsv3 EventCode=1102 \| fields host]` |
-| `OR`와 함께 쓰는 `stats … by` | `join`의 *빠른* 대안: 두 소스타입을 한 번에 검색하고 공통 키로 `stats values()` | `(sourcetype=zeek:conn OR sourcetype=zeek:http) \| stats values(host) as http_host, sum(orig_bytes) as up by uid` |
-| `inputlookup` / `outputlookup` | 룩업 테이블 읽기 / 쓰기 | `\| inputlookup known_admins.csv` · `\| outputlookup baseline_ua.csv` |
+| `append` | 서브서치 결과를 아래에 붙이기 | <code>&#124; append [search index=zeek sourcetype=zeek:conn …]</code> |
+| `join` | 필드로 SQL식 조인 (제한: 5만 행, 느림) | <code>&#124; join type=left uid [search index=zeek sourcetype=zeek:http &#124; fields uid, host, uri]</code> |
+| 검색창의 `[ subsearch ]` | 한 검색의 결과를 다른 검색의 필터로 사용 (1만 행 제한) | <code>index=botsv3 sourcetype=WinEventLog [search index=botsv3 EventCode=1102 &#124; fields host]</code> |
+| `OR`와 함께 쓰는 `stats … by` | `join`의 *빠른* 대안: 두 소스타입을 한 번에 검색하고 공통 키로 `stats values()` | <code>(sourcetype=zeek:conn OR sourcetype=zeek:http) &#124; stats values(host) as http_host, sum(orig_bytes) as up by uid</code> |
+| `inputlookup` / `outputlookup` | 룩업 테이블 읽기 / 쓰기 | <code>&#124; inputlookup known_admins.csv</code> · <code>&#124; outputlookup baseline_ua.csv</code> |
 | `map` | 결과 행마다 검색 실행 (느림, 특수 용도) | |
 
 ### 표시와 관리 { #presentation-housekeeping }
@@ -119,7 +119,7 @@ index=botsv3 sourcetype=WinEventLog EventCode=4625 earliest=-24h latest=now
 |---|---|
 | `fieldsummary` | 필드별 통계 (개수, 고유 값, 상위 값) — 모르는 데이터를 처음 볼 때 |
 | `metadata type=sourcetypes index=botsv3` | 소스타입 목록과 처음/마지막 시각, 개수 (즉시) |
-| `\| tstats count where index=botsv3 by sourcetype` | 같은 일, 더 빠르고 유연함 |
+| <code>&#124; tstats count where index=botsv3 by sourcetype</code> | 같은 일, 더 빠르고 유연함 |
 | `eventcount summarize=false index=*` | 인덱스별 이벤트 수 (`*`를 써도 되는 경우 — 메타데이터만) |
 | `rest /services/data/indexes` | 인덱스 목록 |
 | `typeof`, `isnull`, `isnotnull` | `eval`/`where` 안에서 타입/null 검사 |
