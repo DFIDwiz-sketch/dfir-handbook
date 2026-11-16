@@ -75,7 +75,7 @@ nmap -sT -Pn -p 445 --script smb-os-discovery,smb2-security-mode   -oN nmap/ms01
 | `-sV` / `-oA` | Service fingerprinting / normal, XML and grepable output |
 | `open` | A service responded; investigate its protocol |
 | `filtered` | Filtering/no useful response; not proof the port is unused |
-| `open\|filtered` on UDP | Common ambiguous result; send a protocol-specific probe |
+| <code>open&#124;filtered</code> on UDP | Common ambiguous result; send a protocol-specific probe |
 
 No open ports? Check assigned IP, route, VPN, timeouts and target health before an aggressive scan. A version banner is a clue, not proof a CVE applies. Next: HTTP → curl/Burp; SMB → share permissions; MSSQL → authentication. See [deeper Nmap scenarios](recon-enumeration.md).
 

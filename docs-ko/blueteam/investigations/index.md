@@ -43,3 +43,4 @@ tags:
 
 - [PCAP 침해사고 분석 실습 — 준비와 분석 순서](../../training/pcap-ir-labs/setup-and-workflow.md): 이 사례들이 따르는 반복 절차
 - [Zeek 로그](../../network/zeek/index.md) · [Wireshark & tshark](../../network/wireshark-tshark.md) · [비콘과 C2](../../network/beaconing-c2.md)
+- [Arkime로 PCAP 분석하기](../../network/arkime/offline-pcap-guide.md): 같은 실습 질문을 Arkime로 푸는 방법

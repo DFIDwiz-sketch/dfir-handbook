@@ -113,7 +113,7 @@ index=botsv3 sourcetype=WinEventLog EventCode=4624
 | `earliest=0` | Everything ever indexed (fine for lab data, never in prod) |
 | `earliest="08/20/2018:00:00:00" latest="08/21/2018:00:00:00"` | Absolute, `%m/%d/%Y:%H:%M:%S` |
 | `_index_earliest=-1h` | By **index** time (when Splunk received it) — finds late-arriving events |
-| `\| where _time > relative_time(now(), "-1h")` | Same idea inside the pipeline |
+| <code>&#124; where _time &gt; relative_time(now(), "-1h")</code> | Same idea inside the pipeline |
 
 Snap-to (`@`) units: `s m h d w mon q y`, plus `@w0`…`@w6` for a weekday (`@w1` Monday). Modifiers chain left to right: `-7d@d+9h` = 09:00 seven days ago.
 

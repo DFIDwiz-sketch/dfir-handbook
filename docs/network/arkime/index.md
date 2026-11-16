@@ -96,6 +96,7 @@ Check **Stats → Capture** for `Dropped` counters before trusting any negative 
 
 - [Search syntax cheat sheet](search-syntax.md) — the expression language, field names, time tricks
 - [Intrusion detection & hunting workflows](hunting-workflows.md) — using Sessions, SPIView, SPIGraph, Connections and Hunt to find intrusions; Suricata/WISE integration
+- [Offline PCAP analysis — beginner guide](offline-pcap-guide.md) — import a lab PCAP, the screens and search basics, how to answer each incident question, Lab 06/07 re-solved in Arkime, limits and hand-off to Zeek/tshark
 
 ## References
 

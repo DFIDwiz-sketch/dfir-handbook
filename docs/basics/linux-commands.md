@@ -56,7 +56,7 @@ ls -lat --time-style=full-iso /tmp | head
 | `echo >` | Write text into a new file | `echo "first line" > notes.txt` |
 | `printf >` | Like echo, precise formatting | `printf "a\nb\n" > list.txt` |
 | `cat >` | Type content into a file (end with ++ctrl+d++) | `cat > notes.txt` then type, then ++ctrl+d++ |
-| `tee` | Write to a file **and** the screen | `echo hi \| tee notes.txt` |
+| `tee` | Write to a file **and** the screen | <code>echo hi &#124; tee notes.txt</code> |
 
 ```bash
 # Make a nested folder structure in one go
@@ -134,8 +134,8 @@ sed -i 's/old/new/g' file.txt      # -i edits the file directly; s/old/new/g rep
 | `less` | Page through (searchable) | `less /var/log/auth.log` — `/pattern` search, `q` quit, `G` end, `g` top |
 | `head` / `tail` | First / last N lines | `head -50 file` · `tail -100 file` · `tail -f file` (follow live) |
 | `nl` | Number lines | `nl script.sh` |
-| `strings` | Printable strings from a binary/blob | `strings -a malware.bin \| grep -iE "http\|cmd\|\.dll"` |
-| `xxd` / `hexdump` | Hex view | `xxd file \| head` · `xxd -s 0 -l 64 file` (offset 0, 64 bytes) |
+| `strings` | Printable strings from a binary/blob | <code>strings -a malware.bin &#124; grep -iE "http&#124;cmd&#124;\.dll"</code> |
+| `xxd` / `hexdump` | Hex view | <code>xxd file &#124; head</code> · `xxd -s 0 -l 64 file` (offset 0, 64 bytes) |
 | `zcat` / `zless` / `zgrep` | Read gzipped logs without unzipping | `zgrep "Failed" /var/log/auth.log.*.gz` |
 
 ```bash
@@ -192,7 +192,7 @@ Every command has three streams: **stdin** (input), **stdout** (normal output), 
 | `2>/dev/null` | discard errors | `find / -name x 2>/dev/null` (hide "permission denied") |
 | `&>` | both stdout+stderr → file | `command &> all.txt` |
 | `<` | file → stdin | `sort < names.txt` |
-| `\|` | stdout of one → stdin of next (a "pipe") | `ps aux \| grep ssh` |
+| <code>&#124;</code> | stdout of one → stdin of next (a "pipe") | <code>ps aux &#124; grep ssh</code> |
 
 Chaining commands on one line:
 
@@ -200,7 +200,7 @@ Chaining commands on one line:
 |---|---|---|
 | `;` | run in sequence regardless | `cd /tmp ; ls` |
 | `&&` | run next **only if** previous succeeded | `mkdir out && cd out` |
-| `\|\|` | run next **only if** previous failed | `ping -c1 host \|\| echo "down"` |
+| <code>&#124;&#124;</code> | run next **only if** previous failed | <code>ping -c1 host &#124;&#124; echo "down"</code> |
 | `&` | run in the background | `long-job &` |
 
 ```bash
