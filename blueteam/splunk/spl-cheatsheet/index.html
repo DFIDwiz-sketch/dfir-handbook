@@ -1716,6 +1716,8 @@
       
         
       
+        
+      
     
     
     
@@ -1813,6 +1815,34 @@
     
   
     Intrusion Detection with Arkime
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../network/arkime/offline-pcap-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Offline PCAP Analysis with Arkime — Beginner Guide
   
 
     
@@ -9401,27 +9431,27 @@
 <tr>
 <td><code>search</code></td>
 <td>Filter again mid-pipeline (same syntax as the search bar)</td>
-<td><code>… \| search count &gt; 5 user!=svc*</code></td>
+<td><code>… | search count &gt; 5 user!=svc*</code></td>
 </tr>
 <tr>
 <td><code>where</code></td>
 <td>Filter with an <strong>expression</strong> (functions, comparisons between fields)</td>
-<td><code>\| where bytes_out &gt; 10*bytes_in AND like(dest, "10.%")</code></td>
+<td><code>| where bytes_out &gt; 10*bytes_in AND like(dest, "10.%")</code></td>
 </tr>
 <tr>
 <td><code>dedup</code></td>
 <td>Keep first event per unique value(s)</td>
-<td><code>\| dedup user, host</code> · <code>\| dedup 3 host sortby -_time</code></td>
+<td><code>| dedup user, host</code> · <code>| dedup 3 host sortby -_time</code></td>
 </tr>
 <tr>
 <td><code>head</code> / <code>tail</code></td>
 <td>First / last N rows</td>
-<td><code>\| head 50</code></td>
+<td><code>| head 50</code></td>
 </tr>
 <tr>
 <td><code>sort</code></td>
 <td>Order rows (<code>-</code> = descending; <code>0</code> = no 10k limit)</td>
-<td><code>\| sort 0 - count, +user</code></td>
+<td><code>| sort 0 - count, +user</code></td>
 </tr>
 <tr>
 <td><code>reverse</code></td>
@@ -9431,22 +9461,22 @@
 <tr>
 <td><code>fields</code></td>
 <td>Keep (or <code>-</code> remove) columns — speeds things up</td>
-<td><code>\| fields _time, host, user, CommandLine</code> · <code>\| fields - _raw</code></td>
+<td><code>| fields _time, host, user, CommandLine</code> · <code>| fields - _raw</code></td>
 </tr>
 <tr>
 <td><code>table</code></td>
 <td>Show columns as a table (presentation only)</td>
-<td><code>\| table _time host user CommandLine</code></td>
+<td><code>| table _time host user CommandLine</code></td>
 </tr>
 <tr>
 <td><code>rename</code></td>
 <td>Rename fields (wildcards ok)</td>
-<td><code>\| rename Account_Name as user, "Source Network Address" as src_ip</code></td>
+<td><code>| rename Account_Name as user, "Source Network Address" as src_ip</code></td>
 </tr>
 <tr>
 <td><code>regex</code></td>
 <td>Filter rows by regex on a field</td>
-<td><code>\| regex CommandLine="(?i)-enc\|-e\s+[A-Za-z0-9+/]{20,}"</code></td>
+<td><code>| regex CommandLine="(?i)-enc|-e\s+[A-Za-z0-9+/]{20,}"</code></td>
 </tr>
 </tbody>
 </table>
@@ -9463,72 +9493,72 @@
 <tr>
 <td><code>eval</code></td>
 <td>Create/modify a field with functions</td>
-<td><code>\| eval MB=round(bytes/1024/1024,2), user=lower(user)</code></td>
+<td><code>| eval MB=round(bytes/1024/1024,2), user=lower(user)</code></td>
 </tr>
 <tr>
 <td><code>eval</code> + <code>if</code> / <code>case</code></td>
 <td>Conditional values</td>
-<td><code>\| eval type=case(Logon_Type==10,"RDP", Logon_Type==3,"Network", true(),"Other")</code></td>
+<td><code>| eval type=case(Logon_Type<mark>10,"RDP", Logon_Type</mark>3,"Network", true(),"Other")</code></td>
 </tr>
 <tr>
 <td><code>eval</code> + <code>coalesce</code></td>
 <td>First non-null of several fields</td>
-<td><code>\| eval user=coalesce(Account_Name, user, User)</code></td>
+<td><code>| eval user=coalesce(Account_Name, user, User)</code></td>
 </tr>
 <tr>
 <td><code>eval</code> + string funcs</td>
 <td><code>len</code>, <code>upper</code>, <code>lower</code>, <code>substr</code>, <code>replace</code>, <code>split</code>, <code>mvindex</code>, <code>trim</code>, <code>urldecode</code></td>
-<td><code>\| eval domain=mvindex(split(query,"."),-2)</code></td>
+<td><code>| eval domain=mvindex(split(query,"."),-2)</code></td>
 </tr>
 <tr>
 <td><code>eval</code> + time funcs</td>
 <td><code>strftime</code>, <code>strptime</code>, <code>relative_time</code>, <code>now()</code></td>
-<td><code>\| eval day=strftime(_time,"%Y-%m-%d")</code></td>
+<td><code>| eval day=strftime(_time,"%Y-%m-%d")</code></td>
 </tr>
 <tr>
 <td><code>eval</code> + <code>match</code> / <code>like</code> / <code>cidrmatch</code></td>
 <td>Pattern tests (return true/false)</td>
-<td><code>\| eval internal=if(cidrmatch("10.0.0.0/8",dest_ip),"yes","no")</code></td>
+<td><code>| eval internal=if(cidrmatch("10.0.0.0/8",dest_ip),"yes","no")</code></td>
 </tr>
 <tr>
 <td><code>rex</code></td>
 <td>Extract fields with regex named groups</td>
-<td><code>\| rex field=CommandLine "-enc\s+(?&lt;b64&gt;[A-Za-z0-9+/=]+)"</code> — see <a href="../rex-and-fields/">rex &amp; fields</a></td>
+<td><code>| rex field=CommandLine "-enc\s+(?&lt;b64&gt;[A-Za-z0-9+/=]+)"</code> — see <a href="../rex-and-fields/">rex &amp; fields</a></td>
 </tr>
 <tr>
 <td><code>rex mode=sed</code></td>
 <td>Find/replace in a field</td>
-<td><code>\| rex field=user mode=sed "s/^CORP\\\\//"</code></td>
+<td><code>| rex field=user mode=sed "s/^CORP\\//"</code></td>
 </tr>
 <tr>
 <td><code>spath</code></td>
 <td>Pull fields out of JSON/XML</td>
-<td><code>\| spath input=_raw path=Event.EventData.Data{@Name}</code></td>
+<td><code>| spath input=_raw path=Event.EventData.Data{@Name}</code></td>
 </tr>
 <tr>
 <td><code>lookup</code></td>
 <td>Enrich from a CSV/KV lookup</td>
-<td><code>\| lookup asset_inventory ip as dest_ip OUTPUT owner, criticality</code></td>
+<td><code>| lookup asset_inventory ip as dest_ip OUTPUT owner, criticality</code></td>
 </tr>
 <tr>
 <td><code>iplocation</code></td>
 <td>GeoIP</td>
-<td><code>\| iplocation src_ip</code></td>
+<td><code>| iplocation src_ip</code></td>
 </tr>
 <tr>
 <td><code>fillnull</code></td>
 <td>Replace nulls</td>
-<td><code>\| fillnull value="-" user, src_ip</code></td>
+<td><code>| fillnull value="-" user, src_ip</code></td>
 </tr>
 <tr>
 <td><code>makemv</code> / <code>mvexpand</code></td>
 <td>Split a string into multivalue / one row per value</td>
-<td><code>\| makemv delim="," answers \| mvexpand answers</code></td>
+<td><code>| makemv delim="," answers | mvexpand answers</code></td>
 </tr>
 <tr>
 <td><code>convert</code></td>
 <td>Convert formats (epoch → readable etc.)</td>
-<td><code>\| convert ctime(first) ctime(last)</code></td>
+<td><code>| convert ctime(first) ctime(last)</code></td>
 </tr>
 </tbody>
 </table>
@@ -9545,52 +9575,52 @@
 <tr>
 <td><code>stats</code></td>
 <td>Aggregate over all rows, optionally <code>by</code> group</td>
-<td><code>\| stats count, dc(dest) as hosts, values(CommandLine) as cmds by user</code></td>
+<td><code>| stats count, dc(dest) as hosts, values(CommandLine) as cmds by user</code></td>
 </tr>
 <tr>
 <td><code>stats</code> functions</td>
 <td><code>count</code>, <code>dc</code> (distinct count), <code>sum</code>, <code>avg</code>, <code>min</code>, <code>max</code>, <code>stdev</code>, <code>median</code>, <code>perc95</code>, <code>values</code> (unique list), <code>list</code> (all, in order), <code>first</code>, <code>last</code>, <code>earliest</code>, <code>latest</code>, <code>range</code></td>
-<td><code>\| stats earliest(_time) as first, latest(_time) as last, count by host</code></td>
+<td><code>| stats earliest(_time) as first, latest(_time) as last, count by host</code></td>
 </tr>
 <tr>
 <td><code>eventstats</code></td>
 <td>Same as <code>stats</code> but <strong>keeps every row</strong> and appends the result</td>
-<td><code>\| eventstats avg(count) as avg_count by user</code></td>
+<td><code>| eventstats avg(count) as avg_count by user</code></td>
 </tr>
 <tr>
 <td><code>streamstats</code></td>
 <td>Running/rolling calculations in row order</td>
-<td><code>\| streamstats current=f last(_time) as prev by src, dest \| eval gap=_time-prev</code></td>
+<td><code>| streamstats current=f last(_time) as prev by src, dest | eval gap=_time-prev</code></td>
 </tr>
 <tr>
 <td><code>timechart</code></td>
 <td>Aggregate into time buckets (for charts)</td>
-<td><code>\| timechart span=1h count by EventCode</code></td>
+<td><code>| timechart span=1h count by EventCode</code></td>
 </tr>
 <tr>
 <td><code>bin</code> (a.k.a. <code>bucket</code>)</td>
 <td>Round <code>_time</code> (or numbers) into buckets, then <code>stats</code></td>
-<td><code>\| bin _time span=10m \| stats count by _time, src_ip</code></td>
+<td><code>| bin _time span=10m | stats count by _time, src_ip</code></td>
 </tr>
 <tr>
 <td><code>chart</code></td>
 <td>2-D pivot table</td>
-<td><code>\| chart count over user by Logon_Type</code></td>
+<td><code>| chart count over user by Logon_Type</code></td>
 </tr>
 <tr>
 <td><code>top</code> / <code>rare</code></td>
 <td>Most / least common values with count and percent</td>
-<td><code>\| top limit=20 Image</code> · <code>\| rare limit=20 parent_process</code></td>
+<td><code>| top limit=20 Image</code> · <code>| rare limit=20 parent_process</code></td>
 </tr>
 <tr>
 <td><code>tstats</code></td>
 <td><strong>Fast</strong> stats on indexed fields / data models / accelerated data</td>
-<td><code>\| tstats count where index=botsv3 sourcetype=WinEventLog by _time span=1h, host</code></td>
+<td><code>| tstats count where index=botsv3 sourcetype=WinEventLog by _time span=1h, host</code></td>
 </tr>
 <tr>
 <td><code>transaction</code></td>
 <td>Group events into sessions by a field + time gap (<strong>slow</strong>; prefer <code>stats</code>)</td>
-<td><code>\| transaction Logon_ID maxspan=8h</code></td>
+<td><code>| transaction Logon_ID maxspan=8h</code></td>
 </tr>
 <tr>
 <td><code>addtotals</code> / <code>addcoltotals</code></td>
@@ -9612,27 +9642,27 @@
 <tr>
 <td><code>append</code></td>
 <td>Glue results of a subsearch below</td>
-<td><code>\| append [search index=zeek sourcetype=zeek:conn …]</code></td>
+<td><code>| append [search index=zeek sourcetype=zeek:conn …]</code></td>
 </tr>
 <tr>
 <td><code>join</code></td>
 <td>SQL-style join on a field (limits: 50k rows, slow)</td>
-<td><code>\| join type=left uid [search index=zeek sourcetype=zeek:http \| fields uid, host, uri]</code></td>
+<td><code>| join type=left uid [search index=zeek sourcetype=zeek:http | fields uid, host, uri]</code></td>
 </tr>
 <tr>
 <td><code>[ subsearch ]</code> in the search bar</td>
 <td>Use one search's result as the filter for another (10k-row limit)</td>
-<td><code>index=botsv3 sourcetype=WinEventLog [search index=botsv3 EventCode=1102 \| fields host]</code></td>
+<td><code>index=botsv3 sourcetype=WinEventLog [search index=botsv3 EventCode=1102 | fields host]</code></td>
 </tr>
 <tr>
 <td><code>stats … by</code> with <code>OR</code></td>
 <td>The <em>fast</em> alternative to <code>join</code>: search both sourcetypes at once and <code>stats values()</code> by the shared key</td>
-<td><code>(sourcetype=zeek:conn OR sourcetype=zeek:http) \| stats values(host) as http_host, sum(orig_bytes) as up by uid</code></td>
+<td><code>(sourcetype=zeek:conn OR sourcetype=zeek:http) | stats values(host) as http_host, sum(orig_bytes) as up by uid</code></td>
 </tr>
 <tr>
 <td><code>inputlookup</code> / <code>outputlookup</code></td>
 <td>Read / write a lookup table</td>
-<td><code>\| inputlookup known_admins.csv</code> · <code>\| outputlookup baseline_ua.csv</code></td>
+<td><code>| inputlookup known_admins.csv</code> · <code>| outputlookup baseline_ua.csv</code></td>
 </tr>
 <tr>
 <td><code>map</code></td>
@@ -9659,7 +9689,7 @@
 <td>List sourcetypes with first/last time and counts (instant)</td>
 </tr>
 <tr>
-<td><code>\| tstats count where index=botsv3 by sourcetype</code></td>
+<td><code>| tstats count where index=botsv3 by sourcetype</code></td>
 <td>Same, faster and more flexible</td>
 </tr>
 <tr>
