@@ -21,6 +21,7 @@ tags:
 | [PCAP 실습 07 — 웹메일 이후 AutoIt 다운로더와 여러 C2](pcap-lab-07-autoit-downloader-multi-c2.md) | PCAP 18.5분, 도메인에 속하지 않은 윈도우 7 PC 한 대 | 도메인 없이 OS 찾기(User-Agent, TTL, DHCP 벤더 클래스), 브라우저가 아닌 다운로드, 캡처 손실과 해시가 없는 이유, 목적지와 함께 읽는 User-Agent, 알 수 없는 연결, SMTP 유출 징후 |
 | [Arkime만으로 — 스크립트 다운로더에서 비밀번호 탈취, TLS C2, 침해사고 티켓까지](arkime-only-credential-theft-tls-c2.md) | PCAP 44분, AD 도메인의 윈도우 10 PC 세 대. **Arkime 웹 화면 + CyberChef만**, 폐쇄망 | 세션과 SPI View, 시작·끝 시간, Kerberos로 호스트이름 찾기, POST 본문 읽기(Hide Images & Files), 인증서 발급자/주인과 자체 서명 확인, 447/449 TLS C2, SMB 스캔으로 범위 판단, 침해사고 티켓 작성, 복사용 쿼리 |
 | [RedLine Stealer — PowerShell 스크립트에서 net.tcp C2 정보 탈취까지](redline-stealer-powershell-nettcp-c2.md) | PCAP 36초, AD 도메인의 윈도우 10 PC 한 대(Unit 42 퀴즈, 2023년 7월). Arkime 기준 | DHCP로 IP·MAC·호스트이름, DNS SRV와 Kerberos, PowerShell User-Agent 체크인, `.jpg`로 위장한 HTTPS 페이로드, JA3가 변하지 않은 이유, 포트로 TCP C2 찾기, .NET net.tcp 읽기, 서버의 탈취 목록과 실제 업로드, 화면 캡처 꺼내기와 캡처 손실, Trickbot과 비교 |
+| [IcedID (Cold as Ice) — 리다이렉트·Firebase·가짜 gzip에서 HTTPS 비콘과 BackConnect까지](icedid-tds-gzip-loader-backconnect.md) | PCAP 약 6시간, AD 도메인의 윈도우 클라이언트 3대(Unit 42 퀴즈, 2023년 4월). Arkime 기준 | DHCP 없이 PC 정체 찾기(Kerberos·NetBIOS·MAC), DNS로 감염 PC 좁히기, TDS 302와 Firebase 악용, IcedID 쿠키 해독(호스트·사용자·SID), 자체 서명 `Internet Widgits` 인증서, 5분 비콘 재기, Edge 때문에 늘어나는 JA3, 443인데 TLS가 아닌 BackConnect와 공격자 명령, 두 번째 PC의 zip/.wsf, 앞의 두 사례와 비교 |
 
 표에 따로 적지 않은 사례는 Zeek로 풀었습니다.
 
