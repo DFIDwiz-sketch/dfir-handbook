@@ -19,6 +19,9 @@ tags:
 |---|---|---|
 | [PCAP 실습 06 — 청구서 Word 매크로에서 Hancitor 유형 C2까지](pcap-lab-06-invoice-macro-c2.md) | PCAP 21분, AD 도메인의 윈도우 PC 한 대 | 단일 호스트 트리아지, Word 문서를 안전하게 다루고 해시 구하기, Office 없이 매크로 찾기, IP 확인 서비스로 공인 IP 찾기, 비콘 패턴과 User-Agent 비교, DHCP·Kerberos로 네트워크 정보 찾기 |
 | [PCAP 실습 07 — 웹메일 이후 AutoIt 다운로더와 여러 C2](pcap-lab-07-autoit-downloader-multi-c2.md) | PCAP 18.5분, 도메인에 속하지 않은 윈도우 7 PC 한 대 | 도메인 없이 OS 찾기(User-Agent, TTL, DHCP 벤더 클래스), 브라우저가 아닌 다운로드, 캡처 손실과 해시가 없는 이유, 목적지와 함께 읽는 User-Agent, 알 수 없는 연결, SMTP 유출 징후 |
+| [Arkime만으로 — 스크립트 다운로더에서 비밀번호 탈취, TLS C2, 침해사고 티켓까지](arkime-only-credential-theft-tls-c2.md) | PCAP 44분, AD 도메인의 윈도우 10 PC 세 대. **Arkime 웹 화면 + CyberChef만**, 폐쇄망 | 세션과 SPI View, 시작·끝 시간, Kerberos로 호스트이름 찾기, POST 본문 읽기(Hide Images & Files), 인증서 발급자/주인과 자체 서명 확인, 447/449 TLS C2, SMB 스캔으로 범위 판단, 침해사고 티켓 작성, 복사용 쿼리 |
+
+표에 따로 적지 않은 사례는 Zeek로 풀었습니다.
 
 같은 실습 시리즈의 다른 사례도 끝나는 대로 여기에 추가합니다.
 
