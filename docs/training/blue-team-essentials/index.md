@@ -38,10 +38,18 @@ tags:
 
     [:octicons-arrow-right-24: HTTP(S) Analysis & Attacks](http-analysis/index.md)
 
+-   :material-email-search:{ .lg .middle } **SMTP & Email**
+
+    ---
+
+    The servers mail passes through (MUA, MTA, MDA) and their ports, SMTP conversations and envelope vs header addresses, then reading headers and SPF/DKIM/DMARC.
+
+    [:octicons-arrow-right-24: SMTP & Email](email/index.md)
+
 </div>
 
 !!! info "Next topic"
-    SMTP and email analysis (new section), followed by additional network protocols.
+    More SMTP and email analysis, followed by additional network protocols.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.
