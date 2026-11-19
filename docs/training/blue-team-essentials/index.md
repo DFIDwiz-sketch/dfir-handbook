@@ -50,14 +50,14 @@ tags:
 
     ---
 
-    DHCP for turning an IP into a device and finding rogue devices, then SMB, SSH, RDP/VNC, PowerShell remoting, FTP, ICMP and remote-access tools used for lateral movement and exfiltration.
+    DHCP for turning an IP into a device and finding rogue devices, then SMB, SSH, RDP/VNC, PowerShell remoting, FTP, ICMP and remote-access tools used for lateral movement and exfiltration, plus why no protocol is "safe" and a summary of the network part.
 
     [:octicons-arrow-right-24: Additional Network Protocols](other-protocols/index.md)
 
 </div>
 
 !!! info "Next topic"
-    In progress: [additional network protocols](other-protocols/index.md) — DHCP, SMB, SSH, RDP/VNC, PowerShell remoting, FTP and ICMP are up; remote-access tools and the section summary follow.
+    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols). Next: understanding hosts, logs and files.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.

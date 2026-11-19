@@ -19,9 +19,10 @@ tags:
 | 2 | [SMB — 공격자가 좋아하는 이유, 버전과 협상, 대표 공격](smb.md) | 445·139 포트와 관리용 공유(`C$`, `ADMIN$`, `IPC$`), 관리자 자격 증명 = 원격 실행인 이유(PsExec를 손으로 하는 `net use`/`sc`), 같은 로컬 관리자 비밀번호 문제와 웜, 방언 1 → 3.1.1과 tshark로 보는 NEGOTIATE, `Get-SmbConnection`·SMB1 확인·SMB1 접속 감사, SMB1을 없애야 하는 이유와 "SMB2"를 끄면 안 되는 이유, 자격 증명 방식 vs 익스플로잇 방식, PsExec 이동이 남기는 4624·4672·5140·5145·7045·4688과 Sysmon 1·3, Zeek `smb_mapping`·`smb_files`·`dce_rpc`(`svcctl CreateServiceW`), 익스플로잇 신호, 방어, Windows 11 24H2·Server 2025 기본값, 확인 문제 |
 | 3 | [SSH, 밖으로 나가는 SSH로 안으로 들어오는 터널, RDP와 VNC](ssh-rdp-vnc.md) | SSH가 친구이자 위협인 이유, `auth.log`와 Zeek `ssh.log` 읽기, 네 가지 터널 기법(`scp` 유출, `-R` 원격 포워딩, 듀얼 홈 점프 박스를 통한 `-L`/`-D`, X11) 옵션별 해석, `sshd_config`로 잠그기, Windows 기본 내장 `ssh.exe`, 나가는 SSH = 들어오는 RDP: plink `-R 12345:127.0.0.1:3389` 명령, Sysmon 1·3, 443 포트의 `service=ssh`, `127.0.0.1`에서 온 4624 타입 10·1149·21~25, RDP 예방과 감시(4778·4779, RDPClient 1024 포함 이벤트 표), VNC/RFB 배너와 약한 인증, OpenSSH 10·터널 서비스·`.rdp` 피싱 보호, 확인 문제 |
 | 4 | [PowerShell 원격(WinRM), FTP, 악성 ICMP](psremoting-ftp-icmp.md) | 5985/5986의 PSRP → WSMV → SOAP → HTTP(S) 층, `Test-WSMan`·`Enter-PSSession`·`Invoke-Command`·`winrs`, `POST /wsman`과 HTTP여도 본문이 암호화되는 이유, 서버는 켜짐·데스크톱은 꺼짐 기본값, 접속 가능한 사람, `TrustedHosts`, 흔적: WinRM 6(출발지)·4624 타입 3·WinRM 91·`wsmprovhost.exe` 자식 프로세스·PowerShell 400 `ServerRemoteHost`·4103/4104·서비스 7040/7036, FTP가 공격에 쓰이는 방식, 제어 대화 한 줄씩(`USER`/`PASS`/`EPSV`/`STOR`), Zeek `ftp.log`, `ftp.exe -s:`, 최대 65,507바이트 ICMP 페이로드, 정상 Windows/Linux ping 바이트, Scapy로 만든 페이로드, `conn.log`의 ICMP 터널, PowerShell 2.0 제거, 확인 문제 |
+| 5 | [원격 접속 도구, 안전한 프로토콜이 있는가, 네트워크 파트 정리](remote-tools-summary.md) | 프로토콜보다 능력이 중요한 이유, 기본 내장·상용 원격 지원·RMM·터널·하드웨어 도구, 밖으로 나가 중계 서버에 붙는 구조, 공격자가 좋아하는 이유, 유출된 작업 지침의 지속성 패턴, 조용한 설치 한 줄씩(`--silent`, `--set-password`, `msiexec /qn`), Sysmon 1/4688·7045/4697·Sysmon 22/3·도구 접속 기록·RMM 콘솔 감사 로그의 흔적, `conn.log`/`ssl.log`의 긴 TLS 세션과 업체 SNI, 빠른 지원을 쓴 "헬프데스크" 사회공학, 허용 목록 방어, 안전한 프로토콜은 없다, 방어의 여러 겹, 트래픽 흐름표로 `conn.log` 읽기, 공격 단계 → 증거 표로 보는 네트워크 정리, T1219 변경, 확인 문제 |
 
-!!! info "이어서 추가될 내용"
-    모든 원격 접속·관리 도구, "안전한" 프로토콜이 있는가, 섹션 정리.
+!!! success "섹션 완료"
+    기타 네트워크 프로토콜 섹션 — 그리고 네트워크 파트 전체 — 가 끝났습니다. 다음은 호스트, 로그, 파일 이해하기입니다.
 
 ## 꼭 기억할 것 { #must-know }
 
@@ -33,6 +34,8 @@ tags:
 6. 관리자 자격 증명이 있으면 SMB는 원격 실행이다. PC마다 다른 로컬 관리자 비밀번호(LAPS)와 워크스테이션 간 445 차단이 횡적 이동 대부분을 끊는다.
 7. 4624 타입 3 + 4672 + `ADMIN$` 접근 + 7045 새 서비스 = 서비스 이름이 무엇이든 PsExec 패턴이다.
 8. 아무 곳으로나 나가는 SSH = 공격자에게 들어오는 길. `127.0.0.1`이나 `::1`에서 온 RDP 로그온은 터널이다.
+9. 원격 접속·RMM 도구는 서명이 있든 없든 원격 조종 통로다. 하나만 승인하고 나머지는 막고 경보를 울린다.
+10. 안전한 프로토콜은 없다. 알려진 트래픽 흐름표가 탐지를 허용 목록으로 바꾼다.
 
 ## 관련 레퍼런스 { #related }
 

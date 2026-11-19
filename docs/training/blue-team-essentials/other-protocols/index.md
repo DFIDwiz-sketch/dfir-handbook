@@ -19,9 +19,10 @@ tags:
 | 2 | [SMB — Why Attackers Love It, Versions and Negotiation, Typical Attacks](smb.md) | Ports 445/139 and admin shares (`C$`, `ADMIN$`, `IPC$`); why admin credentials = remote execution (the manual `net use`/`sc` version of PsExec); the shared local admin password problem and worms; dialects 1 → 3.1.1 and NEGOTIATE in tshark; `Get-SmbConnection`, SMB1 checks and SMB1 access auditing; why SMB1 must go and why not to disable "SMB2"; credential-based vs exploit-based attacks; a PsExec hop in 4624/4672/5140/5145/7045/4688 and Sysmon 1/3; Zeek `smb_mapping`/`smb_files`/`dce_rpc` (`svcctl CreateServiceW`); exploit signals; defences; Windows 11 24H2/Server 2025 defaults; practice questions |
 | 3 | [SSH, Inbound Tunnelling over Outbound SSH, RDP and VNC](ssh-rdp-vnc.md) | Why SSH is both friend and threat; reading `auth.log` and Zeek `ssh.log`; the four tunnelling tricks (`scp` exfiltration, `-R` remote forwarding, `-L`/`-D` through a dual-homed jump box, X11) flag by flag; `sshd_config` lock-down; `ssh.exe` built into Windows; outbound SSH = inbound RDP: the plink `-R 12345:127.0.0.1:3389` command, Sysmon 1/3, `service=ssh` on 443, 4624 type 10 / 1149 / 21–25 from `127.0.0.1`; RDP prevention and monitoring (event table incl. 4778/4779, RDPClient 1024); VNC/RFB banner and weak auth; OpenSSH 10, tunnelling services, `.rdp` phishing protections; practice questions |
 | 4 | [PowerShell Remoting (WinRM), FTP and Malicious ICMP](psremoting-ftp-icmp.md) | The PSRP → WSMV → SOAP → HTTP(S) stack on 5985/5986; `Test-WSMan`, `Enter-PSSession`, `Invoke-Command`, `winrs`; `POST /wsman` and why the body is encrypted even on HTTP; server-on/desktop-off defaults, who may connect, `TrustedHosts`; traces: WinRM 6 (source), 4624 type 3, WinRM 91, `wsmprovhost.exe` children, PowerShell 400 `ServerRemoteHost`, 4103/4104, service 7040/7036; FTP's attack uses, a control session line by line (`USER`/`PASS`/`EPSV`/`STOR`), Zeek `ftp.log`, `ftp.exe -s:`; ICMP payloads up to 65,507 bytes, normal Windows/Linux ping bytes, a Scapy-crafted payload, ICMP tunnels in `conn.log`; PowerShell 2.0 removal; practice questions |
+| 5 | [Remote Access Tools, Is Any Protocol Safe?, and the Network Summary](remote-tools-summary.md) | Why the capability matters more than the protocol; built-in, commercial remote-support, RMM, tunnel and hardware tools; the outbound-to-relay model; why attackers like them; the leaked-playbook persistence pattern; a silent install line by line (`--silent`, `--set-password`, `msiexec /qn`); traces in Sysmon 1/4688, 7045/4697, Sysmon 22/3, the tool's connection log and RMM console audit; long TLS sessions and vendor SNI in `conn.log`/`ssl.log`; Quick Assist "help desk" social engineering; allow-list defence; no protocol is safe; the defensive layers; a traffic-flow matrix read against `conn.log`; network summary with an attack-stage → evidence table; T1219 changes; practice questions |
 
-!!! info "Coming next"
-    Any remote access or administration tool, whether any protocol is "safe", and the section summary.
+!!! success "Section complete"
+    The additional-protocols section — and the whole network part — is complete. Next: understanding hosts, logs and files.
 
 ## Things to remember { #must-know }
 
@@ -33,6 +34,8 @@ tags:
 6. With admin credentials, SMB is remote execution. Unique local admin passwords (LAPS) and no 445 between workstations break most lateral movement.
 7. 4624 type 3 + 4672 + `ADMIN$` access + 7045 new service = the PsExec pattern, whatever the service is called.
 8. Outbound SSH to anywhere = inbound access for an attacker. An RDP logon from `127.0.0.1` or `::1` means a tunnel.
+9. Any remote-access or RMM tool is a remote-control channel, signed or not. Approve one, block and alert on the rest.
+10. No protocol is safe. A known traffic-flow matrix turns detection into allow-listing.
 
 ## Related references { #related }
 
