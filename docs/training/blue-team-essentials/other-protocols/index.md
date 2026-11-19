@@ -16,9 +16,10 @@ tags:
 | # | Page | Key points |
 | --- | --- | --- |
 | 1 | [DHCP — Protocols to Watch, Turning an IP into a Device, Finding Rogue Devices, DORA Step by Step](dhcp.md) | Why these protocols are grouped (lateral movement, exfiltration); IP → host/MAC → user and why the lease time matters; 4624 and 4768 for the last link; the Windows DHCP audit log field by field (IDs 10/11/12, vendor class, option 82); `Get-DhcpServerv4Lease`; Zeek `dhcp.log`; rogue devices by hostname scheme and MAC OUI; the locally administered bit; why self-reported values can be faked; DORA packet by packet, renewal T1/T2, relays; rogue DHCP servers, starvation, DHCPv6 (mitm6), TunnelVision; practice questions |
+| 2 | [SMB — Why Attackers Love It, Versions and Negotiation, Typical Attacks](smb.md) | Ports 445/139 and admin shares (`C$`, `ADMIN$`, `IPC$`); why admin credentials = remote execution (the manual `net use`/`sc` version of PsExec); the shared local admin password problem and worms; dialects 1 → 3.1.1 and NEGOTIATE in tshark; `Get-SmbConnection`, SMB1 checks and SMB1 access auditing; why SMB1 must go and why not to disable "SMB2"; credential-based vs exploit-based attacks; a PsExec hop in 4624/4672/5140/5145/7045/4688 and Sysmon 1/3; Zeek `smb_mapping`/`smb_files`/`dce_rpc` (`svcctl CreateServiceW`); exploit signals; defences; Windows 11 24H2/Server 2025 defaults; practice questions |
 
 !!! info "Coming next"
-    SMB (versions and typical attacks), SSH and inbound tunnelling over outbound SSH, RDP/VNC, PowerShell remoting, FTP, malicious ICMP, and any remote access or administration tool.
+    SSH and inbound tunnelling over outbound SSH, RDP/VNC, PowerShell remoting, FTP, malicious ICMP, and any remote access or administration tool.
 
 ## Things to remember { #must-know }
 
@@ -27,6 +28,8 @@ tags:
 3. DHCP logs record hostname, IP and MAC — the network's attendance register — but hostname and MAC are self-reported.
 4. A MAC whose second hex digit is 2, 6, A or E is locally administered: there is no OUI to look up.
 5. DHCP has no authentication. Watch for DHCP servers you didn't approve, and use DHCP snooping.
+6. With admin credentials, SMB is remote execution. Unique local admin passwords (LAPS) and no 445 between workstations break most lateral movement.
+7. 4624 type 3 + 4672 + `ADMIN$` access + 7045 new service = the PsExec pattern, whatever the service is called.
 
 ## Related references { #related }
 
