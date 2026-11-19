@@ -46,10 +46,18 @@ tags:
 
     [:octicons-arrow-right-24: SMTP·이메일](email/index.md)
 
+-   :material-lan:{ .lg .middle } **기타 네트워크 프로토콜**
+
+    ---
+
+    IP를 장비로 바꾸고 몰래 꽂은 장비를 찾는 DHCP, 그리고 옆으로 이동·유출에 쓰이는 SMB, SSH, RDP/VNC, PowerShell 원격, FTP, ICMP, 원격 접속 도구.
+
+    [:octicons-arrow-right-24: 기타 네트워크 프로토콜](other-protocols/index.md)
+
 </div>
 
 !!! info "다음 주제"
-    기타 네트워크 프로토콜: DHCP, SMB, SSH, RDP/VNC, PowerShell 원격, FTP, ICMP, 원격 접속 도구.
+    진행 중: [기타 네트워크 프로토콜](other-protocols/index.md) — DHCP 완료, 이어서 SMB, SSH, RDP/VNC, PowerShell 원격, FTP, ICMP, 원격 접속 도구.
 
 !!! note "이 섹션에 대하여"
     개인 학습 노트이며 어떤 기관의 공식 지침도 아닙니다.

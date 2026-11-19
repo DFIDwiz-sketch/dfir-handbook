@@ -46,10 +46,18 @@ tags:
 
     [:octicons-arrow-right-24: SMTP & Email](email/index.md)
 
+-   :material-lan:{ .lg .middle } **Additional Network Protocols**
+
+    ---
+
+    DHCP for turning an IP into a device and finding rogue devices, then SMB, SSH, RDP/VNC, PowerShell remoting, FTP, ICMP and remote-access tools used for lateral movement and exfiltration.
+
+    [:octicons-arrow-right-24: Additional Network Protocols](other-protocols/index.md)
+
 </div>
 
 !!! info "Next topic"
-    Additional network protocols: DHCP, SMB, SSH, RDP/VNC, PowerShell remoting, FTP, ICMP and remote-access tools.
+    In progress: [additional network protocols](other-protocols/index.md) — DHCP is up; SMB, SSH, RDP/VNC, PowerShell remoting, FTP, ICMP and remote-access tools follow.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.

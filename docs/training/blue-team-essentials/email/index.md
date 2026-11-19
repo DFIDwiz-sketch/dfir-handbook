@@ -22,7 +22,7 @@ tags:
 | 5 | [DMARC and the Email Wrap-up — How Many From Addresses, Alignment, Policy and Reports, What Authentication Proves](dmarc-summary.md) | Envelope vs header From and the other "from" fields; a spoof that passes SPF and DKIM for the wrong domain; DMARC's three statements; SPF/DKIM alignment, relaxed vs strict, organisational domain and the tree walk; the `_dmarc` record tag by tag (np, t, psd added; pct, rf, ri removed); external report authorisation; evaluation step by step and `dis=`; reading aggregate reports (policy_evaluated vs auth_results); rollout path; forwarding, From rewriting and ARC; what DMARC does not stop (look-alikes, display names, Reply-To, compromised accounts); section wrap-up and triage checklist; practice questions |
 
 !!! success "Section complete"
-    The email section is complete. Next: [additional network protocols](../index.md) — DHCP, SMB, SSH, RDP/VNC, PowerShell remoting, FTP, ICMP and remote-access tools.
+    The email section is complete. Next: [additional network protocols](../other-protocols/index.md) — DHCP, SMB, SSH, RDP/VNC, PowerShell remoting, FTP, ICMP and remote-access tools.
 
 ## Things to remember { #must-know }
 

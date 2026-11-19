@@ -22,7 +22,7 @@ tags:
 | 5 | [DMARC와 이메일 정리 — From 주소는 몇 개인가, 일치(alignment), 정책과 보고서, 인증이 증명하는 것](dmarc-summary.md) | 봉투 From과 헤더 From, 그 밖의 "보낸 사람" 칸, 엉뚱한 도메인으로 SPF·DKIM을 통과하는 위조, DMARC가 말하는 세 가지, SPF·DKIM 일치와 느슨한/엄격한 방식, 조직 도메인과 트리 워크, `_dmarc` 레코드 태그별 해석(np·t·psd 추가, pct·rf·ri 삭제), 외부 보고서 허락 레코드, 판정 단계와 `dis=`, 집계 보고서 읽기(policy_evaluated와 auth_results), 적용 단계, 전달·From 바꿔 쓰기·ARC, DMARC로 못 막는 것(비슷한 도메인, 표시 이름, Reply-To, 탈취 계정), 섹션 정리와 분석 체크리스트, 확인 문제 |
 
 !!! success "섹션 완료"
-    이메일 섹션이 끝났습니다. 다음은 [기타 네트워크 프로토콜](../index.md)입니다 — DHCP, SMB, SSH, RDP/VNC, PowerShell 원격, FTP, ICMP, 원격 접속 도구.
+    이메일 섹션이 끝났습니다. 다음은 [기타 네트워크 프로토콜](../other-protocols/index.md)입니다 — DHCP, SMB, SSH, RDP/VNC, PowerShell 원격, FTP, ICMP, 원격 접속 도구.
 
 ## 꼭 기억할 것 { #must-know }
 
