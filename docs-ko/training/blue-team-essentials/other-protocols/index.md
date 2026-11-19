@@ -18,9 +18,10 @@ tags:
 | 1 | [DHCP — 눈여겨볼 프로토콜들, IP를 장비 이름으로 바꾸기, 몰래 꽂은 장비 찾기, DORA 한 단계씩](dhcp.md) | 이 프로토콜들을 따로 보는 이유(옆으로 이동, 유출), IP → 호스트·MAC → 사용자와 임대 시각이 중요한 이유, 마지막 고리 4624·4768, Windows DHCP 감사 로그 칸별 해석(ID 10·11·12, 벤더 클래스, 옵션 82), `Get-DhcpServerv4Lease`, Zeek `dhcp.log`, 호스트 이름 규칙과 MAC OUI로 몰래 꽂은 장비 찾기, 로컬 관리 비트, 스스로 말하는 값이라 속일 수 있는 이유, DORA 패킷 단위, 갱신 T1·T2, 릴레이, 가짜 DHCP 서버·풀 고갈·DHCPv6(mitm6)·TunnelVision, 확인 문제 |
 | 2 | [SMB — 공격자가 좋아하는 이유, 버전과 협상, 대표 공격](smb.md) | 445·139 포트와 관리용 공유(`C$`, `ADMIN$`, `IPC$`), 관리자 자격 증명 = 원격 실행인 이유(PsExec를 손으로 하는 `net use`/`sc`), 같은 로컬 관리자 비밀번호 문제와 웜, 방언 1 → 3.1.1과 tshark로 보는 NEGOTIATE, `Get-SmbConnection`·SMB1 확인·SMB1 접속 감사, SMB1을 없애야 하는 이유와 "SMB2"를 끄면 안 되는 이유, 자격 증명 방식 vs 익스플로잇 방식, PsExec 이동이 남기는 4624·4672·5140·5145·7045·4688과 Sysmon 1·3, Zeek `smb_mapping`·`smb_files`·`dce_rpc`(`svcctl CreateServiceW`), 익스플로잇 신호, 방어, Windows 11 24H2·Server 2025 기본값, 확인 문제 |
 | 3 | [SSH, 밖으로 나가는 SSH로 안으로 들어오는 터널, RDP와 VNC](ssh-rdp-vnc.md) | SSH가 친구이자 위협인 이유, `auth.log`와 Zeek `ssh.log` 읽기, 네 가지 터널 기법(`scp` 유출, `-R` 원격 포워딩, 듀얼 홈 점프 박스를 통한 `-L`/`-D`, X11) 옵션별 해석, `sshd_config`로 잠그기, Windows 기본 내장 `ssh.exe`, 나가는 SSH = 들어오는 RDP: plink `-R 12345:127.0.0.1:3389` 명령, Sysmon 1·3, 443 포트의 `service=ssh`, `127.0.0.1`에서 온 4624 타입 10·1149·21~25, RDP 예방과 감시(4778·4779, RDPClient 1024 포함 이벤트 표), VNC/RFB 배너와 약한 인증, OpenSSH 10·터널 서비스·`.rdp` 피싱 보호, 확인 문제 |
+| 4 | [PowerShell 원격(WinRM), FTP, 악성 ICMP](psremoting-ftp-icmp.md) | 5985/5986의 PSRP → WSMV → SOAP → HTTP(S) 층, `Test-WSMan`·`Enter-PSSession`·`Invoke-Command`·`winrs`, `POST /wsman`과 HTTP여도 본문이 암호화되는 이유, 서버는 켜짐·데스크톱은 꺼짐 기본값, 접속 가능한 사람, `TrustedHosts`, 흔적: WinRM 6(출발지)·4624 타입 3·WinRM 91·`wsmprovhost.exe` 자식 프로세스·PowerShell 400 `ServerRemoteHost`·4103/4104·서비스 7040/7036, FTP가 공격에 쓰이는 방식, 제어 대화 한 줄씩(`USER`/`PASS`/`EPSV`/`STOR`), Zeek `ftp.log`, `ftp.exe -s:`, 최대 65,507바이트 ICMP 페이로드, 정상 Windows/Linux ping 바이트, Scapy로 만든 페이로드, `conn.log`의 ICMP 터널, PowerShell 2.0 제거, 확인 문제 |
 
 !!! info "이어서 추가될 내용"
-    PowerShell 원격, FTP, 악성 ICMP, 모든 원격 접속·관리 도구.
+    모든 원격 접속·관리 도구, "안전한" 프로토콜이 있는가, 섹션 정리.
 
 ## 꼭 기억할 것 { #must-know }
 

@@ -57,7 +57,7 @@ tags:
 </div>
 
 !!! info "Next topic"
-    In progress: [additional network protocols](other-protocols/index.md) — DHCP, SMB, SSH and RDP/VNC are up; PowerShell remoting, FTP, ICMP and remote-access tools follow.
+    In progress: [additional network protocols](other-protocols/index.md) — DHCP, SMB, SSH, RDP/VNC, PowerShell remoting, FTP and ICMP are up; remote-access tools and the section summary follow.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.

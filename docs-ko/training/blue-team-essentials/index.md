@@ -57,7 +57,7 @@ tags:
 </div>
 
 !!! info "다음 주제"
-    진행 중: [기타 네트워크 프로토콜](other-protocols/index.md) — DHCP·SMB·SSH·RDP/VNC 완료, 이어서 PowerShell 원격, FTP, ICMP, 원격 접속 도구.
+    진행 중: [기타 네트워크 프로토콜](other-protocols/index.md) — DHCP·SMB·SSH·RDP/VNC·PowerShell 원격·FTP·ICMP 완료, 이어서 원격 접속 도구와 섹션 정리.
 
 !!! note "이 섹션에 대하여"
     개인 학습 노트이며 어떤 기관의 공식 지침도 아닙니다.
