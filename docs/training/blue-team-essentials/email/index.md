@@ -18,9 +18,10 @@ tags:
 | 1 | [Email Delivery and SMTP — MUA, MTA, MDA, Ports, Reading an SMTP Conversation](delivery-smtp.md) | Submission, relay and receiving; MUA/MSA/MTA/MDA; ports by stage; MX records; the unspoofable border MTA IP; an SMTP conversation line by line; envelope vs header addresses; reply codes; Zeek smtp.log; network signals; practice questions |
 | 2 | [Reading Email Headers — Trace Headers, Message Headers, Body, Interpreting Received Lines](email-headers.md) | The three parts of a source and who writes them; MIME, attachments and Base64; viewing headers and collecting them safely (forward as attachment); reading Received from bottom to top; the trust boundary (the line our border MTA wrote); forged Received lines; one line field by field; ordering with Python; practice questions |
 | 3 | [Email Spoofing and SPF — Why SMTP Trusts Anyone, Spoofed Injection, the Three Defences, How SPF Works](spoofing-spf.md) | Why SMTP never checks the sender; a spoofed SMTP conversation line by line; skipping SMTP AUTH by talking straight to the MX; SPF vs DKIM vs DMARC; the connecting IP and the TCP handshake; SPF checks MAIL FROM/HELO, not From:; reading an SPF record with dig; qualifiers; walking an evaluation; the 10-lookup and void-lookup limits; practice questions |
+| 4 | [SPF Results and DKIM — Result Values, Reading Authentication-Results and Received-SPF, How DKIM Signatures Work](spf-results-dkim.md) | The seven SPF results and how to treat them; Authentication-Results field by field (authserv-id, smtp.mailfrom, header.d/s/b); cloud-platform verdicts (bestguesspass, compauth); Received-SPF detail (client-ip, mechanism); unfolding headers with awk; forged results headers; why DKIM; signing and verification step by step; the selector is the key's name; DKIM-Signature tags; over-signing From; body hash demo; the _domainkey key record and revocation; DKIM results; replay and ARC; practice questions |
 
 !!! info "Coming next"
-    SPF results and how to read them in trace headers, DKIM, then DMARC and the email analysis wrap-up.
+    DMARC — alignment, policy tags and reports — and the email analysis wrap-up, which closes this section.
 
 ## Things to remember { #must-know }
 
