@@ -16,9 +16,10 @@ tags:
 | # | 페이지 | 핵심 |
 | --- | --- | --- |
 | 1 | [이메일 전달 구조와 SMTP — MUA·MTA·MDA, 포트, SMTP 대화 읽기](delivery-smtp.md) | 제출·중계·받기 세 단계, MUA·MSA·MTA·MDA, 단계별 포트, MX 레코드, 속일 수 없는 경계 MTA IP, SMTP 대화 한 줄씩, 봉투 주소와 헤더 주소, 응답 코드, Zeek smtp.log, 네트워크 신호, 확인 문제 |
+| 2 | [이메일 헤더 읽기 — 트레이스 헤더, 메시지 헤더, 본문, Received 줄 해석](email-headers.md) | 원문의 세 부분과 누가 쓰나, MIME·첨부·Base64, 헤더 보는 법과 안전한 수집(첨부로 전달), Received를 아래에서 위로 읽기, 신뢰의 경계(우리 경계 MTA가 쓴 줄), 위조 Received 줄, 한 줄 칸별 해석, Python으로 순서 뽑기, 확인 문제 |
 
 !!! info "이어서 추가될 내용"
-    이메일 헤더 읽기(Received 줄 해석, 헤더와 원문 보는 법), 위조 메일 주입, SPF·DKIM·DMARC, 이메일 분석 정리.
+    위조 메일 주입, SPF·DKIM·DMARC, 이메일 분석 정리.
 
 ## 꼭 기억할 것 { #must-know }
 

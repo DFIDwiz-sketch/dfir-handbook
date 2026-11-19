@@ -16,9 +16,10 @@ tags:
 | # | Page | Key points |
 | --- | --- | --- |
 | 1 | [Email Delivery and SMTP — MUA, MTA, MDA, Ports, Reading an SMTP Conversation](delivery-smtp.md) | Submission, relay and receiving; MUA/MSA/MTA/MDA; ports by stage; MX records; the unspoofable border MTA IP; an SMTP conversation line by line; envelope vs header addresses; reply codes; Zeek smtp.log; network signals; practice questions |
+| 2 | [Reading Email Headers — Trace Headers, Message Headers, Body, Interpreting Received Lines](email-headers.md) | The three parts of a source and who writes them; MIME, attachments and Base64; viewing headers and collecting them safely (forward as attachment); reading Received from bottom to top; the trust boundary (the line our border MTA wrote); forged Received lines; one line field by field; ordering with Python; practice questions |
 
 !!! info "Coming next"
-    Reading email headers (interpreting Received lines, how to view headers and source), spoofed email injection, SPF/DKIM/DMARC, and the email analysis wrap-up.
+    Spoofed email injection, SPF/DKIM/DMARC, and the email analysis wrap-up.
 
 ## Things to remember { #must-know }
 
