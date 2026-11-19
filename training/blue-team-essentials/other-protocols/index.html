@@ -26,7 +26,7 @@
       
       
       <link rel="icon" href="../../../assets/favicon.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -6535,6 +6535,8 @@
       
         
       
+        
+      
     
     
     
@@ -6688,6 +6690,34 @@
     
   
     PowerShell Remoting (WinRM), FTP and Malicious ICMP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="remote-tools-summary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Remote Access Tools, Is Any Protocol Safe?, and the Network Summary
   
 
     
@@ -9717,11 +9747,16 @@
 <td><a href="psremoting-ftp-icmp/">PowerShell Remoting (WinRM), FTP and Malicious ICMP</a></td>
 <td>The PSRP → WSMV → SOAP → HTTP(S) stack on 5985/5986; <code>Test-WSMan</code>, <code>Enter-PSSession</code>, <code>Invoke-Command</code>, <code>winrs</code>; <code>POST /wsman</code> and why the body is encrypted even on HTTP; server-on/desktop-off defaults, who may connect, <code>TrustedHosts</code>; traces: WinRM 6 (source), 4624 type 3, WinRM 91, <code>wsmprovhost.exe</code> children, PowerShell 400 <code>ServerRemoteHost</code>, 4103/4104, service 7040/7036; FTP's attack uses, a control session line by line (<code>USER</code>/<code>PASS</code>/<code>EPSV</code>/<code>STOR</code>), Zeek <code>ftp.log</code>, <code>ftp.exe -s:</code>; ICMP payloads up to 65,507 bytes, normal Windows/Linux ping bytes, a Scapy-crafted payload, ICMP tunnels in <code>conn.log</code>; PowerShell 2.0 removal; practice questions</td>
 </tr>
+<tr>
+<td>5</td>
+<td><a href="remote-tools-summary/">Remote Access Tools, Is Any Protocol Safe?, and the Network Summary</a></td>
+<td>Why the capability matters more than the protocol; built-in, commercial remote-support, RMM, tunnel and hardware tools; the outbound-to-relay model; why attackers like them; the leaked-playbook persistence pattern; a silent install line by line (<code>--silent</code>, <code>--set-password</code>, <code>msiexec /qn</code>); traces in Sysmon 1/4688, 7045/4697, Sysmon 22/3, the tool's connection log and RMM console audit; long TLS sessions and vendor SNI in <code>conn.log</code>/<code>ssl.log</code>; Quick Assist "help desk" social engineering; allow-list defence; no protocol is safe; the defensive layers; a traffic-flow matrix read against <code>conn.log</code>; network summary with an attack-stage → evidence table; T1219 changes; practice questions</td>
+</tr>
 </tbody>
 </table>
-<div class="admonition info">
-<p class="admonition-title">Coming next</p>
-<p>Any remote access or administration tool, whether any protocol is "safe", and the section summary.</p>
+<div class="admonition success">
+<p class="admonition-title">Section complete</p>
+<p>The additional-protocols section — and the whole network part — is complete. Next: understanding hosts, logs and files.</p>
 </div>
 <h2 id="must-know">Things to remember<a class="headerlink" href="#must-know" title="Permanent link">¶</a></h2>
 <ol>
@@ -9733,6 +9768,8 @@
 <li>With admin credentials, SMB is remote execution. Unique local admin passwords (LAPS) and no 445 between workstations break most lateral movement.</li>
 <li>4624 type 3 + 4672 + <code>ADMIN$</code> access + 7045 new service = the PsExec pattern, whatever the service is called.</li>
 <li>Outbound SSH to anywhere = inbound access for an attacker. An RDP logon from <code>127.0.0.1</code> or <code>::1</code> means a tunnel.</li>
+<li>Any remote-access or RMM tool is a remote-control channel, signed or not. Approve one, block and alert on the rest.</li>
+<li>No protocol is safe. A known traffic-flow matrix turns detection into allow-listing.</li>
 </ol>
 <h2 id="related">Related references<a class="headerlink" href="#related" title="Permanent link">¶</a></h2>
 <ul>
