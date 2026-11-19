@@ -42,14 +42,14 @@ tags:
 
     ---
 
-    메일이 거쳐 가는 서버들(MUA·MTA·MDA)과 포트, SMTP 대화와 봉투·헤더 주소, 이어서 헤더 읽기와 SPF·DKIM·DMARC.
+    메일이 거쳐 가는 서버들(MUA·MTA·MDA)과 포트, SMTP 대화와 봉투·헤더 주소, 헤더 읽기, SPF 결과, DKIM 서명, DMARC 일치·정책·보고서, 분석 체크리스트.
 
     [:octicons-arrow-right-24: SMTP·이메일](email/index.md)
 
 </div>
 
 !!! info "다음 주제"
-    SMTP·이메일 분석을 계속 채우고, 이어서 기타 네트워크 프로토콜을 다룹니다.
+    기타 네트워크 프로토콜: DHCP, SMB, SSH, RDP/VNC, PowerShell 원격, FTP, ICMP, 원격 접속 도구.
 
 !!! note "이 섹션에 대하여"
     개인 학습 노트이며 어떤 기관의 공식 지침도 아닙니다.

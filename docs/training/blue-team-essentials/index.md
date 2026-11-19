@@ -42,14 +42,14 @@ tags:
 
     ---
 
-    The servers mail passes through (MUA, MTA, MDA) and their ports, SMTP conversations and envelope vs header addresses, then reading headers and SPF/DKIM/DMARC.
+    The servers mail passes through (MUA, MTA, MDA) and their ports, SMTP conversations and envelope vs header addresses, reading headers, SPF results, DKIM signatures, DMARC alignment, policies and reports, and a triage checklist.
 
     [:octicons-arrow-right-24: SMTP & Email](email/index.md)
 
 </div>
 
 !!! info "Next topic"
-    More SMTP and email analysis, followed by additional network protocols.
+    Additional network protocols: DHCP, SMB, SSH, RDP/VNC, PowerShell remoting, FTP, ICMP and remote-access tools.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.
