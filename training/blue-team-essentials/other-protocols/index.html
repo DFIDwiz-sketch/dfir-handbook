@@ -6531,6 +6531,8 @@
       
         
       
+        
+      
     
     
     
@@ -6628,6 +6630,34 @@
     
   
     SMB — Why Attackers Love It, Versions and Negotiation, Typical Attacks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ssh-rdp-vnc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SSH, Inbound Tunnelling over Outbound SSH, RDP and VNC
   
 
     
@@ -9647,11 +9677,16 @@
 <td><a href="smb/">SMB — Why Attackers Love It, Versions and Negotiation, Typical Attacks</a></td>
 <td>Ports 445/139 and admin shares (<code>C$</code>, <code>ADMIN$</code>, <code>IPC$</code>); why admin credentials = remote execution (the manual <code>net use</code>/<code>sc</code> version of PsExec); the shared local admin password problem and worms; dialects 1 → 3.1.1 and NEGOTIATE in tshark; <code>Get-SmbConnection</code>, SMB1 checks and SMB1 access auditing; why SMB1 must go and why not to disable "SMB2"; credential-based vs exploit-based attacks; a PsExec hop in 4624/4672/5140/5145/7045/4688 and Sysmon 1/3; Zeek <code>smb_mapping</code>/<code>smb_files</code>/<code>dce_rpc</code> (<code>svcctl CreateServiceW</code>); exploit signals; defences; Windows 11 24H2/Server 2025 defaults; practice questions</td>
 </tr>
+<tr>
+<td>3</td>
+<td><a href="ssh-rdp-vnc/">SSH, Inbound Tunnelling over Outbound SSH, RDP and VNC</a></td>
+<td>Why SSH is both friend and threat; reading <code>auth.log</code> and Zeek <code>ssh.log</code>; the four tunnelling tricks (<code>scp</code> exfiltration, <code>-R</code> remote forwarding, <code>-L</code>/<code>-D</code> through a dual-homed jump box, X11) flag by flag; <code>sshd_config</code> lock-down; <code>ssh.exe</code> built into Windows; outbound SSH = inbound RDP: the plink <code>-R 12345:127.0.0.1:3389</code> command, Sysmon 1/3, <code>service=ssh</code> on 443, 4624 type 10 / 1149 / 21–25 from <code>127.0.0.1</code>; RDP prevention and monitoring (event table incl. 4778/4779, RDPClient 1024); VNC/RFB banner and weak auth; OpenSSH 10, tunnelling services, <code>.rdp</code> phishing protections; practice questions</td>
+</tr>
 </tbody>
 </table>
 <div class="admonition info">
 <p class="admonition-title">Coming next</p>
-<p>SSH and inbound tunnelling over outbound SSH, RDP/VNC, PowerShell remoting, FTP, malicious ICMP, and any remote access or administration tool.</p>
+<p>PowerShell remoting, FTP, malicious ICMP, and any remote access or administration tool.</p>
 </div>
 <h2 id="must-know">Things to remember<a class="headerlink" href="#must-know" title="Permanent link">¶</a></h2>
 <ol>
@@ -9662,6 +9697,7 @@
 <li>DHCP has no authentication. Watch for DHCP servers you didn't approve, and use DHCP snooping.</li>
 <li>With admin credentials, SMB is remote execution. Unique local admin passwords (LAPS) and no 445 between workstations break most lateral movement.</li>
 <li>4624 type 3 + 4672 + <code>ADMIN$</code> access + 7045 new service = the PsExec pattern, whatever the service is called.</li>
+<li>Outbound SSH to anywhere = inbound access for an attacker. An RDP logon from <code>127.0.0.1</code> or <code>::1</code> means a tunnel.</li>
 </ol>
 <h2 id="related">Related references<a class="headerlink" href="#related" title="Permanent link">¶</a></h2>
 <ul>
