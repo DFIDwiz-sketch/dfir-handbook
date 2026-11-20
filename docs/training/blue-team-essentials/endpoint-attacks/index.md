@@ -16,9 +16,10 @@ tags:
 | # | Page | Key points |
 | --- | --- | --- |
 | 1 | [Initial Exploitation — Why the Endpoint Matters, Delivery, Service-Side and Client-Side Exploits](initial-exploitation.md) | What the endpoint sees that the network can't (Zeek `conn.log` vs Sysmon 3 for the same connection); attack stages → ATT&CK tactics → best evidence; where delivery ends; the three doors (exploit, social engineering, valid credentials); the attacker becomes the compromised process — "what was compromised and with what privileges?" (`Get-Process -IncludeUserName`, `ps --forest`); service-side exploits: listening ports with `Get-NetTCPConnection`/`ss -tlnp`, an IIS log line and a `w3wp.exe` → `cmd.exe` 4688 field by field; client-side exploits: `Zone.Identifier` (MotW) and a `WINWORD.EXE` → hidden PowerShell Sysmon 1; comparison table and triage checklist; edge-device exploitation, ClickFix (T1204.004), native Sysmon; practice questions |
+| 2 | [Execution, Persistence and Discovery — What the Attacker Does Right After the Exploit](execution-persistence-discovery.md) | Post-exploitation and why clean-up cost climbs; ATT&CK tactics → techniques → sub-techniques (current tactic list incl. Stealth TA0005 / Defense Impairment TA0112); execution: payloads, shells vs C2 agents, breaking out of SQL with `xp_cmdshell` (15457 and `sqlservr.exe` → `cmd.exe` 4688), application control and AppLocker 8004; persistence as a trade-off, layered persistence and failed remediation, Run key (Sysmon 13), scheduled task (4698 XML) and service (7045) field by field; discovery: living off the land, `net group "Domain Admins" /domain`, burst detection with a 4688 PowerShell hunt; five-minute timeline; practice questions |
 
 !!! info "Coming next"
-    Post-exploitation: execution, persistence and discovery; then privilege escalation, credential dumping, and lateral movement through exfiltration.
+    Privilege escalation (how it works, abusing OS permissions, kernel exploits); then credential dumping with Mimikatz, and lateral movement, collection and exfiltration.
 
 ## Things to remember { #must-know }
 

@@ -16,9 +16,10 @@ tags:
 | # | 페이지 | 핵심 |
 | --- | --- | --- |
 | 1 | [최초 침투 — 엔드포인트가 중요한 이유, 전달 단계, 서비스 측·클라이언트 측 익스플로잇](initial-exploitation.md) | 네트워크는 못 보고 엔드포인트는 보는 것(같은 연결의 Zeek `conn.log` vs Sysmon 3), 공격 단계 → ATT&CK 전술 → 가장 좋은 증거, 전달이 끝나는 지점, 세 개의 문(익스플로잇·사회공학·유효한 자격 증명), 공격자는 뚫린 프로세스가 된다 — "무엇이 어떤 권한으로 뚫렸나?"(`Get-Process -IncludeUserName`, `ps --forest`), 서비스 측: `Get-NetTCPConnection`/`ss -tlnp`로 듣는 포트 찾기, IIS 로그 한 줄과 `w3wp.exe` → `cmd.exe` 4688 칸별 해석, 클라이언트 측: `Zone.Identifier`(MotW)와 `WINWORD.EXE` → 숨긴 PowerShell Sysmon 1, 비교표와 분석 체크리스트, 경계 장비 익스플로잇·ClickFix(T1204.004)·기본 내장 Sysmon, 확인 문제 |
+| 2 | [실행, 지속성, 정보 탐색 — 익스플로잇 직후 공격자가 하는 일](execution-persistence-discovery.md) | 익스플로잇 이후 활동과 정리 비용이 뛰는 이유, ATT&CK 전술 → 기법 → 하위 기법(Stealth TA0005 / Defense Impairment TA0112를 포함한 현재 전술 목록), 실행: 페이로드, 셸 vs C2 에이전트, `xp_cmdshell`로 SQL에서 빠져나오기(15457과 `sqlservr.exe` → `cmd.exe` 4688), 애플리케이션 제어와 AppLocker 8004, 지속성: 저울질, 여러 겹 지속성과 실패한 정리, Run 키(Sysmon 13)·예약 작업(4698 XML)·서비스(7045) 칸별 해석, 정보 탐색: 환경 속에 숨어 살기, `net group "Domain Admins" /domain`, 4688 PowerShell 사냥으로 몰아치기 탐지, 처음 5분 타임라인, 확인 문제 |
 
 !!! info "이어서 추가될 내용"
-    익스플로잇 이후: 실행, 지속성, 정보 탐색. 그다음 권한 상승, 자격 증명 덤프, 옆으로 이동부터 유출까지.
+    권한 상승(동작 원리, OS 권한 악용, 커널 익스플로잇). 그다음 Mimikatz를 이용한 자격 증명 덤프, 옆으로 이동·수집·유출.
 
 ## 꼭 기억할 것 { #must-know }
 
