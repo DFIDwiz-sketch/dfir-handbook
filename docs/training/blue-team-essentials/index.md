@@ -58,14 +58,14 @@ tags:
 
     ---
 
-    What happens on the host after delivery: why the endpoint sees more than the network, initial exploitation (service-side vs client-side) and the evidence each leaves, with execution, persistence, discovery, privilege escalation, credential dumping, lateral movement and exfiltration to follow.
+    What happens on the host after delivery: why the endpoint sees more than the network, initial exploitation (service-side vs client-side) and the evidence each leaves, then execution, persistence, discovery, privilege escalation, credential dumping, lateral movement, collection and exfiltration.
 
     [:octicons-arrow-right-24: Endpoint Attacks](endpoint-attacks/index.md)
 
 </div>
 
 !!! info "Next topic"
-    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols). The host part has started with endpoint attacks; endpoint defence, Windows and Linux logging, important events, the log pipeline and file analysis follow.
+    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols). The host part has started: endpoint attacks are complete; endpoint defence comes next, then Windows and Linux logging, important events, the log pipeline and file analysis.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.
