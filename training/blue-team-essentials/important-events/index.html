@@ -7454,6 +7454,8 @@
       
         
       
+        
+      
     
     
     
@@ -7523,6 +7525,34 @@
     
   
     Login Events — 4624/4625 and Logon Types, 4648 Explicit Credentials, Linux Logins and Login Failures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="process-creation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Process Creation Events — 4688, Sysmon Event 1, auditd and audit.log, Snoopy
   
 
     
@@ -10551,11 +10581,16 @@
 <td><a href="logins/">Login Events — 4624/4625 and Logon Types, 4648 Explicit Credentials, Linux Logins and Login Failures</a></td>
 <td>4624 written on the target, full EventData field by field (Subject vs Target, <code>TargetDomainName</code> = computer name for local accounts, <code>LogonProcessName</code>, <code>AuthenticationPackageName</code>, untrustworthy <code>WorkstationName</code>, <code>IpAddress</code>, <code>ElevatedToken</code>/linked logons); logon types 2–13 table with corrections (type 11 = cached, type 2 ≠ physical presence), RDP as type 3 + 10; Logon ID pivot to 4672/4688/4634/4647; computer-account and service noise, <code>Get-WinEvent</code> filter read line by line; 4625 with Status/SubStatus table, RDP-with-NLA failures as type 3, DC-side 4771/4776; 4648 on the source machine, subject/target/server/process, runas story, type 9 <code>seclogo</code>; Linux SSH login spread over PID-linked lines, key fingerprints (T1098.004), <code>sshd-session</code>; Linux failure shapes (<code>Invalid user</code>, <code>Failed password</code>, PAM <code>authentication failure</code>, sudo), passwords typed as usernames, counting failures per IP; Windows vs Linux table; T1078, T1110, T1021, T1550.002, T1134.002; SOC checklist; practice questions</td>
 </tr>
+<tr>
+<td>2</td>
+<td><a href="process-creation/">Process Creation Events — 4688, Sysmon Event 1, auditd and audit.log, Snoopy</a></td>
+<td>Why process logs catch most attacks (LOLBins, T1059/T1218), ideal fields table and sources; 4688 with Audit Process Creation and the separate command-line policy, full EventData field by field (<code>ProcessId</code> = parent, <code>TokenElevationType</code> %%1936/7/8, <code>MandatoryLabel</code>), Word → cmd → certutil chain, <code>Get-WinEvent</code> filter line by line; Sysmon Event 1 extras (<code>ProcessGuid</code>, <code>OriginalFileName</code>, <code>Hashes</code>/IMPHASH, <code>ParentCommandLine</code>, <code>ParentUser</code>) and the correction that it carries no signature; 4688 vs Sysmon table; auditd <code>execve</code> rule word by word (b64 + b32, <code>execveat</code>, rules.d), six-line <code>audit.log</code> record read field by field (serial number, <code>syscall=59</code>, <code>auid</code> vs <code>uid</code>, <code>tty</code>, <code>ses</code>), hex-encoded EXECVE/PROCTITLE, <code>ausearch -i</code> and <code>aureport -x</code>; tuning and protecting auditd (T1562.012, <code>-e 2</code>); Snoopy via <code>ld.so.preload</code>, a line field by field, enumeration-script story, bypasses (T1574.006); four-source comparison; SOC checklist; practice questions</td>
+</tr>
 </tbody>
 </table>
 <div class="admonition info">
 <p class="admonition-title">Coming next</p>
-<p>Process creation (4688, auditd and <code>audit.log</code>, Snoopy), firewall logs and object access auditing, services, scheduled tasks and USB devices, account and group changes, Defender and PowerShell logging, and Kerberos (4768, 4769, 4770).</p>
+<p>Firewall logs and object access auditing, services, scheduled tasks and USB devices, account and group changes, Defender and PowerShell logging, and Kerberos (4768, 4769, 4770).</p>
 </div>
 <h2 id="must-know">Things to remember<a class="headerlink" href="#must-know" title="Permanent link">¶</a></h2>
 <ol>
@@ -10567,6 +10602,8 @@
 <li>SubStatus tells you why a logon failed: <code>0xc0000064</code> no such user, <code>0xc000006a</code> wrong password, <code>0xc0000234</code> locked out.</li>
 <li>Linux logins are multi-line free text tied by PID; every login program and every failure reason needs its own pattern.</li>
 <li>Login logs contain sensitive data (passwords typed as usernames) — restrict access.</li>
+<li>Process creation: the command line and the parent are the fields that matter. 4688 needs the separate command-line policy; in 4688 <code>ProcessId</code> is the parent.</li>
+<li>On Linux, auditd <code>auid</code> keeps the original login user through <code>sudo</code>; <code>auid</code> unset + <code>tty=(none)</code> running a shell means a daemon or webshell, not a person.</li>
 </ol>
 <h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">¶</a></h2>
 <ul>

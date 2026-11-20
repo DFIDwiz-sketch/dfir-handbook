@@ -7454,6 +7454,8 @@
       
         
       
+        
+      
     
     
     
@@ -7523,6 +7525,34 @@
     
   
     로그인 이벤트 — 4624/4625와 로그온 유형, 4648 명시적 자격 증명, Linux 로그인과 로그인 실패
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="process-creation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    프로세스 생성 이벤트 — 4688, Sysmon 이벤트 1, auditd와 audit.log, Snoopy
   
 
     
@@ -10551,11 +10581,16 @@
 <td><a href="logins/">로그인 이벤트 — 4624/4625와 로그온 유형, 4648 명시적 자격 증명, Linux 로그인과 로그인 실패</a></td>
 <td>대상 컴퓨터에 남는 4624, EventData 칸별 해석(Subject vs Target, 로컬 계정이면 <code>TargetDomainName</code> = 컴퓨터 이름, <code>LogonProcessName</code>, <code>AuthenticationPackageName</code>, 믿으면 안 되는 <code>WorkstationName</code>, <code>IpAddress</code>, <code>ElevatedToken</code>/연결된 로그온); 로그온 유형 2–13 표와 정정(유형 11 = 캐시, 유형 2 ≠ 물리적 접근), RDP = 유형 3 + 10; 로그온 ID로 4672/4688/4634/4647 따라가기; 컴퓨터 계정·서비스 잡음과 <code>Get-WinEvent</code> 필터 한 줄씩; Status/SubStatus 표가 있는 4625, NLA RDP 실패는 유형 3, DC 쪽 4771/4776; 출발지에 남는 4648, subject/target/server/process, runas 사례, 유형 9 <code>seclogo</code>; PID로 묶인 여러 줄의 Linux SSH 로그인, 키 지문(T1098.004), <code>sshd-session</code>; Linux 실패 모양(<code>Invalid user</code>, <code>Failed password</code>, PAM <code>authentication failure</code>, sudo), 사용자 이름 칸의 비밀번호, IP별 실패 세기; Windows vs Linux 표; T1078, T1110, T1021, T1550.002, T1134.002; SOC 점검 목록; 확인 문제</td>
 </tr>
+<tr>
+<td>2</td>
+<td><a href="process-creation/">프로세스 생성 이벤트 — 4688, Sysmon 이벤트 1, auditd와 audit.log, Snoopy</a></td>
+<td>프로세스 로그가 대부분의 공격을 잡는 이유(LOLBin, T1059/T1218), 이상적인 칸 표와 출처; Audit Process Creation과 별도 명령줄 정책이 필요한 4688, EventData 칸별 해석(<code>ProcessId</code> = 부모, <code>TokenElevationType</code> %%1936/7/8, <code>MandatoryLabel</code>), Word → cmd → certutil 사슬, <code>Get-WinEvent</code> 필터 한 줄씩; Sysmon 이벤트 1이 더 주는 것(<code>ProcessGuid</code>, <code>OriginalFileName</code>, <code>Hashes</code>/IMPHASH, <code>ParentCommandLine</code>, <code>ParentUser</code>)과 서명은 없다는 정정; 4688 vs Sysmon 표; auditd <code>execve</code> 규칙 단어별(b64 + b32, <code>execveat</code>, rules.d), 여섯 줄짜리 <code>audit.log</code> 기록 칸별 해석(일련번호, <code>syscall=59</code>, <code>auid</code> vs <code>uid</code>, <code>tty</code>, <code>ses</code>), 16진수 EXECVE/PROCTITLE, <code>ausearch -i</code>와 <code>aureport -x</code>; auditd 다듬기와 지키기(T1562.012, <code>-e 2</code>); <code>ld.so.preload</code>로 동작하는 Snoopy, 한 줄 칸별 해석, 정보 수집 스크립트 사례, 우회(T1574.006); 네 출처 비교; SOC 점검 목록; 확인 문제</td>
+</tr>
 </tbody>
 </table>
 <div class="admonition info">
 <p class="admonition-title">이어서 추가될 내용</p>
-<p>프로세스 생성(4688, auditd와 <code>audit.log</code>, Snoopy), 방화벽 로그와 개체 접근 감사, 서비스·예약 작업·USB 장치, 계정과 그룹 변경, Defender와 PowerShell 로그, Kerberos(4768, 4769, 4770).</p>
+<p>방화벽 로그와 개체 접근 감사, 서비스·예약 작업·USB 장치, 계정과 그룹 변경, Defender와 PowerShell 로그, Kerberos(4768, 4769, 4770).</p>
 </div>
 <h2 id="must-know">꼭 기억할 것<a class="headerlink" href="#must-know" title="Permanent link">¶</a></h2>
 <ol>
@@ -10567,6 +10602,8 @@
 <li>SubStatus가 실패 이유를 알려 준다. <code>0xc0000064</code> 없는 사용자, <code>0xc000006a</code> 틀린 비밀번호, <code>0xc0000234</code> 잠김.</li>
 <li>Linux 로그인은 PID로 묶인 여러 줄의 자유 문장이다. 로그인 프로그램마다, 실패 이유마다 패턴이 따로 필요하다.</li>
 <li>로그인 로그에는 민감한 데이터(사용자 이름 칸에 친 비밀번호)가 있다. 접근을 제한한다.</li>
+<li>프로세스 생성에서 중요한 칸은 명령줄과 부모다. 4688은 명령줄 정책을 따로 켜야 하고, 4688의 <code>ProcessId</code>는 부모다.</li>
+<li>Linux auditd의 <code>auid</code>는 <code>sudo</code>를 거쳐도 처음 로그인한 사용자를 간직한다. <code>auid</code>가 비어 있고 <code>tty=(none)</code>인데 셸이 돈다면 사람이 아니라 데몬이나 웹셸이다.</li>
 </ol>
 <h2 id="related">관련 레퍼런스<a class="headerlink" href="#related" title="Permanent link">¶</a></h2>
 <ul>
