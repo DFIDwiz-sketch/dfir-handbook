@@ -94,10 +94,18 @@ tags:
 
     [:octicons-arrow-right-24: Important Events](important-events/index.md)
 
+-   :material-pipe:{ .lg .middle } **Log Pipeline & SIEM**
+
+    ---
+
+    How events travel from the host to your search bar and what changes on the way: the pipeline blocks and their delays, agents vs agentless collection, Windows Event Forwarding, vendor and third-party agents, rsyslog forwarding, then log formats and structure, enrichment, normalisation, storage and life cycle.
+
+    [:octicons-arrow-right-24: Log Pipeline & SIEM](log-pipeline/index.md)
+
 </div>
 
 !!! info "Next topic"
-    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols). On the host part, endpoint attacks, endpoint defence, Windows logging and Linux logging and important events are complete; next come the log pipeline & SIEM, then file analysis.
+    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols). On the host part, endpoint attacks, endpoint defence, Windows logging, Linux logging and important events are complete, and the log pipeline & SIEM section is in progress (collection methods done); after it comes file analysis.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.
