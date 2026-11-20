@@ -7462,6 +7462,8 @@
       
         
       
+        
+      
     
     
     
@@ -7643,6 +7645,34 @@
     
   
     계정, Defender, PowerShell 이벤트 — 4720, 4728/4732/4756 그룹 변경, Defender 1116/1117/1006, PowerShell 4103/4104
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="kerberos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kerberos 이벤트 — AS와 TGS의 동작, 4768 TGT 요청, 4769/4770 서비스 티켓, 4624에서 Kerberos 알아보기
   
 
     
@@ -10691,11 +10721,16 @@
 <td><a href="accounts-defender-powershell/">계정, Defender, PowerShell 이벤트 — 4720, 4728/4732/4756 그룹 변경, Defender 1116/1117/1006, PowerShell 4103/4104</a></td>
 <td>지속성으로서의 계정 생성(T1136.001/.002)과 관리자 그룹 추가(T1098.007); <code>auditpol</code>로 확인하는 <em>User Account Management</em>와 <em>Security Group Management</em>; 4720 칸별 해석(로컬 계정이면 <code>TargetDomainName</code> = 컴퓨터, RID, <code>%%</code> 코드, <code>UserAccountControl</code> %%2080/2082/2084, <code>SidHistory</code>)과 <code>net user /add</code> 뒤의 4722/4724/4738/4732 묶음; 4732 칸별 해석(로컬 계정이면 <code>MemberName</code> <code>-</code>, <code>MemberSid</code>, <code>TargetSid</code> S-1-5-32-544, 다른 잘 알려진 그룹 SID); 정정: ID는 그룹 범위로 — DC의 BUILTIN\Administrators를 포함한 로컬/도메인 로컬 4732, 글로벌 4728, 유니버설 4756; 일생 표(4722–4726, 4738, 4740/4767, 4781, 4798/4799); 판단 순서와 <code>Get-WinEvent</code> 한 줄씩; Defender Operational 채널, 1116 칸별 해석(위협 이름 유형, <code>Process Name</code>, <code>Path</code> 접두어, <code>Origin</code>, <code>Execution</code>, <code>Source</code>), <code>Detection ID</code>로 잇는 1117, 1006/1007/1008/1015/1118/1119/1121–1126/2001/5001/5007/5010/5013 표, 예외 악용(T1562.001), <code>Get-MpThreatDetection</code>; PowerShell 로그 종류 표, <code>ScriptBlockLogging</code> 레지스트리 확인, <code>-Enc</code> 다운로드 명령의 4104 칸별 해석(Level 3 자동 경고, <code>ProcessID</code>, 나뉜 블록, <code>ScriptBlockId</code>, <code>Path</code>), 난독화 겹이 드러나는 이유, Base64 UTF-16LE 풀기와 다시 합치기 한 줄씩, 잡음 다루기와 로그 크기, 4103 <code>ParameterBinding</code>, 기록(transcription), v2 다운그레이드(T1562.010, 이벤트 400)와 제거, PowerShell 7 <code>PowerShellCore/Operational</code>; SOC 점검 목록; 확인 문제</td>
 </tr>
+<tr>
+<td>6</td>
+<td><a href="kerberos/">Kerberos 이벤트 — AS와 TGS의 동작, 4768 TGT 요청, 4769/4770 서비스 티켓, 4624에서 Kerberos 알아보기</a></td>
+<td>축제 팔찌 비유; 클라이언트/서비스/KDC(AS + TGS), SPN, <code>krbtgt</code>(RID 502), 장기 키, TGT(10시간, 7일까지 갱신)와 서비스 계정 키로 암호화된 서비스 티켓; AS-REQ/AS-REP → TGS-REQ/TGS-REP → AP-REQ 여섯 단계와 단계별 기록(4768, 4769, 4624), DC가 보지 못하는 것; DC에만 있는 <em>Account Logon</em> 하위 범주; 4768 칸별 해석(<code>krbtgt</code> 서비스, 비트별 <code>TicketOptions</code> 0x40810010, 결과 코드 표 0x6/0x12/0x17/0x18/0x25/0xE, 암호화 유형 0x11/0x12/0x17/DES, <code>PreAuthType</code> 2/15–17/0, <code>::ffff:</code> 주소, 인증서 칸), 쓰임새와 4771/4772; 4769 칸별 해석(<code>ServiceName</code> <code>$</code>/<code>krbtgt</code>/사용자 계정, <code>0x20</code> 잡음, 0x7/0x1F, <code>LogonGuid</code>, <code>TransmittedServices</code>), 4770/4773; 4624에서 Kerberos vs NTLM(<code>LogonProcessName</code>, <code>AuthenticationPackageName</code>, <code>LmPackageName</code>, <code>KeyLength</code>, <code>Negotiate</code> 표), <code>LogonGuid</code> 잇기와 실버 티켓 헌팅; 공격 표 T1558.001–.004, T1550.002/.003, T1110.003; RC4 4769 헌팅 스크립트 한 줄씩; 중요한 이벤트를 계속 익히는 법; SOC 점검 목록; 확인 문제</td>
+</tr>
 </tbody>
 </table>
-<div class="admonition info">
-<p class="admonition-title">이어서 추가될 내용</p>
-<p>Kerberos: 인증 서비스와 티켓 발급 서비스, 그리고 이벤트 4768, 4769, 4770.</p>
+<div class="admonition success">
+<p class="admonition-title">섹션 완료</p>
+<p>꼭 알아야 할 이벤트 섹션이 완료됐습니다. 다음: <strong>로그 파이프라인·SIEM</strong> — Windows와 Linux에서 로그를 모으는 방법, 비정형 vs 정형 형식, 구조가 중요한 이유, 보강(enrichment), 필드 정규화와 공통 정보 모델, 저장과 수명 주기.</p>
 </div>
 <h2 id="must-know">꼭 기억할 것<a class="headerlink" href="#must-know" title="Permanent link">¶</a></h2>
 <ol>
@@ -10715,6 +10750,7 @@
 <li>예약 작업: 4698–4702에는 <em>Other Object Access Events</em>가 필요하고, 명령은 <code>TaskContent</code> 안의 중첩 XML에 있습니다. 6416은 새 장치를 클래스와 VID/PID로 보여 줍니다. 저장 장치만이 아니라 키보드와 네트워크 어댑터도 지켜보세요.</li>
 <li>계정 변경: 새 사용자는 4720, 그룹 추가는 <strong>범위</strong>로 — 로컬/도메인 로컬(DC의 Administrators 포함) 4732, 글로벌 4728, 유니버설 4756. <code>MemberSid</code>와 <code>TargetSid</code>로 맞추고, 모든 DC에서 모읍니다.</li>
 <li>Defender는 자기 Operational 채널에 씁니다. 탐지는 1116/1117(그리고 1006/1007), Defender를 건드린 흔적은 5001/5007/5013. PowerShell 4104는 풀린 코드를 보여 주지만 출력은 없습니다. 버전 2(이벤트 400)를 지켜보고, PowerShell 7의 채널은 따로 모읍니다.</li>
+<li>Kerberos: 4768(TGT)과 4769(서비스 티켓)는 도메인 컨트롤러에만 남으니 모든 DC에서 모읍니다. 계정, 클라이언트 IP(<code>::ffff:</code> 떼기), 서비스, 결과 코드, 암호화 유형(<code>0x17</code> RC4는 Kerberoasting의 표시), 사전 인증 유형(<code>0</code> = AS-REP 로스팅 가능)을 읽습니다. 대상 서버에서는 <code>AuthenticationPackageName</code> + <code>LmPackageName</code> + <code>KeyLength</code>로 Kerberos와 NTLM을 구별하고, <code>LogonGuid</code>로 4624를 그 4769와 잇습니다.</li>
 </ol>
 <h2 id="related">관련 레퍼런스<a class="headerlink" href="#related" title="Permanent link">¶</a></h2>
 <ul>

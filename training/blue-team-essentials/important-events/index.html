@@ -7462,6 +7462,8 @@
       
         
       
+        
+      
     
     
     
@@ -7643,6 +7645,34 @@
     
   
     Account, Defender and PowerShell Events — 4720, 4728/4732/4756 Group Changes, Defender 1116/1117/1006, PowerShell 4103/4104
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="kerberos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kerberos Events — How AS and TGS Work, 4768 TGT Requests, 4769/4770 Service Tickets, and Spotting Kerberos in 4624
   
 
     
@@ -10691,11 +10721,16 @@
 <td><a href="accounts-defender-powershell/">Account, Defender and PowerShell Events — 4720, 4728/4732/4756 Group Changes, Defender 1116/1117/1006, PowerShell 4103/4104</a></td>
 <td>Account creation as persistence (T1136.001/.002) and admin-group adds (T1098.007); <em>User Account Management</em> and <em>Security Group Management</em> checked with <code>auditpol</code>; full 4720 field by field (<code>TargetDomainName</code> = computer for local accounts, RID, <code>%%</code> codes, <code>UserAccountControl</code> %%2080/2082/2084, <code>SidHistory</code>), the 4722/4724/4738/4732 burst behind <code>net user /add</code>; full 4732 (<code>MemberName</code> <code>-</code> for local accounts, <code>MemberSid</code>, <code>TargetSid</code> S-1-5-32-544, other well-known group SIDs); correction: ID by group scope — 4732 local/domain local incl. BUILTIN\Administrators on DCs, 4728 global, 4756 universal; life-cycle table (4722–4726, 4738, 4740/4767, 4781, 4798/4799); triage order and <code>Get-WinEvent</code> line by line; Defender Operational channel, full 1116 field by field (threat name types, <code>Process Name</code>, <code>Path</code> prefixes, <code>Origin</code>, <code>Execution</code>, <code>Source</code>), 1117 by <code>Detection ID</code>, event table 1006/1007/1008/1015/1118/1119/1121–1126/2001/5001/5007/5010/5013, exclusions abuse (T1562.001), <code>Get-MpThreatDetection</code>; PowerShell log types table, <code>ScriptBlockLogging</code> registry check, full 4104 for an <code>-Enc</code> cradle (Level 3 auto-warning, <code>ProcessID</code>, split blocks, <code>ScriptBlockId</code>, <code>Path</code>), why obfuscation layers show up, Base64 UTF-16LE decoding and reassembly line by line, noise handling and log size, 4103 <code>ParameterBinding</code>, transcription, v2 downgrade (T1562.010, event 400) and its removal, PowerShell 7 <code>PowerShellCore/Operational</code>; SOC checklist; practice questions</td>
 </tr>
+<tr>
+<td>6</td>
+<td><a href="kerberos/">Kerberos Events — How AS and TGS Work, 4768 TGT Requests, 4769/4770 Service Tickets, and Spotting Kerberos in 4624</a></td>
+<td>Festival-wristband analogy; client/service/KDC (AS + TGS), SPNs, <code>krbtgt</code> (RID 502), long-term keys, TGT (10 h, renewable 7 days) and service tickets encrypted with the service account's key; the six steps AS-REQ/AS-REP → TGS-REQ/TGS-REP → AP-REQ with what each logs (4768, 4769, 4624) and what the DC never sees; <em>Account Logon</em> subcategories on DCs only; 4768 field by field (<code>krbtgt</code> service, <code>TicketOptions</code> 0x40810010 bit by bit, result code table 0x6/0x12/0x17/0x18/0x25/0xE, encryption types 0x11/0x12/0x17/DES, <code>PreAuthType</code> 2/15–17/0, <code>::ffff:</code> addresses, certificate fields), uses and 4771/4772; 4769 field by field (<code>ServiceName</code> <code>$</code>/<code>krbtgt</code>/user account, <code>0x20</code> noise, 0x7/0x1F, <code>LogonGuid</code>, <code>TransmittedServices</code>), 4770/4773; Kerberos vs NTLM in 4624 (<code>LogonProcessName</code>, <code>AuthenticationPackageName</code>, <code>LmPackageName</code>, <code>KeyLength</code>, <code>Negotiate</code> table), <code>LogonGuid</code> join and silver-ticket hunting; attack table T1558.001–.004, T1550.002/.003, T1110.003; RC4 4769 hunting script line by line; how to keep learning important events; SOC checklist; practice questions</td>
+</tr>
 </tbody>
 </table>
-<div class="admonition info">
-<p class="admonition-title">Coming next</p>
-<p>Kerberos: the authentication service and ticket-granting service, and events 4768, 4769 and 4770.</p>
+<div class="admonition success">
+<p class="admonition-title">Section complete</p>
+<p>The important events section is complete. Next: <strong>Log Pipeline &amp; SIEM</strong> — how logs are collected from Windows and Linux, unstructured vs structured formats, why structure matters, enrichment, field normalisation and common information models, storage and life cycle.</p>
 </div>
 <h2 id="must-know">Things to remember<a class="headerlink" href="#must-know" title="Permanent link">¶</a></h2>
 <ol>
@@ -10715,6 +10750,7 @@
 <li>Scheduled tasks: 4698–4702 need <em>Other Object Access Events</em>; the command is in nested XML inside <code>TaskContent</code>. 6416 shows new devices by class and VID/PID — watch keyboards and network adapters, not just storage.</li>
 <li>Account changes: 4720 for new users; group adds by <strong>scope</strong> — 4732 local/domain local (including Administrators on DCs), 4728 global, 4756 universal. Match on <code>MemberSid</code> and <code>TargetSid</code>, and collect from every DC.</li>
 <li>Defender writes to its own Operational channel: 1116/1117 (and 1006/1007) for detections, 5001/5007/5013 for someone tampering with Defender. PowerShell 4104 shows the decoded code but not its output; watch for version 2 (event 400) and collect PowerShell 7's own channel.</li>
+<li>Kerberos: 4768 (TGT) and 4769 (service ticket) are written only on domain controllers — collect from all of them. Read account, client IP (strip <code>::ffff:</code>), service, result code, encryption type (<code>0x17</code> RC4 is the Kerberoasting tell) and pre-authentication type (<code>0</code> = AS-REP roastable). On the target, <code>AuthenticationPackageName</code> + <code>LmPackageName</code> + <code>KeyLength</code> tell Kerberos from NTLM, and <code>LogonGuid</code> joins the 4624 to its 4769.</li>
 </ol>
 <h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">¶</a></h2>
 <ul>
