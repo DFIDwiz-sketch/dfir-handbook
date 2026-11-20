@@ -70,10 +70,18 @@ tags:
 
     [:octicons-arrow-right-24: Endpoint Defense](endpoint-defense/index.md)
 
+-   :material-microsoft-windows:{ .lg .middle } **Windows Logging**
+
+    ---
+
+    How Windows produces events: providers, the Event Log service, channels and `.evtx` files, audit policies, Sysmon and custom channels, event metadata (level, provider, event ID, task category, keywords), and the General, Friendly and XML views of one event — with the event structure and channels to collect to follow.
+
+    [:octicons-arrow-right-24: Windows Logging](windows-logging/index.md)
+
 </div>
 
 !!! info "Next topic"
-    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols). On the host part, endpoint attacks and endpoint defence are complete; Windows logging is next, then Linux logging, important events, the log pipeline and file analysis.
+    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols). On the host part, endpoint attacks and endpoint defence are complete and Windows logging is in progress; then Linux logging, important events, the log pipeline and file analysis.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.
