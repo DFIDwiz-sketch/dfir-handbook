@@ -7878,6 +7878,8 @@
       
         
       
+        
+      
     
     
     
@@ -7947,6 +7949,34 @@
     
   
     Identifying Files — Bytes, the file Command, Magic Bytes, Nested Files, Polyglots, Unicode and Encodings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="strings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strings — Printable Runs, the strings Command, Encodings and Byte Order, and How Strings Help Triage
   
 
     
@@ -10968,11 +10998,16 @@
 <td><a href="file-identification/">Identifying Files — Bytes, the file Command, Magic Bytes, Nested Files, Polyglots, Unicode and Encodings</a></td>
 <td>A file is just bytes; name, extension and <code>Content-Type</code> are claims; reading <code>hexdump -C</code>, <code>xxd</code> and PowerShell <code>Format-Hex</code> column by column; <code>file *</code> on six samples (PE32+, ELF, PNG, SVG, PDF, DLL) line by line, text and scripts, <code>-i</code>/<code>-k</code>/<code>-z</code>/<code>--extension</code>, how <code>file</code> decides and how it is fooled; magic-byte table (MZ, PK, gzip, %PDF-, {\rtf1, PNG, ELF, OLE, LNK, ISO at 0x8001); MZ/DOS stub/PE header and compile time byte by byte; DOCX = ZIP with <code>unzip -l</code>; spotting a ZIP inside a <code>.doc</code>, <code>grep -obUaP</code>, <code>dd</code> carving, binwalk/foremost/scalpel and false positives (T1027.009, T1036.008); polyglots, MalDoc in PDF and 2025 polyglot campaigns; Unicode code points, UTF-8/16/32 bytes, how 学 becomes <code>E5 AD A6</code>, BOMs and UTF-16LE, mojibake, look-alikes and right-to-left override (T1036.002); a triage routine; practice questions</td>
 </tr>
+<tr>
+<td>2</td>
+<td><a href="strings/">Strings — Printable Runs, the strings Command, Encodings and Byte Order, and How Strings Help Triage</a></td>
+<td>What a string is (a run of printable bytes; ~37% of random bytes look printable), plaintext vs binary files; <code>strings</code> options (<code>-n</code>, <code>-t x</code>, <code>-e s/S/l/b/L/B</code>, <code>-a</code>, <code>-f</code>) and Sysinternals Strings; worked example line by line (DOS stub, <code>MSVBVM60.DLL</code>, a unique marker, Run key T1547.001, fake IE8 user agent) and why ASCII mode misses UTF-16LE in the hex dump; byte order and the <code>-e l</code> second pass (C2 URL T1071.001, look-alike drop path T1036.005); IOC grep habit, <code>--unicode</code>; IOC categories table; static vs dynamic analysis; why sandboxes show memory-scraped strings; packing (UPX, T1027.002), string obfuscation (T1027, T1140) and compression (gzip/DOCX); strings on PCAPs, PDFs, images and memory; recap of file identification; practice questions</td>
+</tr>
 </tbody>
 </table>
 <div class="admonition info">
 <p class="admonition-title">Coming next</p>
-<p><code>strings</code> (what strings are, encodings and byte order, how they help), safe handling of suspect files and dangerous file types, RTF/PDF/misc files and quick triage, hashing and code signatures, visual inspection and malicious scripts.</p>
+<p>Safe handling of suspect files and dangerous file types (executables, scripts, Office documents), RTF/PDF/misc files and quick triage, hashing and code signatures, visual inspection and malicious scripts.</p>
 </div>
 <h2 id="must-know">Things to remember<a class="headerlink" href="#must-know" title="Permanent link">¶</a></h2>
 <ol>
@@ -10982,7 +11017,7 @@
 <li>DOCX/XLSX/PPTX are ZIPs; old <code>.doc</code>/<code>.xls</code> are OLE.</li>
 <li><code>file</code> sees only the start. Scan for signatures anywhere to find nested files, and validate each hit.</li>
 <li>One file can be two valid types. What it "is" depends on the program that opens it.</li>
-<li>Windows strings are usually UTF-16LE; decode and search with the right encoding.</li>
+<li>Windows strings are usually UTF-16LE; always run <code>strings</code> twice (<code>-e s</code> and <code>-e l</code>), and treat few strings as a packing warning, not a clean bill.</li>
 <li>Identify files on an isolated analysis machine, never by opening them.</li>
 </ol>
 <h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">¶</a></h2>
