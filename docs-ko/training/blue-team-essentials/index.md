@@ -78,10 +78,18 @@ tags:
 
     [:octicons-arrow-right-24: Windows 로그](windows-logging/index.md)
 
+-   :material-linux:{ .lg .middle } **Linux 로그**
+
+    ---
+
+    Linux와 장비가 로그를 남기는 방식: "syslog"의 세 가지 뜻(형식, 데몬, 네트워크 프로토콜), RFC 3164와 RFC 5424 헤더, 자유 문장 파싱, UDP/TCP/TLS 전송, rsyslog·syslog-ng 설정, facility·severity와 PRI 값, 그리고 `/var/log` 아래 로그 파일, systemd 저널, 명령줄 로깅.
+
+    [:octicons-arrow-right-24: Linux 로그](linux-logging/index.md)
+
 </div>
 
 !!! info "다음 주제"
-    네트워크 파트 완료(DNS, HTTP, HTTP(S) 분석, 이메일, 기타 프로토콜). 호스트 파트는 엔드포인트 공격, 엔드포인트 방어, Windows 로그가 완료됐고, 다음은 Linux 로그이며, 이어서 꼭 알아야 할 이벤트, 로그 파이프라인, 파일 분석이 이어집니다.
+    네트워크 파트 완료(DNS, HTTP, HTTP(S) 분석, 이메일, 기타 프로토콜). 호스트 파트는 엔드포인트 공격, 엔드포인트 방어, Windows 로그가 완료됐고, Linux 로그를 진행 중이며, 이어서 꼭 알아야 할 이벤트, 로그 파이프라인, 파일 분석이 이어집니다.
 
 !!! note "이 섹션에 대하여"
     개인 학습 노트이며 어떤 기관의 공식 지침도 아닙니다.

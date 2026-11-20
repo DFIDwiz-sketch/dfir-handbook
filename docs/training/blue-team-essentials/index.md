@@ -78,10 +78,18 @@ tags:
 
     [:octicons-arrow-right-24: Windows Logging](windows-logging/index.md)
 
+-   :material-linux:{ .lg .middle } **Linux Logging**
+
+    ---
+
+    How Linux and appliances log: the three meanings of "syslog" (format, daemon, network protocol), the RFC 3164 and RFC 5424 headers, free-text parsing, UDP/TCP/TLS transport, rsyslog and syslog-ng configuration, facility, severity and the PRI value, then the log files under `/var/log`, the systemd journal and command-line logging.
+
+    [:octicons-arrow-right-24: Linux Logging](linux-logging/index.md)
+
 </div>
 
 !!! info "Next topic"
-    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols). On the host part, endpoint attacks, endpoint defence and Windows logging are complete; next comes Linux logging, then important events, the log pipeline and file analysis.
+    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols). On the host part, endpoint attacks, endpoint defence and Windows logging are complete, and Linux logging is in progress; then come important events, the log pipeline and file analysis.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.
