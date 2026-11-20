@@ -7460,6 +7460,8 @@
       
         
       
+        
+      
     
     
     
@@ -7613,6 +7615,34 @@
     
   
     Service, Scheduled Task and USB Events — 7045/4697, 4698–4702 and Task Scheduler Logs, 6416 Plug and Play
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="accounts-defender-powershell/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Account, Defender and PowerShell Events — 4720, 4728/4732/4756 Group Changes, Defender 1116/1117/1006, PowerShell 4103/4104
   
 
     
@@ -10656,11 +10686,16 @@
 <td><a href="services-tasks-usb/">Service, Scheduled Task and USB Events — 7045/4697, 4698–4702 and Task Scheduler Logs, 6416 Plug and Play</a></td>
 <td>Services as persistence (T1543.003) and remote execution (T1569.002, PsExec-style temporary services); service settings table (<code>ImagePath</code>, type, start type, account); 7045 in the System channel read field by field (<code>Security UserID</code> as the only "who", command-line <code>ImagePath</code> with <code>%COMSPEC%</code> and <code>\\127.0.0.1\C$</code>, demand vs auto start), companion 7036/7009/7040 and parent <code>services.exe</code>; modified <code>ImagePath</code> writes no install event; 4697 with <em>Security System Extension</em> and Subject/Logon ID, 7045 vs 4697 table; triage checklist and stacking; scheduled tasks (T1053.005) for persistence and remote execution, <em>Other Object Access Events</em> (no SACL needed), full 4698 with nested <code>TaskContent</code> XML read line by line (trigger, SYSTEM principal, <code>Hidden</code>, <code>Exec</code> with rundll32), parsing the nested XML; 4699–4702 table; Task Scheduler Operational 106/129/140/141/200/201 timeline; hidden tasks via deleted <code>SD</code> value; USB threats (T1091, T1052.001, T1200), <em>Plug and Play Events</em>, full 6416 field by field (subject is always SYSTEM, VID/PID/instance ID, <code>HIDClass</code>, <code>Class_03</code> keyboard), multiple 6416s per device, VID/PID lookups and their limits, other device logs; SOC checklist; practice questions</td>
 </tr>
+<tr>
+<td>5</td>
+<td><a href="accounts-defender-powershell/">Account, Defender and PowerShell Events — 4720, 4728/4732/4756 Group Changes, Defender 1116/1117/1006, PowerShell 4103/4104</a></td>
+<td>Account creation as persistence (T1136.001/.002) and admin-group adds (T1098.007); <em>User Account Management</em> and <em>Security Group Management</em> checked with <code>auditpol</code>; full 4720 field by field (<code>TargetDomainName</code> = computer for local accounts, RID, <code>%%</code> codes, <code>UserAccountControl</code> %%2080/2082/2084, <code>SidHistory</code>), the 4722/4724/4738/4732 burst behind <code>net user /add</code>; full 4732 (<code>MemberName</code> <code>-</code> for local accounts, <code>MemberSid</code>, <code>TargetSid</code> S-1-5-32-544, other well-known group SIDs); correction: ID by group scope — 4732 local/domain local incl. BUILTIN\Administrators on DCs, 4728 global, 4756 universal; life-cycle table (4722–4726, 4738, 4740/4767, 4781, 4798/4799); triage order and <code>Get-WinEvent</code> line by line; Defender Operational channel, full 1116 field by field (threat name types, <code>Process Name</code>, <code>Path</code> prefixes, <code>Origin</code>, <code>Execution</code>, <code>Source</code>), 1117 by <code>Detection ID</code>, event table 1006/1007/1008/1015/1118/1119/1121–1126/2001/5001/5007/5010/5013, exclusions abuse (T1562.001), <code>Get-MpThreatDetection</code>; PowerShell log types table, <code>ScriptBlockLogging</code> registry check, full 4104 for an <code>-Enc</code> cradle (Level 3 auto-warning, <code>ProcessID</code>, split blocks, <code>ScriptBlockId</code>, <code>Path</code>), why obfuscation layers show up, Base64 UTF-16LE decoding and reassembly line by line, noise handling and log size, 4103 <code>ParameterBinding</code>, transcription, v2 downgrade (T1562.010, event 400) and its removal, PowerShell 7 <code>PowerShellCore/Operational</code>; SOC checklist; practice questions</td>
+</tr>
 </tbody>
 </table>
 <div class="admonition info">
 <p class="admonition-title">Coming next</p>
-<p>Account and group changes, Defender and PowerShell logging, and Kerberos (4768, 4769, 4770).</p>
+<p>Kerberos: the authentication service and ticket-granting service, and events 4768, 4769 and 4770.</p>
 </div>
 <h2 id="must-know">Things to remember<a class="headerlink" href="#must-know" title="Permanent link">¶</a></h2>
 <ol>
@@ -10678,6 +10713,8 @@
 <li>Object access events (4663/4657/4660) need the audit subcategory <strong>and</strong> a SACL on the object; no SACL, no event. 4660 has no name — follow the <code>HandleId</code>.</li>
 <li>Service installs: 7045 in <strong>System</strong> (always on) and 4697 in Security (needs <em>Security System Extension</em>). Read <code>ImagePath</code> first — a command line or a user-writable folder is the red flag.</li>
 <li>Scheduled tasks: 4698–4702 need <em>Other Object Access Events</em>; the command is in nested XML inside <code>TaskContent</code>. 6416 shows new devices by class and VID/PID — watch keyboards and network adapters, not just storage.</li>
+<li>Account changes: 4720 for new users; group adds by <strong>scope</strong> — 4732 local/domain local (including Administrators on DCs), 4728 global, 4756 universal. Match on <code>MemberSid</code> and <code>TargetSid</code>, and collect from every DC.</li>
+<li>Defender writes to its own Operational channel: 1116/1117 (and 1006/1007) for detections, 5001/5007/5013 for someone tampering with Defender. PowerShell 4104 shows the decoded code but not its output; watch for version 2 (event 400) and collect PowerShell 7's own channel.</li>
 </ol>
 <h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">¶</a></h2>
 <ul>
