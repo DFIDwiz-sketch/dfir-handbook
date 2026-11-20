@@ -86,10 +86,18 @@ tags:
 
     [:octicons-arrow-right-24: Linux 로그](linux-logging/index.md)
 
+-   :material-text-box-search:{ .lg .middle } **꼭 알아야 할 이벤트**
+
+    ---
+
+    분석가가 칸 단위로 읽을 줄 알아야 하는 이벤트: 4624/4625 로그온과 로그온 유형, Status/SubStatus 실패 코드, 4648 명시적 자격 증명, Linux SSH·데스크톱 로그인과 여러 모양의 실패, 이어서 프로세스 생성, 방화벽과 개체 접근, 서비스, 예약 작업, USB, 계정 변경, Defender, PowerShell, Kerberos.
+
+    [:octicons-arrow-right-24: 꼭 알아야 할 이벤트](important-events/index.md)
+
 </div>
 
 !!! info "다음 주제"
-    네트워크 파트 완료(DNS, HTTP, HTTP(S) 분석, 이메일, 기타 프로토콜). 호스트 파트는 엔드포인트 공격, 엔드포인트 방어, Windows 로그, Linux 로그가 완료됐고, 다음은 꼭 알아야 할 이벤트, 로그 파이프라인, 파일 분석입니다.
+    네트워크 파트 완료(DNS, HTTP, HTTP(S) 분석, 이메일, 기타 프로토콜). 호스트 파트는 엔드포인트 공격, 엔드포인트 방어, Windows 로그, Linux 로그가 완료됐고, 꼭 알아야 할 이벤트를 시작했습니다(로그인 이벤트). 다음은 나머지 꼭 알아야 할 이벤트, 로그 파이프라인, 파일 분석입니다.
 
 !!! note "이 섹션에 대하여"
     개인 학습 노트이며 어떤 기관의 공식 지침도 아닙니다.

@@ -86,10 +86,18 @@ tags:
 
     [:octicons-arrow-right-24: Linux Logging](linux-logging/index.md)
 
+-   :material-text-box-search:{ .lg .middle } **Important Events**
+
+    ---
+
+    The events every analyst must read field by field: 4624/4625 logons and logon types, Status/SubStatus failure codes, 4648 explicit credentials, Linux SSH and desktop logins and their many failure shapes, then process creation, firewall and object access, services, tasks, USB, account changes, Defender, PowerShell and Kerberos.
+
+    [:octicons-arrow-right-24: Important Events](important-events/index.md)
+
 </div>
 
 !!! info "Next topic"
-    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols). On the host part, endpoint attacks, endpoint defence, Windows logging and Linux logging are complete; next come important events, the log pipeline and file analysis.
+    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols). On the host part, endpoint attacks, endpoint defence, Windows logging and Linux logging are complete, and important events has started (login events); next come the remaining important events, the log pipeline and file analysis.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.
