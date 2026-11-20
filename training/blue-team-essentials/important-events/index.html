@@ -7458,6 +7458,8 @@
       
         
       
+        
+      
     
     
     
@@ -7583,6 +7585,34 @@
     
   
     Firewall and Object Access Events — Windows Firewall Logs (pfirewall.log, 5156/5157/5152/5154), iptables/UFW Logs, 4663/4657/4660
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="services-tasks-usb/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Service, Scheduled Task and USB Events — 7045/4697, 4698–4702 and Task Scheduler Logs, 6416 Plug and Play
   
 
     
@@ -10621,11 +10651,16 @@
 <td><a href="firewall-object-access/">Firewall and Object Access Events — Windows Firewall Logs (pfirewall.log, 5156/5157/5152/5154), iptables/UFW Logs, 4663/4657/4660</a></td>
 <td>Host firewalls as process-aware sensors for east-west traffic; <code>pfirewall.log</code> setup (per-profile files, 4,096 KB default, ~32 MB max, <code>.old</code> rollover), header and every column read, local time, PID but no name, a neighbour probing 445/3389/ICMP; Filtering Platform audit subcategories with <code>auditpol</code>, 5156/5157/5152/5154/5158 table, a full 5156 field by field (decimal <code>ProcessID</code>, device paths, <code>%%14593</code> direction, <code>FilterRTID</code>, layers); firewall-change events 4946–4950 and 2003–2006/2097 (T1562.004); iptables <code>LOG</code> rule word by word, UFW prefixes, two kernel lines split into syslog header and <code>KEY=value</code> fields, bare flags and the double <code>LEN</code>, no process, nftables; comparison table; object access needs policy <strong>and</strong> SACL, 4663 Subject/Object/Process/Access with access-mask table and SMB as PID 4, 4657 old/new value on a Run key (T1547.001), 4660 joined by <code>HandleId</code>, 4656/4658/4670/5140/5145 and LSASS; SOC checklist; practice questions</td>
 </tr>
+<tr>
+<td>4</td>
+<td><a href="services-tasks-usb/">Service, Scheduled Task and USB Events — 7045/4697, 4698–4702 and Task Scheduler Logs, 6416 Plug and Play</a></td>
+<td>Services as persistence (T1543.003) and remote execution (T1569.002, PsExec-style temporary services); service settings table (<code>ImagePath</code>, type, start type, account); 7045 in the System channel read field by field (<code>Security UserID</code> as the only "who", command-line <code>ImagePath</code> with <code>%COMSPEC%</code> and <code>\\127.0.0.1\C$</code>, demand vs auto start), companion 7036/7009/7040 and parent <code>services.exe</code>; modified <code>ImagePath</code> writes no install event; 4697 with <em>Security System Extension</em> and Subject/Logon ID, 7045 vs 4697 table; triage checklist and stacking; scheduled tasks (T1053.005) for persistence and remote execution, <em>Other Object Access Events</em> (no SACL needed), full 4698 with nested <code>TaskContent</code> XML read line by line (trigger, SYSTEM principal, <code>Hidden</code>, <code>Exec</code> with rundll32), parsing the nested XML; 4699–4702 table; Task Scheduler Operational 106/129/140/141/200/201 timeline; hidden tasks via deleted <code>SD</code> value; USB threats (T1091, T1052.001, T1200), <em>Plug and Play Events</em>, full 6416 field by field (subject is always SYSTEM, VID/PID/instance ID, <code>HIDClass</code>, <code>Class_03</code> keyboard), multiple 6416s per device, VID/PID lookups and their limits, other device logs; SOC checklist; practice questions</td>
+</tr>
 </tbody>
 </table>
 <div class="admonition info">
 <p class="admonition-title">Coming next</p>
-<p>Services, scheduled tasks and USB devices, account and group changes, Defender and PowerShell logging, and Kerberos (4768, 4769, 4770).</p>
+<p>Account and group changes, Defender and PowerShell logging, and Kerberos (4768, 4769, 4770).</p>
 </div>
 <h2 id="must-know">Things to remember<a class="headerlink" href="#must-know" title="Permanent link">¶</a></h2>
 <ol>
@@ -10641,6 +10676,8 @@
 <li>On Linux, auditd <code>auid</code> keeps the original login user through <code>sudo</code>; <code>auid</code> unset + <code>tty=(none)</code> running a shell means a daemon or webshell, not a person.</li>
 <li>Host firewall logs see east-west traffic; on Windows, 5156/5157 also name the process. Plan volume before enabling Filtering Platform Connection success.</li>
 <li>Object access events (4663/4657/4660) need the audit subcategory <strong>and</strong> a SACL on the object; no SACL, no event. 4660 has no name — follow the <code>HandleId</code>.</li>
+<li>Service installs: 7045 in <strong>System</strong> (always on) and 4697 in Security (needs <em>Security System Extension</em>). Read <code>ImagePath</code> first — a command line or a user-writable folder is the red flag.</li>
+<li>Scheduled tasks: 4698–4702 need <em>Other Object Access Events</em>; the command is in nested XML inside <code>TaskContent</code>. 6416 shows new devices by class and VID/PID — watch keyboards and network adapters, not just storage.</li>
 </ol>
 <h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">¶</a></h2>
 <ul>
