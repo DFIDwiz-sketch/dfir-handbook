@@ -7317,6 +7317,8 @@
       
         
       
+        
+      
     
     
     
@@ -7386,6 +7388,34 @@
     
   
     Syslog — How Linux Logging Differs, the Three Meanings of “Syslog”, Message Format, Network Transport, Daemons, Facility and Severity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="log-files-journal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linux Log Files and the systemd Journal — the Traditional Log Path, Files Worth Collecting, journalctl, Command-Line Logging and a Section Summary
   
 
     
@@ -10407,11 +10437,16 @@
 <td><a href="syslog/">Syslog — How Linux Logging Differs, the Three Meanings of “Syslog”, Message Format, Network Transport, Daemons, Facility and Severity</a></td>
 <td>Linux vs Windows logging (no event IDs, free text, facility/severity, journald), "syslog" = format / daemon / protocol, RFC 3164 header field by field (no year or zone, T1110), regex extraction and why it breaks, key=value and JSON messages, <code>logger</code> forgery, T1070.002/T1562.006, RFC 5424 header with structured data; transports (UDP 514, TCP, TLS 6514 with RFC 9662, DTLS, RFC 3195/6587/5848 correction), size limits and truncation, <code>tcpdump</code> capture with <code>&lt;PRI&gt;</code> read line by line, why plain UDP is risky, RELP; syslogd, syslog-ng (One Identity, AxoSyslog), rsyslog, Debian 12 without rsyslog; rsyslog selectors and TLS <code>omfwd</code> with queues line by line, <code>rsyslogd -N1</code>, syslog-ng blocks; facility and severity tables, <code>auth</code> vs <code>authpriv</code>, PRI = facility × 8 + severity with worked examples, why facility and severity aren't trustworthy, SOC checklist, practice questions</td>
 </tr>
+<tr>
+<td>2</td>
+<td><a href="log-files-journal/">Linux Log Files and the systemd Journal — the Traditional Log Path, Files Worth Collecting, journalctl, Command-Line Logging and a Section Summary</a></td>
+<td>Traditional path program → <code>/dev/log</code> → syslog daemon → <code>/var/log</code> and a collector, CRON/PAM, NetworkManager and dhclient lines read (T1053.003); journald owning <code>/dev/log</code>, stdout capture, rsyslog via <code>imjournal</code>/<code>imuxsock</code>, no files without rsyslog; Debian vs Red Hat file map (<code>auth.log</code>/<code>secure</code>, <code>syslog</code>/<code>messages</code>, <code>kern.log</code>, <code>cron</code>, <code>audit.log</code>, <code>ufw.log</code>, Apache/Nginx, MySQL, dpkg/dnf), correction on <code>/var/log/audit/</code> paths; auth log read line by line (T1110, key fingerprint T1098.004, sudo fields, <code>su</code>, T1105/T1572), OpenSSH 9.8 <code>sshd-session</code>; UFW and Apache combined lines field by field; binary <code>wtmp</code>/<code>btmp</code>/<code>lastlog</code> with <code>last -F</code>, <code>wtmpdb</code>/<code>lastlog2</code>; logrotate, <code>zgrep</code>, <code>adm</code> group, T1070.002; the journal (persistent vs <code>/run/log/journal</code>, fields, <code>journald.conf</code>), <code>journalctl -u</code>/<code>--since</code> read line by line (stopped sensor T1562.001) and option table; trusted <code>_</code> fields exposing a <code>logger</code> forgery in <code>json-pretty</code>; forwarding options, sealing; auditd <code>execve</code> rule and SYSCALL/EXECVE records (<code>auid</code>), Sysmon for Linux XML, <code>logger</code> for scripts, Snoopy, T1070.003; section summary; SOC checklist; practice questions</td>
+</tr>
 </tbody>
 </table>
-<div class="admonition info">
-<p class="admonition-title">Coming next</p>
-<p>The traditional log path into <code>/var/log</code> and the common log files (<code>auth.log</code>/<code>secure</code>, <code>syslog</code>/<code>messages</code>, <code>kern.log</code>, <code>cron</code>, <code>wtmp</code>/<code>btmp</code>/<code>lastlog</code>), the systemd journal and <code>journalctl</code>, command-line logging — then a section summary.</p>
+<div class="admonition success">
+<p class="admonition-title">Section complete</p>
+<p>The Linux logging section is complete. Next: <strong>Important Events</strong> — the Windows and Linux events every analyst must know: logins (4624/4625, logon types, 4648), process creation (4688, auditd, Snoopy), firewall and object access, services and scheduled tasks, USB, account changes, Defender and PowerShell, and Kerberos.</p>
 </div>
 <h2 id="must-know">Things to remember<a class="headerlink" href="#must-know" title="Permanent link">¶</a></h2>
 <ol>
@@ -10420,12 +10455,16 @@
 <li>Plain UDP 514 loses and leaks messages and accepts forgeries. Forward security logs over TLS (6514) with certificate checks and disk-backed queues.</li>
 <li>PRI = facility × 8 + severity; decode with ÷ 8 and remainder. Facility and severity are the sender's claims, and authentication events are only <code>info</code>.</li>
 <li>Don't assume <code>/var/log/auth.log</code> exists — Debian 12 and later are journald-only by default — and alert when a source goes silent.</li>
+<li>File names differ by family (<code>auth.log</code>/<code>secure</code>, <code>syslog</code>/<code>messages</code>); <code>wtmp</code>/<code>btmp</code>/<code>lastlog</code> are binary; rotation keeps local history short. Only what has left the host is safe.</li>
+<li>The journal is structured and its <code>_</code> fields (<code>_UID</code>, <code>_COMM</code>, <code>_EXE</code>, <code>_SYSTEMD_UNIT</code>) are set by journald, not the sender — they expose forged lines, but are lost if you forward only plain syslog. Make the journal persistent.</li>
+<li>Built-in logs don't record commands: add auditd, Sysmon for Linux, Snoopy or EDR — and verify it's parsed. A log you can't parse is a log you can't alert on.</li>
 </ol>
 <h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">¶</a></h2>
 <ul>
 <li><a href="../windows-logging/">Windows Logging</a> — the structured, event-ID-based model to compare against</li>
 <li><a href="../../../linux/logs-and-triage/">Linux Logs, Processes &amp; Live Triage</a></li>
 <li><a href="../../../linux/auth-and-history/">Linux Authentication &amp; Shell History</a></li>
+<li><a href="../../../linux/persistence/">Linux Persistence</a></li>
 </ul>
 
 
