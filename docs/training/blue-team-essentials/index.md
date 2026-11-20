@@ -74,14 +74,14 @@ tags:
 
     ---
 
-    How Windows produces events: providers, the Event Log service, channels and `.evtx` files, audit policies, Sysmon and custom channels, event metadata (level, provider, event ID, task category, keywords), and the General, Friendly and XML views of one event — with the event structure and channels to collect to follow.
+    How Windows produces events: providers, the Event Log service, channels and `.evtx` files, audit policies, Sysmon and custom channels, event metadata (level, provider, event ID, task category, keywords), the General, Friendly and XML views of one event, the System vs EventData/UserData parts field by field, templates and descriptions, and the channels a SOC should collect.
 
     [:octicons-arrow-right-24: Windows Logging](windows-logging/index.md)
 
 </div>
 
 !!! info "Next topic"
-    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols). On the host part, endpoint attacks and endpoint defence are complete and Windows logging is in progress; then Linux logging, important events, the log pipeline and file analysis.
+    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols). On the host part, endpoint attacks, endpoint defence and Windows logging are complete; next comes Linux logging, then important events, the log pipeline and file analysis.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.
