@@ -66,14 +66,14 @@ tags:
 
     ---
 
-    Defence in depth on the host, stage by stage: software inventory and network scanning, continuous vulnerability scanning and patching, exploit protection and ASR rules, with Credential Guard, host firewalls, antivirus, application control, FIM, PAWs, EDR, DLP, UEBA and audit policy to follow.
+    Defence in depth on the host, stage by stage: software inventory and network scanning, continuous vulnerability scanning and patching, exploit protection and ASR rules, Credential Guard, host firewalls and antivirus, application control, FIM and persistence hunting, PAWs, permissions and privileges, EDR, DLP, UEBA and audit policy.
 
     [:octicons-arrow-right-24: Endpoint Defense](endpoint-defense/index.md)
 
 </div>
 
 !!! info "Next topic"
-    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols). On the host part, endpoint attacks are complete and endpoint defence is in progress; Windows and Linux logging, important events, the log pipeline and file analysis follow.
+    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols). On the host part, endpoint attacks and endpoint defence are complete; Windows logging is next, then Linux logging, important events, the log pipeline and file analysis.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.
