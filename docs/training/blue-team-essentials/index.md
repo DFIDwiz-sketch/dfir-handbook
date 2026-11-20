@@ -113,7 +113,7 @@ tags:
 </div>
 
 !!! info "Next topic"
-    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols). On the host part, endpoint attacks, endpoint defence, Windows logging, Linux logging, important events and log pipeline & SIEM are complete; file analysis is in progress (file identification so far), and it closes the host part.
+    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols). On the host part, endpoint attacks, endpoint defence, Windows logging, Linux logging, important events and log pipeline & SIEM are complete; file analysis is in progress (file identification and strings so far), and it closes the host part.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.
