@@ -17,9 +17,10 @@ tags:
 | # | 페이지 | 핵심 |
 | --- | --- | --- |
 | 1 | [자산 목록, 취약점 스캔, 패치, 익스플로잇 보호 — 공격이 자리 잡기 전에 막기](inventory-vulns-patching.md) | 킬 체인을 따라 겹겹이 막기(단계 → 공격자에게 필요한 것 → 엔드포인트 방어), 우리 소프트웨어 알기: Uninstall 레지스트리 인벤토리와 `dpkg-query`(백포트), `Win32_Product`를 쓰면 안 되는 이유, 능동 vs 수동 찾기, `nmap -sS -sV -O --script ftp-anon,smb-os-discovery` 스캔 한 줄씩(익명 FTP, 버전 숨긴 Tomcat, 지원 끝난 Server 2012 R2), T1046/T1595, 인증 없는 스캔 vs 인증 스캔 나란히, "reboot pending", 심각도·실제 악용(KEV/EPSS)·자산 등급으로 우선순위, OS·서버·클라이언트 패치, CIS Controls v7 → v8.1 번호, 긴급 패치 기준(Essential Eight 48시간), `Get-HotFix`·WindowsUpdateClient 19/20/43·`apt list --upgradable`·`reboot-required`로 확인, 익스플로잇 방지: DEP/ASLR/CFG/SEHOP의 원리, EMET → Exploit Guard → 지금, `Get-ProcessMitigation`, Security-Mitigations 로그, 제어된 폴더 액세스(1123/1124, T1486), 네트워크 보호(1125/1126), ASR 규칙, `Get-MpPreference` GUID와 동작, Office → PowerShell 차단 1121 칸별 해석, 라이선스와 수동 모드, 확인 문제 |
+| 2 | [Credential Guard, Application Guard, 호스트 방화벽, 백신 — 비밀은 따로 가두고, 호스트에는 울타리 치기](vbs-firewall-antivirus.md) | LSASS 비밀이 왜 노림수인가(T1003.001 → T1550.002/.003), VBS와 두 신뢰 수준(VTL0/VTL1), 창구 구멍 뒤 금고로서의 `LsaIso.exe`, Credential Guard가 있을 때 덤프 모습, 필요 조건과 정말 도는지 확인(`Win32_DeviceGuard` Configured vs Running, `tasklist`, Wininit 13), 못 지키는 것(SAM, 키로거, 가짜 SSP T1547.005, 살아 있는 세션)과 부작용, LSA 보호(`RunAsPPL`) vs Credential Guard, Edge/Office용 Application Guard와 파일 차단, 그리고 은퇴, 킬 체인 전체에서 호스트 방화벽의 역할, 프로필, 기본 차단, `Get-NetFirewallProfile` 칸별 해석, `pfirewall.log` 칸별(SMB/RPC/WinRM 두드리기), WFP 5157 XML(들어올 때 Source = 로컬!), `auditpol` 실패만, 방화벽 변조(T1562.004, 4946~4950), 전술적 기록, 서브넷 안 호스트 vs 네트워크 방화벽과 PC↔PC 경보, 나가는 C2/유출(T1571, T1048), 백신: 시그니처 vs 머신러닝, 다형성, 파일 없는 공격과 AMSI, 변조(5001/5007/5013), 1116 칸별 해석(1117/1118), 희귀성 기반 분류, 확인 문제 |
 
 !!! info "이어서 추가될 내용"
-    Credential Guard와 가상화 기반 보안, 호스트 방화벽(호스트 vs 네트워크)과 백신, 이어서 애플리케이션 제어와 그 우회, 파일 무결성 모니터링과 지속성 잡기, 그리고 PAW, Windows 권한과 특권, EDR, DLP, UEBA, 감사 정책(섹션 마무리).
+    애플리케이션 제어와 그 우회, 파일 무결성 모니터링과 지속성 잡기, 그리고 PAW, Windows 권한과 특권, EDR, DLP, UEBA, 감사 정책(섹션 마무리).
 
 ## 꼭 기억할 것 { #must-know }
 
