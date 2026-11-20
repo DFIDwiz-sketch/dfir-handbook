@@ -62,10 +62,18 @@ tags:
 
     [:octicons-arrow-right-24: Endpoint Attacks](endpoint-attacks/index.md)
 
+-   :material-shield-lock:{ .lg .middle } **Endpoint Defense**
+
+    ---
+
+    Defence in depth on the host, stage by stage: software inventory and network scanning, continuous vulnerability scanning and patching, exploit protection and ASR rules, with Credential Guard, host firewalls, antivirus, application control, FIM, PAWs, EDR, DLP, UEBA and audit policy to follow.
+
+    [:octicons-arrow-right-24: Endpoint Defense](endpoint-defense/index.md)
+
 </div>
 
 !!! info "Next topic"
-    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols). The host part has started: endpoint attacks are complete; endpoint defence comes next, then Windows and Linux logging, important events, the log pipeline and file analysis.
+    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols). On the host part, endpoint attacks are complete and endpoint defence is in progress; Windows and Linux logging, important events, the log pipeline and file analysis follow.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.

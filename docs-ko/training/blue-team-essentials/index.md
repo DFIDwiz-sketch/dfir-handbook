@@ -62,10 +62,18 @@ tags:
 
     [:octicons-arrow-right-24: 엔드포인트 공격](endpoint-attacks/index.md)
 
+-   :material-shield-lock:{ .lg .middle } **엔드포인트 방어**
+
+    ---
+
+    호스트의 심층 방어를 단계별로: 소프트웨어 인벤토리와 네트워크 스캔, 지속적인 취약점 스캔과 패치, 익스플로잇 보호와 ASR 규칙, 이어서 Credential Guard, 호스트 방화벽, 백신, 애플리케이션 제어, FIM, PAW, EDR, DLP, UEBA, 감사 정책.
+
+    [:octicons-arrow-right-24: 엔드포인트 방어](endpoint-defense/index.md)
+
 </div>
 
 !!! info "다음 주제"
-    네트워크 파트 완료(DNS, HTTP, HTTP(S) 분석, 이메일, 기타 프로토콜). 호스트 파트가 시작됐습니다. 엔드포인트 공격은 완료, 다음은 엔드포인트 방어이고 Windows·Linux 로그, 꼭 알아야 할 이벤트, 로그 파이프라인, 파일 분석이 이어집니다.
+    네트워크 파트 완료(DNS, HTTP, HTTP(S) 분석, 이메일, 기타 프로토콜). 호스트 파트는 엔드포인트 공격이 완료됐고 엔드포인트 방어가 진행 중이며, Windows·Linux 로그, 꼭 알아야 할 이벤트, 로그 파이프라인, 파일 분석이 이어집니다.
 
 !!! note "이 섹션에 대하여"
     개인 학습 노트이며 어떤 기관의 공식 지침도 아닙니다.
