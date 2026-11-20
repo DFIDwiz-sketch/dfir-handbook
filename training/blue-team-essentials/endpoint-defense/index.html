@@ -6987,6 +6987,8 @@
       
         
       
+        
+      
     
     
     
@@ -7112,6 +7114,34 @@
     
   
     Application Control, File Integrity Monitoring and Catching Persistence — Only Known Programs Run, Every Change Gets Noticed
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="paw-edr-dlp-ueba/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PAWs, Permissions and Privileges, EDR, DLP, UEBA and Audit Logging — Guarding the Admin, Recording Everything
   
 
     
@@ -10143,11 +10173,16 @@
 <td><a href="appcontrol-fim-persistence/">Application Control, File Integrity Monitoring and Catching Persistence — Only Known Programs Run, Every Change Gets Noticed</a></td>
 <td>Allowlisting vs blocklisting (the guest list), execution not arrival, covering scripts/MSI/DLLs, CIS 2.5–2.7 and Essential Eight; rule types (filename, path, publisher, hash) and their strength, a writable allowed path read with <code>icacls</code>; audit → tune → enforce, audit events as a sensor; AppLocker vs App Control for Business (ex-WDAC), Gatekeeper, AppArmor/SELinux, fapolicyd; an AppLocker 8004 XML field by field (8002–8007), CodeIntegrity 3076/3077, an AppArmor <code>DENIED exec</code> nginx → bash line; bypasses and their evidence: scripts and Constrained Language Mode (T1059), LOLBins/<code>rundll32</code> (T1218), injection (T1055), names/paths (T1036.005, T1574), stolen signing keys (T1553.002), SHA-1 collisions; FIM: what it records, where to point it, a web shell (T1505.003) caught by <code>aide --check</code> and a real-time agent alert (owner <code>www-data</code>), tuning; ASEPs: Run keys/startup, services, tasks, browser extensions (T1176.001), valid accounts, Linux cron/systemd/SSH keys, privilege vs persistence depth (rootkits T1014), <code>Get-ItemProperty</code> on a Run key, <code>autorunsc -a * -c -h -s -m</code> and a CSV read row by row (<code>-enc SQBFAFgA</code> = <code>IEX</code>), diffing for rarity, continuous detection (Sysmon 11/13, 7045/4697, 4698, 4720); practice questions</td>
 </tr>
+<tr>
+<td>4</td>
+<td><a href="paw-edr-dlp-ueba/">PAWs, Permissions and Privileges, EDR, DLP, UEBA and Audit Logging — Guarding the Admin, Recording Everything</a></td>
+<td>Why admin credentials must never touch an everyday machine (LSASS, T1003.001 → T1550.002/.003), separate accounts and PAWs (host vs guest VM), clean source and tiering (never log on downwards), a 4624 type 10 of <code>adm-</code> on an HR PC and the matching 4672 field by field, the PAW-violation rule; permissions vs privileges (locks vs job title), <code>icacls</code> on <code>utilman.exe</code> (TrustedInstaller, T1546.008), <code>whoami /priv</code> (Disabled ≠ not held), dangerous privileges table (<code>SeDebug</code>, <code>SeBackup</code>, <code>SeRestore</code>, <code>SeLoadDriver</code>, <code>SeImpersonate</code>, <code>SeTakeOwnership</code>), Backup Operators <code>reg save HKLM\SAM</code> (T1003.002), VM snapshots, 4673/4674; EDR as flight recorder, a Word → hidden <code>-enc</code> PowerShell → 203.0.113.45 record field by field, response actions and why live response beats RDP-ing in, EDR tampering (T1562.001, BYOVD), XDR; DLP: network vs endpoint, labels and content inspection, a card-number regex with Luhn and thresholds, a USB block alert (T1052.001), three use cases and limits; UEBA: baselines, peer groups, a <code>svc-backup</code> → DC01 → <code>ntdsutil</code> finding, the base-rate arithmetic; audit policy: <code>auditpol</code> gaps (Process Creation, command line), 1102, <code>auditd</code> rules and <code>auid</code>, rsyslog <code>@@</code> forwarding, coverage map; defence-in-depth summary table; practice questions</td>
+</tr>
 </tbody>
 </table>
-<div class="admonition info">
-<p class="admonition-title">Coming next</p>
-<p>PAWs, Windows permissions and privileges, EDR, DLP, UEBA and audit policies and logging (this closes the section).</p>
+<div class="admonition success">
+<p class="admonition-title">Section complete</p>
+<p>The endpoint-defence section is complete. Next: <strong>Windows Logging</strong> — why log collection matters, how Windows event logging works (providers, channels, the log path, audit settings), reading an event's System and EventData parts, templates and descriptions, and the channels a SOC should collect.</p>
 </div>
 <h2 id="must-know">Things to remember<a class="headerlink" href="#must-know" title="Permanent link">¶</a></h2>
 <ol>
@@ -10156,6 +10191,8 @@
 <li>Authenticated scans decide patching; an unauthenticated "no critical findings" means "couldn't tell", not "safe".</li>
 <li>Patch OS, server <em>and</em> client software, and agree on the emergency-patch bar before you need it. Installed is not patched until the reboot happened.</li>
 <li>Anti-exploitation breaks the technique, not the specific bug — and its block events (Security-Mitigations, Defender 1121/1123/1126) are some of the highest-quality alerts a SOC gets. Audit mode protects nothing.</li>
+<li>Admin credentials only ever on PAWs, never logged on downwards — and every account holding debug, backup, restore or driver privileges counts as privileged.</li>
+<li>EDR records the relationships between events and gives a safe response channel; DLP and UEBA slow down and surface data theft and account misuse but never replace each other or EDR. None of it works without an audit policy and logs shipped off the host.</li>
 </ol>
 <h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">¶</a></h2>
 <ul>
