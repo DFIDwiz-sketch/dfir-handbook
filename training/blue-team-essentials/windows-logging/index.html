@@ -7180,6 +7180,8 @@
       
         
       
+        
+      
     
     
     
@@ -7249,6 +7251,34 @@
     
   
     How Windows Event Logging Works — Providers, Channels, the Log Path, Audit Settings and the Three Views of One Event
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="event-structure-channels/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inside a Windows Event — System vs EventData, Templates and Descriptions, and the Channels Worth Collecting
   
 
     
@@ -10270,11 +10300,16 @@
 <td><a href="how-event-logging-works/">How Windows Event Logging Works — Providers, Channels, the Log Path, Audit Settings and the Three Views of One Event</a></td>
 <td>Why analysts must understand collection (zero results = didn't happen / never recorded / never collected); format, content, collection; Windows vs Linux, binary-XML <code>.evtx</code>; Windows Logs vs Applications and Services Logs, channel types (Admin/Operational/Analytic/Debug), why Security is special; the log path provider → EventLog service → channel → <code>winevt\Logs</code> (<code>%4</code> in file names) → Event Viewer/<code>Get-WinEvent</code>/<code>wevtutil</code>/agents; tampering T1070.001/T1562.002, 1102/104; <code>Get-WinEvent -ListLog</code> and <code>-FilterHashtable</code> read line by line, 4625 bursts (T1110); audit policy with <code>auditpol</code> (4624/4625/4688/4663, SACLs), legacy vs advanced, 4719; Sysmon and a custom channel with <code>New-EventLog</code>/<code>Write-EventLog</code> (5.1 only); apps with their own logs, Zeek/Suricata; metadata: level table, keywords Audit Success/Failure, provider, event ID per provider (System ID 1 Power-Troubleshooter vs Kernel-General), task category, <code>EventRecordID</code> gaps; one 4625 in General, Friendly and XML views field by field (UTC, <code>%%2313</code>), message templates, localisation and why the SIEM needs EventData; practice questions</td>
 </tr>
+<tr>
+<td>2</td>
+<td><a href="event-structure-channels/">Inside a Windows Event — System vs EventData, Templates and Descriptions, and the Channels Worth Collecting</a></td>
+<td>Envelope vs letter; a full 4624 v2 read field by field — System (Provider/GUID, Version, Level, Task, Opcode, Keywords, UTC <code>TimeCreated</code>, <code>EventRecordID</code>, Correlation, <code>Execution ProcessID</code> = writer/LSASS, Channel, Computer, Security UserID) and EventData (Subject vs Target, <code>TargetLogonId</code> as session pivot, LogonType 10, padded <code>"User32 "</code>, <code>IpAddress</code>, <code>%%1833</code>/<code>%%1843</code>, linked/elevated tokens); UserData in 1102 (Eventlog provider, T1070.001) and unnamed classic <code>&lt;Data&gt;</code>; <code>Get-WinEvent -ListProvider</code>, three 4624 versions, the template with <code>inType</code>/<code>outType</code>, <code>wevtutil gp</code>, <code>[xml]$e.ToXml()</code> field extraction; the description with <code>%1</code>…<code>%27</code>, SID rendering; putting it together, why a message regex fails, agent JSON; channels of interest table (PowerShell 4104 cradle T1059.001/T1105, PowerShellCore, Security-Mitigations, CodeIntegrity 3076/3077, AppLocker 8002–8007, Defender 1116/1117/5001/5007/5013, Firewall IDs on new builds, Sysmon) plus TaskScheduler, TerminalServices, WMI-Activity 5861, Bits-Client; <code>IsEnabled</code> check; XPath QueryList filtering; the four section questions; practice questions</td>
+</tr>
 </tbody>
 </table>
-<div class="admonition info">
-<p class="admonition-title">Coming next</p>
-<p>The structure of an event in detail — the System part vs EventData/UserData field by field, templates and descriptions, putting it together, and the channels a SOC should collect — then a section summary.</p>
+<div class="admonition success">
+<p class="admonition-title">Section complete</p>
+<p>The Windows logging section is complete. Next: <strong>Linux Logging</strong> — how Linux logging works, what "syslog" means (format, network protocol, daemons), facility and severity, the traditional log files, the systemd journal and command-line logging.</p>
 </div>
 <h2 id="must-know">Things to remember<a class="headerlink" href="#must-know" title="Permanent link">¶</a></h2>
 <ol>
@@ -10283,6 +10318,8 @@
 <li>The audit policy decides which Security events exist. Verify the effective policy with <code>auditpol</code>, use the advanced policy only, and add Sysmon where the built-in policy is blind.</li>
 <li>An event ID only means something with its provider. Write detections on provider (or channel) + ID.</li>
 <li>The General view is a template filled with XML values — localised and hard to parse. Send structured EventData fields to the SIEM.</li>
+<li>System fields are the same in every event; EventData/UserData fields depend on provider, ID and version. <code>Execution ProcessID</code> is the writer; <code>TargetLogonId</code> is the session pivot.</li>
+<li>Collect beyond the big three — PowerShell/Operational with script block logging, Sysmon, Defender, CodeIntegrity, AppLocker, Security-Mitigations, Firewall, TaskScheduler, TerminalServices, WMI-Activity — and check on the hosts that they are enabled.</li>
 </ol>
 <h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">¶</a></h2>
 <ul>
