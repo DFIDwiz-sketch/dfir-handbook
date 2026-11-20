@@ -7713,6 +7713,8 @@
       
         
       
+        
+      
     
     
     
@@ -7810,6 +7812,34 @@
     
   
     Log Formats and Structure — Unstructured Logs, CSV, Key-Value, JSON, CEF/LEEF, and Why Your SIEM Is Not Google
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="enrichment-normalization-storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Enrichment, Normalisation and Storage — Context, Common Information Models, Categorisation, Hot/Warm/Cold and the Log Life Cycle
   
 
     
@@ -10836,11 +10866,16 @@
 <td><a href="formats-structure/">Log Formats and Structure — Unstructured Logs, CSV, Key-Value, JSON, CEF/LEEF, and Why Your SIEM Is Not Google</a></td>
 <td>Why parsing decides detection (no field = no alert = silent false negative); unstructured syslog lines (<code>dhclient</code>, <code>CRON</code>/<code>pam_unix</code>, <code>sudo</code>) read part by part, a named-group regex for <code>sudo</code> and four ways it breaks (optional parts, spaces, other programs, reworded messages), parse-failure tags and journal fields; CSV vs key-value vs JSON vs XML on the same record (38/78/96 bytes) with a comparison table; the inserted-column CSV shift, quoting traps, self-describing Zeek <code>#fields</code>/<code>#types</code>; key-value delimiter problems and log injection (CWE-117); nested JSON process event line by line; CEF header and extension dictionary (<code>rt</code>, <code>src</code>, <code>suser</code>, <code>act</code>, <code>cs1Label</code>) and escaping, LEEF 1.0 vs 2.0 with custom delimiter; PRI vs event severity; indexing vs full-text search on a Squid line field by field; schema-on-write vs schema-on-read; scoping <code>sara</code> → <code>index=proxy sara</code> → <code>index=proxy user=sara</code> with SPL basics, KQL/Elastic equivalents, leading wildcards and indexed fields; SOC checklist; practice questions</td>
 </tr>
+<tr>
+<td>3</td>
+<td><a href="enrichment-normalization-storage/">Enrichment, Normalisation and Storage — Context, Common Information Models, Categorisation, Hot/Warm/Cold and the Log Life Cycle</a></td>
+<td>A bare DNS query vs the same event enriched (resolved IP, newly observed, rank, domain age, TI, host, patch status, user role) field by field; enrichment sources table; ingest-time vs search-time (point-in-time vs current) and which to use for IP-to-host vs threat intel; Splunk <code>lookup</code> explained for beginners; correlation of DHCP lease + 4624 LogonType 2 + DNS query with time windows; five names for source IP and the OR-search gap; Splunk CIM / ECS / OCSF / ASIM / UDM comparison; rename vs copy vs search-time alias with <code>props.conf</code> <code>FIELDALIAS</code>/<code>EVAL</code> line by line; value and meaning normalisation (actions, usernames, NAT, 4624 <code>IpAddress</code>); the missing-field trap; categorisation of 4624/4625 and sshd into <code>event.category</code>/<code>event.outcome</code>, OCSF Authentication 3002, tags and coverage gaps (T1110, T1078); like-with-like indexes; retention pressures (M-21-31); hot/warm/cold/frozen tiers; Splunk <code>indexes.conf</code> line by line and size-cap eviction; the log life cycle and restores; questions for your SIEM engineer with a <code>tstats</code> source-health check; whole-pipeline table; SOC checklist; practice questions</td>
+</tr>
 </tbody>
 </table>
-<div class="admonition info">
-<p class="admonition-title">Coming next</p>
-<p>Enrichment and correlation, field normalisation and common information models (ECS, OCSF, ASIM, CIM), categorisation, storage, the log life cycle and questions to ask your SIEM engineer. That closes this section; after it comes file analysis.</p>
+<div class="admonition success">
+<p class="admonition-title">Section complete</p>
+<p>The log pipeline &amp; SIEM section is complete. Next: <strong>File Analysis</strong> — identifying files by content (<code>file</code>, magic bytes, nested files, polyglots, encodings), <code>strings</code>, safe handling of suspect files and dangerous file types (executables, scripts, Office, RTF, PDF), hashing and code signatures, and quick triage of good vs bad.</p>
 </div>
 <h2 id="must-know">Things to remember<a class="headerlink" href="#must-know" title="Permanent link">¶</a></h2>
 <ol>
@@ -10853,6 +10888,7 @@
 <li>Keep Windows events as XML or JSON; syslog text loses structure.</li>
 <li>WEF: Network Service needs read access to Security, and the real host is in <code>Computer</code>, not the collector's name.</li>
 <li>A quiet host is not a clean host. Alert on missing heartbeats and on 1102, 104, 1100, 4719 and agent service changes.</li>
+<li>Know whether each enrichment is point-in-time or current, which sources feed each normalised category, and the retention, size cap and freeze behaviour of every index you rely on.</li>
 </ol>
 <h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">¶</a></h2>
 <ul>
