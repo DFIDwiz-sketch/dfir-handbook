@@ -17,9 +17,10 @@ tags:
 | # | 페이지 | 핵심 |
 | --- | --- | --- |
 | 1 | [로그 수집 — 로그 파이프라인, 에이전트 vs 에이전트리스, Windows·Linux 수집 방법](collection-methods.md) | 분석가가 파이프라인을 알아야 하는 이유(설명 안 되는 칸, 지연, 빈 결과, `host=WEC01`), 소스 → 수집 → 집계기 → 파싱·보강 → 인덱싱·저장 → 검색·경보 블록과 각각이 덧붙이고·바꾸고·늦추고·버릴 수 있는 것, 예시 타임라인으로 보는 두 시계(`@timestamp` vs `event.created`/`event.ingested`, `_time` vs `_indextime`), 에이전트 vs 에이전트리스 밀어 보내기·끌어오기, Windows 선택지 표, Splunk UF `inputs.conf`/`outputs.conf`(`renderXml`, blacklist, `useACK`, TLS)와 NXLog XPath → JSON → TLS 한 줄씩, JSON vs syslog 문장으로 본 4624와 "Account Name:"이 정규식을 깨는 이유, `wecutil qc`·구독 관리자 GPO·XPath 구독·`wecutil gr` 하트비트로 보는 WEF/WEC, Network Service와 Security 채널, 전달된 이벤트의 `Computer`/`Channel`/`EventRecordID`와 `host=WEC01` 함정, 에이전트리스 `Get-WinEvent -ComputerName`, `wevtutil gl`(`channelAccess`, `maxSize`, 덮어쓰기 계산), 읽기 계정, 파이프라인 조작 1102/104/1100/7036/7040/4719(T1070.001, T1562.001/.002/.006), Linux 선택지, rsyslog TLS + 디스크 큐 + `imjournal` 한 줄씩, `logger`/`ss` 시험, 저널만 있는 배포판, cron + `journalctl --cursor-file` 밀어 보내기, SOC 점검표, 확인 문제 |
+| 2 | [로그 형식과 구조 — 비정형 로그, CSV, 키-값, JSON, CEF/LEEF, 그리고 SIEM은 구글이 아니다](formats-structure.md) | 파싱이 탐지를 결정하는 이유(칸 없음 = 경보 없음 = 소리 없는 미탐), 비정형 syslog 줄(`dhclient`, `CRON`/`pam_unix`, `sudo`)을 부분별로 읽기, `sudo`용 이름 붙은 정규식과 깨지는 네 가지 경우(있다 없다 하는 부분, 공백, 다른 프로그램, 바뀐 문구), 파싱 실패 표시와 저널 칸, 같은 기록으로 본 CSV vs 키-값 vs JSON vs XML(38/78/96바이트)과 비교표, 칸이 끼어든 CSV 밀림, 따옴표 함정, 스스로를 설명하는 Zeek `#fields`/`#types`, 키-값 구분 문자 문제와 로그 인젝션(CWE-117), 중첩 JSON 프로세스 이벤트 한 줄씩, CEF 헤더와 확장 칸 사전(`rt`, `src`, `suser`, `act`, `cs1Label`)과 이스케이프, 사용자 지정 구분 문자가 있는 LEEF 1.0 vs 2.0, PRI vs 이벤트 심각도, Squid 한 줄로 칸별로 보는 인덱싱 vs 전문 검색, 쓸 때 스키마 vs 읽을 때 스키마, SPL 기초와 함께 `sara` → `index=proxy sara` → `index=proxy user=sara`로 좁히기, KQL/Elastic 대응, 앞 와일드카드와 인덱싱된 칸, SOC 점검표, 확인 문제 |
 
 !!! info "이어서 추가될 내용"
-    로그 형식: 비정형 vs 정형 로그, CSV·키-값·JSON·XML, SIEM 중심 형식, 탐지에 구조가 중요한 이유, 그리고 SIEM은 검색 엔진이 아니라는 점. 그다음: 보강과 상관 분석, 필드 정규화와 공통 정보 모델, 분류, 저장과 로그 수명 주기.
+    보강과 상관 분석, 필드 정규화와 공통 정보 모델(ECS, OCSF, ASIM, CIM), 분류, 저장, 로그 수명 주기, 그리고 SIEM 엔지니어에게 물어볼 질문. 이걸로 이 섹션이 끝나고, 그다음은 파일 분석입니다.
 
 ## 꼭 기억할 것 { #must-know }
 

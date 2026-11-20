@@ -105,7 +105,7 @@ tags:
 </div>
 
 !!! info "Next topic"
-    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols). On the host part, endpoint attacks, endpoint defence, Windows logging, Linux logging and important events are complete, and the log pipeline & SIEM section is in progress (collection methods done); after it comes file analysis.
+    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols). On the host part, endpoint attacks, endpoint defence, Windows logging, Linux logging and important events are complete, and the log pipeline & SIEM section is in progress (collection methods and log formats done); after it comes file analysis.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.
