@@ -98,14 +98,14 @@ tags:
 
     ---
 
-    How events travel from the host to your search bar and what changes on the way: the pipeline blocks and their delays, agents vs agentless collection, Windows Event Forwarding, vendor and third-party agents, rsyslog forwarding, then log formats and structure, enrichment, normalisation, storage and life cycle.
+    How events travel from the host to your search bar and what changes on the way: the pipeline blocks and their delays, agents vs agentless collection, Windows Event Forwarding, vendor and third-party agents, rsyslog forwarding, log formats and structure, enrichment and correlation, normalisation and common information models, categorisation, storage tiers and the log life cycle.
 
     [:octicons-arrow-right-24: Log Pipeline & SIEM](log-pipeline/index.md)
 
 </div>
 
 !!! info "Next topic"
-    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols). On the host part, endpoint attacks, endpoint defence, Windows logging, Linux logging and important events are complete, and the log pipeline & SIEM section is in progress (collection methods and log formats done); after it comes file analysis.
+    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols). On the host part, endpoint attacks, endpoint defence, Windows logging, Linux logging, important events and log pipeline & SIEM are complete; next comes file analysis.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.
