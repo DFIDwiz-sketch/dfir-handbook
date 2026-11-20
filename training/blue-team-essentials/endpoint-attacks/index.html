@@ -6762,6 +6762,8 @@
       
         
       
+        
+      
     
     
     
@@ -6915,6 +6917,34 @@
     
   
     Credential Dumping and Mimikatz — From One Admin to Many Accounts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="lateral-collection-exfil/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lateral Movement, Collection and Exfiltration — From One Foothold to Data Out the Door
   
 
     
@@ -9944,11 +9974,16 @@
 <td><a href="credential-dumping-mimikatz/">Credential Dumping and Mimikatz — From One Admin to Many Accounts</a></td>
 <td>Credential Access (TA0006) and T1003 sub-techniques (LSASS, SAM, LSA secrets, cached, NTDS, DCSync, Linux); why dumping needs admin (<code>SeDebugPrivilege</code>, <code>PROCESS_VM_READ</code>) and still pays off; SSO and what <code>lsass.exe</code> keeps per authentication package (MSV1_0, Kerberos, WDigest, TsPkg, vault); which logon types leave reusable secrets; NT hash = credential (T1550.002/.003); Mimikatz (S0002) at defender level, a redacted dump result line by line, the WDigest <code>UseLogonCredential</code> trick; why blocking the file fails; evidence: Sysmon 10 <code>GrantedAccess 0x1010</code> and <code>UNKNOWN</code> call traces, <code>comsvcs.dll MiniDump</code> 4688, 4104 <code>Invoke-Mimikatz</code>/<code>TVqQ</code>, Sysmon 13, 4624 type 9 <code>seclogo</code> and NTLM type 3, 7045 driver; the one-admin-to-domain chain and how to break it (tiering, LAPS, Protected Users, Credential Guard, LSA protection, ASR); verifying Credential Guard/RunAsPPL; token theft, NTLM phase-out; practice questions</td>
 </tr>
+<tr>
+<td>5</td>
+<td><a href="lateral-collection-exfil/">Lateral Movement, Collection and Exfiltration — From One Foothold to Data Out the Door</a></td>
+<td>Why the first host is rarely enough; the two ingredients (access: T1210/T1078, code: T1570) and tools staged in the Recycle Bin (Sysmon 11 by <code>System</code>); remote-admin protocols → ports → T1021.x/T1047 → target-side evidence; PsExec style field by field (4624 type 3 → 5145 <code>ADMIN$</code> <code>0x2</code> → 7045 LocalSystem), WMI (<code>WmiPrvSE.exe</code> → <code>cmd.exe /Q /c … ADMIN$\__…</code>), WinRM (<code>wsmprovhost.exe</code>), RDP 1149 and type 10, SSH <code>Accepted publickey</code>; who-talks-to-whom baseline; collection (TA0009) targets and the lateral → escalate → dump → collect loop; a 5145 share burst and quiet <code>robocopy</code> staging; why exfiltration is hard, the four-step staging sequence, <code>7za -mhe=on -p -v95m</code> line by line and why the command line may be the only record; default-deny outbound, firewall deny probing, Zeek upload ratio, low-and-slow arithmetic, a renamed <code>rclone</code> (<code>OriginalFileName</code>, <code>--bwlimit</code>); T1041/T1048/T1567/T1537; section summary (pre- vs post-exploitation); data-theft extortion, cloud lateral movement, RMM; practice questions</td>
+</tr>
 </tbody>
 </table>
-<div class="admonition info">
-<p class="admonition-title">Coming next</p>
-<p>Lateral movement, collection and exfiltration — how attackers use stolen credentials to reach other hosts, gather data and get it out (this closes the section).</p>
+<div class="admonition success">
+<p class="admonition-title">Section complete</p>
+<p>The endpoint-attacks section is complete. Next: <strong>Endpoint Defense</strong> — defence in depth on the host (inventory, vulnerability management and patching, exploit protection, Credential Guard, host firewalls, antivirus, application control, file integrity monitoring, PAWs, EDR, DLP, UEBA and audit policies).</p>
 </div>
 <h2 id="must-know">Things to remember<a class="headerlink" href="#must-know" title="Permanent link">¶</a></h2>
 <ol>
@@ -9957,6 +9992,8 @@
 <li>Least privilege for services and users is the cheapest way to shrink the damage of any exploit.</li>
 <li>Service-side: needs a reachable listening port, no user, repeatable — patch or firewall it. Client-side: needs a user, passes inbound firewalls, hard to repeat — expect persistence.</li>
 <li>A server process (<code>w3wp.exe</code>, <code>java.exe</code>) or Office application spawning a shell or script host is one of the most reliable exploitation signals.</li>
+<li>Lateral movement is proven on the <strong>target</strong>: network/RDP logon + a tell-tale parent (<code>services.exe</code>, <code>WmiPrvSE.exe</code>, <code>wsmprovhost.exe</code>) + new services.</li>
+<li>Exfiltration needs staging, an open path and slowness — watch outbound denies, upload volume/ratio over days, and archiver command lines.</li>
 </ol>
 <h2 id="related">Related references<a class="headerlink" href="#related" title="Permanent link">¶</a></h2>
 <ul>
