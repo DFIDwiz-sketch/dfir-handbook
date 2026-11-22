@@ -58,7 +58,7 @@ tags:
 | Second C2 | `robwassotdint[.]ru` **185.174.175.14:443**, **54** TLS sessions (02:10:16–02:45:46), self-signed certificate `Default Company Ltd` | Confirmed |
 | Malware families | Hancitor + Pony (info stealer) + Zeus Panda Banker-like | Assessed (matches public reporting) |
 | Initial access | No email or document download in the PCAP → infected before the capture, or a document opened right after logon (02:07:29) | Unconfirmed |
-| Lateral movement | **None** — DC traffic is normal domain activity only (Kerberos, LDAP, SMB policy reads) | Confirmed |
+| Lateral movement | No other internal PC in the capture. **Correction:** the DC traffic is not all normal — 1,522 × `NetrLogonSamLogonWithFlags` in 32 s (02:08:12–02:08:45) is password guessing through the DC. See the [second pass](night-dew-arkime-splunk-netlogon-bruteforce.md#netlogon) | Corrected |
 | Snort | 8 rules (sid 1000011–1000018), each fired exactly the expected number of times against the PCAP | Confirmed |
 
 ---
@@ -656,7 +656,10 @@ Total            54       ~120 KB sent / ~1.65 MB received
 - **Initial access is not in this PCAP.** There is no email, document download or Office traffic. In the previous case Office DNS lookups came just before the EXE download; there is no such clue here.
 - **Two possibilities:** ① the PC was already infected before the capture and the malware auto-started at logon (persistence); ② the user opened an already-downloaded document right after logon. Starting 35 s after logon leans towards ①, but traffic alone cannot tell them apart.
 - So the ticket says "initial access unconfirmed, host confirmation required" and lists where the host operator should look (Run keys, scheduled tasks, recently opened documents, email attachments).
-- **No lateral movement.** DC traffic is logon, DNS and group policy only, and there is no other internal PC in the capture.
+- **No other internal PC in the capture.** But see the correction below: the DC traffic hides password guessing.
+
+!!! warning "Correction from the second pass"
+    This pass called the DC traffic normal. A [second pass with Zeek's DCE/RPC log](night-dew-arkime-splunk-netlogon-bruteforce.md#netlogon) found **1,522 `NetrLogonSamLogonWithFlags` calls in 32 seconds** (02:08:12–02:08:45) from 10.0.14.129 to the DC — password guessing through netlogon, starting 0.6 s after the `/mlu/forum.php` POST. It is also why the PC sent 948 KB. Check DC Event 4776 for the accounts and results.
 
 **Ticket entry (step 7):**
 
