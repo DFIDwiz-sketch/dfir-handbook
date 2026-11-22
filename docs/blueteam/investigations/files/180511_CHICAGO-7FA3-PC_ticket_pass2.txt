@@ -19,13 +19,14 @@ The C2 reply told it to download 3 files. The host downloaded 3 encrypted files 
 hacked WordPress site (wansaiful.com) 1 second later.
 
 After the downloads:
-- A new component sent data to the same C2 with a different User-Agent.
+- A new component sent 2 small encrypted POSTs to the same C2 (likely stolen passwords).
 - The host tried 1,522 domain logons through the DC in 32 seconds (password guessing).
 - A second C2 channel started over TLS (robwassotdint.ru, self-signed certificate).
 - The TLS C2 sent about 1.5 MB to the host at 02:40-02:42Z (more modules or settings).
 
 Both C2 channels were still active when the capture ended (02:49Z).
-No large uploads to external hosts were seen.
+No large uploads to external hosts were seen. The 2 small POSTs (440 B) cannot be read,
+so treat the saved passwords on the host as stolen.
 Malware family is NOT confirmed (no hash lookup or vendor signatures used).
 
 Host details
@@ -39,9 +40,9 @@ Timeline (2018-05-11, UTC)
   02:08:04  GET api.ipify.org - malware checks its public IP (173.236.56.182).
   02:08:04  POST lysedsohap.com/4/forum.php - C2 check-in. Reply = 3 download commands.
   02:08:05  GET wansaiful.com/wp-content/plugins/easy-media-download/1, /2, /3 (to 02:08:14)
-  02:08:12  POST lysedsohap.com/mlu/forum.php - new component (UA MSIE 7.0).
+  02:08:12  POST lysedsohap.com/mlu/forum.php - 206 B encrypted data (UA MSIE 7.0).
   02:08:12  1,522 x NetrLogonSamLogonWithFlags to DC 10.0.14.3 (to 02:08:45).
-  02:08:14  POST lysedsohap.com/d2/about.php - same new component.
+  02:08:14  POST lysedsohap.com/d2/about.php - 234 B encrypted data (same program).
   02:10:15  HTTP C2 beacon every 2 min to lysedsohap.com (to 02:48:25, 20 times).
   02:10:16  TLS C2 beacon every 5 min to robwassotdint.ru (to 02:45:46, 54 sessions).
   02:40:18  TLS C2 sends about 1.5 MB to the host (to 02:42:37).
@@ -74,6 +75,7 @@ Team1: Arkime tag 20180511_NIGHT_DEW, Splunk pcap_case=20180511_NIGHT_DEW
 [261121 2049, Lee] Decode of C2 check-in reply - Found
 [261121 2100, Lee] Contact with fallback payload sites - Not Found
 [261121 2106, Lee] Follow-up payload downloads from wansaiful.com - Found
+[261121 2110, Lee] Data sent to lysedsohap.com other than check-ins - Found
 [261121 2119, Lee] TLS C2 to robwassotdint.ru - Found
 [261121 2137, Lee] Password guessing through DC netlogon - Found
 [261121 2137, Lee] Large uploads to external hosts - Not Found
@@ -114,10 +116,14 @@ Team1: Arkime tag 20180511_NIGHT_DEW, Splunk pcap_case=20180511_NIGHT_DEW
   Last-Modified: 2018-05-10 13:29:43Z - 13:29:58Z (uploaded the day before).
   Note: hashes are of the encrypted files. Files on the host will have different hashes.
 
-  02:08:12Z POST http://lysedsohap.com/mlu/forum.php (reply 20 B)
-  02:08:14Z POST http://lysedsohap.com/d2/about.php  (reply 13 B)
+[261121 2110, Lee] Data sent to C2 other than check-ins
+  02:08:12Z POST http://lysedsohap.com/mlu/forum.php  206 B sent  (src port 49200)
+  02:08:14Z POST http://lysedsohap.com/d2/about.php   234 B sent  (src port 49202)
+    HTTP/1.0, Content-Type: application/octet-stream, Content-Encoding: binary
     UA: Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/7.0; SLCC2; ...)
-  Meaning: a downloaded file ran and reported to the same C2 (different program, old UA).
+    Body: encrypted binary. Each sent once only.
+  Meaning: a downloaded file ran and sent data to the same C2 (different program).
+  Send-once pattern fits a password stealer. Family not confirmed.
 
 [261121 2119, Lee] TLS C2
   02:10:16Z DNS robwassotdint.ru -> 185.174.175.14 (asked again 02:40:16Z)
@@ -153,8 +159,8 @@ Type     Value                                              Note
 Domain   lysedsohap.com                                     HTTP C2
 IP       185.43.223.6 port 80                               HTTP C2
 URL      lysedsohap.com/4/forum.php                         check-in and beacon (POST)
-URL      lysedsohap.com/mlu/forum.php                       new component (POST)
-URL      lysedsohap.com/d2/about.php                        new component (POST)
+URL      lysedsohap.com/mlu/forum.php                       encrypted data POST (206 B)
+URL      lysedsohap.com/d2/about.php                        encrypted data POST (234 B)
 Domain   wansaiful.com                                      payload site (hacked WordPress)
 IP       111.90.144.30 port 80                              payload site
 URL      wansaiful.com/wp-content/plugins/easy-media-download/[1-3]   encrypted payloads
@@ -169,6 +175,7 @@ MD5      ae9dfd2190b07927078cb4a19d0b2187                   payload /1 (encrypte
 MD5      74eb0ec9c04ddf315053773aba5bcb01                   payload /2 (encrypted)
 MD5      b799ac083efb27e51c46ea1542f89b12                   payload /3 (encrypted)
 Pattern  POST body "GUID=...&BUILD=...&INFO=..."               check-in format
+Pattern  POST header "Content-Encoding: binary"            data POST format
 UA       Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; ...)   new component
 Context  api.ipify.org (184.72.249.110)                     public IP check - legit service,
                                                             suspicious only from non-browsers
@@ -193,7 +200,8 @@ alert tcp $HOME_NET any -> $EXTERNAL_NET 80 (msg:"Malware check-in POST GUID/BUI
 5. Find the first infection (before 02:06Z): email, downloads, documents opened by
    faith.hoffman.
 6. Take memory before cleaning. The payloads are decrypted in memory.
-7. Reset the password of faith.hoffman and of any account guessed in step 2.
+7. Reset the password of faith.hoffman and of any account guessed in step 2. Treat passwords
+   saved in browsers, mail and FTP programs on the host as stolen.
 8. Hunt other hosts: IOC table above and Snort sid 1000001.
 
 ==========================================================================================

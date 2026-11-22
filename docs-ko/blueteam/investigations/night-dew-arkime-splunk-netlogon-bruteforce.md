@@ -17,7 +17,7 @@ tags:
 # Night Dew 두 번째 분석 — Arkime + Splunk(Zeek), netlogon 비밀번호 대입, Snort 룰 하나 { #night-dew-2 }
 
 !!! abstract "사례 요약"
-    [첫 번째 분석](night-dew-hancitor-pony-zeus-panda-tls-c2.md)과 같은 malware-traffic-analysis.net 2018-05-11 "Night Dew" PCAP을, 홈 랩의 **pcapbox** VM에서 **처음 보는 PCAP이라고 생각하고 처음부터** 다시 분석한 기록입니다. Arkime를 중심으로 쓰고, 개수를 세거나 정렬하거나 프로토콜을 자세히 볼 때는 **Splunk(Zeek 로그)**를 같이 씁니다. Windows 7 PC 한 대(**CHICAGO-7FA3-PC, 사용자 faith.hoffman**)가 `lysedsohap[.]com`에 체크인하고, 명령(Base64 + XOR `0x7a`)을 받아 해킹된 WordPress 사이트에서 암호화된 파일 3개를 내려받습니다. 그다음 기본값 자체 서명 인증서를 쓰는 **TLS로 두 번째 C2**를 시작하고, 이번 분석에서 새로 찾은 **DC에 32초 동안 1,522번 netlogon 로그인 확인 요청(비밀번호 대입)**을 보냅니다. 마지막에 체크인과 비콘 21개를 모두 잡는 **Snort 룰 하나**, 초보자용 룰 테스트 가이드, 짧은 티켓으로 마무리합니다.
+    [첫 번째 분석](night-dew-hancitor-pony-zeus-panda-tls-c2.md)과 같은 malware-traffic-analysis.net 2018-05-11 "Night Dew" PCAP을, 홈 랩의 **pcapbox** VM에서 **처음 보는 PCAP이라고 생각하고 처음부터** 다시 분석한 기록입니다. Arkime를 중심으로 쓰고, 개수를 세거나 정렬하거나 프로토콜을 자세히 볼 때는 **Splunk(Zeek 로그)**를 같이 씁니다. Windows 7 PC 한 대(**CHICAGO-7FA3-PC, 사용자 faith.hoffman**)가 `lysedsohap[.]com`에 체크인하고, 명령(Base64 + XOR `0x7a`)을 받아 해킹된 WordPress 사이트에서 암호화된 파일 3개를 내려받고, **작은 암호화 POST 2개**(훔친 비밀번호로 추정)를 보냅니다. 그다음 기본값 자체 서명 인증서를 쓰는 **TLS로 두 번째 C2**를 시작하고, 이번 분석에서 새로 찾은 **DC에 32초 동안 1,522번 netlogon 로그인 확인 요청(비밀번호 대입)**을 보냅니다. 마지막에 체크인과 비콘 21개를 모두 잡는 **Snort 룰 하나**, 초보자용 룰 테스트 가이드, 짧은 티켓으로 마무리합니다.
 
 | | |
 |---|---|
@@ -41,6 +41,7 @@ tags:
 |---|---|---|
 | DC 통신 | "정상 도메인 활동뿐" | **32초 동안 `NetrLogonSamLogonWithFlags` 1,522번 = DC를 통한 비밀번호 대입** ([5단계](#netlogon)) |
 | 도구 | Arkime, tshark | Arkime **와 Splunk(Zeek `conn`, `http`, `files`, `ssl`, `kerberos`, `dhcp`, `dce_rpc` 로그)** |
+| 두 번째 구성 요소의 POST | 분석함(헤더 모양, 계열 이름까지) | 처음부터 다시: Splunk POST 요약 + 헤더, 계열은 확인 안 됨으로 ([3-6](#exfil)) |
 | C2 응답 | 첫 응답만 디코드 | 첫 응답 **과 비콘 응답**(`{n:}` = 명령 없음)까지 디코드, 예비 다운로드 사이트 접속 여부 확인 |
 | Snort | 룰 8개 | **룰 1개**를 조각조각 설명하고, 초보자용 테스트 가이드 전체 |
 | 티켓 | 모든 내용을 합친 티켓 | **핵심 발견만** 담은 짧은 티켓(베이스라인 제외) |
@@ -55,10 +56,10 @@ tags:
 | 최초 감염 경로 | 캡처에 없음. 악성코드가 이미 PC에 있었고 로그인 때 실행됨 | 추정 |
 | HTTP C2 | `lysedsohap[.]com` 185.43.223.6:80, POST `/4/forum.php` 21번(체크인 + 약 120초마다 비콘) | 확인됨 |
 | 다운로드 | `wansaiful[.]com` 111.90.144.30:80, 암호화된 파일 3개(`/1`, `/2`, `/3`) | 확인됨 |
-| 두 번째 구성 요소 | 오래된 MSIE 7.0 User-Agent로 POST `/mlu/forum.php`, `/d2/about.php` | 확인됨 |
+| 두 번째 구성 요소 | 02:08:12–02:08:14에 POST `/mlu/forum.php`(206 B), `/d2/about.php`(234 B). MSIE 7.0 User-Agent, 암호화된 본문, `Content-Encoding: binary` — 계정 정보 탈취로 추정 | 확인됨(내용은 암호화) |
 | 비밀번호 대입 | DC 10.0.14.3에 32초 동안 netlogon 로그인 확인 1,522번 (02:08:12–02:08:45) | 확인됨(계정과 결과는 안 보임) |
 | TLS C2 | `robwassotdint[.]ru` 185.174.175.14:443, 세션 54개, 약 5분 주기, 자체 서명 `Default Company Ltd` 인증서, 02:40–02:42에 약 1.5 MB 내려옴 | 확인됨 |
-| 외부 유출 | 외부로 큰 업로드 없음 | 확인됨 |
+| 외부 유출 | 큰 업로드는 없음. 작은 암호화 POST 2개(합계 440 B) — 계정 정보가 나간 것으로 간주 | 확인됨(내용은 못 읽음) |
 | 악성코드 계열 | 다운로더 + 두 번째 구성 요소 + TLS C2 — 이름은 **확인 안 됨** | 확인 안 됨 |
 
 ---
@@ -422,7 +423,7 @@ GUID=10412771973665002240&BUILD=09fhx05&INFO=CHICAGO-7FA3-PC @ NIGHTDEW\faith.ho
 
 **④ 02:08:05–02:08:14 GET `wansaiful[.]com/wp-content/plugins/easy-media-download/1`, `/2`, `/3`.** 체크인 1초 뒤 다른 서버에서 46,341 / 47,383 / 159,255바이트를 받아요. 눈여겨볼 점 세 가지: **WordPress 플러그인 경로**(해킹된 WordPress 사이트는 악성 파일 보관소로 흔히 쓰여요), 확장자 없는 파일 이름 `1`, `2`, `3`, 그리고 **비어 있는 `resp_mime_types`**(Zeek이 내용을 보고도 종류를 모름 — 평범한 exe라면 `application/x-dosexec`가 나와요. 그러니 **암호화된 파일**일 가능성이 높아요).
 
-**⑤ 02:08:12 `/mlu/forum.php`, 02:08:14 `/d2/about.php` — User-Agent가 바뀌었어요.** 같은 서버인데 `Mozilla/4.0 (compatible; MSIE 7.0; ...)`예요. 같은 PC에서 **다른 프로그램**이 접속한 거예요. ④에서 받은 파일 중 하나가 실행돼서 자기 방식으로 보고했을 가능성이 높아요. MSIE 7.0은 2018년 Windows 7 PC가 쓸 브라우저도 아니고요.
+**⑤ 02:08:12 `/mlu/forum.php`, 02:08:14 `/d2/about.php` — User-Agent가 바뀌었어요.** 같은 서버인데 `Mozilla/4.0 (compatible; MSIE 7.0; ...)`예요. 같은 PC에서 **다른 프로그램**이 접속한 거예요. ④에서 받은 파일 중 하나가 실행돼서 자기 방식으로 보고했을 가능성이 높아요. MSIE 7.0은 2018년 Windows 7 PC가 쓸 브라우저도 아니고요. 이 POST 두 개가 무엇을 보냈는지는 [3-6](#exfil)에서 봅니다.
 
 **⑥ 02:10:15–02:48:25 POST `/4/forum.php`가 약 120초마다.** 02:10:15, 02:12:16, 02:14:16, 02:16:17 … 02:48:25(20번). Arkime에서 세션마다 **573 / 1,183바이트**로 크기가 똑같고, 응답은 매번 12바이트예요. 사람은 이렇게 못 해요. **비콘** — "명령 있어?" 하고 정기적으로 묻는 C2 통신이에요.
 
@@ -564,6 +565,89 @@ _time          tx_hosts       rx_hosts      mime_type  seen_bytes  total_bytes  
 
 ```text
 [261121 2106, Lee] Follow-up payload downloads from wansaiful.com - Found
+```
+
+---
+
+### 3-6. 두 번째 구성 요소의 POST 2개 — 무엇을 내보냈나 { #exfil }
+
+**목적:** POST는 PC가 무언가를 **보냈다**는 뜻이에요. ⑤에서 다른 프로그램이 보낸 POST 2개를 봤죠. 넘어가기 전에 무엇을 보냈는지 확인해요. 작은 POST에도 훔친 비밀번호가 들어 있을 수 있어요.
+
+**Splunk — POST 전체를 표 하나로:**
+
+```spl
+index=zeek sourcetype=zeek:http pcap_case=20180511_NIGHT_DEW method=POST
+| stats count sum(request_body_len) as sent_bytes values(user_agent) as user_agent by uri
+| sort - count
+```
+
+- 1줄 `method=POST`: 데이터를 보내는 요청만 남겨요.
+- 2줄 `stats ... by uri`: 경로마다 한 줄로 요약해요. `count`는 몇 번, `sum(request_body_len) as sent_bytes`는 PC가 **요청 본문**으로 보낸 바이트 합계예요(`request_body_len`은 보낸 쪽, `response_body_len`은 받은 쪽). `values(user_agent)`는 그 경로에 나온 User-Agent를 모두 보여 줘요.
+- 3줄 `sort - count`: 많이 나온 순서로.
+
+```text
+uri              count  sent_bytes  user_agent
+/4/forum.php     21     2583        Mozilla/5.0 (Windows NT 6.1; Win64; x64; Trident/7.0; rv:11.0) like Gecko
+/mlu/forum.php   1      206         Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; ...)
+/d2/about.php    1      234         Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; ...)
+```
+
+`/4/forum.php`는 21 × 123바이트, 체크인과 비콘이에요. 나머지 둘은 **딱 한 번씩**만 보냈어요.
+
+**Arkime — 헤더 읽기:**
+
+```text
+tags == 20180511_NIGHT_DEW && http.request.content-type == application/octet-stream
+```
+
+- `http.request.content-type`: **요청** 본문(PC가 보낸 것)의 종류예요. SPIView → http에서 `application/octet-stream`을 누르고 **and**를 고르면 자동으로 들어가요.
+
+세션 2개가 나와요. 둘 다 펼쳐 보세요.
+
+```text
+02:08:12  10.0.14.129:49200 -> 185.43.223.6:80
+POST /mlu/forum.php HTTP/1.0
+Host: lysedsohap.com
+Accept: */*
+Accept-Encoding: identity, *;q=0
+Accept-Language: en-US
+Content-Length: 206
+Content-Type: application/octet-stream
+Connection: close
+Content-Encoding: binary
+User-Agent: Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/7.0; SLCC2; ...)
+
+(206바이트 바이너리 — 읽을 수 없음)
+
+02:08:14  10.0.14.129:49202 -> 185.43.223.6:80
+POST /d2/about.php HTTP/1.0
+... (헤더 모양 같음)  Content-Length: 234
+```
+
+**결과 읽기 — 체크인과 비교:**
+
+| 항목 | 체크인 `/4/forum.php` | 이 POST 2개 |
+|---|---|---|
+| HTTP 버전 | 1.1 | **1.0** |
+| User-Agent | IE11 (`rv:11.0`) | **MSIE 7.0** |
+| 본문 | 읽을 수 있는 `GUID=...` | **암호화된 바이너리**(`application/octet-stream`) |
+| 이상한 헤더 | 없음 | **`Content-Encoding: binary`** |
+| 횟수 | 2분마다 | **한 번씩** |
+
+1. **서버는 같은데 프로그램이 달라요.** 헤더 습관이 전부 달라요. [3-5](#files)에서 받은 파일 중 하나가 실행돼서 보낸 것으로 보여요(02:08:12는 `/1`과 `/2` 다운로드 사이이고, `/3`은 02:08:14에 끝나요).
+2. **`Content-Encoding: binary`는 HTTP 표준에 없는 값이에요.** 표준은 `gzip`, `deflate`, `br` 같은 거예요. 이렇게 지어낸 헤더는 **그 악성코드 코드의 지문**이라 탐지에 좋아요.
+3. **한 번 보내고 끝**은 비밀번호 탈취 프로그램과 맞는 모양이에요. 브라우저, 메일, FTP 프로그램에 저장된 비밀번호를 모아 한 번에 올리고 끝내요. 이 헤더 모양은 알려진 탈취 악성코드 계열의 특징으로 보고돼 있지만([첫 번째 분석](night-dew-hancitor-pony-zeus-panda-tls-c2.md#exfil)에 이름이 있어요), 이번에는 해시 조회나 샌드박스가 없으니 계열은 **확인 안 됨**으로 둬요.
+4. **내용이 암호화돼 있으니 털린 것으로 봐요.** 440바이트면 저장된 비밀번호가 적거나 없었을 수도 있어요. 하지만 무엇이 나갔는지 볼 수 없을 때는 나쁜 쪽으로 가정해요. **faith.hoffman 비밀번호를 바꾸라고** 권고해요.
+5. **5단계와 이어져요.** netlogon 비밀번호 대입이 02:08:12.835에 시작하는데, `/mlu/forum.php` POST(02:08:12.248)의 **0.6초 뒤**예요. 같은 프로그램이 데이터를 보내고 바로 대입을 시작한 것으로 보여요.
+6. 크기로는 못 찾아요. 440바이트는 "보낸 양이 큰 연결" 검색에 절대 안 나와요. **작아도 POST는 다 열어 보세요.**
+
+!!! tip "Snort 룰을 하나 더 만든다면"
+    POST에 `Content-Type: application/octet-stream` + `Content-Encoding: binary`가 같이 있으면, 서버가 바뀌어도 이 프로그램을 잡을 수 있어요. 이번 분석은 룰 **하나**만 만들었고([6단계](#snort)), [첫 번째 분석](night-dew-hancitor-pony-zeus-panda-tls-c2.md#snort)에 이 룰을 테스트한 버전(sid 1000013, 알림 2개)이 있어요.
+
+**티켓 기록:**
+
+```text
+[261121 2110, Lee] Data sent to lysedsohap.com other than check-ins - Found
 ```
 
 ---
@@ -729,7 +813,7 @@ _time          id_resp_h  id_resp_p  service            duration  orig_bytes  re
 **결과 읽기:**
 
 - **연결 하나가 거의 전부예요.** **DC**(10.0.14.3:49158, DCE/RPC)로 779,560바이트. 나머지는 몇 KB짜리 정상 도메인 통신(SMB 445, LDAP 389, Kerberos)이에요.
-- 그러니 **외부로 큰 업로드는 없었어요.** 티켓에 쓸 중요한 결론이에요.
+- 그러니 **외부로 큰 업로드는 없었어요.** 티켓에 쓸 중요한 결론이에요. C2 통신 말고 밖으로 나간 데이터는 [3-6](#exfil)의 작은 암호화 POST 2개뿐이에요.
 - 하지만 이 연결도 정상이 아니에요. 시작이 **02:08:12.835**, MSIE 7.0으로 `/mlu/forum.php`에 POST한 순간(02:08:12.248)의 0.6초 뒤예요. 그리고 로그인 때의 RPC 연결(02:06:52)은 5.8 KB뿐이었어요. **어떤 RPC 기능을 불렀는지** 봐야 해요.
 
 ### 5-2. DCE/RPC를 1분 만에 { #dcerpc }
@@ -1016,9 +1100,9 @@ sudo snort -c /etc/snort/snort.conf -r /data/pcap/20180511_NIGHT_DEW.pcap -A con
 | 02:07:02 | Windows 연결 확인(NCSI) — 정상 |
 | 02:08:04 | `api.ipify[.]org` 공인 IP 조회 → POST `lysedsohap[.]com/4/forum.php` 체크인, 응답 = 다운로드 명령 3개 |
 | 02:08:05–02:08:14 | `wansaiful[.]com`에서 암호화된 파일 3개(keep-alive 세션 하나) |
-| 02:08:12 | MSIE 7.0 User-Agent로 POST `/mlu/forum.php`(두 번째 구성 요소) |
+| 02:08:12 | POST `/mlu/forum.php`(암호화 206 B, MSIE 7.0, `Content-Encoding: binary`) — 계정 정보 탈취로 추정 |
 | 02:08:12–02:08:45 | DC에 `NetrLogonSamLogonWithFlags` 1,522번(비밀번호 대입) |
-| 02:08:14 | POST `/d2/about.php`(두 번째 구성 요소) |
+| 02:08:14 | POST `/d2/about.php`(암호화 234 B, 같은 프로그램) |
 | 02:10:15–02:48:25 | `lysedsohap[.]com`에 약 120초마다 HTTP 비콘(20번), 응답 `{n:}` |
 | 02:10:16–02:45:46 | `robwassotdint[.]ru`에 약 5분마다 TLS C2(세션 54개) |
 | 02:40:18–02:42:37 | TLS C2에서 PC로 약 1.5 MB |
@@ -1054,6 +1138,7 @@ tags == <case> && protocols == http
 tags == <case> && ip.dns == [185.174.175.14, 185.43.223.6]
 tags == <case> && host.http == lysedsohap.com && http.method == POST
 tags == <case> && host.http == wansaiful.com
+tags == <case> && http.request.content-type == application/octet-stream
 tags == <case> && host == [www.victoryoutreachvallejo.com, medleysoup.com, radiantheartcoaching.com, hdmicablereviews.com]
 tags == <case> && ip == 185.174.175.14
 tags == <case> && port.dst == 49158
@@ -1071,6 +1156,7 @@ index=zeek sourcetype=zeek:dhcp pcap_case=<case> | table _time client_addr assig
 index=zeek sourcetype=zeek:kerberos pcap_case=<case> | stats count by request_type client service success
 index=zeek sourcetype=zeek:kerberos pcap_case=<case> client="<user>*" | table _time id_orig_h id_resp_h request_type client service success error_msg | sort _time
 index=zeek sourcetype=zeek:http pcap_case=<case> | sort _time | table _time id_resp_h host method uri status_code resp_mime_types response_body_len user_agent
+index=zeek sourcetype=zeek:http pcap_case=<case> method=POST | stats count sum(request_body_len) as sent_bytes values(user_agent) as user_agent by uri | sort - count
 index=zeek sourcetype=zeek:dns pcap_case=<case> query IN ("<name1>","<name2>") | table _time query answers
 index=zeek sourcetype=zeek:files pcap_case=<case> tx_hosts="<server ip>" | table _time tx_hosts rx_hosts mime_type seen_bytes total_bytes md5 sha1
 index=zeek sourcetype=zeek:conn pcap_case=<case> id_resp_h="<c2 ip>" | sort _time | delta _time as gap | table _time id_resp_p service duration orig_bytes resp_bytes conn_state gap
@@ -1118,6 +1204,7 @@ sudo snort -c /etc/snort/snort.conf -r /data/pcap/<case>.pcap -A console -q -k n
 8. **보이는 도구를 쓰세요.** Zeek의 DCE/RPC 분석기는 기능 이름을 보여 줬고, Arkime는 못 보여 줬어요.
 9. **공격자가 쉽게 못 바꾸는 것으로 룰을.** 본문 형식은 도메인이 바뀌어도 그대로라, 룰 하나로 21개를 오탐 없이 잡았어요.
 10. **트래픽으로 알 수 없는 것과 볼 곳을 적으세요.** 대입한 계정 → DC 이벤트 4776, 대입한 프로세스 → PC 4625/4624.
+11. **작아도 POST는 다 열어 보세요.** 440바이트는 "보낸 양이 큰 연결" 검색에 안 나오지만 훔친 비밀번호를 담을 수 있어요.
 
 ## 참고 { #references }
 
