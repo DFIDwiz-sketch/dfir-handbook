@@ -1,0 +1,203 @@
+# Traffic Analysis Ticket – 180927 – ESCRITORIO-PC (172.16.5.203)
+
+Operator name "Sung" and operator log times are placeholders — replace with your actual operator name and analysis times.
+Ticket links (Inv##) are placeholders.
+
+====================================================================
+TICKET 1 – Phishing email link click, Dropbox first stage and second-stage ZIP download (lealcontabil.com, dnpland.com.my, serveengenharia.com.br)
+====================================================================
+
+#INDEX ENTRY#
+
+[] – 261122 2151 – 172.16.5.203 ESCRITORIO-PC – WhatsApp-themed phishing link clicked from webmail, leading to Dropbox first stage, 17 MB second-stage ZIP download and counter request – http://ticket:9001/p/Inv##
+
+
+#FINAL SUMMARY OF TICKET# (End of Mission / Closing of Ticket – MC ENTRY ONLY)
+
+
+
+#TICKET METADATA#
+
+OPERATOR: Sung
+
+TIME OF INCIDENT: 180927 01:40:54 UTC
+
+RELATED TICKETS:
+
+
+DESCRIPTION OF INVESTIGATION:
+
+At 180927 01:40:54 UTC ESCRITORIO-PC (172.16.5.203, user thiago.almeida) opened a link from the Portuguese phishing email "Conversa do WhatsApp no (221206)" (received 180924 12:52:42 UTC) while using company webmail. The link went via http (port 80) to 54.38.137.127 (lealcontabil[.]com), which served a fake "Ministerio Publico Federal / contract" page and redirected through a gate on the same IP to a Dropbox file DOC1_CONTRATO_YBFTOP2078686788.zip (a few KB, downloaded over https at 01:41:01).
+
+At 01:42:22 a non-browser program (MSIE 7.0 User-Agent) downloaded a 17 MB ZIP from 103.6.198.141 (dnpland[.]com[.]my), and at 01:44:06 a program with no User-Agent called 177.12.174.95 (serveengenharia[.]com[.]br) – likely an infection counter. The host likely restarted at about 01:48–01:49. No C2 traffic was seen before the capture ended (01:51:35). The ZIP is incomplete in the capture (1.97 MB missing, sensor packet loss) – no hash. A second phishing email from the same sender (fake Serasa Experian notice) was not opened in this capture. No lateral movement observed. Malware family not confirmed. Malware analysis and host analysis required.
+
+
+#IMPACTED INTERNAL MACHINES#
+
+INTERNAL IP/s & HOSTNAME/s:
+
+172.16.5.203 ESCRITORIO-PC (MAC 30:85:a9:f4:92:17) – user A1-ASSOCIADOS\thiago.almeida
+
+INTERNAL SOURCE PORT/s: (If Ephemeral Leave Blank.)
+
+INTERNAL DESTINATION PORT/s:
+
+LATERAL SOURCE PORT/s: (If Ephemeral Leave Blank unless required)
+
+LATERAL DESTINATION PORT/s:
+
+(No lateral movement observed – traffic to DC 172.16.5.5 A1Associados-DC is normal logon, DHCP, DNS and group policy only.)
+
+
+#EXTERNAL MACHINES#
+
+EXTERNAL IP/s & HOSTNAME/s:
+
+54.38.137.127 (lealcontabil[.]com) – phishing landing page and redirect gate (likely compromised site)
+
+162.125.5.1 (www.dropbox[.]com) / 162.125.5.6 (uc219cb805d84c449d20210774fc.dl.dropboxusercontent[.]com) – legitimate Dropbox, abused to host the first-stage file
+
+103.6.198.141 (dnpland[.]com[.]my) – second-stage ZIP download (likely compromised site)
+
+177.12.174.95 (serveengenharia[.]com[.]br) – likely infection counter
+
+Phishing email senders (from email headers, not in capture):
+145.239.135.211 (tghs18.portaldecontabil[.]com[.]br), 145.239.31.79 (tghs8.portaldecontabil[.]com[.]br)
+
+Email links not contacted in this capture:
+bit[.]ly/2k5P2Kt, goo[.]gl/NFk0qQ, consultafacilserasaexperian[.]com
+
+216.194.135.127 (webmail.a1-associados[.]com) – company webmail where the phishing email was read (legitimate, self-signed certificate)
+
+EXTERNAL SOURCE PORT/s: (If Ephemeral Leave Blank.)
+
+EXTERNAL DESTINATION PORT/s: (If Ephemeral Leave Blank.)
+
+Port 80 – HTTP (phishing landing, redirect gate, second-stage download, counter)
+Port 443 – HTTPS (Dropbox first-stage download, company webmail)
+
+
+#SEARCH QUERIES#
+
+ARKIME: (Format= [What Command Finds] - <Command>)
+
+[Phishing link click and redirect chain] - ip.src == 172.16.5.203 && ip.dst == 54.38.137.127
+
+[Campaign link format on any site] - http.uri == *onlinepor-email*
+
+[Dropbox first-stage download] - ip.src == 172.16.5.203 && (ip.dst == 162.125.5.1 || ip.dst == 162.125.5.6) && port.dst == 443
+
+[Second-stage ZIP download from dnpland.com.my] - ip.src == 172.16.5.203 && http.host == dnpland.com.my
+
+[Counter request to serveengenharia.com.br] - ip.src == 172.16.5.203 && http.host == serveengenharia.com.br
+
+[Malicious IP traffic] - ip.src == 172.16.5.203 && (ip.dst == 54.38.137.127 || ip.dst == 103.6.198.141 || ip.dst == 177.12.174.95)
+
+SPLUNK: (Format= [What Command Finds] - <Command>)
+
+[Malicious IP traffic] - index=zeek sourcetype=zeek:conn id_orig_h=172.16.5.203 id_resp_h IN (54.38.137.127, 103.6.198.141, 177.12.174.95)
+
+[Phishing link, redirect chain, ZIP download and counter requests] - index=zeek sourcetype=zeek:http id_orig_h=172.16.5.203 host IN ("lealcontabil.com", "54.38.137.127", "dnpland.com.my", "serveengenharia.com.br")
+
+[Dropbox first-stage download] - index=zeek sourcetype=zeek:ssl id_orig_h=172.16.5.203 server_name IN ("www.dropbox.com", "*.dl.dropboxusercontent.com")
+
+[Incomplete second-stage ZIP] - index=zeek sourcetype=zeek:files rx_hosts=172.16.5.203 tx_hosts=103.6.198.141
+
+SNORT: (Format= [What Command Finds] - <Command>)
+
+[Phishing link click (campaign URI format) via http] - alert tcp $HOME_NET any -> $EXTERNAL_NET 80 (msg:"Phishing lure link clicked - onlinepor-email URI - Sung"; flow:to_server,established; content:"GET "; depth:4; content:"/img/tmp/a?onlinepor-email?e="; distance:0; sid:1000002; rev:1;)
+
+
+#EVIDENCE LOCATIONS#
+
+Team<#>: /home/<username>/evidence/180927_lealcontabil_com_phishing_redirect.pcap
+Team<#>: /home/<username>/evidence/180927_dropbox_first_stage_tls.pcap
+Team<#>: /home/<username>/evidence/180927_dnpland_com_my_zip_download.pcap
+Team<#>: /home/<username>/evidence/180927_serveengenharia_com_br_counter.pcap
+Team<#>: /home/<username>/evidence/180924_phishing_email_whatsapp.eml
+Team<#>: /home/<username>/evidence/180926_phishing_email_serasa.eml
+
+
+#OFFICIAL LOGGING AND ARTEFACTS#
+
+#OPERATOR LOG#
+
+[2151 261122, Sung] – Looking for a host restart on 172.16.5.203 after the downloads – Found – Further Analysis Required
+
+[2216 261122, Sung] – Investigating HTTP traffic from 172.16.5.203 to lealcontabil.com and 54.38.137.127 (link click and redirects) – Found – Further Analysis Required
+
+[2216 261122, Sung] – Identifying TLS destinations of 172.16.5.203 around the link click (webmail, Dropbox) – Found
+
+[2216 261122, Sung] – Looking for follow-up downloads by non-browser programs on 172.16.5.203 – Found – Further Analysis Required
+
+[2216 261122, Sung] – Investigating no-User-Agent request from 172.16.5.203 to serveengenharia.com.br – Found
+
+[2216 261122, Sung] – Looking for C2 traffic from 172.16.5.203 after the downloads and restart – Not Found
+
+[2324 261122, Sung] – Comparing the two phishing emails to thiago.almeida with the traffic (initial access) – Found
+
+[2337 261122, Sung] – Looking for traffic to the second email's link and images – Not Found
+
+[2339 261122, Sung] – Recovering the second-stage ZIP and its hash from the PCAP – Not Found
+
+
+#TOOL OUTPUT / ANALYST NOTES#
+
+[2151 261122, Sung] Likely restart at about 01:48–01:49: the start-up pattern at 01:37 repeats at 01:49 – computer account Kerberos AS request (escritorio-pc$), DHCP INFORM, GPT.INI read from the DC over SMB, then NCSI with the same source port 49183 (port counter reset). No user logon after 01:49. Host check required: System log Event 1074 (who asked for the restart, program path), 6006 / 6008 / 6005.
+
+    180927 01:37:02 UTC  172.16.5.203  -      172.16.5.5      88  KRB5  AS   escritorio-pc$ -> krbtgt/A1-ASSOCIADOS.COM
+    180927 01:37:07 UTC  172.16.5.203  49183  23.65.180.72    80  GET  200  www.msftncsi.com/ncsi.txt
+    180927 01:49:05 UTC  172.16.5.203  -      172.16.5.5      88  KRB5  AS   escritorio-pc$ -> krbtgt/A1-ASSOCIADOS.COM
+    180927 01:49:13 UTC  172.16.5.203  49183  200.157.208.243 80  GET  200  www.msftncsi.com/ncsi.txt
+
+[2216 261122, Sung] Link click and redirect chain: IE11 (rv:11.0) opened the email link with no Referer (HTTPS webmail -> HTTP link, rel="noreferrer" in the email). Lure page title "LOCALIZANDO CONTRATO", description "Ministerio Publico Federal", text "Baixando Arquivo...", meta refresh 1 s to cadastro.php. Gate sets cookies last1 / last2 and sends the browser to Dropbox. Server: Apache/2.4.6 (CentOS) PHP/5.4.16.
+
+    180927 01:40:54 UTC  172.16.5.203  49218  54.38.137.127  80  GET  301  lealcontabil.com/comercio?imagens/img/tmp/a?onlinepor-email?e=whatsapp_Beckup_REG
+    180927 01:40:55 UTC  172.16.5.203  49218  54.38.137.127  80  GET  200  lealcontabil.com/comercio/?imagens/img/tmp/a?onlinepor-email?e=whatsapp_Beckup_REG  1382 B  MD5 6f23120907a7c8e6a884ea9cb6b0807e
+    180927 01:40:56 UTC  172.16.5.203  49218  54.38.137.127  80  GET  302  lealcontabil.com/comercio/cadastro.php  Location: http://54.38.137.127/index.php
+    180927 01:40:57 UTC  172.16.5.203  49220  54.38.137.127  80  GET  302  54.38.137.127/index.php  Set-Cookie: last1=0  Location: a/
+    180927 01:40:58 UTC  172.16.5.203  49220  54.38.137.127  80  GET  302  54.38.137.127/a/  Set-Cookie: last2=2
+    Location: https://www.dropbox.com/s/0yggmgtymt2r0av/DOC1_CONTRATO_YBFTOP2078686788.zip?dl=1
+
+[2216 261122, Sung] TLS around the click: webmail sessions from 01:38:49 (37 s after thiago.almeida logon) to 01:41:27, last new session 01:40:46 – 8 s before the click. Dropbox sessions follow the last redirect. Only ~8 KB received from dl.dropboxusercontent.com including TLS setup, so the first-stage file is small (likely a script or shortcut – content not visible). Host check required: Downloads folder of thiago.almeida.
+
+    180927 01:38:49 UTC  172.16.5.203  49203  216.194.135.127  443  TLSv1.2  SNI webmail.a1-associados.com  self-signed CN a1-associados.com
+    180927 01:40:58 UTC  172.16.5.203  49221  162.125.5.1      443  TLSv1.2  SNI www.dropbox.com
+    180927 01:41:01 UTC  172.16.5.203  49223  162.125.5.6      443  TLSv1.2  SNI uc219cb805d84c449d20210774fc.dl.dropboxusercontent.com
+
+[2216 261122, Sung] Second-stage download 81 s after the Dropbox download by a non-browser program (MSIE 7.0 User-Agent on a host that uses IE11, no Referer). Server Content-Type application/zip. Host check required: process creation (Event 4688 / Sysmon 1) and network events (Sysmon 3) at 01:41–01:45, Temp and AppData folders.
+
+    180927 01:42:22 UTC  172.16.5.203  49225  103.6.198.141  80  GET  200  dnpland.com.my/images/z2448800.zip  17066397 B
+    User-Agent: Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C; .NET4.0E)
+
+[2216 261122, Sung] Counter request: only Host and Cache-Control headers, no User-Agent – not a browser. Reply redirects to google.com. Path "cont1" (likely "contador" = counter).
+
+    180927 01:44:06 UTC  172.16.5.203  49226  177.12.174.95  80  GET  200  serveengenharia.com.br/tmp/soares/cont1/  72 B  MD5 a31fcd450e6b680316a04687c0ee3602
+    Body: <meta HTTP-EQUIV='Refresh' CONTENT='0;URL=http://www.google.com'>
+
+[2216 261122, Sung] No other external hosts after 01:44:06 except NCSI at 01:49:13. No beaconing, no large uploads. C2 may start after the next user logon (outside the capture).
+
+[2324 261122, Sung] Initial access: the clicked URL is an exact match to a link in email 1. Link text was made to look like a file name. Both emails were sent by a PHP script on portaldecontabil.com.br, not Outlook as X-Mailer claims. Email admin action required: remove both emails from all mailboxes, search for the sender domain, script header and subjects.
+
+    Email 1 – CLICKED
+    Received: from tghs18.portaldecontabil.com.br [145.239.135.211] by smtp.a1-associados.com – 180924 12:52:42 UTC
+    From: WhatsApp-WEB <nwindows@communication.microsoft.com> (spoofed)   To: thiago.almeida@a1-associados.com
+    Subject: Conversa do WhatsApp no (221206)
+    Message-Id: <20180924125239.DABD88BCBE@tghs18.portaldecontabil.com.br>
+    X-PHP-Originating-Script: 1000:javali.php   X-Mailer: Microsoft Office Outlook, Build 17.551210
+    Link: http://lealcontabil.com/comercio?imagens/img/tmp/a?onlinepor-email?e=whatsapp_Beckup_REG  (text "Whatsapp_Beckup_REG(656386387).zip")
+    Link: http://bit.ly/2k5P2Kt?imagens/img/tmp/a?onlinepor-email?e=whatsapp_Beckup_REG  (image https://goo.gl/NFk0qQ)
+
+    Email 2 – not opened in capture
+    Received: from tghs8.portaldecontabil.com.br [145.239.31.79] – 180926 16:19:47 UTC
+    From: Comunicado | Serasa Experian <atendimento@serasaexperian.com.br> (spoofed)
+    Subject: Anotacao de Extrato De Debitos para seu CPF/CNPJ. No (778071)
+    Message-Id: <20180926161943.92BA457435@tghs8.portaldecontabil.com.br>
+    X-PHP-Originating-Script: 1000:javali.php   (body padded with thousands of blank lines)
+    Link: http://consultafacilserasaexperian.com/clientes?serasaconsumidor?gclid=...
+
+[2337 261122, Sung] No DNS, HTTP or TLS to consultafacilserasaexperian.com, encontraaruja.com.br, bit.ly or goo.gl in the capture. Email 2 may have been opened before 01:37 – check proxy / DNS logs.
+
+[2339 261122, Sung] Second-stage ZIP is incomplete in the capture. The host ACKed the missing data (acked-unseen-segment-src), so the host got the full file – sensor packet loss. No hash or file names from the PCAP; tshark --export-objects http did not export it. Host check required: recover z2448800.zip (17,066,397 B) and hash it.
+
+    180927 01:42:23 UTC  103.6.198.141  ->  172.16.5.203  HTTP  seen 15098446 B  total 17066397 B  missing 1967951 B  MD5 -  SHA1 -
