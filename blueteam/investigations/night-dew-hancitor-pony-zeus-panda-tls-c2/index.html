@@ -15,7 +15,7 @@
         <link rel="prev" href="../back-to-the-present-chthonic-c2-tech-support-scam/">
       
       
-        <link rel="next" href="../../splunk/">
+        <link rel="next" href="../night-dew-arkime-splunk-netlogon-bruteforce/">
       
       
         
@@ -2200,6 +2200,8 @@
       
         
       
+        
+      
     
     
     
@@ -2855,6 +2857,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../night-dew-arkime-splunk-netlogon-bruteforce/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Night Dew, second pass — Arkime + Splunk (Zeek) on pcapbox, decoding every C2 reply, netlogon password guessing and one tested Snort rule
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -11803,8 +11833,8 @@
 </tr>
 <tr>
 <td>Lateral movement</td>
-<td><strong>None</strong> — DC traffic is normal domain activity only (Kerberos, LDAP, SMB policy reads)</td>
-<td>Confirmed</td>
+<td>No other internal PC in the capture. <strong>Correction:</strong> the DC traffic is not all normal — 1,522 × <code>NetrLogonSamLogonWithFlags</code> in 32 s (02:08:12–02:08:45) is password guessing through the DC. See the <a href="../night-dew-arkime-splunk-netlogon-bruteforce/#netlogon">second pass</a></td>
+<td>Corrected</td>
 </tr>
 <tr>
 <td>Snort</td>
@@ -12491,8 +12521,12 @@
 <li><strong>Initial access is not in this PCAP.</strong> There is no email, document download or Office traffic. In the previous case Office DNS lookups came just before the EXE download; there is no such clue here.</li>
 <li><strong>Two possibilities:</strong> ① the PC was already infected before the capture and the malware auto-started at logon (persistence); ② the user opened an already-downloaded document right after logon. Starting 35 s after logon leans towards ①, but traffic alone cannot tell them apart.</li>
 <li>So the ticket says "initial access unconfirmed, host confirmation required" and lists where the host operator should look (Run keys, scheduled tasks, recently opened documents, email attachments).</li>
-<li><strong>No lateral movement.</strong> DC traffic is logon, DNS and group policy only, and there is no other internal PC in the capture.</li>
+<li><strong>No other internal PC in the capture.</strong> But see the correction below: the DC traffic hides password guessing.</li>
 </ul>
+<div class="admonition warning">
+<p class="admonition-title">Correction from the second pass</p>
+<p>This pass called the DC traffic normal. A <a href="../night-dew-arkime-splunk-netlogon-bruteforce/#netlogon">second pass with Zeek's DCE/RPC log</a> found <strong>1,522 <code>NetrLogonSamLogonWithFlags</code> calls in 32 seconds</strong> (02:08:12–02:08:45) from 10.0.14.129 to the DC — password guessing through netlogon, starting 0.6 s after the <code>/mlu/forum.php</code> POST. It is also why the PC sent 948 KB. Check DC Event 4776 for the accounts and results.</p>
+</div>
 <p><strong>Ticket entry (step 7):</strong></p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>[0010 261120, Sung] – Looking for activity on 10.0.14.129 preceding the first C2 check-in (initial access) – Not Found
 </span></code></pre></div>
@@ -12706,7 +12740,7 @@
 </span><span id="__span-34-47"><a id="__codelineno-34-47" name="__codelineno-34-47" href="#__codelineno-34-47"></a>
 </span><span id="__span-34-48"><a id="__codelineno-34-48" name="__codelineno-34-48" href="#__codelineno-34-48"></a>LATERAL DESTINATION PORT/s:
 </span><span id="__span-34-49"><a id="__codelineno-34-49" name="__codelineno-34-49" href="#__codelineno-34-49"></a>
-</span><span id="__span-34-50"><a id="__codelineno-34-50" name="__codelineno-34-50" href="#__codelineno-34-50"></a>(No lateral movement observed – traffic to DC 10.0.14.3 is normal logon, DNS and group policy only.)
+</span><span id="__span-34-50"><a id="__codelineno-34-50" name="__codelineno-34-50" href="#__codelineno-34-50"></a>(No other internal host in the capture. Correction (second pass): 1,522 netlogon NetrLogonSamLogonWithFlags calls to DC 10.0.14.3 at 02:08:12-02:08:45 = password guessing. Check DC Event 4776.)
 </span><span id="__span-34-51"><a id="__codelineno-34-51" name="__codelineno-34-51" href="#__codelineno-34-51"></a>
 </span><span id="__span-34-52"><a id="__codelineno-34-52" name="__codelineno-34-52" href="#__codelineno-34-52"></a>
 </span><span id="__span-34-53"><a id="__codelineno-34-53" name="__codelineno-34-53" href="#__codelineno-34-53"></a>#EXTERNAL MACHINES#
@@ -12974,13 +13008,13 @@
         
         
           
-          <a href="../../splunk/" class="md-footer__link md-footer__link--next" aria-label="Next: Splunk">
+          <a href="../night-dew-arkime-splunk-netlogon-bruteforce/" class="md-footer__link md-footer__link--next" aria-label="Next: Night Dew, second pass — Arkime + Splunk (Zeek) on pcapbox, decoding every C2 reply, netlogon password guessing and one tested Snort rule">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Splunk
+                Night Dew, second pass — Arkime + Splunk (Zeek) on pcapbox, decoding every C2 reply, netlogon password guessing and one tested Snort rule
               </div>
             </div>
             <div class="md-footer__button md-icon">

@@ -15,7 +15,7 @@
         <link rel="prev" href="../back-to-the-present-chthonic-c2-tech-support-scam/">
       
       
-        <link rel="next" href="../../splunk/">
+        <link rel="next" href="../night-dew-arkime-splunk-netlogon-bruteforce/">
       
       
         
@@ -2200,6 +2200,8 @@
       
         
       
+        
+      
     
     
     
@@ -2855,6 +2857,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../night-dew-arkime-splunk-netlogon-bruteforce/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Night Dew 두 번째 분석 — pcapbox의 Arkime + Splunk(Zeek)로 C2 응답 모두 풀기, netlogon 비밀번호 대입, 테스트한 Snort 룰 하나
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -11803,8 +11833,8 @@
 </tr>
 <tr>
 <td>측면 이동</td>
-<td><strong>없음</strong> — DC와는 정상적인 도메인 통신(Kerberos, LDAP, SMB 정책 읽기)만 있음</td>
-<td>확인됨</td>
+<td>캡처에 다른 내부 PC는 없음. <strong>정정:</strong> DC 통신이 모두 정상은 아님 — 32초 동안 <code>NetrLogonSamLogonWithFlags</code> 1,522번(02:08:12–02:08:45) = DC를 통한 비밀번호 대입. <a href="../night-dew-arkime-splunk-netlogon-bruteforce/#netlogon">두 번째 분석</a> 참고</td>
+<td>정정됨</td>
 </tr>
 <tr>
 <td>Snort</td>
@@ -12491,8 +12521,12 @@
 <li><strong>최초 감염 경로는 이 PCAP에 없습니다.</strong> 메일, 문서 다운로드, Office 통신이 하나도 없어요. 앞 사례에서는 EXE 다운로드 직전에 Office DNS 질문이 보였는데, 이번에는 그런 단서가 없습니다.</li>
 <li><strong>가능성은 두 가지</strong>입니다. ① 캡처 전에 이미 감염되어 있었고, 로그인할 때 자동 실행(지속성)됐다. ② 로그인 직후 사용자가 이미 받아 둔 문서를 열었다. 로그인 35초 뒤라는 시간은 ①에 더 가까워 보이지만, 트래픽만으로는 구별할 수 없어요.</li>
 <li>그래서 티켓에는 "최초 감염 경로 미확인, 호스트 확인 필요"라고 쓰고, 호스트 오퍼레이터가 볼 곳(시작 프로그램, 예약 작업, 최근 연 문서, 메일 첨부 파일)을 적어 줍니다.</li>
-<li><strong>측면 이동은 없습니다.</strong> DC와의 통신은 로그인, DNS, 그룹 정책 읽기뿐이고, 다른 내부 PC는 캡처에 없어요.</li>
+<li><strong>캡처에 다른 내부 PC는 없어요.</strong> 하지만 아래 정정을 보세요. DC 통신 안에 비밀번호 대입이 숨어 있었어요.</li>
 </ul>
+<div class="admonition warning">
+<p class="admonition-title">두 번째 분석에서 정정</p>
+<p>이 분석에서는 DC 통신을 정상으로 봤어요. <a href="../night-dew-arkime-splunk-netlogon-bruteforce/#netlogon">Zeek DCE/RPC 로그로 다시 본 두 번째 분석</a>에서 10.0.14.129가 DC에 <strong>32초 동안 <code>NetrLogonSamLogonWithFlags</code>를 1,522번</strong> 호출한 것을 찾았어요(02:08:12–02:08:45). netlogon을 통한 비밀번호 대입이고, <code>/mlu/forum.php</code> POST 0.6초 뒤에 시작해요. PC가 948 KB를 보낸 이유이기도 해요. 계정과 결과는 DC 이벤트 4776에서 확인하세요.</p>
+</div>
 <p><strong>티켓 기록 (7단계):</strong></p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>[0010 261120, Sung] – Looking for activity on 10.0.14.129 preceding the first C2 check-in (initial access) – Not Found
 </span></code></pre></div>
@@ -12706,7 +12740,7 @@
 </span><span id="__span-34-47"><a id="__codelineno-34-47" name="__codelineno-34-47" href="#__codelineno-34-47"></a>
 </span><span id="__span-34-48"><a id="__codelineno-34-48" name="__codelineno-34-48" href="#__codelineno-34-48"></a>LATERAL DESTINATION PORT/s:
 </span><span id="__span-34-49"><a id="__codelineno-34-49" name="__codelineno-34-49" href="#__codelineno-34-49"></a>
-</span><span id="__span-34-50"><a id="__codelineno-34-50" name="__codelineno-34-50" href="#__codelineno-34-50"></a>(No lateral movement observed – traffic to DC 10.0.14.3 is normal logon, DNS and group policy only.)
+</span><span id="__span-34-50"><a id="__codelineno-34-50" name="__codelineno-34-50" href="#__codelineno-34-50"></a>(No other internal host in the capture. Correction (second pass): 1,522 netlogon NetrLogonSamLogonWithFlags calls to DC 10.0.14.3 at 02:08:12-02:08:45 = password guessing. Check DC Event 4776.)
 </span><span id="__span-34-51"><a id="__codelineno-34-51" name="__codelineno-34-51" href="#__codelineno-34-51"></a>
 </span><span id="__span-34-52"><a id="__codelineno-34-52" name="__codelineno-34-52" href="#__codelineno-34-52"></a>
 </span><span id="__span-34-53"><a id="__codelineno-34-53" name="__codelineno-34-53" href="#__codelineno-34-53"></a>#EXTERNAL MACHINES#
@@ -12974,13 +13008,13 @@
         
         
           
-          <a href="../../splunk/" class="md-footer__link md-footer__link--next" aria-label="다음: Splunk">
+          <a href="../night-dew-arkime-splunk-netlogon-bruteforce/" class="md-footer__link md-footer__link--next" aria-label="다음: Night Dew 두 번째 분석 — pcapbox의 Arkime + Splunk(Zeek)로 C2 응답 모두 풀기, netlogon 비밀번호 대입, 테스트한 Snort 룰 하나">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 다음
               </span>
               <div class="md-ellipsis">
-                Splunk
+                Night Dew 두 번째 분석 — pcapbox의 Arkime + Splunk(Zeek)로 C2 응답 모두 풀기, netlogon 비밀번호 대입, 테스트한 Snort 룰 하나
               </div>
             </div>
             <div class="md-footer__button md-icon">
