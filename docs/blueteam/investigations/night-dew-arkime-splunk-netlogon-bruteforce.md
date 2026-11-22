@@ -17,7 +17,7 @@ tags:
 # Night Dew, second pass — Arkime + Splunk (Zeek), netlogon password guessing and one Snort rule { #night-dew-2 }
 
 !!! abstract "Case summary"
-    The same malware-traffic-analysis.net 2018-05-11 "Night Dew" PCAP as the [first pass](night-dew-hancitor-pony-zeus-panda-tls-c2.md), worked again **from zero, as if the PCAP were unknown**, on the home-lab **pcapbox** VM. Arkime is the main tool; **Splunk with Zeek logs** is used wherever counting, sorting or protocol detail is easier there. One Windows 7 PC (**CHICAGO-7FA3-PC, user faith.hoffman**) checks in to `lysedsohap[.]com`, is told (Base64 + XOR `0x7a`) to download three encrypted files from a hacked WordPress site, starts a **second C2 over TLS** with a default self-signed certificate, and — new in this pass — makes **1,522 netlogon logon checks against the DC in 32 seconds** (password guessing). It ends with **one Snort rule** that fires on all 21 check-ins/beacons, a beginner's guide to testing it, and a short ticket.
+    The same malware-traffic-analysis.net 2018-05-11 "Night Dew" PCAP as the [first pass](night-dew-hancitor-pony-zeus-panda-tls-c2.md), worked again **from zero, as if the PCAP were unknown**, on the home-lab **pcapbox** VM. Arkime is the main tool; **Splunk with Zeek logs** is used wherever counting, sorting or protocol detail is easier there. One Windows 7 PC (**CHICAGO-7FA3-PC, user faith.hoffman**) checks in to `lysedsohap[.]com`, is told (Base64 + XOR `0x7a`) to download three encrypted files from a hacked WordPress site, sends **two small encrypted POSTs** (likely stolen passwords), starts a **second C2 over TLS** with a default self-signed certificate, and — new in this pass — makes **1,522 netlogon logon checks against the DC in 32 seconds** (password guessing). It ends with **one Snort rule** that fires on all 21 check-ins/beacons, a beginner's guide to testing it, and a short ticket.
 
 | | |
 |---|---|
@@ -41,6 +41,7 @@ tags:
 |---|---|---|
 | DC traffic | "Normal domain activity only" | **1,522 × `NetrLogonSamLogonWithFlags` in 32 s = password guessing through the DC** ([Step 5](#netlogon)) |
 | Tools | Arkime, tshark | Arkime **and Splunk (Zeek `conn`, `http`, `files`, `ssl`, `kerberos`, `dhcp`, `dce_rpc` logs)** |
+| Second-component POSTs | Analysed (header pattern, family named) | Analysed from zero: Splunk POST summary + headers, family left unconfirmed ([3-6](#exfil)) |
 | C2 replies | First reply decoded | First reply **and the beacon reply** (`{n:}` = no command) decoded; fallback download sites checked |
 | Snort | 8 rules | **1 rule**, explained part by part, plus a full beginner's testing guide |
 | Ticket | Full merged ticket | Short ticket with **key findings only** (no baselining) |
@@ -55,10 +56,10 @@ tags:
 | Initial access | Not in the capture. The malware was already on the PC and ran at logon | Inferred |
 | HTTP C2 | `lysedsohap[.]com` 185.43.223.6:80, POST `/4/forum.php` × 21 (check-in + beacon every ~120 s) | Confirmed |
 | Downloads | `wansaiful[.]com` 111.90.144.30:80, 3 encrypted files (`/1`, `/2`, `/3`) | Confirmed |
-| Second component | POST `/mlu/forum.php`, `/d2/about.php` with an old MSIE 7.0 User-Agent | Confirmed |
+| Second component | POST `/mlu/forum.php` (206 B) and `/d2/about.php` (234 B) at 02:08:12–02:08:14, MSIE 7.0 User-Agent, encrypted body, `Content-Encoding: binary` — likely credential theft | Confirmed (content encrypted) |
 | Password guessing | 1,522 netlogon logon checks to DC 10.0.14.3 in 32 s (02:08:12–02:08:45) | Confirmed (accounts and results not visible) |
 | TLS C2 | `robwassotdint[.]ru` 185.174.175.14:443, 54 sessions, ~5-minute cycle, self-signed `Default Company Ltd` cert, ~1.5 MB delivered at 02:40–02:42 | Confirmed |
-| External exfiltration | No large uploads to external hosts | Confirmed |
+| External exfiltration | No large uploads. Two small encrypted POSTs (440 B in total) — treat as stolen credentials | Confirmed (content not readable) |
 | Malware family | Downloader + second component + TLS C2 — names **not confirmed** | Not confirmed |
 
 ---
@@ -422,7 +423,7 @@ The reply is 1,436 bytes of Base64-looking text — not a web page but **encoded
 
 **④ 02:08:05–02:08:14 GET `wansaiful[.]com/wp-content/plugins/easy-media-download/1`, `/2`, `/3`.** One second after the check-in, a different server sends 46,341 / 47,383 / 159,255 bytes. Three warning signs: a **WordPress plugin path** (hacked WordPress sites are common malware storage), file names `1`, `2`, `3` with **no extension**, and an **empty `resp_mime_types`** (Zeek could not identify the content — a normal EXE would show `application/x-dosexec`, so these are probably **encrypted**).
 
-**⑤ 02:08:12 `/mlu/forum.php` and 02:08:14 `/d2/about.php` — the User-Agent changed.** Same server, but `Mozilla/4.0 (compatible; MSIE 7.0; ...)`: a **different program** on the same PC. Most likely one of the files from ④ ran and reported in its own way. MSIE 7.0 is also not what a 2018 Windows 7 PC would really use.
+**⑤ 02:08:12 `/mlu/forum.php` and 02:08:14 `/d2/about.php` — the User-Agent changed.** Same server, but `Mozilla/4.0 (compatible; MSIE 7.0; ...)`: a **different program** on the same PC. Most likely one of the files from ④ ran and reported in its own way. MSIE 7.0 is also not what a 2018 Windows 7 PC would really use. What these two POSTs sent is checked in [3-6](#exfil).
 
 **⑥ 02:10:15–02:48:25 POST `/4/forum.php` every ~120 s.** 02:10:15, 02:12:16, 02:14:16, 02:16:17 … 02:48:25 (20 times). In Arkime every one is **573 / 1,183 bytes** and the reply is always 12 bytes. Nobody does that by hand: this is a **beacon** — "any new commands?".
 
@@ -564,6 +565,89 @@ _time          tx_hosts       rx_hosts      mime_type  seen_bytes  total_bytes  
 
 ```text
 [261121 2106, Lee] Follow-up payload downloads from wansaiful.com - Found
+```
+
+---
+
+### 3-6. The second component's two POSTs — what was sent out? { #exfil }
+
+**Goal:** every POST means the PC **sent** something. ⑤ showed two POSTs from a different program. Before moving on, check what they sent — a small POST can carry stolen passwords.
+
+**Splunk — all POSTs in one table:**
+
+```spl
+index=zeek sourcetype=zeek:http pcap_case=20180511_NIGHT_DEW method=POST
+| stats count sum(request_body_len) as sent_bytes values(user_agent) as user_agent by uri
+| sort - count
+```
+
+- Line 1 `method=POST`: only requests that send data.
+- Line 2 `stats ... by uri`: one row per path. `count` = how many times, `sum(request_body_len) as sent_bytes` = total bytes the PC sent in the **request body** (`request_body_len` is the request side; `response_body_len` is the reply side), `values(user_agent)` = every different User-Agent on that path.
+- Line 3 `sort - count`: most frequent first.
+
+```text
+uri              count  sent_bytes  user_agent
+/4/forum.php     21     2583        Mozilla/5.0 (Windows NT 6.1; Win64; x64; Trident/7.0; rv:11.0) like Gecko
+/mlu/forum.php   1      206         Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; ...)
+/d2/about.php    1      234         Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; ...)
+```
+
+`/4/forum.php` is 21 × 123 bytes — the check-in and beacons. The other two are sent **once each**.
+
+**Arkime — read the headers:**
+
+```text
+tags == 20180511_NIGHT_DEW && http.request.content-type == application/octet-stream
+```
+
+- `http.request.content-type` — the type of the **request** body (what the PC sent). In SPIView → http, clicking `application/octet-stream` and choosing **and** inserts it for you.
+
+Two sessions. Expand both:
+
+```text
+02:08:12  10.0.14.129:49200 -> 185.43.223.6:80
+POST /mlu/forum.php HTTP/1.0
+Host: lysedsohap.com
+Accept: */*
+Accept-Encoding: identity, *;q=0
+Accept-Language: en-US
+Content-Length: 206
+Content-Type: application/octet-stream
+Connection: close
+Content-Encoding: binary
+User-Agent: Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/7.0; SLCC2; ...)
+
+(206 bytes of binary — unreadable)
+
+02:08:14  10.0.14.129:49202 -> 185.43.223.6:80
+POST /d2/about.php HTTP/1.0
+... (same header shape)  Content-Length: 234
+```
+
+**Reading — compare with the check-in:**
+
+| Item | Check-in `/4/forum.php` | These two POSTs |
+|---|---|---|
+| HTTP version | 1.1 | **1.0** |
+| User-Agent | IE11 (`rv:11.0`) | **MSIE 7.0** |
+| Body | Readable `GUID=...` | **Encrypted binary** (`application/octet-stream`) |
+| Odd header | None | **`Content-Encoding: binary`** |
+| How often | Every 2 minutes | **Once each** |
+
+1. **Same server, different program.** Every header habit is different. One of the files from [3-5](#files) most likely ran and sent these (02:08:12 falls between the downloads of `/1` and `/2`, and `/3` finishes at 02:08:14).
+2. **`Content-Encoding: binary` is not a real HTTP value.** Standard values are `gzip`, `deflate`, `br`. A made-up header like this is a **fingerprint of one malware's code** — good for detection.
+3. **Send once and stop** fits a password stealer: collect passwords saved in browsers, mail and FTP programs, upload them in one go, finish. This header pattern is reported for a known stealer family (named in the [first pass](night-dew-hancitor-pony-zeus-panda-tls-c2.md#exfil)); here, with no hash lookup or sandbox, the family stays **unconfirmed**.
+4. **The content is encrypted, so treat it as stolen.** 440 bytes may mean only a few saved passwords — or none. When you cannot see what left, assume the worse: **reset faith.hoffman's password**.
+5. **It connects to Step 5.** The netlogon password guessing starts at 02:08:12.835 — **0.6 s after** the `/mlu/forum.php` POST (02:08:12.248). The same program likely sent its data and then started guessing.
+6. Not exfiltration by size: 440 bytes will never show up in a "top uploads" search. **Open every POST**, even small ones.
+
+!!! tip "A second Snort rule, if you want one"
+    `Content-Type: application/octet-stream` + `Content-Encoding: binary` in a POST would catch this program on any server. This pass keeps **one** rule ([Step 6](#snort)); the [first pass](night-dew-hancitor-pony-zeus-panda-tls-c2.md#snort) has a tested version of this rule (sid 1000013, 2 alerts).
+
+**Ticket entry:**
+
+```text
+[261121 2110, Lee] Data sent to lysedsohap.com other than check-ins - Found
 ```
 
 ---
@@ -729,7 +813,7 @@ _time          id_resp_h  id_resp_p  service           duration  orig_bytes  res
 **Reading:**
 
 - **One connection is almost all of it:** 779,560 bytes to the **DC** (10.0.14.3:49158, DCE/RPC). Everything else is a few KB of normal domain traffic (SMB 445, LDAP 389, Kerberos).
-- So **no large upload went outside** — an important conclusion for the ticket.
+- So **no large upload went outside** — an important conclusion for the ticket. The only data sent out besides C2 traffic is the two small encrypted POSTs in [3-6](#exfil).
 - But this connection is not normal either: it starts at **02:08:12.835**, 0.6 s after the MSIE 7.0 POST to `/mlu/forum.php` (02:08:12.248), and the logon-time RPC connection (02:06:52) sent only 5.8 KB. Find out **which RPC functions** were called.
 
 ### 5-2. DCE/RPC in one minute { #dcerpc }
@@ -1016,9 +1100,9 @@ The rule never mentions a domain or IP, yet it caught only C2 traffic — if the
 | 02:07:02 | Windows connectivity check (NCSI) — normal |
 | 02:08:04 | `api.ipify[.]org` public IP lookup → POST `lysedsohap[.]com/4/forum.php` check-in; reply = 3 download commands |
 | 02:08:05–02:08:14 | Three encrypted files from `wansaiful[.]com` (one keep-alive session) |
-| 02:08:12 | POST `/mlu/forum.php` with MSIE 7.0 User-Agent (second component) |
+| 02:08:12 | POST `/mlu/forum.php` (206 B encrypted, MSIE 7.0, `Content-Encoding: binary`) — likely stolen credentials |
 | 02:08:12–02:08:45 | 1,522 × `NetrLogonSamLogonWithFlags` to the DC (password guessing) |
-| 02:08:14 | POST `/d2/about.php` (second component) |
+| 02:08:14 | POST `/d2/about.php` (234 B encrypted, same program) |
 | 02:10:15–02:48:25 | HTTP beacon to `lysedsohap[.]com` every ~120 s (20 times), reply `{n:}` |
 | 02:10:16–02:45:46 | TLS C2 to `robwassotdint[.]ru` every ~5 min (54 sessions) |
 | 02:40:18–02:42:37 | ~1.5 MB from the TLS C2 to the PC |
@@ -1054,6 +1138,7 @@ tags == <case> && protocols == http
 tags == <case> && ip.dns == [185.174.175.14, 185.43.223.6]
 tags == <case> && host.http == lysedsohap.com && http.method == POST
 tags == <case> && host.http == wansaiful.com
+tags == <case> && http.request.content-type == application/octet-stream
 tags == <case> && host == [www.victoryoutreachvallejo.com, medleysoup.com, radiantheartcoaching.com, hdmicablereviews.com]
 tags == <case> && ip == 185.174.175.14
 tags == <case> && port.dst == 49158
@@ -1071,6 +1156,7 @@ index=zeek sourcetype=zeek:dhcp pcap_case=<case> | table _time client_addr assig
 index=zeek sourcetype=zeek:kerberos pcap_case=<case> | stats count by request_type client service success
 index=zeek sourcetype=zeek:kerberos pcap_case=<case> client="<user>*" | table _time id_orig_h id_resp_h request_type client service success error_msg | sort _time
 index=zeek sourcetype=zeek:http pcap_case=<case> | sort _time | table _time id_resp_h host method uri status_code resp_mime_types response_body_len user_agent
+index=zeek sourcetype=zeek:http pcap_case=<case> method=POST | stats count sum(request_body_len) as sent_bytes values(user_agent) as user_agent by uri | sort - count
 index=zeek sourcetype=zeek:dns pcap_case=<case> query IN ("<name1>","<name2>") | table _time query answers
 index=zeek sourcetype=zeek:files pcap_case=<case> tx_hosts="<server ip>" | table _time tx_hosts rx_hosts mime_type seen_bytes total_bytes md5 sha1
 index=zeek sourcetype=zeek:conn pcap_case=<case> id_resp_h="<c2 ip>" | sort _time | delta _time as gap | table _time id_resp_p service duration orig_bytes resp_bytes conn_state gap
@@ -1118,6 +1204,7 @@ Problems hit while setting up pcapbox for this case, kept here because they will
 8. **Use the tool that sees it.** Zeek's DCE/RPC analyzer named the function; Arkime could not.
 9. **Write rules on what the attacker cannot change cheaply.** The body format survives a new domain; one rule caught all 21 events with no false positives.
 10. **Write down what traffic cannot tell, and where to look.** Accounts guessed → DC Event 4776; the guessing process → PC 4625/4624.
+11. **Open every POST, even small ones.** 440 bytes never appears in a "largest upload" search, yet it can carry stolen passwords.
 
 ## References { #references }
 
