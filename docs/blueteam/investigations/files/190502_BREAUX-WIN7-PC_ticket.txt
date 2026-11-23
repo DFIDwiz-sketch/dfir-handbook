@@ -1,0 +1,122 @@
+# Traffic Analysis Ticket – 190502 – BREAUX-WIN7-PC (10.0.0.227)
+
+Operator name "Sung" and operator log times are placeholders — replace with your actual operator name and analysis times.
+Ticket links (Inv##) are placeholders.
+
+====================================================================
+TICKET 1 – HawkEye Keylogger exfil over FTP (files.000webhost.com)
+====================================================================
+
+#INDEX ENTRY#
+
+[] – 261123 2128 – 10.0.0.227 BREAUX-WIN7-PC – HawkEye Keylogger credential theft and exfil over FTP to files.000webhost.com – http://ticket:9001/p/Inv##
+
+
+#FINAL SUMMARY OF TICKET# (End of Mission / Closing of Ticket – MC ENTRY ONLY)
+
+
+
+#TICKET METADATA#
+
+OPERATOR: Sung
+
+TIME OF INCIDENT: 190502 21:36:33 UTC
+
+RELATED TICKETS:
+
+
+DESCRIPTION OF INVESTIGATION:
+
+At 190502 21:36:33 UTC BREAUX-WIN7-PC (10.0.0.227, user adriana.breaux) connected via ftp (port 21) to files.000webhost[.]com and uploaded HawkEye Keylogger data. It uploaded 3 times (21:36, 21:46, 22:01) to 3 IPs with FTP account "snifferzett": 5 files (~5 MB) – stolen passwords, 2 keylogs and 2 screenshots. All uploads completed.
+
+Stolen passwords: Gmail, BB&T online banking and Outlook mail – same password on all 3, reset required. Keylogs show payment data typed into Excel (Accounts-payable). Initial access not in capture. No lateral movement observed. Malware analysis required.
+
+
+#IMPACTED INTERNAL MACHINES#
+
+INTERNAL IP/s & HOSTNAME/s:
+
+10.0.0.227 BREAUX-WIN7-PC (MAC 84:8f:69:09:86:c0) – user BEGUILESOFT\adriana.breaux
+
+INTERNAL SOURCE PORT/s: (If Ephemeral Leave Blank.)
+
+INTERNAL DESTINATION PORT/s:
+
+LATERAL SOURCE PORT/s: (If Ephemeral Leave Blank unless required)
+
+LATERAL DESTINATION PORT/s:
+
+(No lateral movement observed – traffic to DC 10.0.0.10 is normal domain traffic only.)
+
+
+#EXTERNAL MACHINES#
+
+EXTERNAL IP/s & HOSTNAME/s:
+
+145.14.145.4, 145.14.144.10, 145.14.145.99 (files.000webhost[.]com) – FTP exfil destination
+
+104.16.154.36 (whatismyipaddress[.]com) – public IP lookup 19 s before the first upload (legitimate service)
+
+EXTERNAL SOURCE PORT/s: (If Ephemeral Leave Blank.)
+
+EXTERNAL DESTINATION PORT/s: (If Ephemeral Leave Blank.)
+
+Port 21 – FTP (login, uploads)
+Ephemeral – FTP data (file contents)
+Port 80 – HTTP (public IP lookup)
+
+
+#SEARCH QUERIES#
+
+ARKIME: (Format= [What Command Finds] - <Command>)
+
+[FTP login and uploads] - ip.src == 10.0.0.227 && port.dst == 21
+
+[Malicious IP traffic] - ip.src == 10.0.0.227 && (ip.dst == 145.14.145.4 || ip.dst == 145.14.144.10 || ip.dst == 145.14.145.99)
+
+SPLUNK: (Format= [What Command Finds] - <Command>)
+
+[FTP uploads] - index=zeek sourcetype=zeek:ftp id_orig_h=10.0.0.227 command=STOR
+
+[Malicious IP traffic] - index=zeek sourcetype=zeek:conn id_orig_h=10.0.0.227 id_resp_h IN (145.14.145.4, 145.14.144.10, 145.14.145.99)
+
+SNORT: (Format= [What Command Finds] - <Command>)
+
+[HawkEye file upload via ftp] - alert tcp $HOME_NET any -> $EXTERNAL_NET 21 (msg:"HawkEye Keylogger FTP upload - Sung"; content:"HawkEye_Keylogger"; nocase; sid:1000021; rev:1;)
+
+
+#EVIDENCE LOCATIONS#
+
+Team<#>: /home/<username>/evidence/190502_files_000webhost_com_ftp_exfil.pcap
+
+
+#OFFICIAL LOGGING AND ARTEFACTS#
+
+#OPERATOR LOG#
+
+[2128 261123, Sung] – Investigating FTP uploads from 10.0.0.227 to files.000webhost.com – Found – Further Analysis Required
+
+[2132 261123, Sung] – Looking for activity on 10.0.0.227 preceding the first FTP upload (initial access) – Not Found
+
+[2229 261123, Sung] – Reviewing content of the uploaded files in Arkime – Found
+
+
+#TOOL OUTPUT / ANALYST NOTES#
+
+[2128 261123, Sung] HawkEye exfil over FTP: 3 sessions, 10–15 min apart, ~5.06 MB sent. Same login each time. All 5 STORs got "226 File successfully transferred".
+
+    190502 21:36:33 UTC  10.0.0.227  145.14.145.4   21  FTP  USER snifferzett  PASS trible22  Server: ProFTPD (000webhost.com)
+    190502 21:36:35 UTC  10.0.0.227  145.14.145.4   21  FTP  STOR HawkEye_Keylogger_Stealer_Records_BREAUX-WIN7-PC 5.2.2019 9:36:28 PM.txt   2791 B
+    190502 21:46:28 UTC  10.0.0.227  145.14.144.10  21  FTP  STOR HawkEye_Keylogger_Keylog_Records_2_BREAUX-WIN7-PC 5.2.2019 9:46:22 PM.txt   891 B
+    190502 21:46:28 UTC  10.0.0.227  145.14.144.10  21  FTP  STOR screenshot1_BREAUX-WIN7-PC.jpeg   2832685 B
+    190502 22:01:34 UTC  10.0.0.227  145.14.145.99  21  FTP  STOR HawkEye_Keylogger_Keylog_Records_3_BREAUX-WIN7-PC 5.2.2019 10:01:28 PM.txt   601 B
+    190502 22:01:34 UTC  10.0.0.227  145.14.145.99  21  FTP  STOR screenshot2_BREAUX-WIN7-PC.jpeg   2225681 B
+
+[2132 261123, Sung] Only external traffic before the first upload is Windows NCSI – no email or download. Infection likely predates the capture. Host check required: Run keys, scheduled tasks, email attachments.
+
+[2229 261123, Sung] Uploaded files are clear text. Stealer Records: 3 accounts, same password (not copied here – see PCAP). Keylog_Records_2: Excel payment data saved as "Accounts-payable".
+
+    https://accounts.google.com  Chrome             User: adriana.breaux@gmail.com
+    https://www.bbt.com/         Internet Explorer  User: adriana.breaux
+    MS Outlook POP3 (pop.gmail.com)                 User: adriana.breaux
+    [Microsoft Excel - Book1 - 5/2/2019 9:39:22 PM]  Date / Name / Amount rows ...  [Save As] Accounts-payable
