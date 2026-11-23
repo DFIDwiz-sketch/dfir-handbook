@@ -1,0 +1,149 @@
+# Traffic Analysis Ticket – 180630 – CONSERVATOR-PC (172.16.2.169)
+
+Operator name "Sung" and operator log times are placeholders — replace with your actual operator name and analysis times.
+Ticket links (Inv##) are placeholders.
+
+====================================================================
+TICKET 1 – Fake Chrome update (SocGholish-style) to WScript C2, payload download and failed follow-on C2
+====================================================================
+
+#INDEX ENTRY#
+
+[] – 261124 0020 – 172.16.2.169 CONSERVATOR-PC – Fake Chrome update JS run by user, WScript C2 to kimbrelelectric.com, payload download and Dridex-style C2 attempts – http://ticket:9001/p/Inv##
+
+
+#FINAL SUMMARY OF TICKET# (End of Mission / Closing of Ticket – MC ENTRY ONLY)
+
+
+
+#TICKET METADATA#
+
+OPERATOR: Sung
+
+TIME OF INCIDENT: 180630 20:27:53 UTC
+
+RELATED TICKETS:
+
+
+DESCRIPTION OF INVESTIGATION:
+
+At 180630 20:27:53 UTC CONSERVATOR-PC (172.16.2.169, user lloyd.maxwell) browsed via http (port 80) to the compromised site www.stmarybahrain[.]com. Script injected into the site sent the browser through track.positiverefreshment[.]org to a fake "Update Chrome" page on lw2e.sineadhollywoodnutt[.]com. The page downloaded Chrome_72.3.22.js from Dropbox (https) at 20:28:01.
+
+At 20:28:47 the user ran the file (wscript.exe). It sent 3 XOR-encoded POSTs to bb17eb22.login3.kimbrelelectric[.]com (93.95.100.138) with host, user, domain and process list, and received a 349 KB encrypted payload, saved and run as Chrome_72.3.22.exe in %TEMP%. From 20:29:00 the host tried C2 to 46.105.131.66:443 (refused) and 107.170.231.118:4143 (no answer) every ~7.5 min until end of capture – consistent with Dridex (unconfirmed). No working follow-on C2 or exfil observed. Malware analysis required.
+
+
+#IMPACTED INTERNAL MACHINES#
+
+INTERNAL IP/s & HOSTNAME/s:
+
+172.16.2.169 CONSERVATOR-PC (MAC 00:13:d4:1f:a2:5e) – user FABULOUSDUKES\lloyd.maxwell
+
+INTERNAL SOURCE PORT/s: (If Ephemeral Leave Blank.)
+
+INTERNAL DESTINATION PORT/s:
+
+LATERAL SOURCE PORT/s: (If Ephemeral Leave Blank unless required)
+
+LATERAL DESTINATION PORT/s:
+
+(No lateral movement observed – traffic to DC 172.16.2.9 is normal domain traffic only.)
+
+
+#EXTERNAL MACHINES#
+
+EXTERNAL IP/s & HOSTNAME/s:
+
+66.226.144.232 (www.stmarybahrain[.]com) – compromised site with injected script
+
+185.244.149.74 (track.positiverefreshment[.]org) – redirector (TDS)
+
+93.95.100.178 (lw2e.sineadhollywoodnutt[.]com) – fake Chrome update page
+
+162.125.9.6 (uc7cfbc6f640f168ed8036c6d5bb.dl.dropboxusercontent[.]com) – hosted Chrome_72.3.22.js (legitimate service abused)
+
+93.95.100.138 (bb17eb22.login3.kimbrelelectric[.]com) – WScript C2 and payload download
+
+46.105.131.66 (port 443), 107.170.231.118 (port 4143) – follow-on C2 attempts (refused / no answer)
+
+EXTERNAL SOURCE PORT/s: (If Ephemeral Leave Blank.)
+
+EXTERNAL DESTINATION PORT/s: (If Ephemeral Leave Blank.)
+
+Port 80 – HTTP (redirect chain, fake update page, C2, payload)
+Port 443 – HTTPS (Dropbox download, C2 attempts)
+Port 4143 – TCP (C2 attempts)
+
+
+#SEARCH QUERIES#
+
+ARKIME: (Format= [What Command Finds] - <Command>)
+
+[Infection chain and C2 over http] - ip.src == 172.16.2.169 && host.http == [www.stmarybahrain.com, track.positiverefreshment.org, lw2e.sineadhollywoodnutt.com, bb17eb22.login3.kimbrelelectric.com]
+
+[Follow-on C2 attempts] - ip.src == 172.16.2.169 && (ip.dst == 46.105.131.66 || ip.dst == 107.170.231.118)
+
+SPLUNK: (Format= [What Command Finds] - <Command>)
+
+[Infection chain and C2 over http] - index=zeek sourcetype=zeek:http id_orig_h=172.16.2.169 host IN ("www.stmarybahrain.com", "track.positiverefreshment.org", "lw2e.sineadhollywoodnutt.com", "bb17eb22.login3.kimbrelelectric.com")
+
+[WScript C2 POSTs] - index=zeek sourcetype=zeek:http id_orig_h=172.16.2.169 host="bb17eb22.login3.kimbrelelectric.com" method=POST
+
+[Follow-on C2 attempts] - index=zeek sourcetype=zeek:conn id_orig_h=172.16.2.169 id_resp_h IN (46.105.131.66, 107.170.231.118)
+
+SNORT: (Format= [What Command Finds] - <Command>)
+
+[kimbrelelectric.com C2 via http] - alert tcp $HOME_NET any -> $EXTERNAL_NET 80 (msg:"SocGholish C2 kimbrelelectric.com - Sung"; content:"kimbrelelectric.com"; nocase; sid:1000041; rev:1;)
+
+
+#EVIDENCE LOCATIONS#
+
+Team<#>: /home/<username>/evidence/180630_fake_chrome_update_chain.pcap
+Team<#>: /home/<username>/evidence/180630_kimbrelelectric_com_c2.pcap
+Team<#>: /home/<username>/evidence/180630_c2_attempts_46_105_131_66_107_170_231_118.pcap
+
+
+#OFFICIAL LOGGING AND ARTEFACTS#
+
+#OPERATOR LOG#
+
+[0020 261124, Sung] – Investigating HTTP referer chain from www.stmarybahrain.com to fake Chrome update page – Found – Further Analysis Required
+
+[0034 261124, Sung] – Looking for download of the fake update file by 172.16.2.169 – Found – Further Analysis Required
+
+[0041 261124, Sung] – Investigating HTTP POSTs from 172.16.2.169 to kimbrelelectric.com (WScript C2) – Found – Further Analysis Required
+
+[0058 261124, Sung] – Decoding C2 POST bodies in CyberChef – Found
+
+[0109 261124, Sung] – Looking for new external connections by 172.16.2.169 after the payload download – Found
+
+
+#TOOL OUTPUT / ANALYST NOTES#
+
+[0020 261124, Sung] Script injected into 7 .js files on www.stmarybahrain.com loaded track.positiverefreshment.org/s_code.js (browser fingerprint). Its reply loaded the fake "Update Chrome" page. All requests carry Referer http://www.stmarybahrain.com/new/.
+
+    180630 20:27:53 UTC  172.16.2.169  49193  66.226.144.232  80  GET  /new/  www.stmarybahrain.com  Referer: http://www.stmarybahrain.com/
+    180630 20:27:55 UTC  172.16.2.169  49243  185.244.149.74  80  GET  /s_code.js?cid=220&v=24eca7c911f5e102e2ba  track.positiverefreshment.org  (3 requests)
+    180630 20:27:57 UTC  172.16.2.169  49288  93.95.100.178   80  GET  /topics/index.php?s=775118&b=220&a=88a209071dc04d3568f791712c740240  lw2e.sineadhollywoodnutt.com
+    Page title: Update Chrome  –  "You are using an older version of Chrome"
+
+[0034 261124, Sung] Page script decoded in CyberChef: download URL https://www.dropbox.com/s/fvl9rd86cmdilns/Chrome_72.3.22.js?dl=1, opened after 3 s. TLS to Dropbox 3–4 s later. File content not visible (https).
+
+    180630 20:28:00 UTC  172.16.2.169  49333  162.125.6.1  443  TLS  SNI www.dropbox.com
+    180630 20:28:01 UTC  172.16.2.169  49354  162.125.9.6  443  TLS  SNI uc7cfbc6f640f168ed8036c6d5bb.dl.dropboxusercontent.com  (~23 KB received)
+
+[0041 261124, Sung] WScript C2: 3 POSTs to /blank.gif 46 s after the download. User-Agent changes from Chrome 67 to "MSIE 7.0" (script engine). Reply 2 is a 349 KB encrypted payload.
+
+    180630 20:28:47 UTC  172.16.2.169  49440  93.95.100.138  80  POST  bb17eb22.login3.kimbrelelectric.com/blank.gif  req 72 B    resp 11866 B
+    180630 20:28:48 UTC  172.16.2.169  49440  93.95.100.138  80  POST  bb17eb22.login3.kimbrelelectric.com/blank.gif  req 2644 B  resp 348868 B  MD5 dd83bbcc7dd4184b352f9882c3fe8408
+    180630 20:28:50 UTC  172.16.2.169  49440  93.95.100.138  80  POST  bb17eb22.login3.kimbrelelectric.com/blank.gif  req 256 B   resp 0 B
+    User-Agent: Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; Win64; x64; Trident/7.0; ...)   UA-CPU: AMD64   Age: 464b8967d47e14d7
+
+[0058 261124, Sung] POST bodies are hex + 1-byte XOR (From Hex -> XOR key db / c8 -> URL Decode). They show the script path, host, user and domain, then the run of the payload from %TEMP%.
+
+    b= 1=C:\Users\lloyd.maxwell\Downloads\Chrome_72.3.22.js  3=CONSERVATOR-PC  4=lloyd.maxwell  7=FABULOUSDUKES  11=Windows Defender  17=... chrome.exe | wscript.exe ...
+    c= 1=C:\Users\LLOYD~1.MAX\AppData\Local\Temp\Chrome_72.3.22.exe
+
+[0109 261124, Sung] 10 s after the payload, new C2 attempts to 2 IPs with no DNS lookup, alternating ~every 7.5 min until end of capture (20:59:05). 46.105.131.66 answered with RST (REJ), 107.170.231.118 did not answer (S0). No data sent.
+
+    180630 20:29:00 UTC  172.16.2.169  49447  46.105.131.66    443   REJ   (5 rounds x 2 connections, last 20:59:05)
+    180630 20:31:14 UTC  172.16.2.169  49471  107.170.231.118  4143  S0    (4 rounds x 2 connections, last 20:53:42)
