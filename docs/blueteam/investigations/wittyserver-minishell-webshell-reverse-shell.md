@@ -10,7 +10,6 @@ tags:
   - webshell
   - reverse-shell
   - linux
-  - ticket
 ---
 
 # Witty server — PHP webshell, file upload and a reverse shell inside a home LAN { #wittyserver }
@@ -22,11 +21,11 @@ tags:
 |---|---|
 | **Evidence** | Practice PCAP, 2017-01-20 09:53:28 – 09:58:40 UTC (about 5 min). Source not recorded |
 | **Environment** | Closed network. Splunk with Zeek logs (`index=zeek`) and Arkime, **only this PCAP loaded** (no case field or tag needed). **No Wireshark.** |
-| **Deliverables** | Analysis, one Snort rule, one short incident ticket (txt) |
+| **Deliverables** | Analysis, one Snort rule |
 | **Related pages** | [BEGUILESOFT — HawkEye over FTP](beguilesoft-hawkeye-ftp-exfil.md) (same baselining method) · [Playbook: web shell / server](../playbooks/webshell-server.md) · [SPL cheat sheet](../splunk/spl-cheatsheet.md) · [Zeek conn.log](../../network/zeek/conn-log.md) · [Arkime search syntax](../../network/arkime/search-syntax.md) |
 
 !!! tip "How to read this page"
-    Same order as the analysis: **baselining → odd signs → HTTP → connections and files → Arkime content → initial access → Snort → ticket**. New SPL commands and fields are explained where they first appear. The **Question** boxes are real questions from the session.
+    Same order as the analysis: **baselining → odd signs → HTTP → connections and files → Arkime content → initial access → Snort**. New SPL commands and fields are explained where they first appear. The **Question** boxes are real questions from the session.
 
 !!! warning "The indicators on this page are real"
     Domains and IPs come from a real capture. Prose and tables are defanged (`[.]`); code blocks keep values as typed. **Do not visit them.**
@@ -277,7 +276,7 @@ time      id_resp_h      method     uri                                         
 
 The last three lines matter most. A **reverse shell** makes the server (.100) **connect out** to the attacker (.102 or .101) on port 4444. If it works, the attacker gets a real command shell instead of a web page. Two tries to .102, then the target changes to **192.168.1.101**, a LAN host that hardly appears elsewhere.
 
-**82.98.86.178 is not C2.** Every webshell page loads `/images/background.gif` from 82.98.86.178 (`www.ajithkp560.aaaaaaaa[.]com`) and `jquery-latest.js` from 94.31.29.54 (`code.jquery[.]com`). The Referer is always `minishell.php`: these are **resources embedded in the webshell page** — the background image comes from the webshell author's site. No commands travel there. In the ticket it is "an external resource loaded by the webshell page" — still a good detection clue.
+**82.98.86.178 is not C2.** Every webshell page loads `/images/background.gif` from 82.98.86.178 (`www.ajithkp560.aaaaaaaa[.]com`) and `jquery-latest.js` from 94.31.29.54 (`code.jquery[.]com`). The Referer is always `minishell.php`: these are **resources embedded in the webshell page** — the background image comes from the webshell author's site. No commands travel there. In the report it is "an external resource loaded by the webshell page" — still a good detection clue.
 
 **Other notes:**
 
@@ -504,7 +503,7 @@ The reply has `Content-Encoding: gzip`, so Arkime shows compressed bytes (`libfi
 
     **2. No upload of `minishell.php`.** The files the server received are `cerber4.PNG` and small form fields only. No PUT/POST, FTP or SCP carrying the webshell.
 
-    **3. A lead: the .100 ↔ .101 SSH session** was already open before the capture (OTH). It could be how the webshell was placed, but it is encrypted, so it stays a possibility in the ticket.
+    **3. A lead: the .100 ↔ .101 SSH session** was already open before the capture (OTH). It could be how the webshell was placed, but it is encrypted, so it stays a possibility in the report.
 
 Confirm that nothing reached .100 before the listing:
 
@@ -539,7 +538,7 @@ The first request is `GET /` with no upload before it: the webshell **was alread
 
     **If no link appears:** download **Destination Raw** (headers + body), CyberChef **Extract Files** (tick GZIP) to cut out the gzip part (it searches for the `1f 8b` start marker), save it, then **Gunzip**.
 
-    In this case the download did not work, so the ticket says "Initial access not in capture" without a date.
+    In this case the download did not work, so the report says "Initial access not in capture" without a date.
 
 ---
 
@@ -584,25 +583,6 @@ Expect roughly **one alert per webshell request** (16 in the HTTP list); replies
 | Domain / IP | `www.ajithkp560.aaaaaaaa[.]com` / 82.98.86.178 | Background image of the webshell page |
 | File | `/tmp/cerber4.PNG` (23,125 B, PNG) | Uploaded through the webshell |
 | Port | 4444/tcp from the server to the LAN | Reverse shell |
-
----
-
-## Incident ticket { #ticket }
-
-The impacted machine is the **web server .100**; .102 and .101 are **lateral sources** (internal attack sources). Key findings only, simple English.
-
-[:material-download: Download the ticket as a txt file](files/170120_wittyserver_ticket.txt){ .md-button }
-
-```text
---8<-- "docs/blueteam/investigations/files/170120_wittyserver_ticket.txt"
-```
-
-How the fields were chosen:
-
-- **IMPACTED INTERNAL MACHINES** — wittyserver (192.168.1.100).
-- **LATERAL** — .102 (webshell operator) and .101 (reverse shell listener), with ports 55555 and 4444.
-- **EXTERNAL MACHINES** — only 82.98.86.178: not C2, but a reliable clue for spotting minishell.php. TeamViewer and No-IP were left out: no evidence links them to the attack.
-- `nc ... 5555` and the pre-existing SSH session cannot be finished from the network, so they are marked "host check required". Initial access is "Not Found" with the reasons.
 
 ---
 

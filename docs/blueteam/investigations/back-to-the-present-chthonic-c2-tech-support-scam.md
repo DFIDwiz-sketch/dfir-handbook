@@ -1,5 +1,5 @@
 ---
-title: Back to the Present — From Network Baselining to a .bit C2, a Tech Support Scam Pop-up, Snort Rules and a Ticket (Arkime + Splunk + Snort)
+title: Back to the Present — From Network Baselining to a .bit C2, a Tech Support Scam Pop-up and Snort Rules (Arkime + Splunk + Snort)
 tags:
   - blue-team
   - pcap
@@ -11,31 +11,29 @@ tags:
   - c2
   - dns
   - tech-support-scam
-  - ticket
 ---
 
-# Back to the Present — From Network Baselining to a .bit C2, a Tech Support Scam Pop-up, Snort Rules and a Ticket { #back-to-the-present }
+# Back to the Present — From Network Baselining to a .bit C2, a Tech Support Scam Pop-up and Snort Rules { #back-to-the-present }
 
 !!! abstract "Case summary"
-    A 12-minute capture of **one Windows 10 PC (DELOREAN-PC)** inside Marty and Doc's "stainless steel machine". We start with **network baselining** from scratch: internal IPs and ranges, the router, the DNS and DHCP servers, whether there is a DC, file server or web/mail server, how many devices there are, the protocols, the OS and the external communications. Then we follow what does not fit. Right after Office activity the PC **downloaded an `.exe` without a User-Agent**, and a minute later it began asking **external DNS servers, over TCP and bypassing the local DNS**, for a `.bit` domain (`amellet.bit`). It sent **39 encrypted HTTP/1.0 POSTs** to that address and received about **2.3 MB** (the same shape as **Chthonic-like C2**). Finally a **pop-under script** hidden in a website the user opened launched a **fake Windows Defender alert (tech support scam)**. We **write 14 Snort rules and test them against the PCAP**, and complete a **ticket** for the MC or another hunt team plus **leads for the host operator**.
+    A 12-minute capture of **one Windows 10 PC (DELOREAN-PC)** inside Marty and Doc's "stainless steel machine". We start with **network baselining** from scratch: internal IPs and ranges, the router, the DNS and DHCP servers, whether there is a DC, file server or web/mail server, how many devices there are, the protocols, the OS and the external communications. Then we follow what does not fit. Right after Office activity the PC **downloaded an `.exe` without a User-Agent**, and a minute later it began asking **external DNS servers, over TCP and bypassing the local DNS**, for a `.bit` domain (`amellet.bit`). It sent **39 encrypted HTTP/1.0 POSTs** to that address and received about **2.3 MB** (the same shape as **Chthonic-like C2**). Finally a **pop-under script** hidden in a website the user opened launched a **fake Windows Defender alert (tech support scam)**. We **write 14 Snort rules and test them against the PCAP**, and complete a **report** for the MC or another hunt team plus **leads for the host operator**.
 
 | | |
 |---|---|
 | **Evidence** | 1 PCAP `2017-10-21-traffic-analysis-exercise.pcap` — 2017-10-21 04:51:53 – 05:03:52 UTC (11 min 59 s), 9,931 packets, 505 Arkime sessions, 510 Zeek connections |
-| **Source** | malware-traffic-analysis.net 2017-10-21 exercise "Doc Brown and Marty McFly: Back to the Present" (team-training version with ticket and Snort rule tasks) |
+| **Source** | malware-traffic-analysis.net 2017-10-21 exercise "Doc Brown and Marty McFly: Back to the Present" (team-training version with Snort rule tasks) |
 | **Environment** | Closed network (no VirusTotal, no OSINT). Arkime v5.6.4 web UI, Splunk with Zeek logs, Snort 2.9 on the analysis PC |
-| **Deliverables** | Network baseline, malicious-activity analysis, Snort rules to find the traffic again (tested), incident ticket, leads for the host operator |
+| **Deliverables** | Network baseline, malicious-activity analysis, Snort rules to find the traffic again (tested), leads for the host operator |
 | **Related pages** | [Arkime search syntax](../../network/arkime/search-syntax.md) · [Zeek logs](../../network/zeek/index.md) · [SPL cheatsheet](../splunk/spl-cheatsheet.md) · [Beaconing & C2](../../network/beaconing-c2.md) · [Previous case: Splunk + Arkime + Snort](phishing-red-herring-ek-driveby-ursnif-c2.md) |
 
 !!! tip "How to read this page"
-    Written so a complete beginner can follow from the first click to the finished ticket. Every step uses the same order:
+    Written so a complete beginner can follow from the first click to the finished report. Every step uses the same order:
 
     1. **Goal** — what this step is trying to find out
     2. **Query / command** — copy with the **copy button** at the top right of the code block
     3. **Explanation** — what each piece means
     4. **Result** — the values this PCAP actually produced
     5. **Reading the result** — what the values mean and why they matter
-    6. **Ticket entry** — the operation-log line for this step
 
     Each step gives both an **Arkime** and a **Splunk** query. Arkime is best for looking deeply at one session (packet content, files); Splunk (Zeek) is best for counting and grouping everything. You can follow with just one of them.
 
@@ -76,35 +74,19 @@ The task, summarised:
 
 - Your friend **Marty** and his mate **Doc** called you in to help with the **Windows** running inside their "stainless steel machine".
 - When they came back from the future they noticed **weird traffic**, recorded it in a PCAP and gave you a copy.
-- Write a **ticket** that can be handed to the **MC** (Mission Commander) or **another hunt brick**.
 - Include information that lets the **host operator** continue the investigation on the PC.
 - Create **Snort rules** to find the traffic again.
 
 The "stainless steel machine" is the **DeLorean**, the time-machine car from *Back to the Future*. That is why the hostname is `DELOREAN-PC` and the workgroup is `DOC-BROWN-GROUP`.
 
-### Ticket template { #ticket-template }
-
-The team template has these fields (see the [final ticket](#ticket)).
-
-| Field | Content |
-|---|---|
-| `#INDEX ENTRY#` | One-line summary: `[] -- <YYMMDD HHMM> -- <IP> <hostname> -- <description> -- <ticket link>` |
-| `DESCRIPTION OF INVESTIGATION` | **No more than two paragraphs.** Internal IPs and hostnames, external IPs and domains, protocol and port, directionality (who initiated), file names, verdict and type, life-cycle stages (C2 interval/state/bytes; exfil time/content/bytes/method) |
-| `#IMPACTED MACHINES#` / `#EXTERNAL MACHINES#` | Internal and external IPs, names and ports. **Leave ephemeral ports blank**; leave LATERAL blank if there is no lateral movement |
-| `#SEARCH QUERIES#` | Arkime (`MOLOCH:`) and Splunk queries — specific enough to return **only the traffic of interest** on a live network |
-| `#EVIDENCE LOCATIONS#` | `Team<#>: /home/<user>/<evidence folder>/<file>` |
-| `#OPERATION LOG#` | One line per action: `[<time>, <operator>] <what you looked for> - <Found / Not Found / Further Analysis Required>` |
-| `TOOL OUTPUT / NOTES` | Tool output and its meaning, with the **same** `[<time>, <operator>]` stamp as the log line, so Ctrl+F finds both |
-
-!!! note "Moloch = Arkime"
-    `MOLOCH:` in the template is where Arkime queries go. Moloch is Arkime's old name.
+---
 
 ### Plan { #plan }
 
 1. **Baselining (Parts B and C):** learn what normal looks like first. You can only spot the odd thing once you know what is normal.
 2. **Finding malicious activity (Part D):** follow each thing that departs from the baseline.
 3. **Snort rules (Part E):** write rules that catch what we found and test them against the PCAP.
-4. **Wrap-up and ticket (Part F, ticket):** timeline, IOCs, host-operator leads, ticket.
+4. **Wrap-up (Part F):** timeline, IOCs, host-operator leads.
 
 ---
 
@@ -131,7 +113,7 @@ a42fd8341966fbf385e54feaf24218eb1df0f408bc060baa5f5c22aeb1318846  2017-10-21-tra
 
 ### Step B1 — Time zone and time range { #timezone }
 
-**Goal:** the PCAP is from 2017. Both tools default to a "recent" range, so left alone they return **zero results**. And the ticket is written in **UTC**.
+**Goal:** the PCAP is from 2017. Both tools default to a "recent" range, so left alone they return **zero results**. And the report is written in **UTC**.
 
 **Arkime:**
 
@@ -202,7 +184,7 @@ data range → internal IPs and ranges → devices (hostname, MAC) → router �
 
 ### Step C1 — Data range: from when to when, and how much { #time-range }
 
-**Goal:** set the time range for the analysis and the reference for ticket times.
+**Goal:** set the time range for the analysis and the reference for report times.
 
 **Arkime:** **empty** search box → Search → **Sessions** tab.
 
@@ -241,12 +223,6 @@ connections  first_seen           last_seen
 - Why Splunk's `last_seen` is 05:03:26: `ts` is the connection **start**. The last connection started at 05:03:26 and lasted until 05:03:52.
 - Arkime 505, Zeek 510 — a small difference from different counting rules. If they are **similar**, you know both tools are looking at the same data.
 - Note the shape of Arkime's bar graph: steady activity 04:52–04:56, nearly quiet 04:57–05:00, clustered again 05:00–05:01, **spike around 05:02:30**. Part D explains why.
-
-**Ticket entry:**
-
-```text
-[261119 0030, Sung] Establishing data time range and session count - Found
-```
 
 ### Step C2 — Internal IPs and internal range { #internal-ips }
 
@@ -332,12 +308,6 @@ subnet   hosts  ips
 - `224.0.0.252 (7)` is **LLMNR** (Windows asking the local network for a name by multicast) and `10.0.1.255 (8)` is **NetBIOS broadcast**. Normal Windows noise.
 - **Protocols shows `http (166)` far above `tls (87)`.** Even in 2017 much of the web was already encrypted, so this much plaintext HTTP is worth noting.
 
-**Ticket entry:**
-
-```text
-[261119 0035, Sung] Identifying internal networks and active hosts - Found
-```
-
 ### Step C3 — The 2 non-internal-source sessions and 10.0.1.254 { #non-internal }
 
 **Goal:** see what the 2 missing sessions and 10.0.1.254's 2 sessions are. In particular, always check whether there is any **connection started from outside** (inbound).
@@ -367,16 +337,10 @@ ip.src != 10.0.0.0/8 || ip.src == 10.0.1.254
 DHCP is how a PC gets "an IP, please" when it joins a network. The ports are fixed: **67 = DHCP server, 68 = client (PC)**.
 
 - The two `0.0.0.0` sessions are the 2 missing ones. Before a PC has confirmed its IP it uses `0.0.0.0` as the source, and since it does not know where the server is it shouts to `255.255.255.255` (broadcast to the whole network). This is **normal**.
-- So **there are no connections started from outside.** All 505 sessions started inside. "None" is also a result, so it goes in the ticket.
+- So **there are no connections started from outside.** All 505 sessions started inside. "None" is also a result, so it goes in the report.
 - **10.0.1.254 = DHCP server** (it answered from port 67).
 - In Splunk (Zeek) the same DHCP shows as `10.0.1.95 → 10.0.1.254:67`, because Zeek records DHCP connections in the **client → server** direction. Remember that tools decide "source" differently.
 - The same thing happened **twice, 75 seconds apart** (04:51:53, 04:53:08). That happens when a PC boots or reconnects to a network. We come back to the second one in the Part D timeline.
-
-**Ticket entry:**
-
-```text
-[261119 0040, Sung] Identifying non-internal-source sessions (possible inbound) - Not Found
-```
 
 `Not Found` means "we looked for connections from outside and there were **none**".
 
@@ -474,12 +438,6 @@ Domain Name: localdomain
 
 - One more: the PC's request contains **Vendor class identifier: `MSFT 5.0`**. Every Windows version since Windows 2000 sends this, so it is evidence that **the OS is Windows** (step C8).
 
-**Ticket entry:**
-
-```text
-[261119 0045, Sung] Identifying hostname, MAC and network settings via DHCP - Found
-```
-
 ### Step C5 — How many devices, and who is the router (MAC) { #devices-router }
 
 **Goal:** the number of IPs and the number of devices can differ. One device can hold several IPs, and devices with static IPs do not show up in DHCP. So we count devices by **MAC address**, and the same method finds the **router**.
@@ -572,12 +530,6 @@ ip           count
 ```
 
 `10.0.1.255` is the broadcast address, not a device. **3 real internal IPs**; by MAC, **2 devices**.
-
-**Ticket entry:**
-
-```text
-[261119 0050, Sung] Counting devices and identifying gateway via MAC addresses - Found
-```
 
 ### Step C6 — Server roles: DNS, DHCP, DC, file, web and mail servers { #server-roles }
 
@@ -681,12 +633,6 @@ id_resp_h        count  clients  proto
 
 **Workgroup seen in NetBIOS (Arkime session detail or tshark):** the PC broadcast the **workgroup** name `DOC-BROWN-GROUP` and made itself the **master browser**. The master browser keeps the list of Windows PCs on the network; since this is the only Windows machine, it took the job itself. **A workgroup, not a domain = a home/small environment without AD**, confirmed again.
 
-**Ticket entry:**
-
-```text
-[261119 0055, Sung] Identifying server roles (DNS, DHCP, DC, file/web/mail) - Found
-```
-
 ### Step C7 — Protocols in use { #protocols }
 
 **Goal:** list the protocols this network normally uses. Something not on the list, or a protocol on an unexpected port, is a warning sign.
@@ -729,12 +675,6 @@ icmp   -        1
 - **`tcp - 51`** — TCP connections whose protocol Zeek could not identify. In this PCAP they were mostly **connections the browser opened in advance and never used** (state S1/S3, no data) and **failed TCP DNS connections** (130.255.73.90, 37.187.16.17, 85.159.213.210 — no answer / refused). Not an unknown protocol on an odd port.
 - **`icmp 1`** — the PC telling the router "Port unreachable". Common noise when a DNS answer arrives late, after the PC has closed the port.
 - Arkime's `http2 (24)` is HTTP/2 negotiated inside TLS (Zeek counts it as `ssl`).
-
-**Ticket entry:**
-
-```text
-[261119 0100, Sung] Reviewing protocol distribution - Found
-```
 
 ### Step C8 — What is the OS { #os }
 
@@ -803,12 +743,6 @@ host       software_type  name                 unparsed_version
 - **Office domains** — `officeclient.microsoft.com`, `nexus.officeapps.live.com`, `messaging.office.com` → **Microsoft Office is installed and was started.** This becomes important in step D2.
 
 **Reading the result:** **DELOREAN-PC = 64-bit Windows 10, IE11, Microsoft Office installed.** No sign of any other OS (Mac, Linux, Android).
-
-**Ticket entry:**
-
-```text
-[261119 0105, Sung] Identifying operating system and software of 10.0.1.95 - Found
-```
 
 ### Step C9 — External communications overview { #external }
 
@@ -902,12 +836,6 @@ index=zeek sourcetype=zeek:dns qtype_name=A
 
 **Result (some of those looked up only once):** `jgbennett.com`, `contentstorage.osi.office.net`, `officeclient.microsoft.com`, `messaging.office.com`, `www.singlemoms.org`, dozens of ad domains … and, not at the top but notable, **`amellet.bit` 37 times** (all TCP, external servers).
 
-**Ticket entry:**
-
-```text
-[261119 0110, Sung] Reviewing external communications overview - Further Analysis Required
-```
-
 Why `Further Analysis Required`: we found suspicious candidates in the external traffic (35.198.166.240, TCP DNS, requests without a User-Agent) and will confirm them in Part D.
 
 ### Step C10 — Baseline summary { #baseline-summary }
@@ -988,12 +916,6 @@ jgbennett.com            107.180.41.148   1         1            GET     1.1
 - **`www.msftconnecttest.com`, 73** — the address Windows uses to check "am I online?". But the real Windows check (NCSI) normally sends User-Agent `Microsoft NCSI` and does not ask dozens of times within seconds. Step D6.
 - **`-`, 8** — rows with no Host and no method. Opening them shows only **`408 Request Timeout` responses that ad servers sent while closing idle connections**. No request, therefore no User-Agent → **normal noise**.
 - **`ocsp.digicert.com`, 2** — certificate revocation checks (OCSP) sent as POST. **Normal** Windows behaviour.
-
-**Ticket entry:**
-
-```text
-[261119 0115, Sung] Reviewing HTTP requests without User-Agent - Found
-```
 
 ### Step D2 — First malicious event: an `.exe` download without a User-Agent { #exe-download }
 
@@ -1126,13 +1048,6 @@ t         query                          answers
 
 **Reading the result:** from 04:52:40 come the queries **Microsoft Office** makes when it starts (`officeclient`, `nexus.officeapps`, `messaging.office`), and **one second later** the PC looks up `jgbennett.com` and downloads the `.exe`. That matches the common infection pattern where opening an Office document lets a **macro or script inside the document download a file**. The document itself is not in the capture (no mail, webmail or file-download traces), so this is **"assessed"**, and it becomes a lead for the host operator.
 
-**Ticket entries:**
-
-```text
-[261119 0120, Sung] Reviewing EXE download from jgbennett.com - Found
-[261119 0125, Sung] Reviewing activity immediately before EXE download (DNS) - Found
-```
-
 ### Step D3 — The `.bit` domain, external DNS servers and TCP DNS { #bit-dns }
 
 **Goal:** see what the "queries to external DNS servers over TCP" from steps C6 and C9 asked.
@@ -1215,12 +1130,6 @@ id_resp_h        conn_state  count  first
 - **Why TCP?** The only explanation is that the malware is built that way. The result is that it **completely bypassed** the router's DNS (10.0.1.1), and anyone watching only the company DNS server **would not see these queries at all**. So "internal PC → external TCP 53" is a good detection point (Part E, sid 1000204).
 - The answer was always the single `35.198.166.240`. The TTL (how long the answer may be cached) was 400 s the first time; after that each server returned whatever remained in its cache, so the values vary (133, 343, 342 …). The responses also carried `amellet.bit`'s name-server information (`a.dnspod.com` and others).
 - **It asks again every time.** It re-queries DNS right before each C2 connection (D4), so the times of the 37 queries and the 34 C2 connections almost overlap.
-
-**Ticket entry:**
-
-```text
-[261119 0130, Sung] Reviewing DNS over TCP to external resolvers - Found
-```
 
 ### Step D4 — C2 traffic: HTTP POSTs to `amellet.bit` { #c2 }
 
@@ -1341,13 +1250,6 @@ possible_split_routing             23.56.3.183        1
 
 **Malware family:** looking up a `.bit` C2 address through external DNS and downloading modules with encrypted POSTs matches **Chthonic, a Zeus-family banking trojan**. Public analysis of this exercise also identified Chthonic. But we are on a closed network and did not look up the hash, so we write **"consistent with Chthonic — unconfirmed"**.
 
-**Ticket entries:**
-
-```text
-[261119 0135, Sung] Reviewing C2 HTTP sessions to amellet.bit (35.198.166.240) - Found
-[261119 0140, Sung] Assessing malware family from C2 pattern - Further Analysis Required
-```
-
 ### Step D5 — C2 timing: is it a beacon? { #c2-timing }
 
 **Goal:** see whether the C2 calls in at a regular interval (a beacon). Knowing the interval tells you what to expect when watching the same PC later.
@@ -1361,13 +1263,7 @@ From the `gap` column in step D4:
 05:00:52, 05:02:05    two /html/ requests (73 s apart)
 ```
 
-**Reading the result:** within the 12-minute capture **there is no regular beacon interval.** Most of it is the **bulk download of configuration and modules** right after infection, then only two contacts at 05:00:52 and 05:02:05. A longer capture would be needed to establish the beacon interval. The ticket says "no stable beacon interval within 12-min capture".
-
-**Ticket entry:**
-
-```text
-[261119 0145, Sung] Measuring C2 check-in intervals - Found
-```
+**Reading the result:** within the 12-minute capture **there is no regular beacon interval.** Most of it is the **bulk download of configuration and modules** right after infection, then only two contacts at 05:00:52 and 05:02:05. A longer capture would be needed to establish the beacon interval. The report says "no stable beacon interval within 12-min capture".
 
 ### Step D6 — A flood of User-Agent-less connectivity checks (`msftconnecttest`) { #connecttest }
 
@@ -1414,12 +1310,6 @@ Host: www.msftconnecttest.com
 - The times **coincide with C2 activity**: 04:55 (during module download), 05:00:51–05:02 (around the 05:00:52 and 05:02:05 C2 POSTs).
 - The header shape (`Connection` and `Host` only) also resembles the `.exe` download request in step D2.
 - So it looks like **the malware checking for internet access before contacting the C2**. Because it uses a legitimate Microsoft address this alone does not prove maliciousness, so it stays **assessed**, and the host operator is asked to confirm **which process made the connections**.
-
-**Ticket entry:**
-
-```text
-[261119 0150, Sung] Reviewing repeated msftconnecttest.com requests without User-Agent - Further Analysis Required
-```
 
 ### Step D7 — The 05:02:30 spike and a tech support scam pop-up { #tech-support-scam }
 
@@ -1495,14 +1385,7 @@ Call Microsoft Technical Department: 888-779-0939 (Toll Free)
 - 05:03:25 the user clicks → `helpcenterforall.bid` sends a **302** to `krep2010123.tk/?number=888-779-0939` → a **fake Windows Defender alert** page, a shield image (`defender.png`), an **alarm sound** (`err.mp3`, 251 KB), and **"Call Microsoft on 888-779-0939"**.
 - This is a **tech support scam**. Calling the number gets a fake agent who has you install a remote-access tool and then takes money or steals information. **It is not a malware infection**, but if the user called or allowed remote access it becomes **a second incident**. Something the host operator and the user must confirm.
 - A funny coincidence: the fake alert says "**Zeus** Virus Detected", and this PC really was running **Zeus-family (Chthonic-like)** malware. It is just fixed wording on the scam page, unrelated to any real detection.
-- **The two events are separate.** `.exe` → C2 (04:52–05:02) and website pop-under → scam page (05:02–05:03) show no trace of a link. Put both in one ticket, but make it clear they are separate.
-
-**Ticket entries:**
-
-```text
-[261119 0155, Sung] Reviewing session spike at 05:02:30 (www.singlemoms.org and ad networks) - Found
-[261119 0200, Sung] Reviewing redirect to helpcenterforall.bid / krep2010123.tk (tech support scam) - Found
-```
+- **The two events are separate.** `.exe` → C2 (04:52–05:02) and website pop-under → scam page (05:02–05:03) show no trace of a link. Put both in one report, but make it clear they are separate.
 
 ### Step D8 — Scope: other PCs, lateral movement, exfiltration { #scope }
 
@@ -1530,13 +1413,6 @@ index=zeek sourcetype=zeek:conn id_orig_h=10.0.1.95 (id_resp_h=10.0.0.0/8 OR id_
 - **Other infected PCs: none** — the capture has only one PC.
 - **Lateral movement: none** — the PC never connected to another internal device (no SMB, RDP or WinRM).
 - **Exfiltration:** **22,992 bytes of POST bodies** (about 23 KB, 39 POSTs) went to the C2. They are encrypted, so **what left cannot be determined**. Zeus-family malware commonly sends PC information, saved passwords and banking-site input, so we write **"possible, content unconfirmed"**. No large uploads (multi-MB POSTs).
-
-**Ticket entries:**
-
-```text
-[261119 0205, Sung] Checking other internal hosts contacting IOCs and lateral movement - Not Found
-[261119 0206, Sung] Assessing data sent to C2 (possible exfil) - Further Analysis Required
-```
 
 ---
 
@@ -1748,13 +1624,6 @@ alert http $HOME_NET any -> $EXTERNAL_NET any ( msg:"LOCAL C2 HTTP request Host 
 - `file_data` keeps the same name in Snort 3. The DNS rules (A) can be used as they are.
 - This Snort 3 example shows the syntax only; this time the rules were tested with Snort 2.9 only. On a Snort 3 sensor, run `snort -T` and the PCAP test again.
 
-**Ticket entries:**
-
-```text
-[261119 0215, Sung] Writing Snort rules for DNS/.bit, C2, EXE download and tech support scam (sid 1000201-1000214) - Found
-[261119 0230, Sung] Testing Snort rules against PCAP (snort -A console -q -k none -U) - Found
-```
-
 ---
 
 ## Part F — Timeline, IOCs, host-operator leads { #results }
@@ -1820,198 +1689,6 @@ The network evidence translated into **clues to look for inside the PC**. Each e
 8. **The 04:53:08 DHCP re-request** — the network reconnected 21 s after the download. Check the **System log** (network profile, adapter events) for an adapter restart, wake from sleep or user action.
 9. **Banking details and passwords.** Zeus-family malware steals browser input and saved passwords. Have the user **change passwords (especially banking and email) from a different, clean device**. About 23 KB left encrypted to the C2.
 10. **Tech support scam.** Ask the user whether, after 05:03:25, they **called 888-779-0939** or installed/allowed a remote-access tool (TeamViewer, AnyDesk, LogMeIn …). If so, handle it as a **separate incident**. IE's `popundr` cookie (24 h) is also a trace.
-
----
-
-## Incident ticket { #ticket }
-
-Operator name, ticket link and evidence paths are placeholders; the operation-log times are illustrative. The ticket body is in English per the team template. Domains in the description are defanged (`[.]`); search queries and rules keep the original values because they have to work.
-
-```text
-#INDEX ENTRY#
-
-[] -- 171021 0452 -- 10.0.1.95 DELOREAN-PC -- Malware infection: EXE download without User-Agent after Office activity, Chthonic-like C2 to amellet.bit via external DNS-over-TCP; separate tech support scam popup -- <ticket-link>
-
-
-#TICKET METADATA#
-
-OPERATORS: Sung
-
-TIME OF INCIDENT: 171021 04:52:47 UTC
-
-RELATED TICKETS:
-N/A
-
-DESCRIPTION OF INVESTIGATION:
-
-At 171021 04:52:47 UTC DELOREAN-PC (10.0.1.95, MAC 60:a4:4c:6a:b2:1f, Windows 10 x64, workgroup DOC-BROWN-GROUP, not domain-joined) initiated an HTTP GET (TCP 80, outbound) to 107.180.41.148 (jgbennett[.]com) for /3cgconsulting.com/30_723bio_152.exe and received a 61,440-byte Windows PE (SHA256 a56876fd456d0737eecc4a8bbe3154b35314ab28accb29abf0df7c518c81a490). The request had no User-Agent or Referer (non-browser client) and followed Microsoft Office start-up traffic 1-7 s earlier, consistent with a malicious document macro (document not in capture - UNCONFIRMED). From 04:53:52 the host bypassed its DNS server (10.0.1.1) and queried the Namecoin domain amellet[.]bit over DNS-over-TCP (TCP 53, outbound) against 9 external resolvers (37 queries; answers from 188.165.200.156, 144.76.133.38, 31.3.135.232), resolving to 35.198.166.240. Between 04:54:03 and 05:02:05 it made 39 encrypted HTTP/1.0 POSTs (TCP 80, outbound, 34 connections) to 35.198.166.240 /a/ (3, check-in) and /html/ (36, module download), no User-Agent/Content-Type, server lighttpd/1.4.45 PHP/5.3.3 (server clock ~6m49s slow). C2 state: active; ~2.34 MB received, ~23 KB sent; burst every 0.2-4 s during module download (04:54:59-04:56:11), then 05:00:52 and 05:02:05 - no stable beacon interval within the 12-min capture. Assessed as Chthonic (Zeus variant)-like banking trojan - UNCONFIRMED (closed network, no hash lookup).
-
-Possible exfil: 22,992 bytes of encrypted POST bodies sent to 35.198.166.240:80 between 04:54:03 and 05:02:05 via HTTP POST; content unknown (encrypted). No large uploads. Separately, at 05:02:26 the user browsed www.singlemoms[.]org (104.18.61.210) in IE11; the page contained an injected pop-under script that on first click (05:03:25) opened helpcenterforall[.]bid/index/?MCPKV8 (162.244.35.33, HTTP 302) -> krep2010123[.]tk/?number=888-779-0939 (162.244.35.36), a fake "Windows Defender Alert: Zeus Virus Detected" tech support scam page with alarm audio (err.mp3). No link observed between the two events. No other internal hosts, no lateral movement, no inbound connections. Network baseline: 10.0.1.0/24, 2 devices (PC + Linksys router 10.0.1.1 [gateway/DNS] / 10.0.1.254 [DHCP], MAC 00:04:5a:f8:1a:ac); no DC, file, web or mail server.
-
-
-#IMPACTED MACHINES#
-
-INTERNAL IP/s & HOSTNAME/s:
-10.0.1.95 DELOREAN-PC (MAC 60:a4:4c:6a:b2:1f ASUSTek; Windows 10 x64; IE11; MS Office; workgroup DOC-BROWN-GROUP; DNS suffix localdomain)
-
-INTERNAL SOURCE PORT/s: (If Ephemeral Leave Blank.)
-
-
-LATERAL DESTINATION IP/s & HOSTNAME/s: (If No Lateral Leave Blank.)
-
-
-LATERAL DESTINATION PORT/s: (If No Lateral OR If Ephemeral Leave Blank.)
-
-
-
-#EXTERNAL MACHINES#
-
-EXTERNAL IP/s & HOSTNAME/s:
-107.180.41.148 jgbennett[.]com (EXE download)
-35.198.166.240 amellet[.]bit (C2)
-188.165.200.156, 144.76.133.38, 130.255.78.223, 62.113.203.99, 93.170.96.235, 31.3.135.232, 130.255.73.90, 37.187.16.17, 85.159.213.210 (external DNS-over-TCP resolvers used by malware)
-162.244.35.33 helpcenterforall[.]bid (scam redirector)
-162.244.35.36 krep2010123[.]tk (tech support scam page)
-104.18.61.210 www.singlemoms[.]org (site carrying pop-under script)
-
-EXTERNAL SOURCE PORT/s: (If Ephemeral Leave Blank.)
-
-
-EXTERNAL DESTINATION PORT/s: (If Ephemeral Leave Blank.)
-80/tcp (HTTP: download, C2, scam), 53/tcp (DNS-over-TCP)
-
-
-#SEARCH QUERIES#
-
-ARKIME (MOLOCH):
-ip == 10.0.1.95 && (ip.dst == [107.180.41.148, 35.198.166.240] || host.http == [jgbennett.com, amellet.bit])
-ip.src == 10.0.1.95 && port.dst == 53 && ip.protocol == tcp && ip.dst != 10.0.0.0/8
-host.dns == *.bit
-host.http == amellet.bit && http.method == POST && http.user-agent != EXISTS!
-ip.src == 10.0.1.95 && host.http == [www.singlemoms.org, helpcenterforall.bid, krep2010123.tk]
-
-SPLUNK:
-index=zeek sourcetype=zeek:http (host="jgbennett.com" OR host="amellet.bit") | eval t=strftime(ts,"%Y-%m-%d %H:%M:%S") | table t uid id_orig_h id_orig_p id_resp_h method host uri version user_agent status_code request_body_len response_body_len
-index=zeek sourcetype=zeek:dns query="*.bit" | eval t=strftime(ts,"%H:%M:%S") | table t id_orig_h id_resp_h proto query rcode_name answers
-index=zeek sourcetype=zeek:conn proto=tcp id_resp_p=53 NOT id_resp_h=10.0.0.0/8 | stats count by id_orig_h id_resp_h conn_state
-index=zeek sourcetype=zeek:files mime_type="application/x-dosexec" | table ts tx_hosts rx_hosts seen_bytes md5 sha1
-index=zeek sourcetype=zeek:http host IN ("www.singlemoms.org", "helpcenterforall.bid", "krep2010123.tk") | eval t=strftime(ts,"%H:%M:%S") | table t id_resp_h host uri referrer status_code resp_mime_types
-
-
-#EVIDENCE LOCATIONS#
-
-Team<#>: /home/<username>/evidence/2017-10-21-traffic-analysis-exercise.pcap (original, SHA256 a42fd8341966fbf385e54feaf24218eb1df0f408bc060baa5f5c22aeb1318846)
-Team<#>: /home/<username>/evidence/171021_delorean-pc_malicious_sessions.pcap (Arkime "Download PCAP" of the search queries above, SHA256 <insert>)
-Team<#>: /home/<username>/evidence/http_objects/30_723bio_152.exe (DO NOT EXECUTE, SHA256 a56876fd456d0737eecc4a8bbe3154b35314ab28accb29abf0df7c518c81a490)
-Team<#>: /home/<username>/evidence/snort/local.rules (sid 1000201-1000214)
-
-
-#OPERATION LOG / ANALYST NOTES#
-
-[261119 0030, Sung] Establishing data time range and session count - Found
-[261119 0035, Sung] Identifying internal networks and active hosts - Found
-[261119 0040, Sung] Identifying non-internal-source sessions (possible inbound) - Not Found
-[261119 0045, Sung] Identifying hostname, MAC and network settings via DHCP - Found
-[261119 0050, Sung] Counting devices and identifying gateway via MAC addresses - Found
-[261119 0055, Sung] Identifying server roles (DNS, DHCP, DC, file/web/mail) - Found
-[261119 0100, Sung] Reviewing protocol distribution - Found
-[261119 0105, Sung] Identifying operating system and software of 10.0.1.95 - Found
-[261119 0110, Sung] Reviewing external communications overview - Further Analysis Required
-[261119 0115, Sung] Reviewing HTTP requests without User-Agent - Found
-[261119 0120, Sung] Reviewing EXE download from jgbennett.com - Found
-[261119 0125, Sung] Reviewing activity immediately before EXE download (DNS) - Found
-[261119 0130, Sung] Reviewing DNS over TCP to external resolvers - Found
-[261119 0135, Sung] Reviewing C2 HTTP sessions to amellet.bit (35.198.166.240) - Found
-[261119 0140, Sung] Assessing malware family from C2 pattern - Further Analysis Required
-[261119 0145, Sung] Measuring C2 check-in intervals - Found
-[261119 0150, Sung] Reviewing repeated msftconnecttest.com requests without User-Agent - Further Analysis Required
-[261119 0155, Sung] Reviewing session spike at 05:02:30 (www.singlemoms.org and ad networks) - Found
-[261119 0200, Sung] Reviewing redirect to helpcenterforall.bid / krep2010123.tk (tech support scam) - Found
-[261119 0205, Sung] Checking other internal hosts contacting IOCs and lateral movement - Not Found
-[261119 0206, Sung] Assessing data sent to C2 (possible exfil) - Further Analysis Required
-[261119 0210, Sung] Hash reputation lookup - Not Performed: closed network; hashes recorded for MC/intel follow-up
-[261119 0215, Sung] Writing Snort rules for DNS/.bit, C2, EXE download and tech support scam (sid 1000201-1000214) - Found
-[261119 0230, Sung] Testing Snort rules against PCAP (snort -A console -q -k none -U) - Found
-
-
-[Time -- Operator]
-
-Tool Output / Notes:
-
-[261119 0030, Sung] Arkime, empty query, Bounding: Last Packet.
-  Data range 2017/10/21 04:51:53 - 05:03:53 UTC (12:00). 505 sessions. Zeek conn: 510 (ts 04:51:53 - 05:03:26).
-  Activity graph: steady 04:52-04:56, near-quiet 04:57-05:00, clusters 05:00-05:01, spike ~05:02:30.
-[261119 0035, Sung] Arkime: ip.src == 10.0.0.0/8 || ip.src == 172.16.0.0/12 || ip.src == 192.168.0.0/16
-  Src IP: 10.0.1.95 (501), 10.0.1.254 (2). Internal network 10.0.1.0/24. 10.0.1.1 only as destination (158).
-  Protocols: tcp 328, udp 174, icmp 1 / dns 188, http 166, tls 87, http2 24, llmnr 7, dhcp 2.
-  Top external dst: 35.198.166.240 (34), 188.165.200.156 (31), 23.56.3.183 (20), 13.107.4.52 (19).
-[261119 0040, Sung] Arkime: ip.src != 10.0.0.0/8 || ip.src == 10.0.1.254 -> 4 sessions, all DHCP (udp 67/68).
-  04:51:53 and 04:53:08: 0.0.0.0:68 -> 255.255.255.255:67 and 10.0.1.254:67 -> 10.0.1.95:68.
-  No externally-initiated (inbound) sessions.
-[261119 0045, Sung] Arkime protocols == dhcp / zeek:dhcp:
-  10.0.1.95 DELOREAN-PC, MAC 60:a4:4c:6a:b2:1f (ASUSTek), REQUEST/ACK x2 (xid 15a2b597, d0ad6ea9).
-  DHCP ACK: server 10.0.1.254, mask 255.255.255.0, router 10.0.1.1, DNS 10.0.1.1, domain localdomain, lease 1800 s.
-  Client vendor class MSFT 5.0.
-[261119 0050, Sung] Ethernet headers: only 2 source MACs - 60:a4:4c:6a:b2:1f (10.0.1.95) and 00:04:5a:f8:1a:ac (Linksys).
-  All outbound traffic to dst MAC 00:04:5a:f8:1a:ac; 10.0.1.1 (DNS) and 10.0.1.254 (DHCP) both sourced from 00:04:5a:f8:1a:ac
-  -> one Linksys router with 2 IPs. 2 devices total.
-[261119 0055, Sung] zeek:conn internal responders: 10.0.1.1 (53/udp, 137/udp), 10.0.1.254 (67/udp), 10.0.1.255 (137,138), 224.0.0.252 (5355).
-  id_resp_p IN (88,135,139,389,445,464,636,3268,3389,5985,25,110,143,465,587,993,995) -> 0 results. No DC/file/web/mail server.
-  DC SRV _ldap._tcp.dc._msdcs.DOC-BROWN-GROUP.localdomain x12 - no answer. NetBIOS: workgroup DOC-BROWN-GROUP, DELOREAN-PC local master browser.
-  zeek:dns servers: 10.0.1.1 udp (195); EXTERNAL tcp: 188.165.200.156 (31), 144.76.133.38 (2), 130.255.78.223, 31.3.135.232, 62.113.203.99, 93.170.96.235 (1 each).
-[261119 0100, Sung] zeek:conn proto/service: udp dns 169, tcp http 157, tcp ssl 87, tcp - 51 (idle/failed), tcp dns 37, udp dhcp 4, udp - 4, icmp 1.
-[261119 0105, Sung] UA: "Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko" 164, NONE 123, Microsoft-CryptoAPI/10.0 9, Microsoft-WNS/10.0 8.
-  Windows 10 x64 (WOW64), IE11. NetBIOS browser OS 10.0. TTL 128. Office domains (officeclient.microsoft.com, nexus.officeapps.live.com).
-[261119 0110, Sung] External: 87 IPs, 332 conns, ports 80 (196), 443 (90), 53/tcp (46). TLS SNI all Microsoft/Google/ad networks.
-  35.198.166.240:80 34 conns, 25,484 B out / 2,350,698 B in (largest).
-[261119 0115, Sung] zeek:http NOT user_agent=*: www.msftconnecttest.com 73 req/19 conn; amellet.bit 39/34 (POST, HTTP/1.0);
-  (no host) 8 = server 408 timeouts on idle ad connections; ocsp.digicert.com 2 (POST OCSP); jgbennett.com 1.
-[261119 0120, Sung] 171021 04:52:47 10.0.1.95:49691 -> 107.180.41.148:80 GET jgbennett.com /3cgconsulting.com/30_723bio_152.exe HTTP/1.1
-  Headers: Host, Connection: Keep-Alive only (no User-Agent, no Referer).
-  -> 200 Apache, Content-Type application/x-msdownload, Content-Length 61440, Last-Modified Thu, 19 Oct 2017 12:45:16 GMT.
-  zeek:files application/x-dosexec seen 61440/61440, MD5 658c30fcd1508a65df8b9b9b397a9459, SHA1 fe4116d0e66350f54042361e3a87c942ee98529d
-  SHA256 a56876fd456d0737eecc4a8bbe3154b35314ab28accb29abf0df7c518c81a490. zeek:pe I386 GUI, compiled 2017-07-16 07:29:21, unsigned, sections .text .data.
-[261119 0125, Sung] DNS 04:52:40 contentstorage.osi.office.net, 04:52:42 fs.microsoft.com, messaging.office.com,
-  04:52:46 nexus.officeapps.live.com, officeclient.microsoft.com, 04:52:47 jgbennett.com -> 107.180.41.148 (1 s before download).
-  Office started immediately before non-browser EXE download -> likely macro document (not in capture).
-[261119 0130, Sung] zeek:dns query="*.bit": amellet.bit A x37, all TCP to external resolvers, 04:53:52 - 05:02:05.
-  Answer 35.198.166.240 (TTL 400 first), NS a.dnspod.com. Empty answers: 130.255.78.223, 62.113.203.99, 93.170.96.235.
-  Failed TCP 53: 130.255.73.90 (S0), 37.187.16.17 (REJ), 85.159.213.210 (S0). Internal DNS 10.0.1.1 bypassed.
-[261119 0135, Sung] Arkime host.http == amellet.bit -> 34 sessions. Sample 04:54:03 10.0.1.95:57622 -> 35.198.166.240:80
-  POST /a/ HTTP/1.0 | Host: amellet.bit | Content-Length: 1584 | (binary body)
-  -> HTTP/1.0 200 OK | X-Powered-By: PHP/5.3.3 | Content-type: text/html | Content-Length: 158064 | Date: 04:47:14 GMT | Server: lighttpd/1.4.45 | (binary)
-  Totals: /a/ 3 POST, 4,848 B sent / 289,805 B recv; /html/ 36 POST, 18,144 B sent / 2,053,089 B recv.
-  Repeated response sizes 256752/250688/225872/43840/17248/4752 (module set downloaded twice).
-  zeek:weird unexpected_multiple_HTTP_requests x5 (2 POSTs on one HTTP/1.0 connection).
-[261119 0140, Sung] .bit C2 via hard-coded external resolvers + encrypted HTTP/1.0 POST module download: consistent with Chthonic (Zeus variant). UNCONFIRMED.
-[261119 0145, Sung] C2 gaps: /a/ 04:54:03, 04:54:44 (41 s); /html/ 0.2-4 s 04:54:59-04:56:11; quiet 4m41s; 05:00:52, 05:02:05 (73 s). No stable beacon in 12 min.
-[261119 0150, Sung] www.msftconnecttest.com /connecttest.txt, no UA: 04:55 x6, 04:56 x1, 05:00 x18, 05:01 x42, 05:02 x6 - coincides with C2 activity.
-  Likely malware connectivity check (legit NCSI uses UA "Microsoft NCSI"). Host operator to confirm process.
-[261119 0155, Sung] 05:02:26 GET www.singlemoms.org/ (104.18.61.210, IE11) -> ~60 ad/analytics domains loaded -> session spike.
-[261119 0200, Sung] www.singlemoms.org/ body contains pop-under script: on first click doOpen("http://helpcenterforall.bid/index/?MCPKV8"), setCookie("popundr",1,864e5).
-  05:03:25 :61354 -> 162.244.35.33:80 GET helpcenterforall.bid/index/?MCPKV8 (no referrer) -> 302 Location http://krep2010123.tk/?number=888-779-0939
-  05:03:25 :61356 -> 162.244.35.36:80 GET krep2010123.tk/?number=888-779-0939 200 text/html 4374 "Windows Defender Alert : Zeus Virus Detected ... Call Microsoft Technical Department: 888-779-0939 (Toll Free)"
-  05:03:26 /landinf/defender.png 200; 05:03:31 /landinf/err.mp3 206 audio/mpeg 251,342 B. Server nginx/1.10.2.
-[261119 0205, Sung] IOC IPs / TCP 53 contacted only by 10.0.1.95. 10.0.1.95 -> other internal IPs (excl. 10.0.1.1/.254/.255): 0 results.
-[261119 0206, Sung] 22,992 B encrypted POST bodies to C2 (04:54:03-05:02:05). Content unknown.
-[261119 0230, Sung] snort -c snort.conf -r <pcap> -A console -q -k none -U (HOME_NET 10.0.0.0/8 and any - same result)
-  1000201 37 | 1000202 37 | 1000203 0 | 1000204 1 | 1000205 34 | 1000206 39 | 1000207 39 | 1000208 1 | 1000210 1 |
-  1000211 6 | 1000212 1 | 1000213 1 | 1000214 1 | alerts on benign traffic: 0
-
-
-#SNORT RULES#
-(sid 1000201-1000214 - see local.rules in EVIDENCE LOCATIONS)
-
-
-#LEADS FOR HOST OPERATOR#
-Isolate DELOREAN-PC (10.0.1.95 / 60:a4:4c:6a:b2:1f), capture memory before reboot. Windows: 04:52:30-04:56:15Z and 05:00:50-05:03:35Z.
-Office document opened ~04:52:40Z: children of WINWORD/EXCEL (Sysmon 1 / 4688), Trusted Records, Zone.Identifier.
-EXE by hash (SHA256 a56876fd...a490 / SHA1 fe4116d0...529d): Sysmon 11 ~04:52:47Z in %TEMP%/%APPDATA%, Prefetch, Amcache.
-Process with connections to 107.180.41.148:80, 35.198.166.240:80, external TCP 53, and UA-less msftconnecttest.com (Sysmon 3; Sysmon 22 may be empty).
-Injection (Sysmon 8/10; check msiexec.exe), persistence (Sysmon 13 Run keys, 4698, 7045).
-Reset user passwords (banking, email) from a clean device.
-Ask user whether 888-779-0939 was called / remote-access tool installed after 05:03:25Z (separate incident if yes).
-```
 
 ---
 

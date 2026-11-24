@@ -11,13 +11,12 @@ tags:
   - socgholish
   - fake-update
   - c2
-  - ticket
 ---
 
 # Sorting through the alerts — fake Chrome update to WScript C2 and follow-on C2 attempts { #sorting-alerts }
 
 !!! abstract "Case summary"
-    malware-traffic-analysis.net **2018-06-30 "Sorting through the alerts"**, worked step by step on the home-lab **pcapbox** VM with **Splunk (Zeek logs) as the main tool** and **Arkime only where Splunk cannot see** (page and POST contents). One Windows 7 PC (**CONSERVATOR-PC, user lloyd.maxwell**) opens a **hacked church website**. Script hidden in the site sends the browser through a **fingerprinting redirector (TDS)** to a **fake "Update Chrome" page**, which downloads **`Chrome_72.3.22.js` from Dropbox**. 46 seconds later the user runs it: `wscript.exe` sends **three XOR-encoded POSTs** (host, user, domain, process list) to a C2 and gets back a **349 KB encoded payload**, reported as `Chrome_72.3.22.exe` in `%TEMP%`. Ten seconds later the PC starts trying two **hard-coded C2 IPs** every ~7.5 minutes — **one refuses, one never answers**. Ends with one simple Snort rule and a short ticket.
+    malware-traffic-analysis.net **2018-06-30 "Sorting through the alerts"**, worked step by step on the home-lab **pcapbox** VM with **Splunk (Zeek logs) as the main tool** and **Arkime only where Splunk cannot see** (page and POST contents). One Windows 7 PC (**CONSERVATOR-PC, user lloyd.maxwell**) opens a **hacked church website**. Script hidden in the site sends the browser through a **fingerprinting redirector (TDS)** to a **fake "Update Chrome" page**, which downloads **`Chrome_72.3.22.js` from Dropbox**. 46 seconds later the user runs it: `wscript.exe` sends **three XOR-encoded POSTs** (host, user, domain, process list) to a C2 and gets back a **349 KB encoded payload**, reported as `Chrome_72.3.22.exe` in `%TEMP%`. Ten seconds later the PC starts trying two **hard-coded C2 IPs** every ~7.5 minutes — **one refuses, one never answers**. Ends with one simple Snort rule and a short report.
 
 | | |
 |---|---|
@@ -26,11 +25,11 @@ tags:
 | **Given** | LAN 172.16.2.0/24, DC 172.16.2.9, domain fabulousdukes.com |
 | **Environment** | Closed network. pcapbox VM: Splunk (`index=zeek`, case field `pcap_case`), Arkime (tag = case name), Snort 2.9.20, CyberChef. **No Wireshark.** |
 | **Case name** | `20180630_SORTING_THROUGH_THE_ALERTS` |
-| **Deliverables** | Analysis, decoded download URL and C2 bodies, one Snort rule, one incident ticket (txt) |
+| **Deliverables** | Analysis, decoded download URL and C2 bodies, one Snort rule |
 | **Related pages** | [Night Dew, second pass (pcapbox, Snort test guide)](night-dew-arkime-splunk-netlogon-bruteforce.md) · [BEGUILESOFT (Splunk-first baselining)](beguilesoft-hawkeye-ftp-exfil.md) · [SPL cheat sheet](../splunk/spl-cheatsheet.md) · [Arkime search syntax](../../network/arkime/search-syntax.md) · [Zeek logs](../../network/zeek/index.md) |
 
 !!! tip "How to read this page"
-    This is the case as it was actually worked: every result block is what the analyst's Splunk or Arkime showed. Each step goes **Goal → Splunk → Arkime (only when Splunk cannot show it) → Result → Reading the result → Ticket entry**. Every SPL query is explained line by line. **Question** boxes are questions asked during the work, with their answers.
+    This is the case as it was actually worked: every result block is what the analyst's Splunk or Arkime showed. Each step goes **Goal → Splunk → Arkime (only when Splunk cannot show it) → Result → Reading the result**. Every SPL query is explained line by line. **Question** boxes are questions asked during the work, with their answers.
 
     Statements are marked where it matters: **[data]** = seen in Splunk or Arkime, **[inference]** = a conclusion drawn from the data and still to be proven.
 
@@ -274,12 +273,6 @@ t         host          software_type   name                  unparsed_version
 2. `107.170.231.118:4143` — no data, unusual port, repeating
 3. 20:28:47 `MSIE 7.0` — a program that is not the user's browser
 
-**Ticket entry (host line only; baselining itself is not logged):**
-
-```text
-172.16.2.169 CONSERVATOR-PC – user FABULOUSDUKES\lloyd.maxwell
-```
-
 ---
 
 ## Step 2 — External destinations: remove the normal, see what is left { #destinations }
@@ -375,12 +368,6 @@ id_resp_h         first     last      count  ports  states  sent  received
 **[data] Reading:** only **two** of 184 destinations — exactly baseline candidates 1 and 2. The REJ in 2-1's tcp/443 row is 46.105.131.66: port 443 but not HTTPS, refused every time. First seen almost 2 minutes after the capture starts, then repeated for 30 minutes — **a program, not a person**. And 20:29:00 is only **13 seconds** after candidate 3 (`MSIE 7.0`, 20:28:47).
 
 **Clues so far, in time order:** church site (20:27:52) → `track.` (20:27:54) → `lw2e.` (20:27:56) → Dropbox file server (20:28:00) → `kimbrelelectric` (20:28:46) → `MSIE 7.0` (20:28:47) → no-DNS IP attempts (20:29:00). **[inference]** A site visit led to a download, something non-browser then talked to kimbrelelectric, then hard-coded IPs. Step 3 checks this with HTTP.
-
-**Ticket entry:**
-
-```text
-[1951 261124, Sung] – Looking for external connections by 172.16.2.169 without a DNS lookup – Found – Further Analysis Required
-```
 
 ---
 
@@ -487,12 +474,6 @@ www.stmarybahrain.com                 66.226.144.232
 
 **93.95.100.178** (fake page) and **93.95.100.138** (kimbrelelectric) share `93.95.100` — the **same /24**. Unrelated names, same server block: **[inference]** same operator.
 
-**Ticket entry:**
-
-```text
-[2005 261124, Sung] – Investigating HTTP referer chain from www.stmarybahrain.com to track.positiverefreshment.org and lw2e.sineadhollywoodnutt.com – Found – Further Analysis Required
-```
-
 ### 3-3. The fake page's content (Arkime) { #fake-page }
 
 Zeek keeps summaries, **not bodies**. What the page told the browser to do is in the body.
@@ -587,13 +568,7 @@ Chrome **72** did not exist in June 2018 (the PC runs 67). Dropbox is trusted an
     It should not have. The right order is **decode the URL → see the domain → search for that domain**. The guide named Dropbox early because the PCAP had been analysed before. What the analyst's own data showed by then: Dropbox in 2-2 at 20:27:59–20:28:00, and `setTimeout(…, 3000)` on a page that loaded at 20:27:57. Timing alone is an **inference**; the decoded URL is the **evidence**.
 
 !!! question "Question: who could work this out without help?"
-    Nobody decodes from scratch. Three habits make it routine: (1) obfuscated text always travels **with its decoder** — find the function around the text and read it; (2) map each command to a CyberChef operation (`%2` → pick characters, `reverse` → Reverse, `atob` → From Base64, `^` → XOR); (3) when the function is simple and safe, **run it** in an offline console. And if it still does not decode, the network alone (fake page → 3 s → Dropbox) is enough for the ticket; write "URL obfuscated, not decoded".
-
-**Ticket entry:**
-
-```text
-[2122 261124, Sung] – Reviewing content of fake page from lw2e.sineadhollywoodnutt.com in Arkime and decoding its download URL – Found – Further Analysis Required
-```
+    Nobody decodes from scratch. Three habits make it routine: (1) obfuscated text always travels **with its decoder** — find the function around the text and read it; (2) map each command to a CyberChef operation (`%2` → pick characters, `reverse` → Reverse, `atob` → From Base64, `^` → XOR); (3) when the function is simple and safe, **run it** in an offline console. And if it still does not decode, the network alone (fake page → 3 s → Dropbox) is enough for the report; write "URL obfuscated, not decoded".
 
 ### 3-5. Did the download happen? (Splunk) { #download }
 
@@ -632,12 +607,6 @@ t         id_resp_h    id_resp_p  duration   orig_bytes  resp_bytes  conn_state
 - Content and hash are not visible — the host owner must collect `C:\Users\lloyd.maxwell\Downloads\Chrome_72.3.22.js` (location confirmed in 4-5).
 
 Then **45 seconds with no network clue** (20:28:01 → 20:28:46) — about the time it takes to notice the download, click it and let Windows run it.
-
-**Ticket entry:**
-
-```text
-[2213 261124, Sung] – Looking for download of Chrome_72.3.22.js from Dropbox by 172.16.2.169 – Found – Further Analysis Required
-```
 
 ---
 
@@ -732,12 +701,6 @@ a=075d6d603e653c386b3969687b6c60686d6a7b6f606c686e6d6e646d686f6b646e6a7b
 - `UA-CPU: AMD64` is added by Windows' scripting HTTP objects on 64-bit systems. With `MSIE 7.0` → **a Windows script, not a browser**.
 - `Content-Type: application/x-www-form-urlencoded` = form data, `name=value`. That is the key to decoding (next).
 
-**Ticket entry:**
-
-```text
-[2224 261124, Sung] – Investigating HTTP POSTs from 172.16.2.169 to bb17eb22.login3.kimbrelelectric.com – Found – Further Analysis Required
-```
-
 ### 4-5. Decoding the POST bodies (CyberChef) { #decode-posts }
 
 No decoder function this time — it is inside the `.js` on the PC. So **read the shape**:
@@ -826,12 +789,6 @@ The first one or two bytes are junk (probably key information) — ignore. `0=c8
 !!! question "Question: are there rules for which decoding to try when?"
     Yes — the character set says most of it. `0-9a-f`, even length → From Hex. `A-Z a-z 0-9 + /` with `=` at the end → From Base64. `%xx` → URL Decode (usually the **last** layer). `\x41` → Unescape string; `\u0041` → Unescape Unicode Characters; comma-separated decimals → From Charcode. Starts like `TVqQ` (Base64) / `4d5a` (hex) → an EXE; `H4sI` / `1f8b` → gzip. Unreadable bytes after a decode, low-to-medium Entropy → 1-byte XOR. **Crib** = text that must be there at **that** layer: `&1=` for form data, `http` for a URL, the host or user name found in baselining for a check-in, `This program` for an EXE. If XOR is followed by URL encoding, the crib for a path is `C%3A%5C`, not `C:\`.
 
-**Ticket entry:**
-
-```text
-[2235 261124, Sung] – Decoding POST bodies to kimbrelelectric.com in CyberChef – Found
-```
-
 ---
 
 ## Step 5 — After the payload: back to baseline candidates 1 and 2 { #followon }
@@ -896,15 +853,8 @@ The two IPs **alternate**: IP 1 → ~2 min → IP 2 → ~5 min → repeat, a cyc
 **Conclusion:**
 
 - **[data]** 10 s after the EXE report: two hard-coded IPs, fixed rhythm, **never connected**. No C2 commands, no further downloads, no exfiltration on the network.
-- **[inference]** `%TEMP%\Chrome_72.3.22.exe` **ran** and tried its C2. Hard-coded IP:port C2 on 443 and odd high ports after a fake-update infection matches how **Dridex** behaved in 2018 — without a hash or signature the ticket says "consistent with Dridex (unconfirmed)".
+- **[inference]** `%TEMP%\Chrome_72.3.22.exe` **ran** and tried its C2. Hard-coded IP:port C2 on 443 and odd high ports after a fake-update infection matches how **Dridex** behaved in 2018 — without a hash or signature the report says "consistent with Dridex (unconfirmed)".
 - A dead C2 protects the PC only today. The host is infected: clean it, and treat the user's passwords as exposed.
-
-**Ticket entries:**
-
-```text
-[1951 261124, Sung] – Looking for external connections by 172.16.2.169 without a DNS lookup – Found
-[2329 261124, Sung] – Investigating repeated connection attempts from 172.16.2.169 to 46.105.131.66 and 107.170.231.118 after the payload download – Found
-```
 
 ---
 
@@ -966,18 +916,6 @@ snort-test 20180630_SORTING_THROUGH_THE_ALERTS
 
 ---
 
-## Incident ticket { #ticket }
-
-Key findings only, short sentences, simple English; baselining and the MAC address are left out. Operator name, log times and ticket links are placeholders.
-
-[:material-download: Download the ticket as a txt file](files/180630_CONSERVATOR-PC_ticket.txt){ .md-button }
-
-```text
---8<-- "docs/blueteam/investigations/files/180630_CONSERVATOR-PC_ticket.txt"
-```
-
----
-
 ## Copy-ready queries { #query-sheet }
 
 Replace `<case>` with your case name.
@@ -1035,7 +973,7 @@ Epoch ms:            From UNIX Timestamp (Units: Milliseconds)
 7. **Decoders travel with the encoded text.** Read the function and translate it, or run it alone in an offline console. Without a decoder, read the shape: character set → layer → crib from the format.
 8. **Check the input before blaming the recipe.** Quotes, a missing prefix or a cut-off wrap changed every result; `ABC` and Zeek's body length catch it.
 9. **Know your tools' limits.** Multi-value `host` doubled counts; Arkime's 200-packet limit hid `c=`; re-ingesting would have doubled everything.
-10. **Keep data and inference apart.** "Timing fits" is inference; "the decoded code says so" is evidence. The ticket gets evidence.
+10. **Keep data and inference apart.** "Timing fits" is inference; "the decoded code says so" is evidence. The report gets evidence.
 
 ## References { #references }
 

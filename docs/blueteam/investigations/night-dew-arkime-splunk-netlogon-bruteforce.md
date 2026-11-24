@@ -11,24 +11,23 @@ tags:
   - c2
   - tls
   - dce-rpc
-  - ticket
 ---
 
 # Night Dew, second pass — Arkime + Splunk (Zeek), netlogon password guessing and one Snort rule { #night-dew-2 }
 
 !!! abstract "Case summary"
-    The same malware-traffic-analysis.net 2018-05-11 "Night Dew" PCAP as the [first pass](night-dew-hancitor-pony-zeus-panda-tls-c2.md), worked again **from zero, as if the PCAP were unknown**, on the home-lab **pcapbox** VM. Arkime is the main tool; **Splunk with Zeek logs** is used wherever counting, sorting or protocol detail is easier there. One Windows 7 PC (**CHICAGO-7FA3-PC, user faith.hoffman**) checks in to `lysedsohap[.]com`, is told (Base64 + XOR `0x7a`) to download three encrypted files from a hacked WordPress site, sends **two small encrypted POSTs** (likely stolen passwords), starts a **second C2 over TLS** with a default self-signed certificate, and — new in this pass — makes **1,522 netlogon logon checks against the DC in 32 seconds** (password guessing). It ends with **one Snort rule** that fires on all 21 check-ins/beacons, a beginner's guide to testing it, and a short ticket.
+    The same malware-traffic-analysis.net 2018-05-11 "Night Dew" PCAP as the [first pass](night-dew-hancitor-pony-zeus-panda-tls-c2.md), worked again **from zero, as if the PCAP were unknown**, on the home-lab **pcapbox** VM. Arkime is the main tool; **Splunk with Zeek logs** is used wherever counting, sorting or protocol detail is easier there. One Windows 7 PC (**CHICAGO-7FA3-PC, user faith.hoffman**) checks in to `lysedsohap[.]com`, is told (Base64 + XOR `0x7a`) to download three encrypted files from a hacked WordPress site, sends **two small encrypted POSTs** (likely stolen passwords), starts a **second C2 over TLS** with a default self-signed certificate, and — new in this pass — makes **1,522 netlogon logon checks against the DC in 32 seconds** (password guessing). It ends with **one Snort rule** that fires on all 21 check-ins/beacons, a beginner's guide to testing it, and a short report.
 
 | | |
 |---|---|
 | **Evidence** | `2018-05-11-traffic-analysis-exercise.pcap` — 2018-05-11 02:06:51 – 02:49:41 UTC (42 min 50 s), 216 sessions, SHA256 `b2c8d0fe…13e51e` |
 | **Source** | [malware-traffic-analysis.net 2018-05-11 "Night Dew"](https://malware-traffic-analysis.net/2018/05/11/index.html) |
 | **Environment** | Closed network. pcapbox VM: Arkime (tag = case name), Splunk (`index=zeek`, field `pcap_case`), Snort 2.9.20, CyberChef |
-| **Deliverables** | Analysis, decoded C2 commands, one Snort rule tested against the PCAP, one incident ticket (txt) |
+| **Deliverables** | Analysis, decoded C2 commands, one Snort rule tested against the PCAP |
 | **Related pages** | [First pass (Arkime + CyberChef + 8 Snort rules)](night-dew-hancitor-pony-zeus-panda-tls-c2.md) · [Arkime search syntax](../../network/arkime/search-syntax.md) · [SPL cheat sheet](../splunk/spl-cheatsheet.md) · [Zeek logs](../../network/zeek/index.md) · [Beaconing & C2](../../network/beaconing-c2.md) |
 
 !!! tip "How to read this page"
-    Every step has the same order: **Goal → Arkime → Splunk (when it is easier) → Result → Reading the result → Ticket entry**. The **Question** boxes are questions asked while working the case, with their answers. Every SPL query is explained line by line.
+    Every step has the same order: **Goal → Arkime → Splunk (when it is easier) → Result → Reading the result**. The **Question** boxes are questions asked while working the case, with their answers. Every SPL query is explained line by line.
 
     The rule used throughout: **analyse an unknown PCAP**. No answer is taken from public write-ups; every finding comes from what the screen shows. Malware family names are therefore left **unconfirmed**.
 
@@ -44,7 +43,6 @@ tags:
 | Second-component POSTs | Analysed (header pattern, family named) | Analysed from zero: Splunk POST summary + headers, family left unconfirmed ([3-6](#exfil)) |
 | C2 replies | First reply decoded | First reply **and the beacon reply** (`{n:}` = no command) decoded; fallback download sites checked |
 | Snort | 8 rules | **1 rule**, explained part by part, plus a full beginner's testing guide |
-| Ticket | Full merged ticket | Short ticket with **key findings only** (no baselining) |
 
 ## Answers at a glance { #answers }
 
@@ -79,7 +77,7 @@ tail -f /data/logs/ingest.log
 ```
 
 - `tail -f` shows the end of the file and keeps printing new lines as they arrive. Press **Ctrl+C** to stop.
-- Wait for `DONE case=20180511_NIGHT_DEW ...`. The `START` line above it has `sha256=` — that is the **evidence hash** for the ticket.
+- Wait for `DONE case=20180511_NIGHT_DEW ...`. The `START` line above it has `sha256=` — that is the **evidence hash** for the report.
 
 !!! question "Question: the current setup seems to add a tag to tell different PCAPs apart — is that right?"
     Yes. The **file name without the extension becomes the case name**, and every tool uses it:
@@ -114,7 +112,7 @@ Arkime   11:36:51 – 12:19:41
 Splunk   02:06:51 – 02:48:51
 ```
 
-The difference is exactly **9 h 30 min**. Arkime displays times in the **browser's local time zone** (Adelaide was UTC+9:30 in May 2018); Splunk was already UTC. Tickets are written in UTC, so fix Arkime once:
+The difference is exactly **9 h 30 min**. Arkime displays times in the **browser's local time zone** (Adelaide was UTC+9:30 in May 2018); Splunk was already UTC. Reports are written in UTC, so fix Arkime once:
 
 - Top-right user menu → **Settings** → **General** → **Timezone** → **UTC**.
 - Splunk: account menu → **Preferences** → **Time zone** = UTC (because `strftime`/`convert` print in your Splunk time zone).
@@ -194,8 +192,6 @@ id_orig_h      sessions   sent      received
 - **External destinations:** **185.174.175.14 (54)** and **185.43.223.6 (23)**; the other four external IPs have one session each. A person browsing hits dozens of IPs (CDNs, ads); repeated connections to two IPs look like a **program** (beacon). Put both on the suspect list.
 - **Sent volume is high.** 948 KB sent vs 2.2 MB received. Workstations normally receive far more than they send. Keep this open — it is answered in [Step 5](#netlogon).
 - `tls 55` is close to the 54 sessions to 185.174.175.14 — a hint to check later.
-
-**Ticket entry:** none. Baselining is analysis work, not a finding.
 
 ---
 
@@ -322,17 +318,6 @@ TGS           CHICAGO-7FA3-PC$/NIGHTDEW.ORG  cifs/nightdew-dc.nightdew.org      
 
 **Reading:** IP 10.0.14.129, MAC 00:1a:92:06:5c:7b, host Chicago-7fa3-PC (DHCP name = Kerberos computer account `CHICAGO-7FA3-PC$` — two protocols agree), user **faith.hoffman**, DC/KDC 10.0.14.3.
 
-!!! note "Ticket rule: key findings only"
-    The ticket keeps **only the main findings**. Baselining (capture window, DHCP/Kerberos detail) and the queries used for it stay out. From Steps 1–2 only the host details go in:
-
-    ```text
-    Infected host (suspected)
-      IP address : 10.0.14.129
-      MAC address: 00:1a:92:06:5c:7b (ASUSTek)
-      Host name  : Chicago-7fa3-PC (chicago-7fa3-pc.nightdew.org)
-      User       : faith.hoffman
-    ```
-
 ---
 
 ## Step 3 — HTTP first: the check-in and the downloads { #http }
@@ -429,7 +414,7 @@ The reply is 1,436 bytes of Base64-looking text — not a web page but **encoded
 
 **⑦ 02:10:16 the first `robwassotdint[.]ru` DNS query** — two minutes after the downloads, a new destination. Checked in [Step 4](#tls).
 
-**Initial access is not in this capture.** It starts at logon (02:06:51) and the first check-in is 73 seconds later — there is no email, document or exploit download before it. The PC **was already infected**; the malware ran at logon. Write "initial infection vector not observed in this capture" in the ticket.
+**Initial access is not in this capture.** It starts at logon (02:06:51) and the first check-in is 73 seconds later — there is no email, document or exploit download before it. The PC **was already infected**; the malware ran at logon. Write "initial infection vector not observed in this capture" in the report.
 
 ### 3-4. Decoding the C2 reply in CyberChef { #decode }
 
@@ -460,13 +445,13 @@ bÙ©{l:http://wansaiful.com/wp-content/plugins/easy-media-download/1|http://www
 - Three command codes (`l`, `b`, `r`), one file number each (1, 2, 3). What each letter does (run, inject, …) cannot be told from traffic alone, so call them "command codes".
 - Each command lists **five sites**: if the first fails, try the next. The PC used only the first.
 - All five are WordPress paths (`wp-content/plugins`, `themes`) — hacked WordPress sites used as file stores.
-- The first 3 bytes (`bÙ©`) are a header of unknown meaning — leave it out of the ticket.
+- The first 3 bytes (`bÙ©`) are a header of unknown meaning — leave it out of the report.
 
-!!! warning "Put only values you verified yourself into the ticket"
-    A screenshot-OCR decode can get a few characters wrong. Decode the **original text** yourself in CyberChef before writing URLs into a ticket.
+!!! warning "Put only values you verified yourself into the report"
+    A screenshot-OCR decode can get a few characters wrong. Decode the **original text** yourself in CyberChef before writing URLs into a report.
 
 !!! question "Question: why does it go into CyberChef like that? Please explain."
-    **CyberChef** (published by GCHQ) runs in a browser and works like a kitchen: **Input** (ingredients) → **Recipe** (operations stacked in order: Base64, XOR, decompress, …) → **Output**, updated live. No code, and the recipe can be saved and written into a ticket so another analyst can **reproduce** it. At work, use the **offline version** (one HTML file) — pasting evidence into a website can leak data.
+    **CyberChef** (published by GCHQ) runs in a browser and works like a kitchen: **Input** (ingredients) → **Recipe** (operations stacked in order: Base64, XOR, decompress, …) → **Output**, updated live. No code, and the recipe can be saved and written into a report so another analyst can **reproduce** it. At work, use the **offline version** (one HTML file) — pasting evidence into a website can leak data.
 
     **Why Base64 first, then XOR?** The server wrapped the commands twice: (1) XOR scrambled `{l:http://...}` into raw bytes; (2) Base64 turned those bytes into text that travels easily in HTTP. Unwrap in **reverse order** — the last wrapper comes off first.
 
@@ -488,7 +473,7 @@ bÙ©{l:http://wansaiful.com/wp-content/plugins/easy-media-download/1|http://www
 
     Arkime has **Unbase64** and **UnXOR Brute** buttons, but CyberChef chains steps freely and keeps a reproducible recipe.
 
-**Check the fallback sites.** The ticket needs to say whether the four other sites were contacted:
+**Check the fallback sites.** The report needs to say whether the four other sites were contacted:
 
 ```text
 tags == 20180511_NIGHT_DEW && host == [www.victoryoutreachvallejo.com, medleysoup.com, radiantheartcoaching.com, hdmicablereviews.com]
@@ -512,14 +497,6 @@ index=zeek sourcetype=zeek:dns pcap_case=20180511_NIGHT_DEW query IN ("www.victo
 ```
 
 The first reply was full of URLs; this one is a command letter with **nothing inside** → "no task right now". That is why every beacon reply is exactly 12 bytes. Once you know the method, reuse it on every reply.
-
-**Ticket entry:**
-
-```text
-[261121 2014, Lee] C2 check-in from 10.0.14.129 to lysedsohap.com - Found
-[261121 2049, Lee] Decode of C2 check-in reply - Found
-[261121 2100, Lee] Contact with fallback payload sites - Not Found
-```
 
 ### 3-5. What were the three files? { #files }
 
@@ -560,12 +537,6 @@ _time          tx_hosts       rx_hosts      mime_type  seen_bytes  total_bytes  
 
 !!! tip "Copy hashes, do not retype them"
     Copy hashes straight from the Splunk result. One wrong character makes an IOC useless.
-
-**Ticket entry:**
-
-```text
-[261121 2106, Lee] Follow-up payload downloads from wansaiful.com - Found
-```
 
 ---
 
@@ -643,12 +614,6 @@ POST /d2/about.php HTTP/1.0
 
 !!! tip "A second Snort rule, if you want one"
     `Content-Type: application/octet-stream` + `Content-Encoding: binary` in a POST would catch this program on any server. This pass keeps **one** rule ([Step 6](#snort)); the [first pass](night-dew-hancitor-pony-zeus-panda-tls-c2.md#snort) has a tested version of this rule (sid 1000013, 2 alerts).
-
-**Ticket entry:**
-
-```text
-[261121 2110, Lee] Data sent to lysedsohap.com other than check-ins - Found
-```
 
 ---
 
@@ -728,7 +693,7 @@ robwassotdint.ru  TLSv12   TLS_RSA_WITH_AES_128_CBC_SHA256  true         54     
 1. **It starts two minutes after the downloads** (02:08:14 → 02:10:16), at the same second as the first `robwassotdint.ru` DNS query — a new channel created by a downloaded file, **separate** from the `lysedsohap.com` downloader C2.
 2. **The certificate gives it away.** Issuer = Subject = `Default Company Ltd`, `Default City`, `XX` → **self-signed**, filled with the **OpenSSL defaults** you get by pressing Enter at every prompt. Created 12 days before the infection, valid **2,000 days** (normal certificates: about a year).
 3. **~5-minute cycle** (`gap` 288–301 s: 02:10, 02:15, 02:20 … 02:45), in **pairs**: a short connection of exactly **548 / 1,060 bytes** (0.75 s — the handshake and certificate, then close) and a data connection of ~1.8 / 1.5 KB (1.3 s). Fixed sizes and fixed timing = automated **C2 beacon**. A different period from the 2-minute HTTP beacon → a different program.
-4. **02:40–02:42: about 1.5 MB comes down** (152,790 / 197,264 / 174,971 / 403,937 / 502,927 / 22,702 / 38,723 bytes) — most of the 2.2 MB the PC received. The 02:42:27 burst is off-cycle (gap 105 s), right after the big transfer. Likely **extra modules or settings** from the C2; contents are encrypted, so the ticket states only sizes and times.
+4. **02:40–02:42: about 1.5 MB comes down** (152,790 / 197,264 / 174,971 / 403,937 / 502,927 / 22,702 / 38,723 bytes) — most of the 2.2 MB the PC received. The 02:42:27 burst is off-cycle (gap 105 s), right after the big transfer. Likely **extra modules or settings** from the C2; contents are encrypted, so the report states only sizes and times.
 5. All 54 sessions `SF` and `established = true` — the channel worked until the capture ended (02:45:46).
 6. `TLS_RSA_WITH_AES_128_CBC_SHA256` is an old cipher — not evidence by itself, but worth noting.
 7. **JA3/JA4** fingerprint the TLS client. On Windows, malware that uses the system TLS library can share a browser's fingerprint, so compare with the PC's other, normal TLS sessions before using JA3 as an IOC.
@@ -773,12 +738,6 @@ robwassotdint.ru  TLSv12   TLS_RSA_WITH_AES_128_CBC_SHA256  true         54     
     cert.hash == 86:af:39:2e:9b:42:ec:50:e2:87:f6:42:9e:f7:48:4c:48:bb:bd:95
     ```
 
-**Ticket entry:**
-
-```text
-[261121 2119, Lee] TLS C2 to robwassotdint.ru - Found
-```
-
 ---
 
 ## Step 5 — Where did 948 KB go? Netlogon password guessing { #netlogon }
@@ -813,7 +772,7 @@ _time          id_resp_h  id_resp_p  service           duration  orig_bytes  res
 **Reading:**
 
 - **One connection is almost all of it:** 779,560 bytes to the **DC** (10.0.14.3:49158, DCE/RPC). Everything else is a few KB of normal domain traffic (SMB 445, LDAP 389, Kerberos).
-- So **no large upload went outside** — an important conclusion for the ticket. The only data sent out besides C2 traffic is the two small encrypted POSTs in [3-6](#exfil).
+- So **no large upload went outside** — an important conclusion for the report. The only data sent out besides C2 traffic is the two small encrypted POSTs in [3-6](#exfil).
 - But this connection is not normal either: it starts at **02:08:12.835**, 0.6 s after the MSIE 7.0 POST to `/mlu/forum.php` (02:08:12.248), and the logon-time RPC connection (02:06:52) sent only 5.8 KB. Find out **which RPC functions** were called.
 
 ### 5-2. DCE/RPC in one minute { #dcerpc }
@@ -893,13 +852,6 @@ The netlogon secure channel is encrypted: **which accounts, which passwords and 
 - **DC Security log, Event 4776** — the DC validated NTLM credentials. Shows the account, the workstation and a result code: `0xC000006A` = wrong password, `0xC0000064` = no such account, **`0x0` = success**. Read every 4776 from CHICAGO-7FA3-PC between 02:08:12 and 02:08:45.
 - **DC Event 4740** — an account was locked out (guessing can lock accounts).
 - **PC Security log, Event 4625 / 4624** — failed / successful logon on the PC; **Process Name** shows which program made the attempts — the path to the malicious file.
-
-**Ticket entry:**
-
-```text
-[261121 2137, Lee] Password guessing through DC netlogon - Found
-[261121 2137, Lee] Large uploads to external hosts - Not Found
-```
 
 ---
 
@@ -1075,7 +1027,7 @@ The rule never mentions a domain or IP, yet it caught only C2 traffic — if the
 1. **0 alerts:** re-run the syntax check; make sure `-k none` is there.
 2. **Still 0:** cut the rule down (for example only `content:"GUID=";`). If that fires, add options back one at a time to find the culprit.
 3. **Wrong count:** find the session that did not fire in Arkime and compare its body.
-4. **Every change:** bump `rev:1` → `rev:2` so the ticket can say which version was tested.
+4. **Every change:** bump `rev:1` → `rev:2` so the report can say which version was tested.
 
 **Errors met on pcapbox**
 
@@ -1083,12 +1035,6 @@ The rule never mentions a domain or IP, yet it caught only C2 traffic — if the
 |---|---|---|
 | `sudo: snort: command not found` | `make install` put snort in `/usr/local/bin`; Oracle Linux `sudo` only searches its `secure_path`, which lacks `/usr/local/bin` | `sudo ln -sf /usr/local/bin/snort /usr/sbin/snort` (a shortcut where `sudo` looks; the pcapbox scripts find it too). `ls -l /usr/local/bin/snort` first — if missing, `make install` failed |
 | `ERROR: log_tcpdump: Failed to open log file "/var/log/snort/snort.log.<n>": No such file or directory` | Snort also writes a packet log, and its default folder `/var/log/snort` does not exist | Add `-l /tmp/snortlog` (after `mkdir -p /tmp/snortlog`), or create the default once: `sudo mkdir -p /var/log/snort`. `snort-test` already uses its own temp folder |
-
-**Ticket entry:**
-
-```text
-[261121 2200, Lee] Snort rule test for C2 check-in - Found
-```
 
 ---
 
@@ -1107,20 +1053,6 @@ The rule never mentions a domain or IP, yet it caught only C2 traffic — if the
 | 02:10:16–02:45:46 | TLS C2 to `robwassotdint[.]ru` every ~5 min (54 sessions) |
 | 02:40:18–02:42:37 | ~1.5 MB from the TLS C2 to the PC |
 | 02:49:41 | Capture ends; both C2 channels still active |
-
----
-
-## Incident ticket { #ticket }
-
-Key findings only, short sentences, simple English. Operator name, operator log times and the evidence hash are placeholders to replace.
-
-[:material-download: Download the ticket as a txt file](files/180511_CHICAGO-7FA3-PC_ticket_pass2.txt){ .md-button }
-
-```text
---8<-- "docs/blueteam/investigations/files/180511_CHICAGO-7FA3-PC_ticket_pass2.txt"
-```
-
-Before sending: put the `ingest.log` SHA256 in EVIDENCE LOCATIONS, **compare the three file hashes with the Splunk result once**, and replace the operator log times and name with your own.
 
 ---
 

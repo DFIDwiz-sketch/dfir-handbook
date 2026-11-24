@@ -11,13 +11,12 @@ tags:
   - socgholish
   - fake-update
   - c2
-  - ticket
 ---
 
 # Sorting through the alerts — 가짜 Chrome 업데이트에서 WScript C2와 후속 C2 시도까지 { #sorting-alerts }
 
 !!! abstract "사례 요약"
-    malware-traffic-analysis.net의 **2018-06-30 "Sorting through the alerts" 실습**을 홈 랩 **pcapbox** VM에서 한 단계씩 분석한 기록이에요. 주 도구는 **Splunk**(Zeek 로그)이고, **Splunk로 볼 수 없는 것(페이지 내용, POST 본문)만 Arkime**로 봐요. 윈도우 7 PC 한 대(**CONSERVATOR-PC, 사용자 lloyd.maxwell**)가 **해킹된 교회 웹사이트**를 열어요. 사이트에 숨겨진 스크립트가 브라우저를 **지문 검사 리다이렉터**(TDS)를 거쳐 **가짜 "Update Chrome" 페이지**로 보내고, 그 페이지가 **Dropbox에서 `Chrome_72.3.22.js`**를 내려받게 해요. 46초 뒤 사용자가 그 파일을 실행해요. `wscript.exe`가 C2에 **XOR로 감춘 POST 3개**(호스트, 사용자, 도메인, 프로세스 목록)를 보내고 **349 KB 인코딩된 페이로드**를 받아 `%TEMP%`의 `Chrome_72.3.22.exe`로 보고해요. 10초 뒤부터 PC는 **하드코딩된 C2 IP 두 곳**에 약 7.5분마다 접속을 시도해요. **한 곳은 거절하고 한 곳은 대답이 없어요.** 간단한 Snort 룰 하나와 짧은 티켓으로 마무리해요.
+    malware-traffic-analysis.net의 **2018-06-30 "Sorting through the alerts" 실습**을 홈 랩 **pcapbox** VM에서 한 단계씩 분석한 기록이에요. 주 도구는 **Splunk**(Zeek 로그)이고, **Splunk로 볼 수 없는 것(페이지 내용, POST 본문)만 Arkime**로 봐요. 윈도우 7 PC 한 대(**CONSERVATOR-PC, 사용자 lloyd.maxwell**)가 **해킹된 교회 웹사이트**를 열어요. 사이트에 숨겨진 스크립트가 브라우저를 **지문 검사 리다이렉터**(TDS)를 거쳐 **가짜 "Update Chrome" 페이지**로 보내고, 그 페이지가 **Dropbox에서 `Chrome_72.3.22.js`**를 내려받게 해요. 46초 뒤 사용자가 그 파일을 실행해요. `wscript.exe`가 C2에 **XOR로 감춘 POST 3개**(호스트, 사용자, 도메인, 프로세스 목록)를 보내고 **349 KB 인코딩된 페이로드**를 받아 `%TEMP%`의 `Chrome_72.3.22.exe`로 보고해요. 10초 뒤부터 PC는 **하드코딩된 C2 IP 두 곳**에 약 7.5분마다 접속을 시도해요. **한 곳은 거절하고 한 곳은 대답이 없어요.** 간단한 Snort 룰 하나와 짧은 보고서로 마무리해요.
 
 | | |
 |---|---|
@@ -26,11 +25,11 @@ tags:
 | **주어진 정보** | LAN 172.16.2.0/24, DC 172.16.2.9, 도메인 fabulousdukes.com |
 | **환경** | 폐쇄망. pcapbox VM: Splunk(`index=zeek`, 케이스 필드 `pcap_case`), Arkime(태그 = 케이스 이름), Snort 2.9.20, CyberChef. **Wireshark 사용 안 함.** |
 | **케이스 이름** | `20180630_SORTING_THROUGH_THE_ALERTS` |
-| **결과물** | 분석, 풀어 낸 다운로드 URL과 C2 본문, Snort 룰 하나, 침해사고 티켓(txt) |
+| **결과물** | 분석, 풀어 낸 다운로드 URL과 C2 본문, Snort 룰 하나 |
 | **관련 페이지** | [Night Dew 두 번째 분석(pcapbox, Snort 테스트 가이드)](night-dew-arkime-splunk-netlogon-bruteforce.md) · [BEGUILESOFT(Splunk 중심 베이스라이닝)](beguilesoft-hawkeye-ftp-exfil.md) · [SPL 치트시트](../splunk/spl-cheatsheet.md) · [Arkime 검색 문법](../../network/arkime/search-syntax.md) · [Zeek 로그](../../network/zeek/index.md) |
 
 !!! tip "이 페이지 읽는 법"
-    실제로 분석한 순서 그대로예요. 결과 블록은 모두 분석자의 Splunk나 Arkime에 실제로 나온 값이에요. 단계마다 **목적 → Splunk → Arkime(Splunk로 안 보일 때만) → 결과 → 결과 읽기 → 티켓 기록** 순서예요. SPL 쿼리는 모두 한 줄씩 설명해요. **질문** 상자는 분석하면서 나온 질문과 답이에요.
+    실제로 분석한 순서 그대로예요. 결과 블록은 모두 분석자의 Splunk나 Arkime에 실제로 나온 값이에요. 단계마다 **목적 → Splunk → Arkime(Splunk로 안 보일 때만) → 결과 → 결과 읽기** 순서예요. SPL 쿼리는 모두 한 줄씩 설명해요. **질문** 상자는 분석하면서 나온 질문과 답이에요.
 
     중요한 곳에는 이렇게 표시해요. **[데이터]** = Splunk나 Arkime에서 본 것, **[추측]** = 데이터로 짐작했지만 아직 증명이 필요한 것.
 
@@ -274,12 +273,6 @@ t         host          software_type   name                  unparsed_version
 2. `107.170.231.118:4143` — 데이터 없음, 흔하지 않은 포트, 반복
 3. 20:28:47 `MSIE 7.0` — 사용자 브라우저가 아닌 프로그램
 
-**티켓 기록(호스트 줄만, 베이스라이닝 자체는 적지 않아요):**
-
-```text
-172.16.2.169 CONSERVATOR-PC – user FABULOUSDUKES\lloyd.maxwell
-```
-
 ---
 
 ## 2단계 — 외부 목적지: 정상을 지우고 남는 것 보기 { #destinations }
@@ -375,12 +368,6 @@ id_resp_h         first     last      count  ports  states  sent  received
 **[데이터] 결과 읽기:** 184곳 중 **두 곳만** 남았고, 베이스라인 후보 1, 2와 정확히 같아요. 2-1의 tcp/443 REJ가 46.105.131.66이에요. 443 포트지만 HTTPS가 아니고 매번 거절당했어요. 캡처 시작 2분쯤 뒤에 처음 나와서 30분 동안 반복돼요 — **사람이 아니라 프로그램**이에요. 20:29:00은 후보 3(`MSIE 7.0`, 20:28:47)과 **13초** 차이예요.
 
 **지금까지의 단서(시간 순서):** 교회 사이트(20:27:52) → `track.`(20:27:54) → `lw2e.`(20:27:56) → Dropbox 파일 서버(20:28:00) → `kimbrelelectric`(20:28:46) → `MSIE 7.0`(20:28:47) → DNS 없는 IP 시도(20:29:00). **[추측]** 사이트 방문 → 다운로드 → 브라우저가 아닌 무언가가 kimbrelelectric과 통신 → 하드코딩된 IP. 3단계에서 HTTP로 확인해요.
-
-**티켓 기록:**
-
-```text
-[1951 261124, Sung] – Looking for external connections by 172.16.2.169 without a DNS lookup – Found – Further Analysis Required
-```
 
 ---
 
@@ -487,12 +474,6 @@ www.stmarybahrain.com                 66.226.144.232
 
 **93.95.100.178**(가짜 페이지)과 **93.95.100.138**(kimbrelelectric)은 `93.95.100`이 같은 **/24 대역**이에요. 이름은 전혀 다른데 같은 서버 묶음 → **[추측]** 같은 운영자.
 
-**티켓 기록:**
-
-```text
-[2005 261124, Sung] – Investigating HTTP referer chain from www.stmarybahrain.com to track.positiverefreshment.org and lw2e.sineadhollywoodnutt.com – Found – Further Analysis Required
-```
-
 ### 3-3. 가짜 페이지 내용 (Arkime) { #fake-page }
 
 Zeek는 요약만 남기고 **본문은 안 남겨요**. 페이지가 무엇을 시켰는지는 본문에 있어요.
@@ -587,13 +568,7 @@ getUrl('#1)=(l)d(?as8j{.)2}2,.y3v.)2(7;_(e,m;odr)h)C,/fs;n{l7i{dim,c7678,d(r99jl
     나오면 안 됐어요. 순서는 **주소 풀기 → 도메인 보기 → 그 도메인 찾기**예요. 가이드가 이 PCAP을 미리 분석해 둬서 Dropbox를 먼저 말해 버렸어요. 그때까지 분석자 데이터에 있던 것은 2-2의 Dropbox(20:27:59~20:28:00)와 20:27:57에 뜬 페이지의 `setTimeout(…, 3000)`이었어요. 시간이 맞는다는 건 **추측**이고, 풀어 낸 주소가 **증거**예요.
 
 !!! question "질문: 도움 없이 누가 이걸 풀 수 있나요?"
-    처음부터 혼자 푸는 사람은 없어요. 세 가지 습관이면 익숙해져요. (1) 숨긴 글자는 **해독기를 같이 들고 다녀요** — 글자를 감싼 함수를 찾아 읽어요. (2) 명령을 CyberChef로 옮겨요(`%2` → 글자 고르기, `reverse` → Reverse, `atob` → From Base64, `^` → XOR). (3) 함수가 단순하고 안전하면 오프라인 콘솔에서 **실행**해요. 그래도 안 풀리면 네트워크만으로(가짜 페이지 → 3초 → Dropbox) 티켓을 쓸 수 있어요. "URL obfuscated, not decoded"라고 적어요.
-
-**티켓 기록:**
-
-```text
-[2122 261124, Sung] – Reviewing content of fake page from lw2e.sineadhollywoodnutt.com in Arkime and decoding its download URL – Found – Further Analysis Required
-```
+    처음부터 혼자 푸는 사람은 없어요. 세 가지 습관이면 익숙해져요. (1) 숨긴 글자는 **해독기를 같이 들고 다녀요** — 글자를 감싼 함수를 찾아 읽어요. (2) 명령을 CyberChef로 옮겨요(`%2` → 글자 고르기, `reverse` → Reverse, `atob` → From Base64, `^` → XOR). (3) 함수가 단순하고 안전하면 오프라인 콘솔에서 **실행**해요. 그래도 안 풀리면 네트워크만으로(가짜 페이지 → 3초 → Dropbox) 보고서를 쓸 수 있어요. "URL obfuscated, not decoded"라고 적어요.
 
 ### 3-5. 다운로드가 실제로 일어났나 (Splunk) { #download }
 
@@ -632,12 +607,6 @@ t         id_resp_h    id_resp_p  duration   orig_bytes  resp_bytes  conn_state
 - 내용과 해시는 안 보여요. 호스트 담당자가 `C:\Users\lloyd.maxwell\Downloads\Chrome_72.3.22.js`를 수집해야 해요(위치는 4-5에서 확인).
 
 그다음 **45초 동안 네트워크 단서가 없어요**(20:28:01 → 20:28:46). 다운로드를 보고, 클릭하고, 윈도우가 실행하는 데 걸리는 시간 정도예요.
-
-**티켓 기록:**
-
-```text
-[2213 261124, Sung] – Looking for download of Chrome_72.3.22.js from Dropbox by 172.16.2.169 – Found – Further Analysis Required
-```
 
 ---
 
@@ -732,12 +701,6 @@ a=075d6d603e653c386b3969687b6c60686d6a7b6f606c686e6d6e646d686f6b646e6a7b
 - `UA-CPU: AMD64`는 64비트 윈도우의 스크립트용 HTTP 객체가 붙여요. `MSIE 7.0`과 함께 → **브라우저가 아니라 윈도우 스크립트**.
 - `Content-Type: application/x-www-form-urlencoded` = 폼 데이터, `이름=값` 모양. 이게 해독의 열쇠예요(다음).
 
-**티켓 기록:**
-
-```text
-[2224 261124, Sung] – Investigating HTTP POSTs from 172.16.2.169 to bb17eb22.login3.kimbrelelectric.com – Found – Further Analysis Required
-```
-
 ### 4-5. POST 본문 풀기 (CyberChef) { #decode-posts }
 
 이번에는 해독 함수가 없어요. PC 안의 `.js`에 있거든요. 그래서 **생김새를 읽어요**.
@@ -826,12 +789,6 @@ Z␀0=c8ae6d45&1=507&2=1530390526937&
 !!! question "질문: 어떤 글자에 어떤 해독을 쓰는지 규칙이 있나요?"
     네, 대부분 **쓰인 글자의 종류**가 알려 줘요. `0-9a-f`, 짝수 길이 → From Hex. `A-Z a-z 0-9 + /`에 끝이 `=` → From Base64. `%xx` → URL Decode(보통 **마지막** 겹). `\x41` → Unescape string, `\u0041` → Unescape Unicode Characters, 쉼표로 나뉜 10진수 → From Charcode. `TVqQ`(Base64) / `4d5a`(hex)로 시작 → EXE, `H4sI` / `1f8b` → gzip. 풀었는데 알아볼 수 없고 Entropy가 낮거나 중간 → 1바이트 XOR. **Crib**은 **그 겹에서** 꼭 있을 글자예요: 폼 데이터는 `&1=`, 주소는 `http`, 체크인은 베이스라이닝에서 찾은 호스트·사용자 이름, EXE는 `This program`. XOR 다음에 URL 인코딩이 있으면 경로 crib은 `C:\`가 아니라 `C%3A%5C`예요.
 
-**티켓 기록:**
-
-```text
-[2235 261124, Sung] – Decoding POST bodies to kimbrelelectric.com in CyberChef – Found
-```
-
 ---
 
 ## 5단계 — 페이로드 다음: 베이스라인 후보 1, 2로 돌아가기 { #followon }
@@ -896,15 +853,8 @@ t              id_orig_p  id_resp_h         id_resp_p  conn_state  history  orig
 **결론:**
 
 - **[데이터]** EXE 보고 10초 뒤부터 하드코딩된 IP 두 곳에 일정한 박자로 접속을 시도했고, **한 번도 연결되지 않았어요**. 네트워크에 C2 명령, 추가 다운로드, 유출이 없어요.
-- **[추측]** `%TEMP%\Chrome_72.3.22.exe`가 **실행됐고** C2를 시도했어요. 가짜 업데이트 감염 뒤 443과 이상한 높은 포트의 하드코딩된 IP:포트 C2는 2018년 **Dridex**의 모습과 같아요. 해시나 시그니처가 없으니 티켓에는 "consistent with Dridex (unconfirmed)"라고 써요.
+- **[추측]** `%TEMP%\Chrome_72.3.22.exe`가 **실행됐고** C2를 시도했어요. 가짜 업데이트 감염 뒤 443과 이상한 높은 포트의 하드코딩된 IP:포트 C2는 2018년 **Dridex**의 모습과 같아요. 해시나 시그니처가 없으니 보고서에는 "consistent with Dridex (unconfirmed)"라고 써요.
 - C2가 죽어 있는 건 오늘만 PC를 지켜 줘요. 호스트는 감염됐어요. 정리하고, 사용자 비밀번호는 노출된 것으로 봐요.
-
-**티켓 기록:**
-
-```text
-[1951 261124, Sung] – Looking for external connections by 172.16.2.169 without a DNS lookup – Found
-[2329 261124, Sung] – Investigating repeated connection attempts from 172.16.2.169 to 46.105.131.66 and 107.170.231.118 after the payload download – Found
-```
 
 ---
 
@@ -966,18 +916,6 @@ snort-test 20180630_SORTING_THROUGH_THE_ALERTS
 
 ---
 
-## 침해사고 티켓 { #ticket }
-
-핵심 발견만, 짧은 문장, 쉬운 영어로 썼어요. 베이스라이닝과 MAC 주소는 넣지 않았어요. 작업자 이름, 작업 로그 시간, 티켓 링크는 바꿔야 하는 자리 표시예요.
-
-[:material-download: 티켓 txt 파일 내려받기](files/180630_CONSERVATOR-PC_ticket.txt){ .md-button }
-
-```text
---8<-- "docs-ko/blueteam/investigations/files/180630_CONSERVATOR-PC_ticket.txt"
-```
-
----
-
 ## 복사해서 쓰는 쿼리 { #query-sheet }
 
 `<case>`는 케이스 이름으로 바꿔요.
@@ -1035,7 +973,7 @@ epoch 밀리초:    From UNIX Timestamp (Units: Milliseconds)
 7. **해독기는 숨긴 글자와 같이 다녀요.** 함수를 읽고 옮기거나, 오프라인 콘솔에서 함수만 실행해요. 해독기가 없으면 모양을 읽어요: 글자 종류 → 겹 → 형식에서 고른 crib.
 8. **레시피를 탓하기 전에 입력을 확인해요.** 따옴표, 빠진 앞부분, 잘린 줄 접기가 결과를 다 바꿨어요. `ABC`와 Zeek의 본문 길이로 잡아요.
 9. **도구의 한계를 알아요.** 값이 두 개인 `host`가 숫자를 두 배로, Arkime의 200패킷 제한이 `c=`를 숨겼고, 재색인은 모든 걸 두 배로 만들 뻔했어요.
-10. **데이터와 추측을 구별해요.** "시간이 맞는다"는 추측, "풀어 낸 코드에 그렇게 있다"는 증거예요. 티켓에는 증거를 써요.
+10. **데이터와 추측을 구별해요.** "시간이 맞는다"는 추측, "풀어 낸 코드에 그렇게 있다"는 증거예요. 보고서에는 증거를 써요.
 
 ## 참고 자료 { #references }
 

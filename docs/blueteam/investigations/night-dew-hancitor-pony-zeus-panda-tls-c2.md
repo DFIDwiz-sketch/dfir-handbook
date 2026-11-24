@@ -9,31 +9,29 @@ tags:
   - c2
   - hancitor
   - tls
-  - ticket
 ---
 
 # Night Dew — Hancitor check-ins to follow-up downloads, credential exfil and a self-signed TLS C2 { #night-dew }
 
 !!! abstract "Case summary"
-    A 43-minute capture of **one Windows 7 PC (CHICAGO-7FA3-PC, user faith.hoffman)** in an AD domain (NIGHTDEW). **35 seconds** after the user logged on, the PC checked its public IP at `api.ipify[.]org` and immediately sent `lysedsohap[.]com/4/forum.php` a **POST carrying its own details (hostname, domain\user, public IP, OS)**. Decoding the first reply in **CyberChef (Base64 → XOR 0x7A)** shows three "download from these URLs" commands. One second later the PC pulled **three encrypted files** from a hacked WordPress site, `wansaiful[.]com`. Within three seconds a **different program sent two encrypted POSTs** (likely credential theft), and two minutes later the PC started beaconing every ~5 minutes to a **TLS C2 with a self-signed certificate (`Default Company Ltd`)**, `robwassotdint[.]ru`. The pattern matches the classic **Hancitor → Pony → Zeus Panda Banker** chain. We **test 8 Snort rules against the PCAP** and finish with a single merged **ticket**.
+    A 43-minute capture of **one Windows 7 PC (CHICAGO-7FA3-PC, user faith.hoffman)** in an AD domain (NIGHTDEW). **35 seconds** after the user logged on, the PC checked its public IP at `api.ipify[.]org` and immediately sent `lysedsohap[.]com/4/forum.php` a **POST carrying its own details (hostname, domain\user, public IP, OS)**. Decoding the first reply in **CyberChef (Base64 → XOR 0x7A)** shows three "download from these URLs" commands. One second later the PC pulled **three encrypted files** from a hacked WordPress site, `wansaiful[.]com`. Within three seconds a **different program sent two encrypted POSTs** (likely credential theft), and two minutes later the PC started beaconing every ~5 minutes to a **TLS C2 with a self-signed certificate (`Default Company Ltd`)**, `robwassotdint[.]ru`. The pattern matches the classic **Hancitor → Pony → Zeus Panda Banker** chain. We **test 8 Snort rules against the PCAP** and finish with a single merged **report**.
 
 | | |
 |---|---|
 | **Evidence** | One PCAP `2018-05-11-traffic-analysis-exercise.pcap` — 2018-05-11 02:06:51 – 02:49:40 UTC (42 min 49 s), 7,295 packets, SHA256 `b2c8d0fe…13e51e` |
 | **Source** | malware-traffic-analysis.net 2018-05-11 exercise "Night Dew" |
 | **Environment** | Closed network (no VirusTotal, no OSINT). Arkime web UI, CyberChef, tshark and Snort 2.9 on the analysis VM |
-| **Deliverables** | Baseline, analysis of the malicious activity, CyberChef decode, Snort rules that find the traffic again (tested), one incident ticket |
+| **Deliverables** | Baseline, analysis of the malicious activity, CyberChef decode, Snort rules that find the traffic again (tested) |
 | **Related pages** | [Arkime search syntax](../../network/arkime/search-syntax.md) · [Beaconing & C2](../../network/beaconing-c2.md) · [PCAP Lab 06 — same Hancitor style](pcap-lab-06-invoice-macro-c2.md) · [Previous case: Back to the Present](back-to-the-present-chthonic-c2-tech-support-scam.md) |
 
 !!! tip "How to read this page"
-    Written so a complete beginner can follow from the first query to the finished ticket. Every step uses the same order.
+    Written so a complete beginner can follow from the first query to the finished report. Every step uses the same order.
 
     1. **Goal** — what this step is trying to find out
     2. **Query** — copy it with the **copy button** at the top right of the code block
     3. **Explanation** — what each piece means
     4. **Result** — the values this PCAP actually produced
     5. **Reading the result** — what the values mean and why they matter
-    6. **Ticket entry** — this step's operator log line
 
 !!! note "Where do the result values come from?"
     The SPIView values in steps 1-1 and 3-1 (Dst IP, Protocols, Hostname, URI, Useragent, …) were read from a real Arkime screen. The other values were confirmed by running **tshark** over the same PCAP. Field names (`cert.issuer.on`, `http.request.content-type`, …) can differ slightly between Arkime versions. If a query does not match, click the value in SPIView and choose **and** — Arkime inserts the expression your version understands.
@@ -67,7 +65,7 @@ tags:
 
 **Goal:** record what you are analysing and make sure Arkime is showing the whole PCAP.
 
-**Exercise scenario:** on Friday 2018-05-11 (UTC) an alert fired for a possibly infected Windows host and a colleague pulled the related traffic. Analyse it and write an incident report (ticket).
+**Exercise scenario:** on Friday 2018-05-11 (UTC) an alert fired for a possibly infected Windows host and a colleague pulled the related traffic. Analyse it and write an incident report.
 
 **PCAP facts (analysis VM, `capinfos` and `sha256sum`):**
 
@@ -80,7 +78,7 @@ Last        2018-05-11 02:49:40 UTC
 Duration    about 42 min 49 s
 ```
 
-- The hash proves "the file I analysed is exactly this file". Record it next to the evidence location in the ticket so the next analyst can check they have the same file.
+- The hash proves "the file I analysed is exactly this file". Record it next to the evidence location in the report so the next analyst can check they have the same file.
 - `capinfos` may print times in the computer's local time zone. Prefix it with `TZ=UTC` (`TZ=UTC capinfos file`) to get UTC. (In Adelaide time it shows 11:36:51 — 9 h 30 min later.)
 
 **Arkime time range:**
@@ -93,7 +91,7 @@ Bounding  Last Packet
 
 - **Start / End** — the search window. The last packet is at 02:49:40; setting the end **a little wider** (02:50:00) avoids losing sessions at the very end.
 - **Bounding: Last Packet** — a session is shown if its **last packet** falls inside the window. With a wide enough window every bounding option returns everything.
-- Keep Arkime showing UTC (Settings → Timezone Format → UTC). All ticket times are UTC.
+- Keep Arkime showing UTC (Settings → Timezone Format → UTC). All report times are UTC.
 
 **Where to look:**
 
@@ -104,8 +102,6 @@ Bounding  Last Packet
 | **Connections** | Graph of who talked to whom |
 
 Click any value to get an **and** / **exclude** menu that adds it to the search expression — fewer typos than typing the expression yourself.
-
-**Ticket entry:** none. Preparation does not show malicious activity. Keep the PCAP hash in your analysis notes.
 
 ---
 
@@ -227,8 +223,6 @@ Host    _ldap._tcp.dc._msdcs.nightdew.org   → 10.0.14.3
 | 10.0.14.3 | Nightdew-DC.nightdew.org | 00:1e:4f:88:3f:a6 (Dell) | DC + DNS |
 | 10.0.14.1 | — | 00:02:16:47:96:ef (Cisco) | Gateway + DHCP |
 
-**Ticket entry:** the baseline is not malicious, so it does not go in the operator log. The hostname, MAC and user go in the ticket's **IMPACTED INTERNAL MACHINES** field instead.
-
 ---
 
 ## Step 2 — External destinations: who did it talk to, and how much { #external }
@@ -265,7 +259,7 @@ ip.src == 10.0.14.129 && ip.dst != [10.0.0.0/8, 224.0.0.0/4, 255.255.255.255]
 - **185.43.223.6 — 23 sessions.** Steady contact for 40 minutes; `lysedsohap[.]com` also looks random. More sent (16 KB) than received (12 KB) is the opposite of normal browsing.
 - **111.90.144.30 — 264 KB received in one session.** Something was downloaded.
 - **api.ipify[.]org** — a legitimate "what is my public IP?" service. A corporate PC rarely asks it, but **malware often does right after infection**. Look at the times: ipify at 02:08:04, lysedsohap[.]com 0.5 s later, wansaiful[.]com 1 s later. One chain.
-- **www.google.com** — Google's genuine certificate (Google Internet Authority G3), one session only. Not enough to judge, so it stays out of the ticket.
+- **www.google.com** — Google's genuine certificate (Google Internet Authority G3), one session only. Not enough to judge, so it stays out of the report.
 - **www.msftncsi.com/ncsi.txt** — Windows' "is the internet reachable?" check, User-Agent `Microsoft NCSI`. Normal.
 
 !!! tip "Spotting suspicious external IPs quickly"
@@ -273,8 +267,6 @@ ip.src == 10.0.14.129 && ip.dst != [10.0.0.0/8, 224.0.0.0/4, 255.255.255.255]
     2. A domain name that is a random string
     3. A large download in one session
     4. Different external IPs appearing **within seconds of each other** (one program's sequence)
-
-**Ticket entry:** none yet. Write it once you have seen what happened (steps 3–6).
 
 ---
 
@@ -398,7 +390,7 @@ b..{l:http://wansaiful.com/wp-content/plugins/easy-media-download/1
 - The first few bytes (`b..`) are meaningless; the **commands** follow, in three `{letter:URL|URL|...}` blocks.
 - Each command lists **the same file on 5 servers** — a fallback list in case one is blocked. This PC **got everything from the first, wansaiful[.]com**, and never contacted the other four. Record those four as IOCs to hunt for on other networks.
 - Every URL is in a **WordPress plugin/theme folder** (`wp-content/plugins/...`) — the typical shape of malware hidden on hacked legitimate WordPress sites.
-- `l`, `b` and `r` are command letters that say how to run each downloaded file. Public analyses describe Hancitor using such letters to choose an execution method (run directly, inject into another process, …). The exact meaning per letter needs host confirmation, so the ticket says only "3 download commands".
+- `l`, `b` and `r` are command letters that say how to run each downloaded file. Public analyses describe Hancitor using such letters to choose an execution method (run directly, inject into another process, …). The exact meaning per letter needs host confirmation, so the report says only "3 download commands".
 
 **Later replies:** the 20 replies after 02:10:15 are all 12 bytes (e.g. `TGTGARRABw==`). The same recipe leaves `{n:}` at the end — "no new task, wait".
 
@@ -415,15 +407,6 @@ b..{l:http://wansaiful.com/wp-content/plugins/easy-media-download/1
 - After the first check-in the gap is **almost exactly 120.5 seconds**. People are not that regular; this is a timer-driven **automatic beacon**.
 - The body is identical every time (123 bytes, same GUID) and the reply is `{n:}`. **The C2 was alive and waiting to issue the next task** when the capture ended.
 
-**Ticket entries (step 3):**
-
-```text
-[2335 261119, Sung] – Investigating repeated HTTP POSTs from 10.0.14.129 to lysedsohap.com (185.43.223.6) for C2 – Found – Further Analysis Required
-
-[2348 261119, Sung] – Decoding the first C2 response from lysedsohap.com for tasking – Found – Further Analysis Required
-```
-
-The tool output (TOOL OUTPUT / ANALYST NOTES) is in the [ticket](#ticket). It carries the same `[time, Sung]` stamp so Ctrl+F finds both lines together.
 
 ---
 
@@ -477,15 +460,9 @@ file: data   (all three)
 
 - **They are exactly the first URL of each command decoded in step 3.** C2 reply (02:08:04) → download 1 s later (02:08:05). Command and execution are linked in the traffic.
 - **`text/plain`, but the content is binary (`data`).** The server sets Content-Type however it likes; do not trust it. In Arkime check **http.bodymagic** (the type judged from the content) as well.
-- **No `MZ` at the start.** Windows executables always begin with `MZ`; these files are encrypted. That evades "EXE download" detection — the downloader on the PC decrypts and runs them after download. So these hashes are of **the encrypted files seen on the network**, not of the executables written to disk. Say so in the ticket so the host operator is not misled.
+- **No `MZ` at the start.** Windows executables always begin with `MZ`; these files are encrypted. That evades "EXE download" detection — the downloader on the PC decrypts and runs them after download. So these hashes are of **the encrypted files seen on the network**, not of the executables written to disk. Say so in the report so the host operator is not misled.
 - **Last-Modified is the previous day (2018-05-10), 7 seconds apart.** It looks like the attacker uploaded all three to the hacked site in one go the day before.
 - The next clue is what new traffic appears after the download. Within 3 s, **two POSTs with an MSIE 7.0 User-Agent** ([step 5](#exfil)); 2 minutes later, **a TLS server never seen before** ([step 6](#tls-c2)). New programs had started running.
-
-**Ticket entry (step 4):**
-
-```text
-[2355 261119, Sung] – Looking for follow-up downloads by 10.0.14.129 ordered by the C2 – Found – Further Analysis Required
-```
 
 ---
 
@@ -539,13 +516,7 @@ POST /d2/about.php HTTP/1.0
 - **`Content-Encoding: binary` is not a standard HTTP value** (standard ones are gzip, deflate, …). Odd headers like this act as a malware fingerprint and are good Snort material. This header combination plus the `MSIE 7.0` User-Agent is a known trait of the **Pony** credential stealer.
 - **Sending once and stopping** is typical too. Pony usually gathers passwords saved in browsers, email and FTP clients, uploads them in one go and exits.
 - **The amount is small (440 bytes in total).** There may have been few or no saved passwords. But **since you cannot verify what left, treat it as stolen** and recommend resetting faith.hoffman's password. In security, unknown means assume the worse.
-- In the ticket, write the family as an assessment: "consistent with Pony – unconfirmed". In a closed network there was no hash lookup or sandbox to confirm it.
-
-**Ticket entry (step 5):**
-
-```text
-[0004 261120, Sung] – Looking for data sent out by 10.0.14.129 to lysedsohap.com other than check-ins (exfil) – Found
-```
+- In the report, write the family as an assessment: "consistent with Pony – unconfirmed". In a closed network there was no hash lookup or sandbox to confirm it.
 
 ---
 
@@ -620,15 +591,7 @@ Total            54       ~120 KB sent / ~1.65 MB received
 - **Large sessions cluster at 02:40–02:42.** The beaconing C2 most likely pushed a configuration file or extra modules. Banking trojans receive "which bank sites to inject fake input fields into" (webinjects) this way.
 - **Far less sent (120 KB) than received (1.65 MB).** No large exfiltration is visible, but because it is encrypted, a small one (passwords and so on) cannot be ruled out.
 - **It starts right after the step 4 downloads.** At 02:10:16 the PC asked the DC (10.0.14.3) for robwassotdint[.]ru and connected to the answer, 185.174.175.14, straight away. It had never asked for that name before the downloads. Hence "a downloaded file ran and joined a new C2".
-- The single `www.google.com` TLS session (02:20:16) has Google's genuine certificate and happens once, so it stays out of the ticket. Keep it in your analysis notes in case the host side needs it.
-
-**Ticket entries (step 6):**
-
-```text
-[0018 261120, Sung] – Investigating repeated TLS sessions from 10.0.14.129 to robwassotdint.ru (185.174.175.14) for C2 – Found – Further Analysis Required
-
-[0026 261120, Sung] – Checking the TLS certificate presented by 185.174.175.14 – Found
-```
+- The single `www.google.com` TLS session (02:20:16) has Google's genuine certificate and happens once, so it stays out of the report. Keep it in your analysis notes in case the host side needs it.
 
 ---
 
@@ -655,17 +618,11 @@ Total            54       ~120 KB sent / ~1.65 MB received
 
 - **Initial access is not in this PCAP.** There is no email, document download or Office traffic. In the previous case Office DNS lookups came just before the EXE download; there is no such clue here.
 - **Two possibilities:** ① the PC was already infected before the capture and the malware auto-started at logon (persistence); ② the user opened an already-downloaded document right after logon. Starting 35 s after logon leans towards ①, but traffic alone cannot tell them apart.
-- So the ticket says "initial access unconfirmed, host confirmation required" and lists where the host operator should look (Run keys, scheduled tasks, recently opened documents, email attachments).
+- So the report says "initial access unconfirmed, host confirmation required" and lists where the host operator should look (Run keys, scheduled tasks, recently opened documents, email attachments).
 - **No other internal PC in the capture.** But see the correction below: the DC traffic hides password guessing.
 
 !!! warning "Correction from the second pass"
     This pass called the DC traffic normal. A [second pass with Zeek's DCE/RPC log](night-dew-arkime-splunk-netlogon-bruteforce.md#netlogon) found **1,522 `NetrLogonSamLogonWithFlags` calls in 32 seconds** (02:08:12–02:08:45) from 10.0.14.129 to the DC — password guessing through netlogon, starting 0.6 s after the `/mlu/forum.php` POST. It is also why the PC sent 948 KB. Check DC Event 4776 for the accounts and results.
-
-**Ticket entry (step 7):**
-
-```text
-[0010 261120, Sung] – Looking for activity on 10.0.14.129 preceding the first C2 check-in (initial access) – Not Found
-```
 
 `Not Found` is a result too. Recording "looked, not in the traffic" saves the next analyst from searching again.
 
@@ -744,22 +701,6 @@ sudo snort -c /etc/snort/snort.conf -r 2018-05-11-traffic-analysis-exercise.pcap
 
 ---
 
-## Incident ticket { #ticket }
-
-All activity on the one infected host is in **a single ticket**: Hancitor C2, follow-up downloads, exfiltration and TLS C2. Operator name, ticket link and evidence paths are placeholders; operator log times are examples. The ticket body is in English as the team template requires.
-
-- The Description has two paragraphs: the HTTP stage (check-ins, downloads, exfil), then the HTTPS C2 and what is still open.
-- Domains in the DESCRIPTION are defanged with `[.]`; tool output and queries stay as they are.
-- The baseline (DHCP, Kerberos, DNS) is not in the operator log; it appears only in the IMPACTED MACHINES fields.
-
-[:material-download: Download the ticket as a txt file](files/180511_CHICAGO-7FA3-PC_ticket.txt){ .md-button }
-
-```text
---8<-- "docs/blueteam/investigations/files/180511_CHICAGO-7FA3-PC_ticket.txt"
-```
-
----
-
 ## Copy-ready queries { #query-sheet }
 
 **Arkime**
@@ -807,7 +748,7 @@ sha256sum http_objects/*
 2. **Legitimate services can be part of malicious activity.** api.ipify[.]org itself is fine, but its answer went to the C2 half a second later. What happened just before and after matters more than the destination alone.
 3. **Beacons show themselves through intervals.** About 120 s for HTTP, about 5-minute bursts for TLS. Sort the Sessions tab by Start Time and list the times.
 4. **Encryption still leaves patterns and metadata.** Without seeing TLS content, SNI, a default self-signed certificate, the interval and the byte counts were enough to call it C2.
-5. **Do not trust Content-Type.** The `text/plain` files were encrypted binaries. Note in the ticket that network hashes may differ from on-disk hashes.
+5. **Do not trust Content-Type.** The `text/plain` files were encrypted binaries. Note in the report that network hashes may differ from on-disk hashes.
 6. **Same server, different header habits = different program.** HTTP 1.1 vs 1.0, User-Agent and `Content-Encoding: binary` separated the check-ins from the exfiltration.
 7. **Follow the infection chain.** Downloader (Hancitor) → commands → downloads → next-stage malware (info stealer, banking trojan). The first new destination after a download is almost always the next stage.
 8. **Record what you could not find.** Initial access was not in the PCAP. "Not Found + where to look on the host" hands it to the host operator.

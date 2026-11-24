@@ -8,7 +8,6 @@ tags:
   - icedid
   - loader
   - c2
-  - ticket
 ---
 
 # IcedID (Cold as Ice) — from a redirect, Firebase and a fake gzip to an HTTPS beacon and BackConnect { #icedid-cold-as-ice }
@@ -20,7 +19,7 @@ tags:
 |---|---|
 | **Evidence** | Unit 42 Wireshark quiz April 2023 PCAP ("Cold as Ice"), 2023-04-19 15:26:28 – 21:22:36 UTC (about 5 h 56 min), about 1,640 sessions |
 | **Environment** | Closed network assumed (no hash or reputation lookups). Order and queries for Arkime, decoding in CyberChef |
-| **Output** | Answers to the 6 quiz questions, incident ticket |
+| **Output** | Answers to the 6 quiz questions |
 | **Related pages** | [Arkime-only analysis — Trickbot case](arkime-only-credential-theft-tls-c2.md) · [RedLine Stealer case](redline-stealer-powershell-nettcp-c2.md) · [Arkime search syntax](../../network/arkime/search-syntax.md) |
 
 !!! warning "Want to solve it yourself first?"
@@ -37,7 +36,7 @@ tags:
     This page analysed the PCAP directly with Python to calculate the values Arkime would show (sessions, bytes, fields), and pairs them with the Arkime queries that find them. Some numbers such as session counts may differ slightly from your Arkime screen, so check them as you follow along. The results were [compared](#official-answers) with the official Unit 42 answers.
 
 !!! tip "How to read this page"
-    Same order as the two earlier cases. Each step: **goal → query → query explained → actual result → reading the result → ticket entry**. Copy queries with the **copy button** on the right of each code block. Basics such as the time range, time zone and SPI View are covered in detail in [steps 0–1 of the Trickbot case](arkime-only-credential-theft-tls-c2.md#step-0).
+    Same order as the two earlier cases. Each step: **goal → query → query explained → actual result → reading the result**. Copy queries with the **copy button** on the right of each code block. Basics such as the time range, time zone and SPI View are covered in detail in [steps 0–1 of the Trickbot case](arkime-only-credential-theft-tls-c2.md#step-0).
 
 ## Answers at a glance { #answers }
 
@@ -99,16 +98,6 @@ tcp 53 (6)     udp 137 (5)     udp 138 (4)     udp 123 (3)    udp 111 (3)    udp
 | **80 (47)** | HTTP | **Cleartext** — we can read everything, so always look |
 
 - **Unlike RedLine, there is no "unknown port".** That means the malicious traffic is hiding inside 80 and 443. So the order is: **identify the 3 PCs → odd names in DNS → cleartext HTTP → HTTPS (certificates, intervals) → port 443 that is not TLS**.
-
-**Ticket entry:**
-
-```text
-[251119 0010, Analyst] Establishing data time range and session count - Found
-[251119 0012, Analyst] Reviewing protocols and internal hosts - Found
-
-[251119 0010, Analyst] Data range 2023-04-19 15:26:28 - 21:22:36 UTC (5 h 56 min), about 1,640 sessions.
-[251119 0012, Analyst] Internal hosts 10.4.19.136 (718 sessions as source), 10.4.19.138 (833), 10.4.19.143 (85), server 10.4.19.19 (4). Top ports: udp 53, tcp 443, ldap 389, smb 445, rpc 135/49669, krb5 88, http 80. No unusual destination ports.
-```
 
 ---
 
@@ -183,18 +172,6 @@ Open a session and the names appear inside the broadcasts.
 - The DC name being `WIN-` plus random characters is the same as in the RedLine case (default Windows Server name).
 - We still do not know which PC is infected. The next step finds it.
 
-**Ticket entry:**
-
-```text
-[251119 0015, Analyst] Identifying client IPs, MACs and hostnames (no DHCP in capture) - Found
-
-[251119 0015, Analyst] Query: protocols == dhcp -> 0 sessions. Query: ip.src == 10.4.19.0/24 && protocols == krb5 -> computer accounts desktop-sff9ljf$, desktop-retp4bu$, desktop-jal4d68$. Src MAC (mac.src) and NetBIOS:
-10.4.19.136 14:58:d0:2e:c5:ae DESKTOP-SFF9LJF
-10.4.19.138 00:90:27:cd:92:90 DESKTOP-RETP4BU
-10.4.19.143 00:02:a5:7c:61:08 DESKTOP-JAL4D68
-10.4.19.19 00:21:5a:86:39:8f WIN-GP4JHCK2JMV (DC, domain boogienights.live); gateway MAC 00:02:17:5c:e6:13
-```
-
 ---
 
 ## Step 2 — Odd names in DNS, narrowing down the infected PC { #dns }
@@ -245,15 +222,6 @@ host.dns == [skigimeetroc.com, askamoshopsi.com, skansnekssky.com, spakernakurs.
 !!! note "10.4.19.138 also has odd names"
     The DNS of 10.4.19.138 shows `nobpc.joansstudio.store` and `dlmfz.joansstudio.store` (both **NXDOMAIN**, names that do not exist) at 17:12–17:15 and `cotecsecuritygroup.com` at 17:17. These are completely different from 10.4.19.136's names. We look at them separately in [step 11](#second-host). 10.4.19.143 only looked up internal names.
 
-**Ticket entry:**
-
-```text
-[251119 0020, Analyst] Reviewing DNS queries for unusual domains - Found
-
-[251119 0020, Analyst] Query: ip.src == 10.4.19.0/24 && protocols == dns. 10.4.19.136: firebasestorage.googleapis.com 15:31:10, skigimeetroc.com 15:35:39 -> 192.153.57.233, askamoshopsi.com 15:36:41 -> 104.168.53.18, skansnekssky.com 15:36:43 -> 217.199.121.56 (re-queried about every 30 min), spakernakurs.com 20:12:16 -> 104.168.53.18. 10.4.19.138: nobpc.joansstudio.store / dlmfz.joansstudio.store (NXDOMAIN) 17:12-17:15, cotecsecuritygroup.com 17:17:10 -> 66.29.147.117. 10.4.19.143: internal names only.
-Query: host.dns == [skigimeetroc.com, askamoshopsi.com, skansnekssky.com, spakernakurs.com] -> only 10.4.19.136.
-```
-
 ---
 
 ## Step 3 — Finding the user account (Q5) { #user }
@@ -301,14 +269,6 @@ CN=Cornelius Silva,CN=Users,DC=boogienights,DC=live
     **Hunt** in Arkime's top menu searches packet contents for a string. Narrow the target with `ip.src == 10.4.19.136 && port.dst == 389` in the search bar, then hunt for the ASCII string `CN=Users`; only the sessions that contain user DNs are left. You can search the results again with the `huntId` tag.
 
 - User **csilva = Cornelius Silva**. This value is confirmed **once more** in [step 6](#gzip-loader) by the cookie the malware sent.
-
-**Ticket entry:**
-
-```text
-[251119 0025, Analyst] Identifying user account for 10.4.19.136 (Kerberos, LDAP) - Found
-
-[251119 0025, Analyst] Query: ip.src == 10.4.19.136 && protocols == krb5 -> krb5.cname csilva, desktop-sff9ljf$ (19:30:50-19:34:48). LDAP 10.4.19.136 -> 10.4.19.19:389 at 19:34:48 contains "CN=Cornelius Silva,CN=Users,DC=boogienights,DC=live".
-```
 
 ---
 
@@ -380,22 +340,11 @@ The value after `34ab8=` is three chunks separated by dots (`.`) — a **JWT** (
 - **15:31:07 is the first malicious request visible in this PCAP**. The answer to Q1 is **2023-04-19 15:31 UTC**.
 - **The address is an IP, not a domain**, and there is no DNS lookup. The user clicked a link that was an IP from the start. The User-Agent is a real **Edge 112**, so a person opened it in a browser (whether the link came from an email cannot be told from the PCAP).
 - The response has no content, only **302 (go elsewhere)**, and it sends the browser to **`Scan_Inv.zip` on Firebase Storage**. A server that "picks visitors and sends them on to the next place" like this is called a **TDS (Traffic Distribution System)**. `_subid` and the `streams` / `campaigns` in the JWT look like the values a TDS uses to count "which campaign this visitor came from" (inferred).
-- An interesting point: the browser **already had** this cookie when it made the request, and the time inside the cookie is **15:20:41**. That is before the capture started (15:26:28). It suggests **this PC had visited this server 10 minutes earlier** (inferred). The first malicious traffic visible in the PCAP is still 15:31, so the ticket uses 15:31 and keeps this as a note.
+- An interesting point: the browser **already had** this cookie when it made the request, and the time inside the cookie is **15:20:41**. That is before the capture started (15:26:28). It suggests **this PC had visited this server 10 minutes earlier** (inferred). The first malicious traffic visible in the PCAP is still 15:31, so the report uses 15:31 and keeps this as a note.
 - The file name `Scan_Inv` (scanned invoice) is a common name when disguising as business email.
 
 !!! note "Why Firebase?"
     `firebasestorage.googleapis.com` is a normal domain with a Google certificate, so it is rarely on block lists and passes reputation checks easily. Attackers **parking files on normal cloud services** is very common. So **"who sent the browser to that address (the source of the 302)"** matters more than "the domain is normal".
-
-**Ticket entry:**
-
-```text
-[251119 0030, Analyst] Reviewing cleartext HTTP from 10.4.19.136 (first malicious request, redirect) - Found
-
-[251119 0030, Analyst] Query: ip.src == 10.4.19.136 && protocols == http
-230419 15:31:07UTC 10.4.19.136 51112 80.77.25.175 80 GET 302 80.77.25.175 /main.php 1.1 Mozilla/5.0 (Windows NT 10.0; Win64; x64) ... Edg/112.0.1722.48
-  Request Cookie: _subid=17dk1e9d14f; 34ab8=<JWT {"streams":{"238":1681917641},"campaigns":{"50":1681917641}}> (1681917641 = 15:20:41 UTC, earlier visit before capture start)
-  Response: Server nginx, Set-Cookie PHPSESSID / 34ab8 / _subid, Location hxxps://firebasestorage.googleapis[.]com/v0/b/serene-cathode-377701.appspot.com/o/XSjwp6O0pq%2FScan_Inv.zip?alt=media&token=a716bdce-1373-44ed-ae89-fdabafa31c61
-```
 
 ---
 
@@ -439,14 +388,6 @@ The next odd connection (skigimeetroc.com) is at **15:35:39**. In between, at 15
 - `Microsoft-CryptoAPI` is the User-Agent **Windows uses when it checks certificates**. The OS sent this request, not a person.
 - If an executable is **signed with a code-signing certificate issued by SSL.com**, Windows fetches the root certificate while it checks the signature before running it. The timing fits the moment the user ran `Scan_Inv.exe`. But this is **inferred**. To confirm it, check the file's signature on the host.
 - So the flow is **15:31 download → about 3–4 minutes to unzip and run → 15:35 first malware traffic**.
-
-**Ticket entry:**
-
-```text
-[251119 0035, Analyst] Reviewing HTTPS download from firebasestorage.googleapis.com - Found
-
-[251119 0035, Analyst] 230419 15:31:14UTC 10.4.19.136 -> 142.251.32.234 443 tls, SNI firebasestorage.googleapis.com, server databytes 273,619 / client 1,524 (download; Unit 42: Scan_Inv.zip 262,343 bytes, password 1235). 15:34:33 Microsoft-CryptoAPI GET hxxp://www.ssl[.]com/repository/SSLcom-RootCA-EV-RSA-4096-R2.crt (likely signature check of the downloaded executable - not confirmed).
-```
 
 ---
 
@@ -522,17 +463,6 @@ Read the other values against the meanings described in published IcedID analyse
 
 !!! tip "Arkime cookie fields"
     Arkime stores cookie names and values separately (`http.cookie.key`, `http.cookie.value` — the names can differ between versions, so check in SPI View). With them you can use `http.cookie.key == __gads && http.cookie.key == _gat` to find **IcedID requests of the same shape in other PCAPs**. The values change per PC, but the **combination of cookie names** stays the same, which makes it a good behaviour clue.
-
-**Ticket entry:**
-
-```text
-[251119 0040, Analyst] Reviewing gzip loader request to skigimeetroc.com (cookie decoding) - Found
-
-[251119 0040, Analyst] 230419 15:35:39UTC 10.4.19.136 51136 192.153.57.233 80 GET 200 skigimeetroc.com / 1.1 (no User-Agent)
-  Cookie: __gads=422998217:1:1808:131; _gid=A0CA96894E9D; _u=4445534B544F502D534646394C4A46:6373696C7661:46353431423635424230383346354633; __io=21_1181811818_1193560798_2439418475; _ga=1.591597.1635208534.1022; _gat=10.0.22621.64
-  CyberChef From Hex: _u -> DESKTOP-SFF9LJF : csilva : F541B65BB083F5F3. __io -> domain SID S-1-5-21-1181811818-1193560798-2439418475. _gat -> Windows 10.0 build 22621, 64-bit.
-  Response: nginx, Content-Type application/gzip, Content-Length 520,803, body starts 1f 8b 08 08, inner file name Tail.txt. Server databytes 520,954.
-```
 
 ---
 
@@ -617,19 +547,6 @@ Distinct JA3 values on 10.4.19.136: 61
 - On the other hand, **`6a5d235e…` (spakernakurs.com) is a new JA3 that appeared exactly once on this PC, just before the follow-up activity**. This is a case where the instructor's "new JA3 after infection" **actually meant something**. But even here it was not JA3 alone: it meant something because **a never-seen domain + a self-signed certificate + a long session + BackConnect right after** all came together.
 - Conclusion: read JA3 **within the same PC, together with the destination (SNI) and certificate**. Just as 10.4.19.138 never shows `3c293bdf…`, the same Windows can produce different JA3 values on different PCs (build, settings), so be careful comparing directly with other PCs too.
 
-**Ticket entry:**
-
-```text
-[251119 0045, Analyst] Reviewing HTTPS C2 sessions (certificates, JA3) - Found
-
-[251119 0045, Analyst] Query: ip.src == 10.4.19.136 && host.http == [askamoshopsi.com, skansnekssky.com, spakernakurs.com]
-askamoshopsi.com 104.168.53.18: 3 sessions 15:36:41-15:37:50, one with server databytes 1,907,262 (download, content encrypted).
-skansnekssky.com 217.199.121.56: 69 sessions 15:36:44-21:17:46.
-spakernakurs.com 104.168.53.18: 1 session 20:12:16-21:22:21 (client 3,603 / server 4,094).
-All certificates: Subject = Issuer = CN=localhost, O=Internet Widgits Pty Ltd, ST=Some-State, C=AU (self-signed), valid 2023-04-11 to 2024-04-10. TLS 1.2, cipher 0xc030.
-JA3 3c293bdf2a25c07559b560ba86debc77 for askamoshopsi/skansnekssky (also used by Windows telemetry self.events.data.microsoft.com on this host - WinHTTP default). JA3 6a5d235ee78c6aede6a61448b4e9ff1e for spakernakurs (first and only time on this host).
-```
-
 ---
 
 ## Step 8 — Measuring the beacon interval { #beacon }
@@ -678,14 +595,6 @@ Start      Src DB  Dst DB
     2. Search for the candidate IP and check whether the Start Time interval and Databytes are **regular**.
     3. Regular interval + regular size + self-signed certificate → almost certainly C2.
 
-**Ticket entry:**
-
-```text
-[251119 0050, Analyst] Measuring C2 beacon interval to 217.199.121.56 - Found
-
-[251119 0050, Analyst] Query: ip.dst == 217.199.121.56. 69 sessions, start-to-start interval median 302 s (min 210 s, max 307 s). First session 15:36:44 client 4,717 / server 2,324 databytes; later sessions client 581-585 / server 1,707 databytes. Regular ~5 minute beacon.
-```
-
 ---
 
 ## Step 9 — Port 443 that is not TLS: finding the follow-up activity (Q6) { #non-tls-443 }
@@ -724,17 +633,6 @@ ip.src == 10.4.19.136 && port.dst == 443 && protocols != tls
 | `16 03 0x` | Start of a TLS handshake (first packet of normal HTTPS) |
 | `17 03 03` | TLS data (HTTPS captured mid-stream) |
 | Anything else | Not TLS → another protocol borrowing port 443 |
-
-**Ticket entry:**
-
-```text
-[251119 0055, Analyst] Hunting non-TLS sessions on port 443 (follow-up activity) - Found
-
-[251119 0055, Analyst] Query: ip.src == 10.4.19.136 && port.dst == 443 && protocols != tls -> 3 sessions to 193.149.176.100 (no DNS for this IP), plus 2 Microsoft sessions captured mid-stream (40.83.247.108, 20.25.241.18; data starts with TLS record 17 03 03, handshake not in capture).
-20:48:00-21:22:36 port 51534 (control channel, 17-byte messages every 60 s)
-20:49:11-20:49:22 port 51535 (remote shell)
-20:49:33-20:49:46 port 51537 (file manager)
-```
 
 ---
 
@@ -820,20 +718,6 @@ Open the three sessions one at a time and view them as **ASCII**. Direction is s
 - Answer to Q6: **there was follow-up malicious activity, and it was IcedID BackConnect**. The attacker used a remote shell to list the domain computers and a file manager to look at the drives and folders.
 - This PCAP has **no trace of Cobalt Strike or VNC** (Unit 42 reached the same conclusion). But listing the domain computers is a sign the attacker is **about to move to the next stage (lateral movement, ransomware preparation)**. In a real incident, isolate the PC right at this point.
 
-**Ticket entry:**
-
-```text
-[251119 0100, Analyst] Reviewing BackConnect sessions to 193.149.176.100 (commands, output) - Found
-
-[251119 0100, Analyst] BackConnect content (cleartext after a short binary header):
-20:49:12 shell banner "Active code page: 65001", prompt c:\>
-20:49:17 server -> host: net group "Domain Computers" /domain
-20:49:17 host -> server: "The request will be processed at a domain controller for domain boogienights.live." Members DESKTOP-JAL4D68$ DESKTOP-RETP4BU$ DESKTOP-SFF9LJF$. Matching SMB session 10.4.19.136 -> 10.4.19.19:445 at 20:49:17.
-20:49:34 server: DISK -> host: C:\ (fixed, 548,934,774,784 total / 512,594,530,304 free), Z:\ (network drive)
-20:49:37 server: CDDIR Z:\ ; 20:49:41 server: CDDIR C:\ -> root listing ($Recycle.Bin, Documents and Settings, pagefile.sys, PerfLogs, Program Files, ProgramData, Recovery, System Volume Information, Users ...)
-No file download/upload seen in the capture.
-```
-
 ---
 
 ## Step 11 — Scope check and the second PC { #scope }
@@ -908,19 +792,7 @@ ip.src == 10.4.19.138 && ip.dst == 85.239.53.73
 - The user of 10.4.19.138 used Edge to download a file shaped like **`/folder/hex.zip`**, and inside is a **`.wsf` (Windows Script File)**. A document-like name (`Complaint_Copy`) with a script extension is a typical lure. The `*.joansstudio.store` names looked up just before (17:12–17:15) **did not exist (NXDOMAIN)**.
 - This shape (**a .wsf inside a zip with a hex name**) matches the **Qakbot distribution reported on this very day (2023-04-19).** The family is **inferred**, though.
 - 28 seconds later the PC **tried 5 times to connect directly to an IP** (no DNS), 85.239.53.73:80, and **failed** (no data, RST). It is **possible** that the script ran and failed to fetch its next stage (inferred — the network alone cannot confirm the script ran).
-- After that there is no suspicious traffic from 10.4.19.138. So it fits the quiz's statement that **"one PC (10.4.19.136) was infected"**. But in real work you should record it not as "clean" but as **"further analysis required"** and request a host check. That is why the ticket ends this line with **Further Analysis Required**.
-
-**Ticket entry:**
-
-```text
-[251119 0105, Analyst] Checking other clients for contact with IOCs - Not Found
-[251119 0110, Analyst] Reviewing suspicious zip download on 10.4.19.138 - Further Analysis Required
-[251119 0115, Analyst] Checking for lateral movement from 10.4.19.136 - Not Found
-
-[251119 0105, Analyst] Query: ip.dst == [80.77.25.175, 142.251.32.234, 192.153.57.233, 104.168.53.18, 217.199.121.56, 193.149.176.100] && ip.src != 10.4.19.136 -> 0 sessions. 10.4.19.143 has no external sessions at all.
-[251119 0110, Analyst] 10.4.19.138 (DESKTOP-RETP4BU): 230419 17:17:10UTC GET hxxp://cotecsecuritygroup[.]com/wicd/643d0491bcea1.zip (66.29.147.117, Edge UA, 200, Content-Disposition attachment, 5,673 bytes gzip-encoded). Zip contains Complaint_Copy_634917.wsf (16,173 bytes). Pattern matches April 2023 Qakbot zip/.wsf distribution (not confirmed). 17:17:38-17:18:53 10.4.19.138 -> 85.239.53.73:80 SYN x5, RST, no data, no DNS. Host triage required.
-[251119 0115, Analyst] Query: ip.src == 10.4.19.136 && ip.dst == 10.4.19.0/24 && ip.dst != 10.4.19.19 -> 0 sessions. Only DC traffic (SMB IPC$/SYSVOL every ~15 min, normal).
-```
+- After that there is no suspicious traffic from 10.4.19.138. So it fits the quiz's statement that **"one PC (10.4.19.136) was infected"**. But in real work you should record it not as "clean" but as **"further analysis required"** and request a host check. That is why the report ends this line with **Further Analysis Required**.
 
 ---
 
@@ -1033,176 +905,6 @@ Across all three cases, the key clues were **direct IP connections, files whose 
 
 ---
 
-## Incident ticket { #ticket }
-
-The template rules are the same as [the ticket rules in the Trickbot case](arkime-only-credential-theft-tls-c2.md#ticket-rules). Points that needed particular care in this case:
-
-- **RELATED TICKETS:** 10.4.19.138 is a separate event, so it is not mixed into this ticket; it says "separate ticket recommended".
-- **C2:** the HTTPS beacon (interval, size) and BackConnect (not TLS) are recorded separately.
-- **Operation log:** the 10.4.19.138 line cannot reach a conclusion, so it ends with **Further Analysis Required**.
-- **Lateral movement:** none, so the fields are left blank (template rule).
-- Operator name, ticket link and evidence paths are placeholders, and the operation log times are examples.
-
-```text
-#INDEX ENTRY#
-
-[] -- 230419 1531 -- 10.4.19.136 DESKTOP-SFF9LJF -- IcedID infection: TDS redirect, Firebase zip, gzip loader, HTTPS C2 beacon, BackConnect follow-up -- <ticket-link>
-
-
-#TICKET METADATA#
-
-OPERATORS: <Analyst>
-
-TIME OF INCIDENT: 230419 15:31:07 UTC
-
-RELATED TICKETS:
-N/A (separate ticket recommended for 10.4.19.138 DESKTOP-RETP4BU - zip/.wsf download at 230419 17:17:10 UTC)
-
-DESCRIPTION OF INVESTIGATION:
-
-At 230419 15:31:07 UTC DESKTOP-SFF9LJF (10.4.19.136, user csilva / Cornelius Silva, domain BOOGIENIGHTS) used Microsoft Edge to request hxxp://80.77.25[.]175/main.php (IP in URL, no DNS). The nginx server answered 302 with traffic-distribution cookies (_subid, JWT with "streams"/"campaigns") and redirected to Firebase Storage (firebasestorage.googleapis[.]com/.../Scan_Inv.zip); the host downloaded about 273 KB over HTTPS at 15:31:14 (Unit 42: password-protected Scan_Inv.zip containing the IcedID installer Scan_Inv.exe). At 15:35:39 the installer sent HTTP GET / to skigimeetroc[.]com (192.153.57.233) with no User-Agent and an IcedID fingerprint cookie (_u hex-decodes to DESKTOP-SFF9LJF:csilva, _gat 10.0.22621.64, __io = domain SID S-1-5-21-1181811818-1193560798-2439418475) and received a 520,803-byte "application/gzip" file (gzip header, inner name Tail.txt): the IcedID gzip loader payload.
-
-From 15:36:41 the host made HTTPS C2 connections to askamoshopsi[.]com (104.168.53.18, 3 sessions, about 1.9 MB downloaded) and skansnekssky[.]com (217.199.121.56, 69 sessions, one every ~5 minutes until the end of capture); both servers present the same default self-signed certificate (CN=localhost, O=Internet Widgits Pty Ltd). At 20:12:16 a new long session to spakernakurs[.]com (also 104.168.53.18) started with a JA3 not seen before on this host. Follow-up activity: from 20:48:00 the host opened three raw TCP sessions (not TLS) to 193.149.176.100:443 - IcedID BackConnect. Through it the operator ran a remote shell (net group "Domain Computers" /domain, listing DESKTOP-JAL4D68, DESKTOP-RETP4BU, DESKTOP-SFF9LJF) and a file manager (drive list C:\ and mapped Z:\, directory listing of C:\). No Cobalt Strike, VNC, data upload or lateral movement seen. Determination: MALICIOUS - IcedID (BokBot) infection with BackConnect hands-on-keyboard access (confirmed by Unit 42 answers).
-
-
-#IMPACTED MACHINES#
-
-INTERNAL IP/s & HOSTNAME/s:
-10.4.19.136 DESKTOP-SFF9LJF (user csilva, MAC 14:58:d0:2e:c5:ae, Windows build 10.0.22621 x64 per IcedID cookie)
-
-INTERNAL SOURCE PORT/s: (If Ephemeral Leave Blank.)
-
-LATERAL DESTINATION IP/s & HOSTNAME/s: (If No Lateral Leave Blank.)
-
-LATERAL DESTINATION PORT/s: (If No Lateral OR If Ephemeral Leave Blank.)
-
-
-#EXTERNAL MACHINES#
-
-EXTERNAL IP/s & HOSTNAME/s:
-80.77.25.175 - TDS redirect page /main.php (HTTP 80, no domain)
-142.251.32.234 (firebasestorage.googleapis[.]com) - legitimate Google service abused to host Scan_Inv.zip (HTTPS 443)
-192.153.57.233 (skigimeetroc[.]com) - IcedID gzip loader payload (HTTP 80)
-104.168.53.18 (askamoshopsi[.]com, spakernakurs[.]com) - IcedID HTTPS C2 (443)
-217.199.121.56 (skansnekssky[.]com) - IcedID HTTPS C2 beacon (443, ~5 min)
-193.149.176.100 - IcedID BackConnect (raw TCP 443, no domain)
-
-EXTERNAL SOURCE PORT/s: (If Ephemeral Leave Blank.)
-
-EXTERNAL DESTINATION PORT/s:
-Port 80 - HTTP
-Port 443 - TLS (C2) and raw TCP (BackConnect)
-
-
-#SEARCH QUERIES#
-
-ARKIME (MOLOCH):
-ip == 10.4.19.136 && ip == [80.77.25.175, 192.153.57.233, 104.168.53.18, 217.199.121.56, 193.149.176.100]
-ip.src == 10.4.19.136 && port.dst == 443 && protocols != tls
-host.http == [skigimeetroc.com, askamoshopsi.com, skansnekssky.com, spakernakurs.com]
-
-SPLUNK: (not run - equivalent Zeek query)
-index=zeek sourcetype=conn:zeek id_orig_h=10.4.19.136 AND id_resp_h IN (80.77.25.175, 192.153.57.233, 104.168.53.18, 217.199.121.56, 193.149.176.100)
-
-
-#EVIDENCE LOCATIONS#
-
-Team1: /home/<analyst>/evidence/230419_DESKTOP-SFF9LJF_tds_redirect_main_php.pcap
-Team1: /home/<analyst>/evidence/230419_DESKTOP-SFF9LJF_gzip_loader_skigimeetroc.pcap
-Team1: /home/<analyst>/evidence/230419_DESKTOP-SFF9LJF_icedid_https_c2.pcap
-Team1: /home/<analyst>/evidence/230419_DESKTOP-SFF9LJF_backconnect_193.149.176.100.pcap
-(Exported from Arkime "Download PCAP".)
-
-
-#OPERATION LOG / ANALYST NOTES#
-
-[251119 0010, Analyst] Establishing data time range and session count - Found
-[251119 0012, Analyst] Reviewing protocols and internal hosts - Found
-[251119 0015, Analyst] Identifying client IPs, MACs and hostnames (no DHCP in capture) - Found
-[251119 0020, Analyst] Reviewing DNS queries for unusual domains - Found
-[251119 0025, Analyst] Identifying user account for 10.4.19.136 (Kerberos, LDAP) - Found
-[251119 0030, Analyst] Reviewing cleartext HTTP from 10.4.19.136 (first malicious request, redirect) - Found
-[251119 0035, Analyst] Reviewing HTTPS download from firebasestorage.googleapis.com - Found
-[251119 0040, Analyst] Reviewing gzip loader request to skigimeetroc.com (cookie decoding) - Found
-[251119 0045, Analyst] Reviewing HTTPS C2 sessions (certificates, JA3) - Found
-[251119 0050, Analyst] Measuring C2 beacon interval to 217.199.121.56 - Found
-[251119 0055, Analyst] Hunting non-TLS sessions on port 443 (follow-up activity) - Found
-[251119 0100, Analyst] Reviewing BackConnect sessions to 193.149.176.100 (commands, output) - Found
-[251119 0105, Analyst] Checking other clients for contact with IOCs - Not Found
-[251119 0110, Analyst] Reviewing suspicious zip download on 10.4.19.138 - Further Analysis Required
-[251119 0115, Analyst] Checking for lateral movement from 10.4.19.136 - Not Found
-
-[Time -- Operator]
-
-Tool Output / Notes:
-
-[251119 0010, Analyst] Data range 2023-04-19 15:26:28 - 21:22:36 UTC (5 h 56 min), about 1,640 sessions.
-
-[251119 0012, Analyst] Internal hosts 10.4.19.136 (718 sessions as source), 10.4.19.138 (833), 10.4.19.143 (85), server 10.4.19.19 (4). Top ports: udp 53, tcp 443, ldap 389, smb 445, rpc 135/49669, krb5 88, http 80. No unusual destination ports.
-
-[251119 0015, Analyst] Query: protocols == dhcp -> 0 sessions. Query: ip.src == 10.4.19.0/24 && protocols == krb5 -> computer accounts desktop-sff9ljf$, desktop-retp4bu$, desktop-jal4d68$. Src MAC (mac.src) and NetBIOS:
-10.4.19.136 14:58:d0:2e:c5:ae DESKTOP-SFF9LJF
-10.4.19.138 00:90:27:cd:92:90 DESKTOP-RETP4BU
-10.4.19.143 00:02:a5:7c:61:08 DESKTOP-JAL4D68
-10.4.19.19 00:21:5a:86:39:8f WIN-GP4JHCK2JMV (DC, domain boogienights.live); gateway MAC 00:02:17:5c:e6:13
-
-[251119 0020, Analyst] Query: ip.src == 10.4.19.0/24 && protocols == dns. 10.4.19.136: firebasestorage.googleapis.com 15:31:10, skigimeetroc.com 15:35:39 -> 192.153.57.233, askamoshopsi.com 15:36:41 -> 104.168.53.18, skansnekssky.com 15:36:43 -> 217.199.121.56 (re-queried about every 30 min), spakernakurs.com 20:12:16 -> 104.168.53.18. 10.4.19.138: nobpc.joansstudio.store / dlmfz.joansstudio.store (NXDOMAIN) 17:12-17:15, cotecsecuritygroup.com 17:17:10 -> 66.29.147.117. 10.4.19.143: internal names only.
-Query: host.dns == [skigimeetroc.com, askamoshopsi.com, skansnekssky.com, spakernakurs.com] -> only 10.4.19.136.
-
-[251119 0025, Analyst] Query: ip.src == 10.4.19.136 && protocols == krb5 -> krb5.cname csilva, desktop-sff9ljf$ (19:30:50-19:34:48). LDAP 10.4.19.136 -> 10.4.19.19:389 at 19:34:48 contains "CN=Cornelius Silva,CN=Users,DC=boogienights,DC=live".
-
-[251119 0030, Analyst] Query: ip.src == 10.4.19.136 && protocols == http
-230419 15:31:07UTC 10.4.19.136 51112 80.77.25.175 80 GET 302 80.77.25.175 /main.php 1.1 Mozilla/5.0 (Windows NT 10.0; Win64; x64) ... Edg/112.0.1722.48
-  Request Cookie: _subid=17dk1e9d14f; 34ab8=<JWT {"streams":{"238":1681917641},"campaigns":{"50":1681917641}}> (1681917641 = 15:20:41 UTC, earlier visit before capture start)
-  Response: Server nginx, Set-Cookie PHPSESSID / 34ab8 / _subid, Location hxxps://firebasestorage.googleapis[.]com/v0/b/serene-cathode-377701.appspot.com/o/XSjwp6O0pq%2FScan_Inv.zip?alt=media&token=a716bdce-1373-44ed-ae89-fdabafa31c61
-
-[251119 0035, Analyst] 230419 15:31:14UTC 10.4.19.136 -> 142.251.32.234 443 tls, SNI firebasestorage.googleapis.com, server databytes 273,619 / client 1,524 (download; Unit 42: Scan_Inv.zip 262,343 bytes, password 1235). 15:34:33 Microsoft-CryptoAPI GET hxxp://www.ssl[.]com/repository/SSLcom-RootCA-EV-RSA-4096-R2.crt (likely signature check of the downloaded executable - not confirmed).
-
-[251119 0040, Analyst] 230419 15:35:39UTC 10.4.19.136 51136 192.153.57.233 80 GET 200 skigimeetroc.com / 1.1 (no User-Agent)
-  Cookie: __gads=422998217:1:1808:131; _gid=A0CA96894E9D; _u=4445534B544F502D534646394C4A46:6373696C7661:46353431423635424230383346354633; __io=21_1181811818_1193560798_2439418475; _ga=1.591597.1635208534.1022; _gat=10.0.22621.64
-  CyberChef From Hex: _u -> DESKTOP-SFF9LJF : csilva : F541B65BB083F5F3. __io -> domain SID S-1-5-21-1181811818-1193560798-2439418475. _gat -> Windows 10.0 build 22621, 64-bit.
-  Response: nginx, Content-Type application/gzip, Content-Length 520,803, body starts 1f 8b 08 08, inner file name Tail.txt. Server databytes 520,954.
-
-[251119 0045, Analyst] Query: ip.src == 10.4.19.136 && host.http == [askamoshopsi.com, skansnekssky.com, spakernakurs.com]
-askamoshopsi.com 104.168.53.18: 3 sessions 15:36:41-15:37:50, one with server databytes 1,907,262 (download, content encrypted).
-skansnekssky.com 217.199.121.56: 69 sessions 15:36:44-21:17:46.
-spakernakurs.com 104.168.53.18: 1 session 20:12:16-21:22:21 (client 3,603 / server 4,094).
-All certificates: Subject = Issuer = CN=localhost, O=Internet Widgits Pty Ltd, ST=Some-State, C=AU (self-signed), valid 2023-04-11 to 2024-04-10. TLS 1.2, cipher 0xc030.
-JA3 3c293bdf2a25c07559b560ba86debc77 for askamoshopsi/skansnekssky (also used by Windows telemetry self.events.data.microsoft.com on this host - WinHTTP default). JA3 6a5d235ee78c6aede6a61448b4e9ff1e for spakernakurs (first and only time on this host).
-
-[251119 0050, Analyst] Query: ip.dst == 217.199.121.56. 69 sessions, start-to-start interval median 302 s (min 210 s, max 307 s). First session 15:36:44 client 4,717 / server 2,324 databytes; later sessions client 581-585 / server 1,707 databytes. Regular ~5 minute beacon.
-
-[251119 0055, Analyst] Query: ip.src == 10.4.19.136 && port.dst == 443 && protocols != tls -> 3 sessions to 193.149.176.100 (no DNS for this IP), plus 2 Microsoft sessions captured mid-stream (40.83.247.108, 20.25.241.18; data starts with TLS record 17 03 03, handshake not in capture).
-20:48:00-21:22:36 port 51534 (control channel, 17-byte messages every 60 s)
-20:49:11-20:49:22 port 51535 (remote shell)
-20:49:33-20:49:46 port 51537 (file manager)
-
-[251119 0100, Analyst] BackConnect content (cleartext after a short binary header):
-20:49:12 shell banner "Active code page: 65001", prompt c:\>
-20:49:17 server -> host: net group "Domain Computers" /domain
-20:49:17 host -> server: "The request will be processed at a domain controller for domain boogienights.live." Members DESKTOP-JAL4D68$ DESKTOP-RETP4BU$ DESKTOP-SFF9LJF$. Matching SMB session 10.4.19.136 -> 10.4.19.19:445 at 20:49:17.
-20:49:34 server: DISK -> host: C:\ (fixed, 548,934,774,784 total / 512,594,530,304 free), Z:\ (network drive)
-20:49:37 server: CDDIR Z:\ ; 20:49:41 server: CDDIR C:\ -> root listing ($Recycle.Bin, Documents and Settings, pagefile.sys, PerfLogs, Program Files, ProgramData, Recovery, System Volume Information, Users ...)
-No file download/upload seen in the capture.
-
-[251119 0105, Analyst] Query: ip.dst == [80.77.25.175, 142.251.32.234, 192.153.57.233, 104.168.53.18, 217.199.121.56, 193.149.176.100] && ip.src != 10.4.19.136 -> 0 sessions. 10.4.19.143 has no external sessions at all.
-
-[251119 0110, Analyst] 10.4.19.138 (DESKTOP-RETP4BU): 230419 17:17:10UTC GET hxxp://cotecsecuritygroup[.]com/wicd/643d0491bcea1.zip (66.29.147.117, Edge UA, 200, Content-Disposition attachment, 5,673 bytes gzip-encoded). Zip contains Complaint_Copy_634917.wsf (16,173 bytes). Pattern matches April 2023 Qakbot zip/.wsf distribution (not confirmed). 17:17:38-17:18:53 10.4.19.138 -> 85.239.53.73:80 SYN x5, RST, no data, no DNS (hard-coded IP; possibly the script trying to fetch the next stage). No further suspicious traffic from 10.4.19.138. Host triage required to confirm whether the .wsf was run.
-
-[251119 0115, Analyst] Query: ip.src == 10.4.19.136 && ip.dst == 10.4.19.0/24 && ip.dst != 10.4.19.19 -> 0 sessions (no connections to other clients). Only DC traffic (DNS, LDAP, Kerberos, SMB IPC$/SYSVOL every ~15 min, normal).
-
-RECOMMENDATIONS:
-- Isolate DESKTOP-SFF9LJF (10.4.19.136); host triage for Scan_Inv.zip/Scan_Inv.exe, IcedID loader and license.dat, persistence (scheduled task), BackConnect module.
-- Reset csilva credentials; assume operator had interactive access from 20:48 UTC.
-- Block 80.77.25[.]175, skigimeetroc[.]com, askamoshopsi[.]com, skansnekssky[.]com, spakernakurs[.]com, 104.168.53.18, 217.199.121.56, 193.149.176.100.
-- Open a separate ticket for DESKTOP-RETP4BU (10.4.19.138): check Downloads for 643d0491bcea1.zip / Complaint_Copy_634917.wsf and wscript execution; block cotecsecuritygroup[.]com, 85.239.53.73.
-- Watch the domain for follow-up (Cobalt Strike, ransomware staging) given the domain-computer enumeration.
-```
-
-For a blank template, use [the blank ticket template in the Trickbot case](arkime-only-credential-theft-tls-c2.md#ticket-template).
-
----
-
 ## Copy-ready query sheet { #query-sheet }
 
 Replace the `<…>` parts.
@@ -1295,7 +997,7 @@ ip.src == <host-IP> && ip.dst == <internal-CIDR> && ip.dst != <DC-IP>
 | To Hex | First bytes of the response (`1f 8b 08 08` gzip), first bytes of a session (`16 03` / `17 03`) |
 | Strings | Pulling commands and output out of BackConnect Raw |
 | Gunzip → Unzip | **File list only** of the zip the other PC downloaded |
-| Defang URL / Defang IP | Writing IOCs in the ticket |
+| Defang URL / Defang IP | Writing IOCs in the report |
 
 ---
 
@@ -1310,7 +1012,7 @@ ip.src == <host-IP> && ip.dst == <internal-CIDR> && ip.dst != <DC-IP>
 - **Not everything on 443 is TLS.** Use `port.dst == 443 && protocols != tls`, and tell them apart by the first bytes (`16 03` / `17 03`).
 - **A "change in the number of JA3 values" means almost nothing with modern browsers** (Edge's JA3 changes on every connection). Instead, look for the combination **a JA3 never seen before on the same PC + a never-seen domain + self-signed**. Use JA4 where you can.
 - **Line up commands and network traces by time.** `net group … /domain` (20:49:17) and the SMB to the DC (20:49:17) are in the same second.
-- **Look beyond the quiz.** Even if the conclusion is "one infected PC", record an odd download on another PC in its own ticket.
+- **Look beyond the quiz.** Even if the conclusion is "one infected PC", record an odd download on another PC in its own report.
 
 ## References { #references }
 

@@ -10,7 +10,6 @@ tags:
   - webshell
   - reverse-shell
   - linux
-  - ticket
 ---
 
 # Witty server — 가정집 LAN 안의 PHP 웹셸, 파일 업로드, 리버스 셸 { #wittyserver }
@@ -22,11 +21,11 @@ tags:
 |---|---|
 | **증거** | 연습용 PCAP, 2017-01-20 09:53:28 – 09:58:40 UTC (약 5분). 출처 기록 없음 |
 | **환경** | 폐쇄망. Zeek 로그가 들어간 Splunk(`index=zeek`)와 Arkime, **이 PCAP만 들어 있음**(케이스 필드나 태그 필요 없음). **Wireshark 사용 안 함.** |
-| **결과물** | 분석, Snort 룰 하나, 짧은 침해사고 티켓(txt) |
+| **결과물** | 분석, Snort 룰 하나 |
 | **관련 페이지** | [BEGUILESOFT — FTP로 유출한 HawkEye](beguilesoft-hawkeye-ftp-exfil.md)(같은 베이스라이닝 방법) · [플레이북: 웹셸/서버](../playbooks/webshell-server.md) · [SPL 치트시트](../splunk/spl-cheatsheet.md) · [Zeek conn.log](../../network/zeek/conn-log.md) · [Arkime 검색 문법](../../network/arkime/search-syntax.md) |
 
 !!! tip "이 페이지 읽는 법"
-    분석한 순서 그대로예요. **베이스라이닝 → 이상한 점 → HTTP → 연결과 파일 → Arkime로 내용 → 초기 침투 → Snort → 티켓**. 새로 나오는 SPL 명령과 필드는 처음 나올 때 설명해요. **질문** 상자는 분석하면서 실제로 나온 질문과 답이에요.
+    분석한 순서 그대로예요. **베이스라이닝 → 이상한 점 → HTTP → 연결과 파일 → Arkime로 내용 → 초기 침투 → Snort**. 새로 나오는 SPL 명령과 필드는 처음 나올 때 설명해요. **질문** 상자는 분석하면서 실제로 나온 질문과 답이에요.
 
 !!! warning "이 페이지의 지표는 실제 값입니다"
     도메인과 IP는 실제 캡처에서 나온 값이에요. 본문과 표에서는 무력화(`[.]`)했고, 코드 블록 안은 입력한 그대로 두었어요. **절대 접속하지 마세요.**
@@ -277,7 +276,7 @@ time      id_resp_h      method     uri                                         
 
 마지막 세 줄이 가장 중요해요. **리버스 셸**은 서버(.100)가 공격자 쪽(.102 또는 .101)의 4444 포트로 **먼저 접속해 오게** 만드는 방법이에요. 성공하면 공격자는 브라우저가 아니라 진짜 명령창(셸)으로 서버를 조종해요. .102로 두 번 시도하고, 그다음에는 **192.168.1.101**로 바꿨어요. 101은 캡처에 거의 안 보이는 또 다른 내부 호스트예요.
 
-**82.98.86.178은 C2가 아니에요.** 웹셸 페이지마다 `/images/background.gif`를 82.98.86.178(`www.ajithkp560.aaaaaaaa[.]com`)에서, `jquery-latest.js`를 94.31.29.54(`code.jquery[.]com`)에서 불러와요. Referer가 전부 `minishell.php`라서, 이건 웹셸 페이지 안에 박힌 **리소스**예요. 배경 이미지는 웹셸 제작자의 사이트에서 오는 거고, 명령이 오가지 않아요. 티켓에는 "웹셸 화면이 불러온 외부 리소스" 정도로만 적어요. 그래도 탐지 단서로는 좋아요.
+**82.98.86.178은 C2가 아니에요.** 웹셸 페이지마다 `/images/background.gif`를 82.98.86.178(`www.ajithkp560.aaaaaaaa[.]com`)에서, `jquery-latest.js`를 94.31.29.54(`code.jquery[.]com`)에서 불러와요. Referer가 전부 `minishell.php`라서, 이건 웹셸 페이지 안에 박힌 **리소스**예요. 배경 이미지는 웹셸 제작자의 사이트에서 오는 거고, 명령이 오가지 않아요. 보고서에는 "웹셸 화면이 불러온 외부 리소스" 정도로만 적어요. 그래도 탐지 단서로는 좋아요.
 
 **그 밖에:**
 
@@ -504,7 +503,7 @@ IHDR ... sRGB ... gAMA ... pHYs ... IDAT ...
 
     **2. minishell.php를 올리는 트래픽이 없어요.** 서버가 받은 파일은 cerber4.PNG와 작은 폼 데이터뿐이에요. 웹셸을 올린 PUT/POST, FTP, SCP 흔적도 없어요.
 
-    **3. 단서: .100 ↔ .101 SSH 세션**은 캡처 시작 전에 이미 열려 있었어요(OTH). 웹셸을 올린 경로일 수도 있지만 암호화돼 있어서, 티켓에는 "가능성"으로만 적어요.
+    **3. 단서: .100 ↔ .101 SSH 세션**은 캡처 시작 전에 이미 열려 있었어요(OTH). 웹셸을 올린 경로일 수도 있지만 암호화돼 있어서, 보고서에는 "가능성"으로만 적어요.
 
 .100에 목록 페이지보다 먼저 들어온 요청이 없는지 확인해요.
 
@@ -539,7 +538,7 @@ GET     /icons/folder.gif      09:53:35  1
 
     **링크가 안 생기면:** **Destination Raw**(헤더 + 본문)를 받고, CyberChef **Extract Files**(GZIP 체크)로 gzip 부분만 잘라 내요(gzip 시작 표시 `1f 8b`를 찾아 줘요). 그 파일을 저장해서 다시 **Gunzip**해요.
 
-    이번에는 다운로드가 되지 않아서, 티켓에는 날짜 없이 "Initial access not in capture"로 썼어요.
+    이번에는 다운로드가 되지 않아서, 보고서에는 날짜 없이 "Initial access not in capture"로 썼어요.
 
 ---
 
@@ -584,25 +583,6 @@ alert tcp $HOME_NET any -> $HOME_NET 55555 (msg:"minishell.php webshell access -
 | 도메인 / IP | `www.ajithkp560.aaaaaaaa[.]com` / 82.98.86.178 | 웹셸 페이지의 배경 이미지 |
 | 파일 | `/tmp/cerber4.PNG` (23,125 B, PNG) | 웹셸로 업로드 |
 | 포트 | 서버에서 LAN으로 4444/tcp | 리버스 셸 |
-
----
-
-## 침해사고 티켓 { #ticket }
-
-**피해 시스템은 웹 서버 .100**이고, .102와 .101은 **LATERAL 출발지**(내부 공격 출발지)예요. 핵심만, 쉬운 영어로 썼어요.
-
-[:material-download: 티켓을 txt 파일로 내려받기](files/170120_wittyserver_ticket.txt){ .md-button }
-
-```text
---8<-- "docs-ko/blueteam/investigations/files/170120_wittyserver_ticket.txt"
-```
-
-칸을 나눈 방법:
-
-- **IMPACTED INTERNAL MACHINES** — 피해를 입은 웹 서버 wittyserver(192.168.1.100).
-- **LATERAL** — 웹셸을 조작한 .102와 리버스 셸을 받은 .101, 그리고 포트 55555와 4444.
-- **EXTERNAL MACHINES** — 82.98.86.178 하나만. C2는 아니지만 minishell.php 사용을 탐지하는 확실한 단서예요. TeamViewer와 No-IP는 공격과 이어지는 증거가 없어서 뺐어요.
-- `nc ... 5555`와 이미 열려 있던 SSH 세션은 네트워크만으로 끝까지 확인할 수 없어서 "host check required"로 남겼어요. 초기 침투는 근거와 함께 "Not Found"로 기록했어요.
 
 ---
 

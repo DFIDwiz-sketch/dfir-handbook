@@ -1,5 +1,5 @@
 ---
-title: Arkime-Only Walkthrough — Script Downloader to Credential Theft, TLS C2 and an Incident Ticket
+title: Arkime-Only Walkthrough — Script Downloader to Credential Theft and TLS C2
 tags:
   - blue-team
   - pcap
@@ -8,19 +8,18 @@ tags:
   - trickbot
   - c2
   - credential-theft
-  - ticket
 ---
 
-# Arkime-Only Walkthrough — Script Downloader to Credential Theft, TLS C2 and an Incident Ticket { #arkime-only-walkthrough }
+# Arkime-Only Walkthrough — Script Downloader to Credential Theft and TLS C2 { #arkime-only-walkthrough }
 
 !!! abstract "Case summary"
-    One Windows 10 workstation in the `mondogreek.com` domain fetched `YAS20.exe` with a **script** (no browser). Within 12 minutes it checked its public IP, opened encrypted C2 on ports **449** and **447**, downloaded more modules, **sent stolen browser passwords and a full reconnaissance dump in cleartext HTTP POSTs**, and swept the subnet on **SMB 445** (refused). The pattern is consistent with **Trickbot** (inferred; no hash lookup was possible offline). The whole case was solved **in the Arkime web UI only**, with CyberChef for decoding, and ends with a complete incident ticket.
+    One Windows 10 workstation in the `mondogreek.com` domain fetched `YAS20.exe` with a **script** (no browser). Within 12 minutes it checked its public IP, opened encrypted C2 on ports **449** and **447**, downloaded more modules, **sent stolen browser passwords and a full reconnaissance dump in cleartext HTTP POSTs**, and swept the subnet on **SMB 445** (refused). The pattern is consistent with **Trickbot** (inferred; no hash lookup was possible offline). The whole case was solved **in the Arkime web UI only**, with CyberChef for decoding.
 
 | | |
 |---|---|
 | **Evidence** | One PCAP, 2020-03-11 21:22:35 – 22:06:41 UTC (44 min 06 s), 1,131 sessions |
 | **Environment** | Closed network, no internet (no VirusTotal, no OSINT). Arkime v5.6.4 web UI + CyberChef (offline) |
-| **Deliverable** | An incident ticket: index entry, description, impacted/external machines, search queries, evidence locations, operation log with matching tool output |
+| **Deliverable** | Analysis, answers and IOCs |
 | **Related pages** | [Arkime offline PCAP guide](../../network/arkime/offline-pcap-guide.md) · [Arkime search syntax](../../network/arkime/search-syntax.md) · [Beaconing & C2](../../network/beaconing-c2.md) · [EternalBlue / SMBv1](../../adversary/eternalblue-smbv1.md) |
 
 !!! tip "How to read this page"
@@ -31,7 +30,6 @@ tags:
     3. **Query explained** — what each piece means
     4. **Actual result** — what appears on screen
     5. **Reading the result** — what it means and why it is suspicious (or normal)
-    6. **Ticket entry** — how the step goes into the ticket's operation log and notes
 
     **Question** boxes are questions asked during the analysis, with their answers. The [copy-ready query sheet](#query-sheet) at the end collects the queries with `<placeholders>` for your next PCAP.
 
@@ -62,9 +60,6 @@ Each session carries:
 - Packets and bytes
 - Protocols (tcp, udp, http, tls, dns …)
 - Parsed fields where available: HTTP host/URI/User-Agent, TLS certificates, DNS names
-
-!!! note "Moloch = Arkime"
-    If your team's ticket template has a `MOLOCH:` field, that is where Arkime queries go. Moloch is Arkime's old name.
 
 ### The screens you will use { #tabs }
 
@@ -97,7 +92,7 @@ The **Session / Packets / Bytes** buttons above the chart change what is counted
 ### Trap 2 — the time zone { #timezone }
 
 !!! warning "Times are shown in the browser's time zone"
-    Arkime shows times in **your PC's local time** by default, but tickets are usually written in **UTC**. On a PC at UTC+10:30, missing this shifts **every time by 10.5 hours**.
+    Arkime shows times in **your PC's local time** by default, but reports are usually written in **UTC**. On a PC at UTC+10:30, missing this shifts **every time by 10.5 hours**.
 
     User menu at the top right → **Settings → General → Timezone Format → UTC**. Afterwards the chart axis shows `UTC` after each time (e.g. `2020/03/11 21:25:00 UTC`) — a quick way to confirm the setting.
 
@@ -105,7 +100,7 @@ The **Session / Packets / Bytes** buttons above the chart change what is counted
 
 ## Step 1 — Data start, end and session count { #data-range }
 
-**Goal:** know when the data starts and ends and how big it is. Every time in the ticket must fall inside this range.
+**Goal:** know when the data starts and ends and how big it is. Every time in the report must fall inside this range.
 
 !!! question "Question: Arkime works in sessions — so how do I see when the data starts and ends?"
     Each session has a **Start Time** (first packet) and a **Stop Time** (last packet). So:
@@ -124,7 +119,7 @@ The **Session / Packets / Bytes** buttons above the chart change what is counted
 
     **Method 2: the timeline chart (rough)**
 
-    With the range on All, the **leftmost and rightmost bars** bound the data. Hover a bar to see its time. Good for a quick feel, not accurate to the second — use method 1 for the ticket.
+    With the range on All, the **leftmost and rightmost bars** bound the data. Hover a bar to see its time. Good for a quick feel, not accurate to the second — use method 1 for the report.
 
     **Method 3: the Files tab (reference)**
 
@@ -146,14 +141,6 @@ Sessions 1,131
 ```
 
 `00:44:06` at the right of the time bar is the data length. **Bounding: First Packet** means "show sessions whose first packet falls inside the range".
-
-**Ticket entry:**
-
-```text
-[251117 2000, Analyst] Establishing data time range and session count - Found
-
-[251117 2000, Analyst] Data range 2020-03-11 21:22:35 - 22:06:41 UTC (44:06). 1,131 total sessions. Display timezone set to UTC.
-```
 
 ---
 
@@ -186,7 +173,7 @@ Note anything **unexpected** here. For example `ssh`, `irc` or `rdp` on a workst
 
 ### Internal or external { #internal-external }
 
-The ticket separates **INTERNAL and EXTERNAL IPs**, so decide this first. Private ranges are internal; everything else is external.
+The report separates **INTERNAL and EXTERNAL IPs**, so decide this first. Private ranges are internal; everything else is external.
 
 | Private range | From – to | CIDR |
 |---|---|---|
@@ -218,17 +205,6 @@ The result is a session list; each row reads `Start Time | Stop Time | Src IP / 
     - A real inbound connection (needs attention)
 
     Checked in [step 5](#step-3).
-
-**Ticket entry:**
-
-```text
-[251117 2003, Analyst] Reviewing protocol distribution and internal hosts - Found
-
-[251117 2003, Analyst] SPI View (no filter). Internal network 10.3.11.0/24.
-Src IP: 10.3.11.119 (491), 10.3.11.194 (377), 10.3.11.218 (259), 10.3.11.3 (3), 52.242.211.89 (1)
-Protocols: tcp 672, udp 458, tls 349, dns 325, http2 126, ldap 79, krb5 78, http 44, dcerpc 41, smb 30, llmnr 29, ssdp 16, ntp 9, mdns 8, quic 6, igmp 1
-Active Directory environment (ldap/krb5/dcerpc/smb). 3 workstations + 1 server.
-```
 
 ---
 
@@ -264,20 +240,11 @@ Src IP     10.3.11.119 (251)  10.3.11.194 (170)  10.3.11.218 (150)
 !!! tip "Check by port too"
     In the General section click the **Dst Port** field button. `53 (DNS)`, `88 (Kerberos)`, `389 (LDAP)`, `135 (RPC)`, `445 (SMB)` confirm a DC.
 
-**Ticket entry:**
-
-```text
-[251117 2010, Analyst] Identifying host roles (DC) - Found
-
-[251117 2010, Analyst] Query: ip.dst == 10.3.11.3 -> 571 sessions. Protocols: udp 371, dns 325, tcp 200, ldap 79, krb5 78, dcerpc 41, smb 24, ntp 9. Src: 10.3.11.119 (251), 10.3.11.194 (170), 10.3.11.218 (150).
-10.3.11.3 = Domain Controller / DNS (all krb5/ldap terminate here).
-```
-
 ---
 
 ## Step 4 — Hostnames and users from Kerberos { #step-2 }
 
-**Goal:** the ticket needs **IP + hostname**. Kerberos traffic carries both computer and user account names.
+**Goal:** the report needs **IP + hostname**. Kerberos traffic carries both computer and user account names.
 
 **Query:**
 
@@ -356,20 +323,7 @@ ip.src == 10.3.11.194 && protocols == krb5
 | 10.3.11.194 | Workstation | LAPTOP-7XMV2SN | otis.witherspoon |
 | 10.3.11.218 | Workstation | LAPTOP-I9ZPI04 | dominga.mcdowell |
 
-The ticket can now name every IP with its hostname.
-
-**Ticket entry:**
-
-```text
-[251117 2015, Analyst] Mapping internal IPs to hostnames/users via Kerberos cname - Found
-
-[251117 2015, Analyst] Query: ip.src == 10.3.11.0/24 && protocols == krb5 -> SPI View krb5 (cname/realm/sname).
-Realm: MONDOGREEK.COM. DC: Mondogreek-DC.mondogreek.com (sname cifs/ldap)
-10.3.11.3   Mondogreek-DC
-10.3.11.119 LAPTOP-SQSA42O  user dorian.neff
-10.3.11.194 LAPTOP-7XMV2SN  user otis.witherspoon
-10.3.11.218 LAPTOP-I9ZPI04  user dominga.mcdowell
-```
+The report can now name every IP with its hostname.
 
 ---
 
@@ -422,16 +376,6 @@ TLS-encrypted data — unreadable is normal.
 Src MAC is **Netgear** (router/gateway), Dst MAC is **Dell** (laptop). Packets from external IPs always arrive through the gateway, so **an external IP always shows the gateway's MAC**. An external IP next to an internal device's MAC would be the odd case.
 
 **Conclusion:** `{ ARIN }` is a US-registered range (Microsoft Azure). Not an inbound attack — **the tail of an HTTPS connection that was closing**. Benign. **Log what you ruled out** as well, so another analyst does not repeat the check.
-
-**Ticket entry:**
-
-```text
-[251117 2020, Analyst] Checking external IP 52.242.211.89 seen as session initiator (possible inbound) - Not Found
-
-[251117 2020, Analyst] Query: ip.src == 52.242.211.89 -> 1 session.
-200311 21:32:00 UTC 52.242.211.89:443 {ARIN} -> 10.3.11.194:50355 tcp, 2 packets, 283 bytes. TCP flags SYN 0 SYN-ACK 0 PSH 1 RST 1. Src MAC 20:e5:2a:b6:93:f1 (Netgear, gateway), Dst MAC b8:ca:3a:ec:3b:8f (Dell). Payload encrypted TLS record.
-No handshake captured; mid-session server packet on 443 answered by client RST. Not an inbound connection. Benign.
-```
 
 ---
 
@@ -523,19 +467,6 @@ KSKJJGJ (1)                                                     ← meaningless 
 WinHTTP loader/1.0 (1)                                          ← a program, not a browser
 Mozilla/4.0 (compatible; Win32; WinHttp.WinHttpRequest.5) (1)   ← value used by scripts (VBS/JS/PowerShell)
 Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 10.0; ...) (4)    ← IE 7 on Windows 10? impossible. 4 = the 4 x /81/
-```
-
-**Ticket entry:**
-
-```text
-[251117 2030, Analyst] Reviewing cleartext HTTP for executable downloads, raw-IP hosts, POST requests and unusual user agents - Found
-
-[251117 2030, Analyst] Query: ip.src == 10.3.11.0/24 && protocols == http -> 44 sessions. SPI View http:
-Body Magic: application/x-dosexec (2), application/octet-stream (2). Response content-type application/x-msdownload (1).
-Request Method: GET 39, POST 5. Request content-type multipart/form-data (5, random boundaries).
-Suspicious URIs: bolton-tech.com/YAS20.exe (1); 64.44.133.131/images/cursor.png (2), /images/imgpaper.png (1);
- 203.176.135.102:8082/yas20/LAPTOP-7XMV2SN_W10018363.CF3A0EAB425F1927835EF064A69CAED6/81/ (4), /90 (1); checkip.amazonaws.com/ (1)
-Unusual User-Agents: KSKJJGJ, WinHTTP loader/1.0, WinHttp.WinHttpRequest.5, MSIE 7.0 on Windows NT 10.0 (4)
 ```
 
 ---
@@ -637,18 +568,6 @@ shared.bluehost.com
 
 A **shared web-hosting platform**. bolton-tech.com is therefore more likely **an ordinary site that was hacked and used as a file drop** than a site the attacker built.
 
-**Ticket entry:**
-
-```text
-[251117 2045, Analyst] Building timeline of suspicious HTTP sessions - Found
-
-[251117 2045, Analyst] Query: host.http == bolton-tech.com || ip.dst == 64.44.133.131 || ip.dst == 203.176.135.102 || host.http == checkip.amazonaws.com -> 9 sessions, all from 10.3.11.194.
-200311 21:24:36UTC 10.3.11.194 49727 50.87.248.17 80 GET 200 bolton-tech.com /YAS20.exe 1.1 Mozilla/4.0 (compatible; Win32; WinHttp.WinHttpRequest.5)
-  No Referer. Response: Server Apache, Content-Type application/x-msdownload, Content-Length 466944, Last-Modified Tue, 10 Mar 2020 11:32:37 GMT, host-header c2hhcmVkLmJsdWVob3N0LmNvbQ== (From Base64 = shared.bluehost.com).
-200311 21:32:00UTC 10.3.11.194 49787 18.235.112.207 80 GET checkip.amazonaws.com / - public IP check 7.5 min after download
-(... remaining 7 sessions as in the timeline above ...)
-```
-
 ---
 
 ## Step 8 — Judging on a closed network, and CyberChef { #closed-network }
@@ -672,7 +591,7 @@ Behavioural evidence used in this case:
 
 One alone is weak; **several on the same host in the same time window** make a strong case.
 
-- **Still record Body MD5.** It cannot be looked up now, but as a ticket IOC it serves internal threat-intel or the malware team later. *"Further malware analysis is required"* is the sentence for exactly this.
+- **Still record Body MD5.** It cannot be looked up now, but as a report IOC it serves internal threat-intel or the malware team later. *"Further malware analysis is required"* is the sentence for exactly this.
 - Save the sessions with **Download PCAP** as evidence (EVIDENCE LOCATIONS).
 - A malware family name based on analyst knowledge is written as **"Trickbot-like pattern (unconfirmed)"** or **"consistent with Trickbot"**, not as a fact.
 
@@ -683,7 +602,7 @@ One alone is weak; **several on the same host in the same time window** make a s
 | Decode uploaded data | **From Base64**, **URL Decode** | Make an encoded body readable |
 | Identify a file | **Detect File Type**, **MD5 / SHA256** | An executable starts with `MZ` |
 | Read numeric times | **From UNIX Timestamp** (unit: milliseconds) | Example below |
-| Defang IOCs for the ticket | **Defang URL**, **Defang IP Addresses** | `zoomer.com` → `zoomer[.]com` |
+| Defang IOCs for the report | **Defang URL**, **Defang IP Addresses** | `zoomer.com` → `zoomer[.]com` |
 
 Numbers like this often appear in URLs (even in this PCAP's normal traffic):
 
@@ -772,20 +691,7 @@ Host: 64.44.133.131
     `MZ` and `This program cannot be run in DOS mode` are the **fingerprint of a Windows executable (PE)**. You can also download the body and use CyberChef **Detect File Type**.
 
 !!! note "Which MD5 belongs to which file"
-    SPI View cannot tell you which of the three MD5s belongs to which file. Open each session's HTTP section and read its Body MD5. That pairing was not done here, so the ticket says "per-file mapping not confirmed".
-
-**Ticket entry:**
-
-```text
-[251117 2105, Analyst] Collecting file type / Body MD5 of downloads from bolton-tech.com and 64.44.133.131 - Found
-
-[251117 2105, Analyst] Query: host.http == bolton-tech.com || ip.dst == 64.44.133.131 -> 3 sessions.
-Body Magic: application/x-dosexec (2).
-Body MD5: 179345004c39336eaba39863b95f268b, 9dfb3952172deeddb3a5e3cafed933bc, e40d7846eae7d8a98c0e3512e5461e4c (per-file mapping not confirmed).
-64.44.133.131 responses: Server nginx/1.6.2, malformed "Content-Type: Content-type: application/octet-stream".
- imgpaper.png Content-Length 582656; cursor.png Content-Length 582144. Request UA WinHTTP loader/1.0, Host = raw IP.
-~570 KB "png" files from raw IP via downloader UA -> likely disguised executables.
-```
+    SPI View cannot tell you which of the three MD5s belongs to which file. Open each session's HTTP section and read its Body MD5. That pairing was not done here, so the report says "per-file mapping not confirmed".
 
 ---
 
@@ -802,7 +708,7 @@ Body MD5: 179345004c39336eaba39863b95f268b, 9dfb3952172deeddb3a5e3cafed933bc, e4
 
     Of 44 HTTP sessions, **exactly 5 were POSTs**, the URIs to 203.176.135.102 were **4 + 1 = 5**, and there were **5** upload bodies. Every other site was a GET for images, fonts or scripts — hence "these 5 are the POSTs".
 
-    That is an **inference**, not evidence. **SPI View only counts; it does not pair values with sessions.** The session list's Info column shows the URI but not the method. Always confirm before it goes in a ticket:
+    That is an **inference**, not evidence. **SPI View only counts; it does not pair values with sessions.** The session list's Info column shows the URI but not the method. Always confirm before it goes in a report:
 
     ```text
     http.method == POST
@@ -852,17 +758,6 @@ Content-Type: text/plain
 
 - **Src (PC → server) databytes 5,609**, **Dst (server → PC) 120**. The PC **uploaded** about 5.4 KB (`Content-Length: 5366`); the server only answered `/1/`, 3 bytes meaning **"received"**. **How to read direction:** compare Src and Dst bytes — the bigger side is the one sending data.
 - User-Agent `KSKJJGJ` is meaningless letters — set by the malware itself.
-
-**Ticket entry:**
-
-```text
-[251117 2110, Analyst] Inspecting POST /90 to 203.176.135.102:8082 for data upload - Found
-
-[251117 2110, Analyst] /90 session: 200311 21:36:59-21:38:49 UTC 10.3.11.194 50091 203.176.135.102 {APNIC} 8082
-POST .../90, User-Agent KSKJJGJ, multipart/form-data; boundary=aksgja8s8d8a8s97, Content-Length 5366.
-Src 10 pkts 6,161 bytes (databytes 5,609) / Dst 9 pkts 610 bytes (databytes 120) -> upload.
-Response: 200 OK, server Cowboy, text/plain, content-length 3, body "/1/" (acknowledgement).
-```
 
 ---
 
@@ -996,7 +891,7 @@ These are the **results of commands the malware ran on the PC**. `/c` shows they
 
 `nltest /domain_trusts` and the admin lookups ask **"how big is this network and who are the admins"**. Ordinary users almost never run them. The attacker is **preparing to spread from one PC to the whole domain (the DC)**. Around 2020, this kind of reconnaissance was often followed by ransomware.
 
-Attack stages for the ticket:
+Attack stages for the report:
 
 ```text
 Initial Access/Execution  21:24:36       script (WinHttp) downloads YAS20.exe
@@ -1005,20 +900,7 @@ Command & Control         21:36:52~      HTTP POST reports to 203.176.135.102:80
 Exfiltration              21:36:59-21:38:49  /90 POST, about 5.4 KB of cleartext recon data
 ```
 
-This fills the ticket's exfil checklist: time, what, bytes, method.
-
-**Ticket entry:**
-
-```text
-[251117 2115, Analyst] Reviewing content of POST /90 body for exfiltrated data - Found
-
-[251117 2115, Analyst] /90 POST body (Packet Options > Hide Images & Files, ascii). Cleartext, 2 parts:
- name="proclist": "***TASK LIST***" full process list incl. MsMpEng.exe; anomalous process "VMMM;;;;영상ثافوزبت.exe" (likely malware process, host IOC)
- name="sysinfo": systeminfo; /c ipconfig /all; /c net config workstation; /c net view /all (/domain) - error 6118; /c nltest /domain_trusts (/all_trusts);
- LOCAL MACHINE DATA: user/computer DN, DC Mondogreek-DC.mondogreek.com, Admin Name: Administrator (x3).
- MAC in ipconfig matches Arkime Src Ethernet b8:ca:3a:ec:3b:8f.
-Exfil of host/network/domain reconnaissance. ATT&CK T1057, T1082, T1016, T1482, T1087; T1041.
-```
+This fills the report's exfil checklist: time, what, bytes, method.
 
 ---
 
@@ -1074,7 +956,7 @@ P@ss********                       ← password
 
 `IE passwords` in the `source` part means **"taken from passwords saved in Internet Explorer / Edge"**. The malware **stole saved browser passwords and sent them to the attacker in cleartext**. The server again answered with 3 bytes, "received".
 
-**Why this is especially dangerous:** the username is a company e-mail (`@mondogreek.com`). If the user **uses the same password for the domain account**, the attacker can now log on to the domain. With the DC name and admin accounts already taken by /90, **everything for lateral movement is in place**. Hence the ticket recommendation: **"reset the password now and check reuse on the domain account"**.
+**Why this is especially dangerous:** the username is a company e-mail (`@mondogreek.com`). If the user **uses the same password for the domain account**, the attacker can now log on to the domain. With the DC name and admin accounts already taken by /90, **everything for lateral movement is in place**. Hence the report recommendation: **"reset the password now and check reuse on the domain account"**.
 
 **Other checks:**
 
@@ -1107,30 +989,12 @@ No passwords found
 ```
 
 - **`/81/` = "stolen password report", `/90` = "reconnaissance report"** — the number at the end of the URI names the data type. When we only had the URI this was a guess; the contents prove it. The module **reports once per password source**.
-- **The same password everywhere.** Facebook and Firefox share exactly the same password, so the domain password is likely the same too — write the **domain account takeover risk** clearly in the ticket.
+- **The same password everywhere.** Facebook and Firefox share exactly the same password, so the domain password is likely the same too — write the **domain account takeover risk** clearly in the report.
 - **Login tokens left too, not only passwords.** `keyFetchToken` and `unwrapBKey` are the Firefox Sync account's **authentication token and key**. Until the sessions are revoked they can give access to **synced bookmarks, history and saved passwords**. The recommendation adds "revoke Firefox account sessions".
 - **Empty reports mean something.** OpenVPN and OpenSSH `data` are empty: the PC had **no VPN configs or SSH keys, so none leaked**. Writing "attempted, no data" tells responders they need not rotate VPN or SSH keys.
 
-!!! danger "Ticket tip: mask secrets"
-    Writing a password into a ticket **leaks it again to everyone who reads the ticket**. Mask part of it (`P@ss********`) and write "original in the evidence PCAP". Same for tokens.
-
-**Ticket entry:**
-
-```text
-[251117 2120, Analyst] Reviewing content of POST /81/ body for exfiltrated data - Found
-[251117 2125, Analyst] Reviewing remaining /81/ POSTs for credential sources - Found
-
-[251117 2120, Analyst] 200311 21:36:52-21:36:54 UTC 10.3.11.194 50080 203.176.135.102 8082 POST .../81/
-UA MSIE 7.0 on Windows NT 10.0, boundary ---------ATBOXLGQOOBDZTLA, Content-Length 274.
- name="data": https://www.facebook.com/|otis.witherspoon@mondogreek.com|P@ss******** (masked, full value in PCAP)
- name="source": IE passwords
-Credential theft from browser store. ATT&CK T1555.003, T1041.
-
-[251117 2125, Analyst] 21:36:55 :50081 Content-Length 551 source "firefox passwords" (Firefox account tokens + same password)
-21:37:19 :50098 Content-Length 219 source "OpenVPN passwords and configs", data empty
-21:37:52 :50099 Content-Length 210 source "OpenSSH private keys", data empty
-Password reuse across sites -> high risk the domain password is the same. OpenVPN/OpenSSH: nothing stolen.
-```
+!!! danger "Report tip: mask secrets"
+    Writing a password into a report **leaks it again to everyone who reads the report**. Mask part of it (`P@ss********`) and write "original in the evidence PCAP". Same for tokens.
 
 ---
 
@@ -1177,16 +1041,6 @@ All normal Windows noise. Next time add `&& ip.dst != 224.0.0.0/4` (`224.0.0.0/4
 - **`190.214.13.2` (6)**, **`185.14.31.98` (3)**, **`185.180.198.50` (1)**: new external IPs
 
 And Protocols shows **`tls (9)`**: **9 TLS (encrypted) sessions on ports other than 443**. Normal HTTPS almost always uses 443, so this is the **hidden encrypted channel** we were looking for. 6 + 3 = 9, so probably 190.214.13.2 and 185.14.31.98.
-
-**Ticket entry:**
-
-```text
-[251117 2135, Analyst] Hunting outbound connections from 10.3.11.194 on non-standard ports - Found
-
-[251117 2135, Analyst] Query: ip.src == 10.3.11.194 && ip.dst != 10.0.0.0/8 && port.dst != 80 && port.dst != 443 && port.dst != 53 -> 26 sessions.
-Dst IP: 190.214.13.2 (6), 224.0.0.252 (6), 203.176.135.102 (5), 185.14.31.98 (3), 239.255.255.250 (3), 224.0.0.251 (2), 185.180.198.50 (1)
-224.x / 239.x = LLMNR / SSDP / mDNS multicast (benign). 9 TLS sessions on non-standard ports to raw external IPs.
-```
 
 ---
 
@@ -1303,16 +1157,6 @@ Subject CN:         filmstore.xyz (1)  hakunamatatata.com (1)  helpforyourservic
     tags == "cert:self-signed"
     ```
 
-**Ticket entry:**
-
-```text
-[251117 2140, Analyst] Reviewing TLS certificates from 10.3.11.194 for self-signed / anomalous issuers - Found
-
-[251117 2140, Analyst] Query: ip.src == 10.3.11.194 && protocols == tls -> SPI View cert. Mostly Microsoft / Baltimore / DigiCert / Let's Encrypt (benign).
-Anomalous: Issuer & Subject CN example.com (4), O "Global Security" / OU "IT Department" (4); "Internet Widgits Pty Ltd" (2, OpenSSL default);
-Subject CN filmstore.xyz, hakunamatatata.com, helpforyourservice.com (1 each).
-```
-
 ---
 
 ## Step 16 — All suspects in one time-ordered view { #step-9 }
@@ -1394,12 +1238,12 @@ Certificate (only one)
 - Arkime could not tag a certificate for this server — the certificate was not seen — so the judgement rests on **port, raw IP and connection pattern**.
 
 !!! info "Two kinds of beacon"
-    A sample ticket might note a beacon like "every 2:45" — a **fixed interval**. Here the interval is irregular, and the connection is **held open** instead. There are two kinds:
+    A sample report might note a beacon like "every 2:45" — a **fixed interval**. Here the interval is irregular, and the connection is **held open** instead. There are two kinds:
 
     - **Short and frequent:** connects every N seconds/minutes at a steady interval — found by interval maths
     - **Long-held:** keeps the connection open waiting for orders; irregular start times, small byte counts
 
-    190.214.13.2:449 is the second kind. In the ticket: "long-lived, low-byte sessions, no fixed beacon interval".
+    190.214.13.2:449 is the second kind. In the report: "long-lived, low-byte sessions, no fixed beacon interval".
 
 **2. `185.14.31.98:447` = download channel**
 
@@ -1435,26 +1279,11 @@ About **2 MB** at 21:35:53. Password theft (/81/) and reconnaissance (/90) start
 21:46:06  last connection closes → nothing until 22:06
 ```
 
-**Ticket entry:**
-
-```text
-[251117 2150, Analyst] Building timeline of TLS sessions to suspicious IPs / certificates (C2 hunt) - Found
-[251117 2155, Analyst] Verifying self-signed certificate on 185.14.31.98:447 - Found
-
-[251117 2150, Analyst] (14 sessions as listed above)
-C2 assessment: 190.214.13.2:449 = persistent C2 (long-lived low-byte sessions, no fixed interval, 21:32:07-21:46:06). 185.14.31.98:447 = module/payload download channel. 185.180.198.50:447 = C2 attempted, unreachable.
-
-[251117 2155, Analyst] Session 200311 21:44:02 10.3.11.194:50136 -> 185.14.31.98:447 {RIPE}
-TLSv1.2, JA3 72a589da586844d7f0818ce684948eea, JA3S e35df3e00ca4ef31d42b34bebaa2f86e
-Certificate (single): Serial 008be295cd71603289, Not Before 2020/03/06 09:53:10 UTC, Not After 2021/03/06 (365 days)
-Issuer = Subject: CN example.com, O Global Security, OU IT Department -> self-signed confirmed. Created 5 days before incident.
-```
-
 ---
 
 ## Step 17 — Scope 1: lateral movement { #step-10 }
 
-**Goal:** so far we have looked at 10.3.11.194 only. Before closing the ticket, check whether the infected PC **tried to spread to other internal PCs**.
+**Goal:** so far we have looked at 10.3.11.194 only. Before closing the report, check whether the infected PC **tried to spread to other internal PCs**.
 
 **Query:**
 
@@ -1565,21 +1394,6 @@ NT LM 0.12
 - Probing with SMBv1 only is typical of **EternalBlue (MS17-010)-style worm spreading** ([EternalBlue / SMBv1](../../adversary/eternalblue-smbv1.md)).
 - **No** share, account or file activity at all → **"attempted, failed" confirmed**.
 
-**Ticket entry:**
-
-```text
-[251117 2205, Analyst] Checking for lateral movement from 10.3.11.194 to other internal hosts - Found
-[251117 2210, Analyst] Verifying outcome of SMB probe to 10.3.11.119:445 - Not Found (no successful lateral movement)
-
-[251117 2205, Analyst] Query: ip.src == 10.3.11.194 && ip.dst == 10.3.11.0/24 && ip.dst != 10.3.11.3 -> 20 sessions.
-UDP 137/138 -> 10.3.11.255 normal singles + burst 21:36:19-21:37:21 (= "net view /all" seen in /90 exfil).
-TCP 445 sweep at 21:36:47 (sequential src ports 49818-49929) to 10.3.11.119, .218 (smb, 51 databytes), .1, .131, .254 (no response); again 21:37:17 to .119/.218.
-
-[251117 2210, Analyst] Session 21:37:17 10.3.11.194:50097 -> 10.3.11.119:445. TCP SYN 1 SYN-ACK 1 ACK 1 PSH 1 RST 1.
-Src payload SMBv1 Negotiate Protocol Request, dialect "NT LM 0.12" only. Dst 2 pkts, 0 databytes (SYN-ACK + RST).
-SMBv1 probe refused (SMBv1 disabled). No share/user/file. EternalBlue-style probing. Lateral movement NOT successful.
-```
-
 ---
 
 ## Step 18 — Scope 2: did any other PC talk to the same servers? { #other-victims }
@@ -1600,15 +1414,6 @@ ip.dst == [50.87.248.17, 64.44.133.131, 203.176.135.102, 190.214.13.2, 185.14.31
 **Actual result:** **0 sessions.**
 
 **Reading the result:** no other PC talked to the malicious IPs. The infected PC is **10.3.11.194 only**; .119 and .218 show no sign of infection in the network data. A single result would have made that PC a new investigation target.
-
-**Ticket entry:**
-
-```text
-[251117 2212, Analyst] Checking whether any other internal host contacted the external IOCs - Not Found
-
-[251117 2212, Analyst] Query: ip.dst == [<10 IOC IPs>] && ip.src != 10.3.11.194 -> 0 sessions.
-No other internal host contacted the external IOCs. 10.3.11.119 and 10.3.11.218 show no sign of infection in network data.
-```
 
 ---
 
@@ -1677,367 +1482,6 @@ script fetches YAS20.exe (21:24:36)
 | T1071.001 Web Protocols, T1573 Encrypted Channel | HTTP 8082 and TLS 449/447 C2 |
 | T1041 Exfiltration Over C2 Channel | `/81/`, `/90` POSTs |
 | T1021.002 SMB/Windows Admin Shares (attempt) | SMBv1 sweep of 445, refused |
-
----
-
-## The incident ticket { #ticket }
-
-### Template rules { #ticket-rules }
-
-**DESCRIPTION OF INVESTIGATION: no more than two paragraphs**, yet it must contain:
-
-- Internal IPs with hostnames
-- External IPs with domains
-- Protocol and port used
-- Directionality — who initiated the connection (internal → external, etc.)
-- File names (if too long, list them below)
-- A determination of maliciousness with the malware type (if known); the notes give the reasoning
-- Attack life-cycle stages where seen:
-    - **C2:** beacon interval; state of the channel (in use? bytes sent? sizes consistent or varying?)
-    - **Exfil:** if exfil is possible — time, file names, what, bytes, method
-
-**Ports:** leave ephemeral ports blank. Leave LATERAL fields blank if there was no lateral movement.
-
-**Search queries:** specific enough to return **only the traffic of interest** on a live network. Specifying IPs and protocols narrows it.
-
-**Evidence locations:** format `Team<#>: /home/<username>/<evidence folder>/<file>`. Save captures of the traffic of interest and suspect files (Arkime **Download PCAP**).
-
-**Operation log:**
-
-- One line per action, always ending **Found / Not Found / Further Analysis Required**
-- A unique `[time, operator]` stamp per line, used to link it to its tool output / notes
-- A logical flow that shows how the analyst reached the determination
-
-**Tool output / notes:**
-
-- **The same `[time, operator]` stamp** as the log line — Ctrl+F must find both
-- Paste the tool output for relevant findings
-- Must include: timestamps; source IP/hostname/account and destination IP/domain; all interesting fields (for HTTP: uri, user agent, method, status code, referrer …) — for evidence and later IOC tracking/correlation
-- Notes on what the findings mean
-
-**In anything shared:** defang domains (`[.]`) and mask secrets.
-
-### Completed ticket { #ticket-filled }
-
-Operator name, ticket link and evidence paths below are placeholders; the operation-log times are illustrative. The copy button at the top right copies the whole ticket.
-
-```text
-#INDEX ENTRY#
-
-[] -- 200311 2124 -- 10.3.11.194 LAPTOP-7XMV2SN -- Malware infection (Trickbot-like): exe download, credential theft and recon exfil via HTTP, TLS C2, failed SMB lateral movement -- <ticket-link>
-
-
-#TICKET METADATA#
-
-OPERATORS: <Analyst>
-
-TIME OF INCIDENT: 200311 21:24:36 UTC
-
-RELATED TICKETS:
-N/A
-
-DESCRIPTION OF INVESTIGATION:
-
-At 200311 21:24:36 UTC LAPTOP-7XMV2SN (10.3.11.194, user otis.witherspoon, domain MONDOGREEK) made an HTTP GET (port 80) to 50.87.248.17 (bolton-tech[.]com) and downloaded the Windows executable YAS20.exe (466,944 bytes, application/x-msdownload). The request used the script User-Agent "WinHttp.WinHttpRequest.5" with no Referer, indicating it was fetched by a malicious script/document rather than a user browser. At 21:32:00 the host checked its public IP via checkip.amazonaws[.]com and from 21:32:07 established encrypted C2 over TLS to 190.214.13.2:449 (long-lived, low-byte sessions of 7-28 KB lasting 1-4 min, no fixed beacon interval, last session ended 21:46:06). A second C2 address 185.180.198.50:447 was attempted at 21:35:31 with no response. Additional payloads were downloaded: ~2.2 MB over TLS from 185.14.31.98:447 (self-signed cert CN example[.]com / O "Global Security" / OU "IT Department", created 200306), and cursor.png / imgpaper.png (~570 KB each, application/octet-stream, likely disguised executables) via HTTP from 64.44.133.131:80 using User-Agent "WinHTTP loader/1.0". Further encrypted downloads on 443 were made to hakunamatatata[.]com (199.247.13.144, 570 KB), helpforyourservice[.]com (209.97.130.197, 281 KB), filmstore[.]xyz (45.148.120.153) and 51.254.164.244 (self-signed); contents unknown.
-
-Exfil occurred between 21:36:52 and 21:38:49 UTC via five cleartext HTTP POSTs (multipart/form-data) from 10.3.11.194 to 203.176.135.102:8082, URI /yas20/LAPTOP-7XMV2SN_W10018363.CF3A0EAB425F1927835EF064A69CAED6/<81|90>. Four /81/ POSTs (210-551 bytes) sent stolen browser credentials by source: IE passwords (facebook.com login for otis.witherspoon@mondogreek[.]com), Firefox passwords (accounts.firefox.com login with the SAME password, plus Firefox account tokens), and empty reports for OpenVPN configs and OpenSSH keys. The /90 POST (5,366 bytes) sent a full process list (incl. anomalous process "VMMM;;;;영상ثافوزبت.exe"), systeminfo and the output of ipconfig /all, net config workstation, net view /all (/domain), nltest /domain_trusts (/all_trusts), DC name Mondogreek-DC.mondogreek[.]com and admin account names. At 21:36:47 and 21:37:17 the host swept SMB port 445 on 10.3.11.119, 10.3.11.218, 10.3.11.1, 10.3.11.131 and 10.3.11.254 with SMBv1-only (NT LM 0.12) negotiate probes; all were refused (RST, 0 bytes returned), so lateral movement was attempted but NOT successful. No other internal host contacted any of the external IOCs. Determination: MALICIOUS - banking trojan / information stealer with modular downloader, pattern consistent with Trickbot (group tag "yas20"; unconfirmed, closed network). Credentials for otis.witherspoon are compromised. Further malware analysis of YAS20.exe, cursor.png and imgpaper.png is required.
-
-
-#IMPACTED MACHINES#
-
-INTERNAL IP/s & HOSTNAME/s:
-10.3.11.194 LAPTOP-7XMV2SN (user otis.witherspoon, MAC b8:ca:3a:ec:3b:8f, Windows 10 Pro build 18363)
-
-INTERNAL SOURCE PORT/s: (If Ephemeral Leave Blank.)
-
-LATERAL DESTINATION IP/s & HOSTNAME/s: (attempted only - refused)
-10.3.11.119 LAPTOP-SQSA42O
-10.3.11.218 LAPTOP-I9ZPI04
-10.3.11.1 (default gateway)
-10.3.11.131 (no response)
-10.3.11.254 (no response)
-
-LATERAL DESTINATION PORT/s:
-Port 445 - SMB (SMBv1 negotiate probe)
-
-
-#EXTERNAL MACHINES#
-
-EXTERNAL IP/s & HOSTNAME/s:
-50.87.248.17 (bolton-tech[.]com) - YAS20.exe download (HTTP 80)
-64.44.133.131 - cursor.png / imgpaper.png download (HTTP 80)
-203.176.135.102 - HTTP C2 / exfil (HTTP 8082)
-190.214.13.2 - TLS C2 (449)
-185.14.31.98 - TLS download channel, self-signed cert example[.]com (447)
-185.180.198.50 - C2 attempted, no response (447)
-51.254.164.244 - TLS, self-signed cert (443)
-45.148.120.153 (filmstore[.]xyz) - TLS (443)
-199.247.13.144 (hakunamatatata[.]com) - TLS download 570 KB (443)
-209.97.130.197 (helpforyourservice[.]com) - TLS download 281 KB (443)
-18.235.112.207 (checkip.amazonaws[.]com) - legitimate service, public IP lookup by malware (context only)
-
-EXTERNAL SOURCE PORT/s: (If Ephemeral Leave Blank.)
-
-EXTERNAL DESTINATION PORT/s:
-Port 80 - HTTP
-Port 8082 - HTTP (non-standard)
-Port 449 - TLS (non-standard)
-Port 447 - TLS (non-standard)
-Port 443 - TLS
-
-
-#SEARCH QUERIES#
-
-ARKIME (MOLOCH):
-ip == 10.3.11.194 && ip == [50.87.248.17, 64.44.133.131, 203.176.135.102, 190.214.13.2, 185.14.31.98, 185.180.198.50, 51.254.164.244, 45.148.120.153, 199.247.13.144, 209.97.130.197]
-ip.src == 10.3.11.194 && ip.dst == 10.3.11.0/24 && port.dst == 445
-
-SPLUNK: (not run - Arkime-only analysis; equivalent Zeek query)
-index=zeek sourcetype=conn:zeek id_orig_h=10.3.11.194 AND id_resp_h IN (50.87.248.17, 64.44.133.131, 203.176.135.102, 190.214.13.2, 185.14.31.98, 185.180.198.50, 51.254.164.244, 45.148.120.153, 199.247.13.144, 209.97.130.197)
-
-
-#EVIDENCE LOCATIONS#
-
-Team1: /home/<analyst>/evidence/200311_LAPTOP-7XMV2SN_YAS20_exe_download.pcap
-Team1: /home/<analyst>/evidence/200311_LAPTOP-7XMV2SN_png_payload_download.pcap
-Team1: /home/<analyst>/evidence/200311_LAPTOP-7XMV2SN_http8082_exfil_POST.pcap
-Team1: /home/<analyst>/evidence/200311_LAPTOP-7XMV2SN_tls_c2_449_447.pcap
-Team1: /home/<analyst>/evidence/200311_LAPTOP-7XMV2SN_smb445_sweep.pcap
-(Exported from Arkime "Download PCAP". Full credentials/tokens are in the exfil PCAP only - masked in this ticket.)
-
-
-#OPERATION LOG / ANALYST NOTES#
-
-[251117 2000, Analyst] Establishing data time range and session count - Found
-[251117 2003, Analyst] Reviewing protocol distribution and internal hosts - Found
-[251117 2010, Analyst] Identifying host roles (DC) - Found
-[251117 2015, Analyst] Mapping internal IPs to hostnames/users via Kerberos cname - Found
-[251117 2020, Analyst] Checking external IP 52.242.211.89 seen as session initiator (possible inbound) - Not Found
-[251117 2030, Analyst] Reviewing cleartext HTTP for executable downloads, raw-IP hosts, POST requests and unusual user agents - Found
-[251117 2045, Analyst] Building timeline of suspicious HTTP sessions - Found
-[251117 2105, Analyst] Collecting file type / Body MD5 of downloads from bolton-tech.com and 64.44.133.131 - Found
-[251117 2110, Analyst] Inspecting POST /90 to 203.176.135.102:8082 for data upload - Found
-[251117 2115, Analyst] Reviewing content of POST /90 body for exfiltrated data - Found
-[251117 2120, Analyst] Reviewing content of POST /81/ body for exfiltrated data - Found
-[251117 2125, Analyst] Reviewing remaining /81/ POSTs for credential sources - Found
-[251117 2135, Analyst] Hunting outbound connections from 10.3.11.194 on non-standard ports - Found
-[251117 2140, Analyst] Reviewing TLS certificates from 10.3.11.194 for self-signed / anomalous issuers - Found
-[251117 2150, Analyst] Building timeline of TLS sessions to suspicious IPs / certificates (C2 hunt) - Found
-[251117 2155, Analyst] Verifying self-signed certificate on 185.14.31.98:447 - Found
-[251117 2205, Analyst] Checking for lateral movement from 10.3.11.194 to other internal hosts - Found
-[251117 2210, Analyst] Verifying outcome of SMB probe to 10.3.11.119:445 - Not Found (no successful lateral movement)
-[251117 2212, Analyst] Checking whether any other internal host contacted the external IOCs - Not Found
-
-[Time -- Operator]
-
-Tool Output / Notes:
-
-[251117 2000, Analyst] Arkime, time range All. Data range 2020-03-11 21:22:35 - 22:06:41 UTC (44:06). 1,131 total sessions. Display timezone set to UTC.
-
-[251117 2003, Analyst] SPI View (no filter). Internal network 10.3.11.0/24.
-Src IP: 10.3.11.119 (491), 10.3.11.194 (377), 10.3.11.218 (259), 10.3.11.3 (3), 52.242.211.89 (1)
-Protocols: tcp 672, udp 458, tls 349, dns 325, http2 126, ldap 79, krb5 78, http 44, dcerpc 41, smb 30, llmnr 29, ssdp 16, ntp 9, mdns 8, quic 6, igmp 1
-Active Directory environment (ldap/krb5/dcerpc/smb). 3 workstations + 1 server.
-
-[251117 2010, Analyst] Query: ip.dst == 10.3.11.3 -> 571 sessions. Protocols: udp 371, dns 325, tcp 200, ldap 79, krb5 78, dcerpc 41, smb 24, ntp 9. Src: 10.3.11.119 (251), 10.3.11.194 (170), 10.3.11.218 (150).
-10.3.11.3 = Domain Controller / DNS (all krb5/ldap terminate here).
-
-[251117 2015, Analyst] Query: ip.src == 10.3.11.0/24 && protocols == krb5 -> SPI View krb5 (cname/realm/sname).
-Realm: MONDOGREEK.COM. DC: Mondogreek-DC.mondogreek.com (sname cifs/ldap)
-10.3.11.3   Mondogreek-DC
-10.3.11.119 LAPTOP-SQSA42O  user dorian.neff
-10.3.11.194 LAPTOP-7XMV2SN  user otis.witherspoon
-10.3.11.218 LAPTOP-I9ZPI04  user dominga.mcdowell
-
-[251117 2020, Analyst] Query: ip.src == 52.242.211.89 -> 1 session.
-200311 21:32:00 UTC 52.242.211.89:443 {ARIN} -> 10.3.11.194:50355 tcp, 2 packets, 283 bytes. TCP flags SYN 0 SYN-ACK 0 PSH 1 RST 1. Src MAC 20:e5:2a:b6:93:f1 (Netgear, gateway), Dst MAC b8:ca:3a:ec:3b:8f (Dell). Payload encrypted TLS record.
-No handshake captured; mid-session server packet on 443 answered by client RST. Not an inbound connection. Benign.
-
-[251117 2030, Analyst] Query: ip.src == 10.3.11.0/24 && protocols == http -> 44 sessions. SPI View http:
-Body Magic: application/x-dosexec (2), application/octet-stream (2). Response content-type application/x-msdownload (1).
-Request Method: GET 39, POST 5. Request content-type multipart/form-data (5, random boundaries).
-Suspicious URIs:
- bolton-tech.com/YAS20.exe (1)
- 64.44.133.131/images/cursor.png (2), 64.44.133.131/images/imgpaper.png (1)
- 203.176.135.102:8082/yas20/LAPTOP-7XMV2SN_W10018363.CF3A0EAB425F1927835EF064A69CAED6/81/ (4), /90 (1)
- checkip.amazonaws.com/ (1)
-Unusual User-Agents: KSKJJGJ (1), WinHTTP loader/1.0 (1), Mozilla/4.0 (compatible; Win32; WinHttp.WinHttpRequest.5) (1), Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 10.0; Win64; x64; Trident/7.0; .NET4.0C; .NET4.0E) (4)
-Benign: ctldl.windowsupdate.com, ocsp.digicert.com, crl.securetrust.com (Microsoft-CryptoAPI/10.0), fonts.googleapis.com / fonts.gstatic.com, *.wsimg.com, notable-quotes.com, newegg.com, tuscaloosabarnyard.com (user browsing, Edge/Chrome UA).
-C2 URI contains victim hostname LAPTOP-7XMV2SN + Windows build 18363 + bot ID.
-
-[251117 2045, Analyst] Query: host.http == bolton-tech.com || ip.dst == 64.44.133.131 || ip.dst == 203.176.135.102 || host.http == checkip.amazonaws.com -> 9 sessions, all from 10.3.11.194.
-200311 21:24:36UTC 10.3.11.194 49727 50.87.248.17 80 GET 200 bolton-tech.com /YAS20.exe 1.1 Mozilla/4.0 (compatible; Win32; WinHttp.WinHttpRequest.5)
-  Request headers only: Connection, Accept */*, User-Agent, Host (no Referer). Response: Server Apache, Content-Type application/x-msdownload, Content-Length 466944, Last-Modified Tue, 10 Mar 2020 11:32:37 GMT, host-header c2hhcmVkLmJsdWVob3N0LmNvbQ== (CyberChef From Base64 = shared.bluehost.com -> shared hosting, likely compromised site). 389 pkts, 488,507 bytes.
-200311 21:32:00UTC 10.3.11.194 49787 18.235.112.207 80 GET checkip.amazonaws.com / (11 pkts, 950 bytes) - public IP check 7.5 min after download
-200311 21:36:45UTC 10.3.11.194 49816 64.44.133.131 80 GET /images/cursor.png + /images/imgpaper.png (979 pkts, 1,218,352 bytes)
-200311 21:36:52UTC 10.3.11.194 50080 203.176.135.102 8082 POST /yas20/LAPTOP-7XMV2SN_W10018363.CF3A0EAB425F1927835EF064A69CAED6/81/ (1,396 bytes)
-200311 21:36:55UTC 10.3.11.194 50081 203.176.135.102 8082 POST .../81/ (1,673 bytes)
-200311 21:36:57UTC 10.3.11.194 50082 64.44.133.131 80 GET /images/cursor.png (540 pkts, 611,579 bytes)
-200311 21:36:59UTC 10.3.11.194 50091 203.176.135.102 8082 POST .../90 (6,771 bytes)
-200311 21:37:19UTC 10.3.11.194 50098 203.176.135.102 8082 POST .../81/ (1,341 bytes)
-200311 21:37:52UTC 10.3.11.194 50099 203.176.135.102 8082 POST .../81/ (1,332 bytes)
-No further HTTP to these IPs until end of capture (22:06:41).
-
-[251117 2105, Analyst] Query: host.http == bolton-tech.com || ip.dst == 64.44.133.131 -> 3 sessions.
-Body Magic: application/x-dosexec (2).
-Body MD5: 179345004c39336eaba39863b95f268b, 9dfb3952172deeddb3a5e3cafed933bc, e40d7846eae7d8a98c0e3512e5461e4c (HTTP bodies of YAS20.exe / cursor.png / imgpaper.png; per-file mapping not confirmed). Hash lookup not possible (closed network) - for malware analysis.
-64.44.133.131 responses: HTTP/1.1 200 OK, Server nginx/1.6.2, malformed header "Content-Type: Content-type: application/octet-stream".
- imgpaper.png Content-Length 582656 (Date 21:36:59 GMT); cursor.png Content-Length 582144 (Date 21:37:06 GMT).
- Requests: GET /images/<file>.png, Cache-Control no-cache, Pragma no-cache, User-Agent WinHTTP loader/1.0, Host 64.44.133.131.
-~570 KB "png" files from raw IP via downloader UA -> likely disguised executables.
-
-[251117 2110, Analyst] /90 session: 200311 21:36:59-21:38:49 UTC 10.3.11.194 50091 203.176.135.102 {APNIC} 8082
-POST /yas20/LAPTOP-7XMV2SN_W10018363.CF3A0EAB425F1927835EF064A69CAED6/90 HTTP/1.1, User-Agent KSKJJGJ, Content-Type multipart/form-data; boundary=aksgja8s8d8a8s97, Content-Length 5366, Cache-Control no-cache.
-Src 10 pkts 6,161 bytes (databytes 5,609) / Dst 9 pkts 610 bytes (databytes 120) -> upload.
-Response: 200 OK, server Cowboy, Content-Type text/plain, content-length 3, body "/1/" (acknowledgement).
-Body MD5s: f09673ad745e39470708028f7431f6d6, fa06d89c65fb808240e37f4c9e128955.
-
-[251117 2115, Analyst] /90 POST body (Packet Options > Hide Images & Files, ascii). Cleartext, 2 parts:
- name="proclist": "***TASK LIST***" full process list - System, smss.exe, csrss.exe, wininit.exe, winlogon.exe, services.exe, lsass.exe, svchost.exe ..., MsMpEng.exe, NisSrv.exe, explorer.exe, OfficeClickToRun.exe ...
-   Anomalous process: "VMMM;;;;영상ثافوزبت.exe" (mixed Latin/Korean/Arabic) - likely malware process. Host IOC.
- name="sysinfo": "***SYSTEMINFO***" HostName LAPTOP-7XMV2SN, OSName Microsoft Windows 10 Pro, 64-bit, Workstation, RegisteredOwner admin, TotalPhysicalMemory 6493 Mb
-   /c ipconfig /all - Host LAPTOP-7XMV2SN, DNS suffix mondogreek.com, MAC B8-CA-3A-EC-3B-8F, IPv4 10.3.11.194/24, GW 10.3.11.1, DHCP/DNS 10.3.11.3
-   /c net config workstation - \\LAPTOP-7XMV2SN, user otis.witherspoon, domain MONDOGREEK
-   /c net view /all ; /c net view /all /domain - System error 6118
-   /c nltest /domain_trusts ; /c nltest /domain_trusts /all_trusts - 0: MONDOGREEK mondogreek.com (NT 5) (Forest Tree Root) (Primary Domain) (Native)
-   ***LOCAL MACHINE DATA*** User CN=Otis Witherspoon,CN=Users,DC=mondogreek,DC=com; Computer CN=LAPTOP-7XMV2SN,CN=Computers,DC=mondogreek,DC=com; Domain controller Mondogreek-DC.mondogreek.com; Admin Name: Administrator (x3)
- MAC in ipconfig matches Arkime Src Ethernet b8:ca:3a:ec:3b:8f.
-Exfil of host/network/domain reconnaissance. ATT&CK: T1057, T1082, T1016, T1482, T1087 (Discovery); T1041 (Exfiltration Over C2 Channel). Domain trust and admin enumeration = preparation for lateral movement.
-
-[251117 2120, Analyst] 200311 21:36:52-21:36:54 UTC 10.3.11.194 50080 203.176.135.102 8082 POST .../81/
-User-Agent Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 10.0; Win64; x64; Trident/7.0; .NET4.0C; .NET4.0E), Accept */*, boundary ---------ATBOXLGQOOBDZTLA, Content-Length 274, Connection Close.
- name="data": https://www.facebook.com/|otis.witherspoon@mondogreek.com|P@ss********  (URL|user|password, cleartext - masked, full value in PCAP)
- name="source": IE passwords
-Response 200, server Cowboy, content-length 3.
-Credential theft from browser store. ATT&CK T1555.003, T1041.
-
-[251117 2125, Analyst] Remaining /81/ POSTs (same fake MSIE 7.0 UA, random boundaries, reply "/1/"):
-200311 21:36:55UTC 10.3.11.194 50081 -> 203.176.135.102 8082, Content-Length 551, boundary ---------XWQEFTQLCLTQBJQE, source "firefox passwords"
- data: chrome://FirefoxAccounts|<account id>|{"version":1,"accountData":{"keyFetchToken":"<masked>","unwrapBKey":"<masked>"}} ; https://accounts.firefox.com|otis.witherspoon@mondogreek.com|P@ss******** (same password as Facebook) ; "No passwords found"
-200311 21:37:19UTC 10.3.11.194 50098 -> 203.176.135.102 8082, Content-Length 219, boundary ---------MDLIZHCZZMRSOFHE, source "OpenVPN passwords and configs", data empty
-200311 21:37:52UTC 10.3.11.194 50099 -> 203.176.135.102 8082, Content-Length 210, boundary ---------TAGOVQVWGJFPBAJU, source "OpenSSH private keys", data empty
-/81/ = credential module reporting per source. Password reuse across sites -> high risk the domain password is the same. OpenVPN/OpenSSH: nothing stolen.
-
-[251117 2135, Analyst] Query: ip.src == 10.3.11.194 && ip.dst != 10.0.0.0/8 && port.dst != 80 && port.dst != 443 && port.dst != 53 -> 26 sessions.
-Dst IP: 190.214.13.2 (6), 224.0.0.252 (6), 203.176.135.102 (5), 185.14.31.98 (3), 239.255.255.250 (3), 224.0.0.251 (2), 185.180.198.50 (1)
-Protocols: tcp 15, udp 11, tls 9, llmnr 6, http 5, ssdp 3, mdns 2
-224.0.0.252 / 239.255.255.250 / 224.0.0.251 = LLMNR / SSDP / mDNS multicast (benign). 9 TLS sessions on non-standard ports to raw external IPs.
-
-[251117 2140, Analyst] Query: ip.src == 10.3.11.194 && protocols == tls -> SPI View cert. Mostly Microsoft / Baltimore / DigiCert / Let's Encrypt (benign).
-Anomalous: Issuer & Subject CN example.com (4), Issuer & Subject ON "Global Security" / OU "IT Department" (4); Issuer & Subject ON "Internet Widgits Pty Ltd" (2, OpenSSL default); Subject CN filmstore.xyz (1), hakunamatatata.com (1), helpforyourservice.com (1); Issuer cPanel, Inc. (1).
-
-[251117 2150, Analyst] Query: ip.src == 10.3.11.194 && (ip.dst == 190.214.13.2 || ip.dst == 185.14.31.98 || ip.dst == 185.180.198.50 || cert.issuer.cn == example.com || cert.issuer.on == "Internet Widgits Pty Ltd" || cert.subject.cn == [filmstore.xyz, hakunamatatata.com, helpforyourservice.com]) -> 14 sessions:
-200311 21:31:58UTC 10.3.11.194 49783 45.148.120.153 443 tls, cert:certificate-authority (cPanel), Alt Name filmstore.xyz, cpanel.filmstore.xyz, cpcalendars.filmstore.xyz - 68 pkts, 62,330 bytes
-200311 21:31:59UTC 10.3.11.194 49784 51.254.164.244 443 tls, cert:self-signed - 107 pkts, 61,538 bytes
-200311 21:32:07UTC 10.3.11.194 49788 190.214.13.2 449 tls - 32 pkts, 7,821 bytes (until 21:33:16)
-200311 21:35:31UTC 10.3.11.194 49793 185.180.198.50 447 tcp - 6 pkts, 0 databytes / 384 bytes (no response)
-200311 21:35:53UTC 10.3.11.194 49808 185.14.31.98 447 tls, cert:self-signed - 1,666 pkts, 2,049,123 databytes / 2,139,108 bytes (until 21:38:14)
-200311 21:35:55UTC 10.3.11.194 49809 190.214.13.2 449 tls - 136 pkts, 27,788 bytes (until 21:39:37)
-200311 21:35:58UTC 10.3.11.194 49810 190.214.13.2 449 tls - 117 pkts, 22,607 bytes (until 21:39:31)
-200311 21:37:01UTC 10.3.11.194 50092 190.214.13.2 449 tls - 48 pkts, 7,801 bytes (until 21:39:57)
-200311 21:42:12UTC 10.3.11.194 50112 190.214.13.2 449 tls - 52 pkts, 11,301 bytes (until 21:46:06)
-200311 21:42:13UTC 10.3.11.194 50113 185.14.31.98 447 tls, cert:self-signed - 35 pkts, 24,643 bytes
-200311 21:42:17UTC 10.3.11.194 50114 190.214.13.2 449 tls - 43 pkts, 7,964 bytes (until 21:46:06)
-200311 21:43:40UTC 10.3.11.194 50128 199.247.13.144 443 tls, cert:certificate-authority, Alt Name hakunamatatata.com - 518 pkts, 569,667 bytes
-200311 21:43:51UTC 10.3.11.194 50131 209.97.130.197 443 tls, cert:certificate-authority, Alt Name helpforyourservice.com - 243 pkts, 281,286 bytes
-200311 21:44:02UTC 10.3.11.194 50136 185.14.31.98 447 tls, cert:self-signed - Src 29 pkts 2,185 bytes / Dst 82 pkts 111,326 bytes (download)
-C2 assessment: 190.214.13.2:449 = persistent C2 (long-lived low-byte sessions, no fixed interval, active 21:32:07-21:46:06). 185.14.31.98:447 = module/payload download channel. 185.180.198.50:447 = C2 attempted, unreachable. No C2 traffic after 21:46:06.
-
-[251117 2155, Analyst] Session 200311 21:44:02 10.3.11.194:50136 -> 185.14.31.98:447 {RIPE}
-TLSv1.2, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, JA3 72a589da586844d7f0818ce684948eea, JA3S e35df3e00ca4ef31d42b34bebaa2f86e, JA4 t12i190700_d83cc789557e_16bbda4055b2
-Certificate (single): Serial 008be295cd71603289, Not Before 2020/03/06 09:53:10 UTC, Not After 2021/03/06 09:53:10 UTC (365 days)
-Issuer CN example.com, O Global Security, OU IT Department = Subject CN example.com, O Global Security, OU IT Department -> self-signed confirmed. Certificate created 5 days before incident.
-
-[251117 2205, Analyst] Query: ip.src == 10.3.11.194 && ip.dst == 10.3.11.0/24 && ip.dst != 10.3.11.3 -> 20 sessions.
-UDP 137/138 -> 10.3.11.255 single packets at 21:23:00, 21:23:05, 21:27:02, 21:35:00, 21:47:02, 21:59:04 (normal NetBIOS). Burst 21:36:19-21:37:21 (udp 137: 22 pkts 2,024 bytes; udp 138: 21 pkts 4,536 bytes) = "net view /all" seen in /90 exfil.
-TCP 445 sweep at 200311 21:36:47UTC (sequential src ports 49818-49929):
- 10.3.11.194 -> 10.3.11.119 445 smb x2 (5 pkts, 51 databytes / 345 bytes) + tcp x1 (6 pkts, 0 databytes)
- 10.3.11.194 -> 10.3.11.218 445 smb x2 (5 pkts, 51 / 345) + tcp x1 (6 pkts, 0 databytes)
- 10.3.11.194 -> 10.3.11.1 445 (2 sessions, 2 pkts each, 0 databytes); -> 10.3.11.254 445 (1 pkt); -> 10.3.11.131 445 (1 pkt) - no response
-200311 21:37:17UTC 10.3.11.194 50097 -> 10.3.11.119 445 smb; 10.3.11.194 50095 -> 10.3.11.218 445 smb (5 pkts, 51 / 345 each)
-Lateral movement attempt via SMB (ATT&CK T1021.002 attempt).
-
-[251117 2210, Analyst] Session 200311 21:37:17 10.3.11.194:50097 -> 10.3.11.119:445 (Dst MAC 10:98:36:59:9d:cc Dell)
-TCP flags SYN 1, SYN-ACK 1, ACK 1, PSH 1, RST 1. Src payload "\xffSMB r" = SMBv1 Negotiate Protocol Request offering only dialect "NT LM 0.12". Dst: 2 packets, 120 bytes, 0 databytes (SYN-ACK + RST, no SMB response).
-SMBv1-only probe refused by target (SMBv1 disabled). No share, user or file activity. SMBv1-only probing is typical of EternalBlue-style worm spreading. Lateral movement NOT successful.
-
-[251117 2212, Analyst] Query: ip.dst == [50.87.248.17, 64.44.133.131, 203.176.135.102, 190.214.13.2, 185.14.31.98, 185.180.198.50, 51.254.164.244, 45.148.120.153, 199.247.13.144, 209.97.130.197] && ip.src != 10.3.11.194 -> 0 sessions.
-No other internal host contacted the external IOCs. 10.3.11.119 and 10.3.11.218 show no sign of infection in network data.
-
-RECOMMENDATIONS:
-- Isolate LAPTOP-7XMV2SN (10.3.11.194) and hand to host IR (Velociraptor triage: process "VMMM;;;;영상ثافوزبت.exe", YAS20.exe, persistence).
-- Reset otis.witherspoon domain password and all reused passwords (Facebook, Firefox); revoke Firefox account sessions.
-- Block external IOCs (IPs / domains above) at perimeter.
-- Malware analysis of YAS20.exe, cursor.png, imgpaper.png (Body MD5 above).
-- Confirm SMBv1 disabled on all hosts; monitor 10.3.11.119 / 10.3.11.218.
-```
-
-### Blank ticket template { #ticket-template }
-
-```text
-#INDEX ENTRY#
-
-[] -- <YYMMDD HHMM> -- <IP> <hostname> -- <description> -- <ticket link>
-
-
-#TICKET METADATA#
-
-OPERATORS:
-
-TIME OF INCIDENT: <YYMMDD HH:MM:SS> UTC
-
-RELATED TICKETS:
-[] -- <datetime> - <IP> <hostname> - <description> - <ticket link>
-
-DESCRIPTION OF INVESTIGATION: (NO MORE THAN TWO PARAGRAPHS)
-- Internal IPs with hostnames / external IPs with domains
-- Protocol and port / directionality (who initiated)
-- File names / verdict with malware type (if known)
-- Life-cycle stages: initial access, C2 (interval, state, bytes), exfil (time, what, bytes, method)
-
-
-#IMPACTED MACHINES#
-
-INTERNAL IP/s & HOSTNAME/s:
-
-INTERNAL SOURCE PORT/s: (If Ephemeral Leave Blank.)
-
-LATERAL DESTINATION IP/s & HOSTNAME/s: (If No Lateral Leave Blank.)
-
-LATERAL DESTINATION PORT/s: (If No Lateral OR If Ephemeral Leave Blank.)
-
-
-#EXTERNAL MACHINES#
-
-EXTERNAL IP/s & HOSTNAME/s:
-
-EXTERNAL SOURCE PORT/s: (If Ephemeral Leave Blank.)
-
-EXTERNAL DESTINATION PORT/s: (If Ephemeral Leave Blank.)
-
-
-#SEARCH QUERIES#
-
-ARKIME (MOLOCH):
-
-SPLUNK:
-
-
-#EVIDENCE LOCATIONS#
-
-Team<#>: /home/<username>/<evidence folder>/<evidence filename>
-
-
-#OPERATION LOG / ANALYST NOTES#
-
-[<time>, <operator>] <what you're looking for> - <Found | Not Found | Further Analysis Required>
-
-[Time -- Operator]
-
-Tool Output / Notes:
-
-[<time>, <operator>] <tool output with timestamps, src/dst, all interesting fields> + <what it means>
-```
 
 ---
 
@@ -2147,7 +1591,7 @@ ip.dst == [<IOC-IP-1>, <IOC-IP-2>, <IOC-IP-3>] && ip.src != <host-IP>
 | Add a value to the search | Click the value → **and** / **or** / **and not** |
 | See the body instead of a file link | Session → **Packet Options → Hide Images & Files**, then `ascii` / `hex` |
 | Raw bytes for CyberChef | Session → **Source Raw** (client side) / **Destination Raw** (server side) |
-| Evidence for the ticket | Session → **Download PCAP** |
+| Evidence for the report | Session → **Download PCAP** |
 | Start/end of data | Sessions → sort **Start Time** ascending / **Stop Time** descending |
 | Large transfers | Timeline chart → **Bytes** |
 | Time zone | Settings → General → Timezone Format → **UTC** |
@@ -2161,14 +1605,14 @@ ip.dst == [<IOC-IP-1>, <IOC-IP-2>, <IOC-IP-3>] && ip.src != <host-IP>
 | From UNIX Timestamp (ms) | Numbers like `1583961855884` in URLs → `2020-03-11 21:24:15 UTC` |
 | Detect File Type / Strings | Bodies exported with Source/Destination Raw |
 | MD5 / SHA256 | Hashes of downloaded bodies |
-| Defang URL / Defang IP Addresses | IOC lists in tickets |
+| Defang URL / Defang IP Addresses | IOC lists in reports |
 
 ---
 
 ## Lessons learned { #lessons }
 
 - **Fix the time range and time zone first.** "Arkime shows nothing" is usually the Last-hour default; times off by 10 hours are the time zone.
-- **SPI View counts, it does not pair.** Numbers that line up (5 POSTs = 5 C2 URIs) are an **inference**. Confirm with a direct search or the session detail before writing it in a ticket.
+- **SPI View counts, it does not pair.** Numbers that line up (5 POSTs = 5 C2 URIs) are an **inference**. Confirm with a direct search or the session detail before writing it in a report.
 - **Same name in Issuer and Subject is not proof of self-signing** — a chain looks the same. Check inside one certificate, or use the `cert:self-signed` tag.
 - **Remove noise before hunting:** Windows update/OCSP, fonts, CDNs, multicast, NetBIOS broadcast.
 - **Cleartext C2 is a gift.** Hide Images & Files and read the POST bodies: they named the victim, the stolen accounts and the attacker's next move.

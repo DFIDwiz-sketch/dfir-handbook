@@ -8,7 +8,6 @@ tags:
   - redline
   - infostealer
   - c2
-  - ticket
 ---
 
 # RedLine Stealer — PowerShell 스크립트에서 net.tcp C2 정보 탈취까지 { #redline-stealer }
@@ -20,7 +19,7 @@ tags:
 |---|---|
 | **증거** | Unit 42 Wireshark 퀴즈 2023년 7월 PCAP, 2023-07-10 22:39:22 – 22:39:58 UTC (36초), 세션 약 120개 |
 | **환경** | 폐쇄망 가정(해시·평판 조회 없음). 분석 순서와 쿼리는 Arkime 기준, 디코딩은 CyberChef |
-| **결과물** | 퀴즈 6문항의 답, 침해사고 티켓 |
+| **결과물** | 퀴즈 6문항의 답 |
 | **관련 페이지** | [Arkime만으로 분석하기 — Trickbot 사례](arkime-only-credential-theft-tls-c2.md) · [Arkime 검색 문법](../../network/arkime/search-syntax.md) · [Arkime로 PCAP 분석하기](../../network/arkime/offline-pcap-guide.md) |
 
 !!! warning "먼저 혼자 풀어 보고 싶다면"
@@ -37,7 +36,7 @@ tags:
     이 페이지는 PCAP을 Python으로 직접 분석해서 Arkime가 보여줄 값(세션, 바이트, 필드)을 계산하고, 그 값을 찾는 Arkime 쿼리와 함께 정리했습니다. 세션 수 같은 일부 숫자는 Arkime 화면과 조금 다를 수 있으니 직접 따라 할 때 확인하세요. 결과는 Unit 42 공식 정답과 [대조](#official-answers)했습니다.
 
 !!! tip "이 페이지 읽는 법"
-    [Trickbot 사례](arkime-only-credential-theft-tls-c2.md)와 같은 순서로 씁니다. 단계마다 **목적 → 쿼리 → 쿼리 해설 → 실제 결과 → 결과 읽기 → 티켓 기록**. 쿼리는 코드 블록 오른쪽 **복사 버튼**으로 복사하세요. 시간 범위·시간대·SPI View 같은 기본 사용법은 Trickbot 사례의 [0~1단계](arkime-only-credential-theft-tls-c2.md#step-0)에 자세히 있습니다.
+    [Trickbot 사례](arkime-only-credential-theft-tls-c2.md)와 같은 순서로 씁니다. 단계마다 **목적 → 쿼리 → 쿼리 해설 → 실제 결과 → 결과 읽기**. 쿼리는 코드 블록 오른쪽 **복사 버튼**으로 복사하세요. 시간 범위·시간대·SPI View 같은 기본 사용법은 Trickbot 사례의 [0~1단계](arkime-only-credential-theft-tls-c2.md#step-0)에 자세히 있습니다.
 
 ## 한눈에 보는 답 { #answers }
 
@@ -97,17 +96,7 @@ tcp 445 (1)   tcp 55390 (1) tcp 12432 (1)
 | **80 (2)** | HTTP | **평문** — 가장 먼저 볼 곳 |
 | **12432 (1)** | ??? | 표준 서비스가 쓰지 않는 포트. **가장 수상함** |
 
-36초짜리 PCAP에서 "모르는 포트 하나"는 바로 눈에 띕니다. 그래도 순서대로 기본 정보부터 채우겠습니다. 티켓에는 IP·MAC·호스트이름·계정이 필요하니까요.
-
-**티켓 기록:**
-
-```text
-[251118 0010, Analyst] Establishing data time range and session count - Found
-[251118 0012, Analyst] Reviewing protocols and internal hosts - Found
-
-[251118 0010, Analyst] Data range 2023-07-10 22:39:22 - 22:39:58 UTC (36 seconds), about 120 sessions. Capture starts with a DHCP request.
-[251118 0012, Analyst] Only one internal client: 10.7.10.47 (118 sessions as source). Server 10.7.10.9. Normal AD logon traffic + tls (20) + http (2) + one tcp session to port 12432.
-```
+36초짜리 PCAP에서 "모르는 포트 하나"는 바로 눈에 띕니다. 그래도 순서대로 기본 정보부터 채우겠습니다. 보고서에는 IP·MAC·호스트이름·계정이 필요하니까요.
 
 ---
 
@@ -155,16 +144,6 @@ SPI View → **dhcp** 섹션 → **Load All**. 중요한 필드는 `dhcp.host`(�
 
 !!! tip "DHCP가 없을 때"
     PC가 이미 IP를 갖고 있던 시점부터 캡처하면 DHCP가 없습니다. 그때는 NetBIOS(udp 137/138 브로드캐스트)의 이름, Kerberos의 `$`로 끝나는 cname(다음 단계), SMB 세션의 호스트 정보로 찾습니다.
-
-**티켓 기록:**
-
-```text
-[251118 0015, Analyst] Identifying client IP, MAC, hostname and domain from DHCP - Found
-
-[251118 0015, Analyst] Query: protocols == dhcp
-230710 22:39:22 DHCP Request - client MAC 80:86:5b:ab:1e:c4, hostname DESKTOP-9PEA63H, FQDN DESKTOP-9PEA63H.coolweathercoat.com, requested IP 10.7.10.47, vendor MSFT 5.0
-230710 22:39:22 DHCP ACK from 10.7.10.9 - 10.7.10.47, mask 255.255.255.0, router 10.7.10.1, DNS 10.7.10.9, domain coolweathercoat.com
-```
 
 ---
 
@@ -224,15 +203,6 @@ sname   krbtgt/COOLWEATHERCOAT.COM   ...
 - `$`가 없는 **`rwalters`가 사용자 계정**입니다. Q5의 답입니다.
 - 캡처 시작 직후(22:39:23~)에 Kerberos가 26번이나 나오는 것도 1단계의 해석과 맞습니다. PC가 켜지고 **사용자가 로그인하는 장면**이에요.
 
-**티켓 기록:**
-
-```text
-[251118 0017, Analyst] Identifying DC from DNS SRV and user account from Kerberos - Found
-
-[251118 0017, Analyst] Query: host.dns == _ldap._tcp.dc._msdcs.* -> SRV win-s3wt6lgqfvx.coolweathercoat.com -> A 10.7.10.9 (DC).
-Query: ip.src == 10.7.10.47 && protocols == krb5 -> krb5.cname rwalters, desktop-9pea63h$; realm COOLWEATHERCOAT.COM.
-```
-
 ---
 
 ## 3단계 — DNS로 수상한 도메인 찾기 { #dns }
@@ -269,14 +239,6 @@ SPI View → **dns** → `host.dns` 값. Sessions에서 Start Time 오름차순�
 - **`checkappexec.microsoft.com` (22:39:44)** — Windows Defender **SmartScreen**이 "이 프로그램/파일을 실행해도 되나?"를 Microsoft에 물어보는 주소입니다. 정상 서비스지만, **사용자가 무언가를 실행하려 할 때** 나오는 통신이라 3초 뒤의 수상한 통신과 시점이 맞습니다. (무엇을 검사했는지는 암호화라 모릅니다. 추정)
 - 남는 두 개, **`623start.site`**와 **`guiatelefonos.com`**은 회사 PC가 갈 이유가 없는 이름입니다. `.site`는 저렴하고 악용이 잦은 최상위 도메인이에요. 다음 단계에서 HTTP로 무엇을 했는지 봅니다.
 - **나중을 위한 메모:** 12432 포트로 간 194.26.135.119는 이 목록에 **없습니다.** DNS 조회 없이 IP로 바로 접속했다는 뜻이에요. 악성코드 안에 IP가 박혀 있는(hard-coded) 경우의 특징입니다.
-
-**티켓 기록:**
-
-```text
-[251118 0020, Analyst] Reviewing DNS queries for unusual domains - Found
-
-[251118 0020, Analyst] Query: ip.src == 10.7.10.47 && protocols == dns -> AD SRV lookups, Microsoft/Bing/MSN/Azure CDN names (benign), checkappexec.microsoft.com 22:39:44 (SmartScreen), 623start.site 22:39:47 -> 195.161.114.3, guiatelefonos.com 22:39:49 -> 92.118.151.9 (unusual). No DNS for 194.26.135.119.
-```
 
 ---
 
@@ -351,17 +313,6 @@ Location: https://guiatelefonos.com:443/data/czx.jpg
 - 파일 이름이 `.jpg`지만, PowerShell 체크인 직후에 "이미지"를 받을 이유가 없습니다. **그림으로 위장한 페이로드**로 의심합니다.
 - 시간 순서: 22:39:47.579 start → 22:39:48.415 install → **0.8초 뒤** 22:39:49.250 czx.jpg. "install"이라고 보고하자마자 페이로드를 받으러 갔어요.
 
-**티켓 기록:**
-
-```text
-[251118 0025, Analyst] Reviewing cleartext HTTP (PowerShell user agent, downloads) - Found
-
-[251118 0025, Analyst] Query: ip.src == 10.7.10.47 && protocols == http -> 2 sessions.
-230710 22:39:47.579UTC 10.7.10.47 49741 195.161.114.3 80 GET 200 623start.site /?status=start&av=Windows%20Defender 1.1 Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.19041.3031
-230710 22:39:48.415UTC 10.7.10.47 49741 195.161.114.3 80 GET 200 623start.site /?status=install 1.1 (same UA). Body "404 HTTP Error" with status 200.
-230710 22:39:49.250UTC 10.7.10.47 49742 92.118.151.9 80 GET 301 guiatelefonos.com /data/czx.jpg 1.1 (no User-Agent) -> https://guiatelefonos.com:443/data/czx.jpg
-```
-
 ---
 
 ## 5단계 — HTTPS 다운로드와 JA3 { #step-5 }
@@ -422,15 +373,6 @@ JA3                                  count   destinations (SNI)
 - 그리고 C2(12432)는 **TLS가 아니라서 JA3 자체가 없습니다.**
 - 즉 이 사례에서는 "JA3 개수 변화"로 감염을 잡을 수 없었습니다. JA3 변화는 **있으면 강한 정황, 없다고 깨끗하다는 뜻은 아닌** 근거라는 걸 보여 주는 예예요. 반대로 같은 JA3를 쓰더라도 **목적지(SNI)**가 정상 Microsoft 서비스와 전혀 다른 이상한 도메인이라는 점은 눈에 띕니다. JA3는 목적지와 같이 읽어야 합니다.
 
-**티켓 기록:**
-
-```text
-[251118 0030, Analyst] Reviewing HTTPS download from guiatelefonos.com (size, certificate, JA3) - Found
-
-[251118 0030, Analyst] 230710 22:39:49.323-22:39:49.874UTC 10.7.10.47 49743 -> 92.118.151.9 443 tls, SNI guiatelefonos.com, server databytes 353,715 / client 413 (download).
-Certificate CN=guiatelefonos.com, issuer Let's Encrypt R3, valid 2023-07-08 to 2023-10-06. JA3 3b5074b1b5d032e5620f69f9f700ff0e (same as Windows services in this capture). JA3S 389ed42c02ebecc32e73aa31def07e14.
-```
-
 ---
 
 ## 6단계 — 이상한 포트로 C2 찾기 { #c2-hunt }
@@ -464,14 +406,6 @@ ip.src == 10.7.10.47 && ip.dst != 10.0.0.0/8 && ip.dst != 224.0.0.0/4 && port.ds
 - 3단계에서 봤듯이 이 IP에 대한 **DNS 조회가 없습니다**. 프로그램 안에 IP가 박혀 있다는 뜻이에요.
 - 페이로드 다운로드가 끝난 22:39:49.874에서 **0.3초 뒤**(22:39:50.151)에 시작합니다. 받은 파일이 실행되자마자 접속한 것으로 보입니다.
 - 그리고 무엇보다 **PC가 보낸 데이터(542,386바이트)가 받은 데이터(7,179바이트)보다 75배 많습니다.** 업로드, 즉 **유출**입니다.
-
-**티켓 기록:**
-
-```text
-[251118 0035, Analyst] Hunting outbound connections on non-standard ports - Found
-
-[251118 0035, Analyst] Query: ip.src == 10.7.10.47 && ip.dst != 10.0.0.0/8 && ip.dst != 224.0.0.0/4 && port.dst != 80 && port.dst != 443 && port.dst != 53 -> 1 session: 194.26.135.119:12432. No DNS query for this IP (hard-coded).
-```
 
 ---
 
@@ -520,17 +454,7 @@ Authorization   c75a68098b33270de4b87af925fb5ffd
 ```
 
 - **"설정 받기 → 5초 동안 수집 → 한 번에 업로드"**라는 전형적인 인포스틸러 흐름입니다.
-- Trickbot처럼 연결을 몇 분씩 붙잡고 있거나 반복 접속하는 **비콘이 없습니다.** 8초 만에 끝나는 **한 번짜리** 연결이에요. 인포스틸러는 "훔치고 바로 빠지는" 경우가 많습니다. 티켓의 C2 칸에는 "single short session, no repeating beacon"이라고 씁니다.
-
-**티켓 기록:**
-
-```text
-[251118 0040, Analyst] Reviewing C2 session to 194.26.135.119:12432 (protocol, direction, timing) - Found
-
-[251118 0040, Analyst] 230710 22:39:50.151-22:39:58.364UTC 10.7.10.47 49744 -> 194.26.135.119 12432 tcp, Src 380 pkts 542,386 databytes / Dst 407 pkts 7,179 databytes.
-.NET net.tcp binary SOAP, http://tempuri.org/Contract/MSValue1/2/3, Authorization c75a68098b33270de4b87af925fb5ffd.
-Phases: MSValue1 check-in 22:39:50.753; MSValue2 config 22:39:51.042 -> 6,899 B response; MSValue3 upload 22:39:56.522-57.806 (541,961 B); ack 22:39:58.311.
-```
+- Trickbot처럼 연결을 몇 분씩 붙잡고 있거나 반복 접속하는 **비콘이 없습니다.** 8초 만에 끝나는 **한 번짜리** 연결이에요. 인포스틸러는 "훔치고 바로 빠지는" 경우가 많습니다. 보고서의 C2 칸에는 "single short session, no repeating beacon"이라고 씁니다.
 
 ---
 
@@ -586,19 +510,11 @@ SLACK_TOKEN  STRIPE_API_KEY  TWILIO_ACCOUNT_SID  HEROKU_API_KEY  VAULT_TOKEN ...
 
 이게 **Q6(무엇을 훔치려 했나)**의 답입니다. 중요한 점은 이 목록이 **악성코드 안에 들어 있지 않고 서버가 실행 중에 내려 준다**는 거예요. 공격자는 서버 설정만 바꿔서 훔칠 대상을 바꿀 수 있습니다. 그래서 네트워크에서 이 응답을 보면 "이번 공격자가 무엇을 노렸는지"를 정확히 알 수 있어요.
 
-**티켓 기록:**
-
-```text
-[251118 0045, Analyst] Reviewing C2 server instructions (target list) - Found
-
-[251118 0045, Analyst] Server MSValue2Response (6,899 bytes): Desktop and Documents |*.txt,*.doc*,*key*,*wallet*,*seed*|; ~40 Chromium browser User Data paths; Firefox, Waterfox, Thunderbird, Pale Moon; Steam, Battle.net; wallets Armory, Atomic, Binance, Coinomi, Electrum, Ethereum, Exodus, Guarda, Jaxx, Monero; ~30 wallet extension IDs (Metamask, Phantom, Coinbase ...); env vars AWS_ACCESS_KEY_ID, AZURE_CLIENT_SECRET, GH_TOKEN, DOCKER_PASSWORD, SLACK_TOKEN, STRIPE_API_KEY, VAULT_TOKEN ...
-```
-
 ---
 
 ## 9단계 — 실제로 올라간 것: 유출 내용 { #exfil }
 
-**목적:** `MSValue3`(PC → 서버 541,961바이트)에 무엇이 들어 있었는지 봅니다. 티켓의 Exfil 칸(시간, 무엇을, 바이트, 방법)을 채우는 핵심 단계입니다.
+**목적:** `MSValue3`(PC → 서버 541,961바이트)에 무엇이 들어 있었는지 봅니다. 보고서의 Exfil 칸(시간, 무엇을, 바이트, 방법)을 채우는 핵심 단계입니다.
 
 **Source Raw**로 내려받아 CyberChef에서 엽니다. Recipe에 **Strings**를 넣으면 읽을 수 있는 글자만 나옵니다.
 
@@ -663,17 +579,6 @@ Bytes    541,961 (MSValue3), 542,386 total client data in the session
 Method   .NET net.tcp binary SOAP over raw TCP 12432 to 194.26.135.119 (unencrypted)
 ```
 
-**티켓 기록:**
-
-```text
-[251118 0050, Analyst] Reviewing data uploaded to C2 (exfil content) - Found
-
-[251118 0050, Analyst] Client MSValue3 upload (541,961 bytes): HWID 3154E784D973FE3C24082CC1E80F37A9, user rwalters, Windows 10 Pro for Workstations x64, 1440x900, AV Windows Defender;
-process list incl. powershell.exe ... & 'C:\Users\rwalters\Documents\mystery_file.ps1'; CPU i5-10200H, RAM 32765 MB;
-Edge credential https://www.overcoats-r-us.com/ | rwalters@coolweathercoat.com | My_p@****** (masked);
-Top_secret_ducment.docx; PNG screenshot 1536x864 534,297 bytes (one 1,459-byte segment missing -> partly corrupted).
-```
-
 ---
 
 ## 10단계 — 범위 확인 { #scope }
@@ -700,14 +605,6 @@ ip.src == 10.7.10.47 && ip.dst == 10.7.10.0/24 && ip.dst != 10.7.10.9
 
 ```text
 ip.dst == [195.161.114.3, 92.118.151.9, 194.26.135.119] && ip.src != 10.7.10.47
-```
-
-**티켓 기록:**
-
-```text
-[251118 0055, Analyst] Checking for lateral movement to other internal hosts - Not Found
-
-[251118 0055, Analyst] Query: ip.src == 10.7.10.47 && ip.dst == 10.7.10.0/24 && ip.dst != 10.7.10.9 -> only NetBIOS broadcast to 10.7.10.255. No SMB/RDP/RPC to other hosts.
 ```
 
 ---
@@ -809,153 +706,6 @@ ip.dst == [195.161.114.3, 92.118.151.9, 194.26.135.119] && ip.src != 10.7.10.47
 
 ---
 
-## 침해사고 티켓 { #ticket }
-
-양식 규칙은 [Trickbot 사례의 티켓 규칙](arkime-only-credential-theft-tls-c2.md#ticket-rules)과 같습니다. 이 사례에서 특히 신경 쓴 점:
-
-- **C2 칸:** 비콘이 없으므로 "single short session, no repeating beacon"으로 상태를 적었습니다.
-- **Exfil 칸:** 시간·내용·바이트·방법을 9단계의 체크리스트대로 채웠습니다.
-- **측면 이동 칸:** 없으므로 비워 두었습니다(양식 규칙).
-- 비밀번호는 가렸습니다. 작업자 이름, 티켓 링크, 증거 경로는 자리표시이고 작업 로그 시간은 예시입니다.
-
-```text
-#INDEX ENTRY#
-
-[] -- 230710 2239 -- 10.7.10.47 DESKTOP-9PEA63H -- RedLine Stealer infection: PowerShell script, payload download, data exfil over raw TCP 12432 -- <ticket-link>
-
-
-#TICKET METADATA#
-
-OPERATORS: <Analyst>
-
-TIME OF INCIDENT: 230710 22:39:47 UTC
-
-RELATED TICKETS:
-N/A
-
-DESCRIPTION OF INVESTIGATION:
-
-At 230710 22:39:47 UTC DESKTOP-9PEA63H (10.7.10.47, user rwalters, domain COOLWEATHERCOAT) ran a PowerShell script (process list shows powershell.exe executing C:\Users\rwalters\Documents\mystery_file.ps1 with ExecutionPolicy Bypass). The script sent two HTTP GET requests (port 80) to 195.161.114.3 (623start[.]site) with User-Agent "WindowsPowerShell/5.1": /?status=start&av=Windows%20Defender (reports the installed antivirus) and /?status=install (both answered "404 HTTP Error" with status 200). At 22:39:49 the host requested /data/czx.jpg from 92.118.151.9 (guiatelefonos[.]com) over HTTP with no User-Agent, was redirected (301) to HTTPS, and downloaded about 353 KB over TLS 443 (Let's Encrypt certificate issued 230708); the file name ends in .jpg but the size and timing indicate the malware payload (reported by Unit 42 as a 348,160-byte RedLine Stealer executable).
-
-At 22:39:50 the host connected directly (no DNS lookup) to 194.26.135.119 on non-standard TCP port 12432 using .NET net.tcp binary SOAP (tempuri.org namespace, methods MSValue1-3, Authorization c75a68098b33270de4b87af925fb5ffd). This is the C2 channel; it is a single short session, not a repeating beacon. The server sent a 6,899-byte target list (Desktop/Documents files *.txt, *.doc*, *key*, *wallet*, *seed*; Chromium and Firefox browser profiles; about 40 crypto wallets and wallet extensions; cloud/CI/developer API keys in environment variables). Between 22:39:56 and 22:39:57 the host uploaded 541,961 bytes (exfil): a 534 KB PNG desktop screenshot, system details (user, OS, language, screen size, antivirus, CPU, RAM, process list), one saved Microsoft Edge credential for rwalters@coolweathercoat[.]com, and the document C:\Users\rwalters\Documents\Top_secret_ducment.docx. The server acknowledged at 22:39:58. Determination: MALICIOUS - RedLine Stealer information stealer (C2 protocol, target list and data layout match RedLine; confirmed by Unit 42 answers). No lateral movement seen. Credentials for rwalters are compromised.
-
-
-#IMPACTED MACHINES#
-
-INTERNAL IP/s & HOSTNAME/s:
-10.7.10.47 DESKTOP-9PEA63H (user rwalters, MAC 80:86:5b:ab:1e:c4, Windows 10 Pro for Workstations x64)
-
-INTERNAL SOURCE PORT/s: (If Ephemeral Leave Blank.)
-
-LATERAL DESTINATION IP/s & HOSTNAME/s: (If No Lateral Leave Blank.)
-
-LATERAL DESTINATION PORT/s: (If No Lateral OR If Ephemeral Leave Blank.)
-
-
-#EXTERNAL MACHINES#
-
-EXTERNAL IP/s & HOSTNAME/s:
-195.161.114.3 (623start[.]site) - PowerShell status check-ins (HTTP 80)
-92.118.151.9 (guiatelefonos[.]com) - payload czx.jpg (HTTP 80 redirect, HTTPS 443 download)
-194.26.135.119 - RedLine C2 and exfil (TCP 12432, no domain)
-
-EXTERNAL SOURCE PORT/s: (If Ephemeral Leave Blank.)
-
-EXTERNAL DESTINATION PORT/s:
-Port 80 - HTTP
-Port 443 - TLS
-Port 12432 - .NET net.tcp (non-standard)
-
-
-#SEARCH QUERIES#
-
-ARKIME (MOLOCH):
-ip == 10.7.10.47 && ip == [195.161.114.3, 92.118.151.9, 194.26.135.119]
-ip.src == 10.7.10.47 && port.dst == 12432
-
-SPLUNK: (not run - equivalent Zeek query)
-index=zeek sourcetype=conn:zeek id_orig_h=10.7.10.47 AND id_resp_h IN (195.161.114.3, 92.118.151.9, 194.26.135.119)
-
-
-#EVIDENCE LOCATIONS#
-
-Team1: /home/<analyst>/evidence/230710_DESKTOP-9PEA63H_powershell_http_checkin.pcap
-Team1: /home/<analyst>/evidence/230710_DESKTOP-9PEA63H_czx_jpg_download.pcap
-Team1: /home/<analyst>/evidence/230710_DESKTOP-9PEA63H_redline_c2_12432.pcap
-(Exported from Arkime "Download PCAP". Full credential is in the C2 PCAP only - masked in this ticket.)
-
-
-#OPERATION LOG / ANALYST NOTES#
-
-[251118 0010, Analyst] Establishing data time range and session count - Found
-[251118 0012, Analyst] Reviewing protocols and internal hosts - Found
-[251118 0015, Analyst] Identifying client IP, MAC, hostname and domain from DHCP - Found
-[251118 0017, Analyst] Identifying DC from DNS SRV and user account from Kerberos - Found
-[251118 0020, Analyst] Reviewing DNS queries for unusual domains - Found
-[251118 0025, Analyst] Reviewing cleartext HTTP (PowerShell user agent, downloads) - Found
-[251118 0030, Analyst] Reviewing HTTPS download from guiatelefonos.com (size, certificate, JA3) - Found
-[251118 0035, Analyst] Hunting outbound connections on non-standard ports - Found
-[251118 0040, Analyst] Reviewing C2 session to 194.26.135.119:12432 (protocol, direction, timing) - Found
-[251118 0045, Analyst] Reviewing C2 server instructions (target list) - Found
-[251118 0050, Analyst] Reviewing data uploaded to C2 (exfil content) - Found
-[251118 0055, Analyst] Checking for lateral movement to other internal hosts - Not Found
-
-[Time -- Operator]
-
-Tool Output / Notes:
-
-[251118 0010, Analyst] Data range 2023-07-10 22:39:22 - 22:39:58 UTC (36 seconds), about 120 sessions. Capture starts with a DHCP request: host was just starting up / logging on.
-
-[251118 0012, Analyst] Only one internal client: 10.7.10.47 (118 sessions as source). Server 10.7.10.9. Protocols: dns, krb5, ldap, smb, dcerpc, ntp, nbns, mdns, igmp, dhcp (normal AD logon), tls (20 sessions), http (2 sessions), plus one tcp session to port 12432.
-
-[251118 0015, Analyst] Query: protocols == dhcp
-230710 22:39:22 DHCP Request from 0.0.0.0 - client MAC 80:86:5b:ab:1e:c4, hostname DESKTOP-9PEA63H, FQDN DESKTOP-9PEA63H.coolweathercoat.com, requested IP 10.7.10.47, vendor class MSFT 5.0
-230710 22:39:22 DHCP ACK from 10.7.10.9 - yiaddr 10.7.10.47, mask 255.255.255.0, router 10.7.10.1, DNS 10.7.10.9, domain coolweathercoat.com
-
-[251118 0017, Analyst] Query: host.dns == _ldap._tcp.dc._msdcs.* -> SRV win-s3wt6lgqfvx.coolweathercoat.com -> A 10.7.10.9 (DC).
-Query: ip.src == 10.7.10.47 && protocols == krb5 -> krb5.cname rwalters, desktop-9pea63h$; realm COOLWEATHERCOAT.COM.
-
-[251118 0020, Analyst] Query: ip.src == 10.7.10.47 && protocols == dns -> AD SRV lookups, Microsoft/Bing/MSN/Azure CDN names (benign), checkappexec.microsoft.com 22:39:44 (SmartScreen app reputation check), then 623start.site 22:39:47 -> 195.161.114.3 and guiatelefonos.com 22:39:49 -> 92.118.151.9 (unusual).
-
-[251118 0025, Analyst] Query: ip.src == 10.7.10.47 && protocols == http -> 2 sessions.
-230710 22:39:47.579UTC 10.7.10.47 49741 195.161.114.3 80 GET 200 623start.site /?status=start&av=Windows%20Defender 1.1 Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.19041.3031
-230710 22:39:48.415UTC 10.7.10.47 49741 195.161.114.3 80 GET 200 623start.site /?status=install 1.1 (same UA)
-  Responses: Server Apache/2.4.6 (CentOS) PHP/7.4.33, Content-Length 14, body "404 HTTP Error" with status 200.
-230710 22:39:49.250UTC 10.7.10.47 49742 92.118.151.9 80 GET 301 guiatelefonos.com /data/czx.jpg 1.1 (no User-Agent) -> Location https://guiatelefonos.com:443/data/czx.jpg (nginx/1.20.2)
-
-[251118 0030, Analyst] 230710 22:39:49.323-22:39:49.874UTC 10.7.10.47 49743 -> 92.118.151.9 443 tls, SNI guiatelefonos.com, server databytes 353,715 / client 413 (download).
-Certificate CN=guiatelefonos.com, issuer Let's Encrypt R3, valid 2023-07-08 to 2023-10-06. JA3 3b5074b1b5d032e5620f69f9f700ff0e (same JA3 as Windows services client.wns.windows.com and evoke-windowsservices-tas.msedge.net in this capture). JA3S 389ed42c02ebecc32e73aa31def07e14.
-
-[251118 0035, Analyst] Query: ip.src == 10.7.10.47 && ip.dst != 10.0.0.0/8 && ip.dst != 224.0.0.0/4 && port.dst != 80 && port.dst != 443 && port.dst != 53 -> 1 session: 194.26.135.119:12432. No DNS query resolves to this IP (hard-coded).
-
-[251118 0040, Analyst] 230710 22:39:50.151-22:39:58.364UTC 10.7.10.47 49744 -> 194.26.135.119 12432 tcp, Src 380 pkts 542,386 databytes / Dst 407 pkts 7,179 databytes. Dst MAC 00:b0:64:98:ad:54 (gateway).
-Payload: .NET Message Framing "net.tcp://194.26.135.119:12432/", binary SOAP, http://tempuri.org/Contract/MSValue1/2/3, Authorization c75a68098b33270de4b87af925fb5ffd.
-Phases: 22:39:50.753 MSValue1 (218 B) -> 22:39:51.037 response (159 B); 22:39:51.042 MSValue2 (166 B) -> 22:39:51.347 response (6,899 B, target list); 22:39:56.522-22:39:57.806 MSValue3 upload (541,961 B); 22:39:58.311 response (120 B).
-
-[251118 0045, Analyst] Server MSValue2Response (6,899 bytes): %userprofile%\Desktop and \Documents |*.txt,*.doc*,*key*,*wallet*,*seed*|; Chromium browser User Data paths (Chrome, Edge, Brave, Opera, Vivaldi, Yandex ...); Firefox, Waterfox, Thunderbird, Pale Moon; wallets Armory, Atomic, Binance, Coinomi, Electrum, Ethereum, Exodus, Guarda, Jaxx, Monero; wallet extension IDs (Metamask, Phantom, Coinbase, Tronlink, Ronin ...); env vars AWS_ACCESS_KEY_ID, AZURE_CLIENT_SECRET, GH_TOKEN, DOCKER_PASSWORD, SLACK_TOKEN, STRIPE_API_KEY, VAULT_TOKEN ...
-
-[251118 0050, Analyst] Client MSValue3 upload (541,961 bytes) contents:
- Hardware ID 3154E784D973FE3C24082CC1E80F37A9, time zone (UTC), user rwalters, Windows 10 Pro for Workstations x64, English (United States), screen 1440x900, AV Windows Defender
- Process list incl. powershell.exe "-Command" "if((Get-ExecutionPolicy ) -ne 'AllSigned') { Set-ExecutionPolicy -Scope Process Bypass }; & 'C:\Users\rwalters\Documents\mystery_file.ps1'"
- CPU Intel Core i5-10200H, RAM 32765 MB
- Microsoft_[Edge] Default: https://www.overcoats-r-us.com/ | rwalters@coolweathercoat.com | My_p@****** (masked)
- File Top_secret_ducment.docx (C:\Users\rwalters\Documents\), text "This is a top secret document. For my eyes only! Do not view this!"
- PNG screenshot 1536x864, 534,297 bytes (desktop with PowerShell window showing "404 HTTP Error"); one 1,459-byte TCP segment missing from the capture, so the lower part of the image is corrupted.
-
-[251118 0055, Analyst] Query: ip.src == 10.7.10.47 && ip.dst == 10.7.10.0/24 && ip.dst != 10.7.10.9 -> only NetBIOS broadcast to 10.7.10.255 (udp 137/138). No SMB/RDP/RPC to other hosts. No lateral movement.
-
-RECOMMENDATIONS:
-- Isolate DESKTOP-9PEA63H (10.7.10.47); host triage for mystery_file.ps1 and the dropped executable.
-- Reset rwalters domain password and the overcoats-r-us.com password; check reuse.
-- Treat Top_secret_ducment.docx as disclosed.
-- Block 623start[.]site, guiatelefonos[.]com, 194.26.135.119 (and port 12432 egress).
-- Hunt for other hosts with outbound sessions to 194.26.135.119 or URIs /?status=start&av=.
-```
-
-빈 양식은 [Trickbot 사례의 빈 티켓 양식](arkime-only-credential-theft-tls-c2.md#ticket-template)을 쓰세요.
-
----
-
 ## 복사용 쿼리 모음 { #query-sheet }
 
 `<…>`를 바꿔서 쓰세요.
@@ -1038,7 +788,7 @@ ip.dst == [<IOC-IP-1>, <IOC-IP-2>, <IOC-IP-3>] && ip.src != <host-IP>
 - **JA3 변화가 없다고 깨끗한 게 아닙니다.** 이 사례는 페이로드 다운로드가 윈도우 서비스와 같은 JA3를 썼고, C2는 TLS조차 아니었습니다.
 - **업로드 ≫ 다운로드인 세션은 유출 후보 1순위**입니다(`databytes.src`).
 - **암호화되지 않은 C2는 서버의 지시와 훔친 내용을 다 보여 줍니다.** 서버가 내려 준 목록으로 "무엇을 노렸나"를, 업로드로 "무엇을 잃었나"를 나눠서 보고하세요.
-- **캡처 손실을 기록하세요.** 빠진 조각 때문에 증거(화면 캡처)가 일부 깨졌다는 사실도 티켓에 남겨야 합니다.
+- **캡처 손실을 기록하세요.** 빠진 조각 때문에 증거(화면 캡처)가 일부 깨졌다는 사실도 보고서에 남겨야 합니다.
 
 ## 참고 { #references }
 

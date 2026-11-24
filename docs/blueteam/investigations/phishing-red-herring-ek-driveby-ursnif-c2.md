@@ -11,30 +11,28 @@ tags:
   - snort
   - exploit-kit
   - c2
-  - ticket
 ---
 
 # Phishing Red Herring to Exploit-Kit Drive-by — Angler-like EK, Ursnif-like C2, CAB Exfil { #phishing-red-herring-ek }
 
 !!! abstract "Case summary"
-    An after-hours SOC analyst receives **seven malicious emails** that slipped past the spam filter, an **employee list**, and a **12-minute PCAP** of a host that raised alerts. The emails are analysed first (headers, MIME, base64, zip internals) and look like the obvious cause. The traffic then shows something else: the host — **Dekker-PC, the Finance Director's workstation** — was infected by **visiting a compromised website**. A Flash-based gate sent the browser to an **exploit kit** (pattern consistent with **Angler EK**), which exploited an outdated **Flash Player 15.0.0.189** and delivered an encrypted payload. Eight seconds later the host began **C2 check-ins** (pattern consistent with **Ursnif / Gozi-ISFB**), downloaded a further encrypted module and **uploaded four CAB-compressed files** to the C2. The emails were a **red herring for this capture** — and a separate lead for other hosts. The case ends with **11 Snort rules tested against the PCAP** and a complete incident ticket.
+    An after-hours SOC analyst receives **seven malicious emails** that slipped past the spam filter, an **employee list**, and a **12-minute PCAP** of a host that raised alerts. The emails are analysed first (headers, MIME, base64, zip internals) and look like the obvious cause. The traffic then shows something else: the host — **Dekker-PC, the Finance Director's workstation** — was infected by **visiting a compromised website**. A Flash-based gate sent the browser to an **exploit kit** (pattern consistent with **Angler EK**), which exploited an outdated **Flash Player 15.0.0.189** and delivered an encrypted payload. Eight seconds later the host began **C2 check-ins** (pattern consistent with **Ursnif / Gozi-ISFB**), downloaded a further encrypted module and **uploaded four CAB-compressed files** to the C2. The emails were a **red herring for this capture** — and a separate lead for other hosts. The case ends with **11 Snort rules tested against the PCAP** and a complete incident report.
 
 | | |
 |---|---|
 | **Evidence** | 7 `.eml` files (dangerous attachments), an employee list (CSV), one PCAP: 2016-02-05 21:24:05 – 21:36:39 UTC (12 min 34 s), 321 Zeek connections |
 | **Environment** | Closed network (no VirusTotal, no OSINT). Splunk with Zeek logs, Arkime v5.6.4 web UI, Snort 2.9 on the analyst workstation |
-| **Deliverables** | Email IOC analysis, network analysis, Snort rules that find the traffic again, an incident ticket for the MC / another hunt team, leads for the host operator |
+| **Deliverables** | Email IOC analysis, network analysis, Snort rules that find the traffic again, leads for the host operator |
 | **Related pages** | [Spotting exploit kits](../../training/blue-team-essentials/http-analysis/exploit-kits-practice.md) · [Base64](../../training/blue-team-essentials/http-analysis/base64.md) · [Arkime search syntax](../../network/arkime/search-syntax.md) · [Zeek logs](../../network/zeek/index.md) · [SPL cheat sheet](../splunk/spl-cheatsheet.md) · [Beaconing & C2](../../network/beaconing-c2.md) · [Snort rules (DC/SMB)](../../training/pcap-ir-labs/dc-smb-and-snort-rules.md) |
 
 !!! tip "How to read this page"
-    It is written so a complete beginner can follow it from the first click to the finished ticket. Every step uses the same order:
+    It is written so a complete beginner can follow it from the first click to the finished report. Every step uses the same order:
 
     1. **Goal** — what the step tries to find out
     2. **Query / command** — copy it with the **copy button** on the code block
     3. **Explained** — what each piece (each line, each option) means
     4. **Actual result** — what appeared on screen in this case
     5. **Reading the result** — what it means and why it matters
-    6. **Ticket entry** — the operation-log line for the step
 
     **Question** boxes are real questions asked during the analysis. **Correction** boxes are places where a first reading was wrong and later evidence fixed it — they are kept on purpose, because spotting and correcting your own mistakes is part of the job.
 
@@ -68,21 +66,9 @@ The exercise brief, paraphrased:
 - You identified the IP and pulled the related traffic (**the PCAP**).
 - You were already examining **malicious emails** that got through the spam filter (**7 `.eml` files**, in a folder named `..._emails_DANGER`).
 - You retrieved a **list of people on the network** during the alert window (**employee CSV**: name, login name, job title, work email, phone).
-- Write a **ticket** another hunt team (or the MC) can pick up, with leads for the **host operator**, and **create Snort rules to find the traffic again**.
+- Leave leads for the **host operator**, and **create Snort rules to find the traffic again**.
 
-### The ticket template { #ticket-template }
-
-The team's template (see the [final ticket](#ticket)) has these blocks:
-
-| Block | Content |
-|---|---|
-| `#SEARCH QUERIES#` | The exact Arkime (`MOLOCH:`) and Splunk queries — specific enough to find only the traffic of interest on a live network |
-| `#EVIDENCE LOCATIONS#` | `Team<#>: /home/<user>/<evidence folder>/<file>` — captures of traffic of interest and suspect files |
-| `#OPERATION LOG#` | One line per action: `[<time>, <operator>] <what you looked for> - <Found / Not Found / Further Analysis Required>` |
-| `TOOL OUTPUT / NOTES` | The tool output for each finding, with the **same** `[<time>, <operator>]` stamp so you can Ctrl+F the two together. Must include timestamps, source/destination, all interesting fields (URI, User-Agent, method, status, referrer …) and what the findings mean |
-
-!!! note "Moloch = Arkime"
-    `MOLOCH:` in the template is where Arkime queries go. Moloch is Arkime's old name.
+---
 
 ### The plan { #plan }
 
@@ -91,7 +77,6 @@ The team's template (see the [final ticket](#ticket)) has these blocks:
 3. Test whether the emails explain the traffic — and follow the evidence when they don't.
 4. Confirm everything at packet level in Arkime, save evidence, record hashes.
 5. Write Snort rules and **test them against the PCAP**.
-6. Write the ticket.
 
 ---
 
@@ -238,7 +223,7 @@ unzip -p invoice304-18.zip | sha256sum
 - `part.get_filename()` — only attachments have a file name.
 - `get_payload(decode=True)` — base64-decodes the part back to the original zip bytes.
 - `unzip -l` — **lists** the zip without extracting (`-l` = list). Nothing is written to disk.
-- `sha256sum` — the hash for the ticket (look up hashes, never upload files).
+- `sha256sum` — the hash for the report (look up hashes, never upload files).
 - `unzip -p … | sha256sum` — `-p` streams the inner file to the next command without writing it, so you can hash the `.js` itself.
 
 Expected `unzip -l` output:
@@ -737,12 +722,6 @@ index=zeek sourcetype=zeek:conn
 !!! question "Question: why did `min(timestamp)` / `max(timestamp)` show `none`?"
     `timestamp` is a **string** field here, and `min`/`max` returned nothing useful for it. Use the numeric **`ts`** (see [C6](#time-range)).
 
-**Ticket entry:**
-
-```text
-[261118 2100, Analyst] Identifying hosts in PCAP (zeek:conn) - Found: single originator 10.41.245.114 (321 conns)
-```
-
 ### Step C3 — Is there any mail traffic? Are the email IPs here? { #mail-check }
 
 ```spl
@@ -761,7 +740,7 @@ index=zeek sourcetype=zeek:conn (id_orig_h IN (213.133.123.17, 212.232.52.106, 6
 
 - The **outer parentheses matter**: without them Splunk binds `index=… sourcetype=… id_orig_h IN (…)` first and attaches the `OR` afterwards, which can match other indexes.
 
-**Actual result:** `No results found.` — "Not found" is a result too; it goes in the ticket.
+**Actual result:** `No results found.` — "Not found" is a result too; it goes in the report.
 
 ```text
 [261118 2102, Analyst] Looking for mail traffic (25/110/143/465/587/993/995) in PCAP - Not Found
@@ -851,7 +830,7 @@ index=zeek sourcetype=zeek:dhcp
 Look again at `_time` above: **2026-11-18 08:46:31** for 2016 traffic — and **every event has the same value**.
 
 !!! warning "Trap: `_time` is the ingest time here"
-    Splunk could not read the timestamp inside these Zeek logs when they were loaded, so it stamped every event with **the time the logs were loaded**. Always sanity-check `_time` on new data. If every event has the same time, or the date is impossible, use the log's own time field — here the numeric **`ts`** — for everything, including the ticket.
+    Splunk could not read the timestamp inside these Zeek logs when they were loaded, so it stamped every event with **the time the logs were loaded**. Always sanity-check `_time` on new data. If every event has the same time, or the date is impossible, use the log's own time field — here the numeric **`ts`** — for everything, including the report.
 
 ```spl
 index=zeek sourcetype=zeek:conn
@@ -1170,7 +1149,7 @@ Converting ts: 1454707720 − 1454630400 (2016-02-05 00:00 UTC) = 77,320 s = **2
     index=zeek sourcetype=zeek:dns answers="*185.86.77.12*"
     ```
 
-    Lesson: before writing "Not Found", check the query could actually have matched the data's format. In the ticket, add a **correction line** — do not delete the wrong one; others need to follow the reasoning.
+    Lesson: before writing "Not Found", check the query could actually have matched the data's format. In the report, add a **correction line** — do not delete the wrong one; others need to follow the reasoning.
 
 !!! note "Correction — not 'first and second C2', but round-robin DNS"
     One domain has two IPs, and the DNS server **rotates their order** on each answer. The host took the first IP each time. The short TTLs (59 s, 43 s) let the operator change IPs quickly — common in malicious infrastructure. Block the **domain and both IPs**.
@@ -1209,7 +1188,7 @@ More background: [Spotting exploit kits](../../training/blue-team-essentials/htt
 
 ## Part E — Arkime (packet-level confirmation) { #arkime }
 
-Splunk/Zeek are **summaries**; Arkime shows the **actual packets**. Evidence in the ticket should be confirmed — and saved — at packet level. (In the browser the Arkime tab is titled **SPIView**.)
+Splunk/Zeek are **summaries**; Arkime shows the **actual packets**. Evidence in the report should be confirmed — and saved — at packet level. (In the browser the Arkime tab is titled **SPIView**.)
 
 ### Step E1 — Time range and the infection-chain query { #arkime-chain }
 
@@ -1459,7 +1438,7 @@ md5sum ~/evidence/http_objects/*
     - **The full original — for preservation.** You already have it (the file you were given). Rather than re-exporting it, record its path and **SHA256** (`sha256sum <file>`) — proof the analysed original was not changed (chain of custody). A re-export may differ in packet order/format.
     - **A filtered capture — the "traffic of interest".** The receiver sees only the chain instead of 321 connections; Snort tests become cleaner (malicious-only file for detection, full file for false positives); you share less unrelated user browsing; and on real sensors (tens of GB per hour) filtering is a must.
 
-    In this exercise the full PCAP was saved — then say in the ticket which time window and IPs to look at.
+    In this exercise the full PCAP was saved — then say in the report which time window and IPs to look at.
 
 A better filter than the one in [E1](#arkime-chain) — it also keeps the **DNS** sessions (which go to the internal resolver, not the destination IPs):
 
@@ -1831,147 +1810,6 @@ The seven emails are not in this capture but are a **real threat to five users**
 
 ---
 
-## The incident ticket { #ticket }
-
-Operator, paths and SHA256 values are placeholders; operation-log times are illustrative.
-
-```text
-==========================================================================================
-TICKET: Drive-by Exploit Kit infection and active C2 / data exfiltration - Dekker-PC
-==========================================================================================
-Prepared by     : Analyst (Team1)                     Prepared: 261118
-Hand-off to     : MC / Host Operator / Hunt brick
-Severity        : HIGH - confirmed compromise, active C2, outbound data upload (Finance Director host)
-Status          : Network analysis complete - host triage required
-
-#SUMMARY#
-On 2016-02-05 at 21:28Z host 10.41.245.114 (Dekker-PC, user Justini Dekker, Finance Director)
-browsed to a compromised website (www.source-werbeartikel.com). Injected content sent the
-browser through a Flash-based gate (lsbery.tk) to an exploit kit (bsbkxs.zdxwx3m.pw) that
-delivered a Flash exploit against an outdated Flash Player (15.0.0.189) and an encrypted
-payload (360,468 bytes). Within ~8 seconds of payload delivery the host began C2 check-ins to
-tplandthepropforcontent.com (185.86.77.12 / 192.210.137.123), downloaded a further encrypted
-module (230,507 bytes) and uploaded 4 CAB-compressed files to the C2 (data exfiltration).
-Patterns consistent with Angler EK (2016) and Ursnif (Gozi-ISFB) C2 - UNCONFIRMED (closed
-network, no hash reputation lookup). The 7 phishing emails provided separately are NOT related
-to this capture (no email IOCs or mail traffic observed) - separate lead, see OTHER LEADS.
-
-#SEARCH QUERIES#
-MOLOCH (Arkime):
-  ip == 10.41.245.114 && (ip.dst == [213.174.33.141, 85.93.0.32, 86.106.93.167, 185.86.77.12, 192.210.137.123] || host.dns == [www.source-werbeartikel.com, lsbery.tk, bsbkxs.zdxwx3m.pw, tplandthepropforcontent.com])
-  ip == 86.106.93.167
-  ip == 185.86.77.12 || ip == 192.210.137.123
-SPLUNK (Zeek, all time; use ts - _time is index time):
-  index=zeek sourcetype=zeek:dhcp | table _time client_addr mac host_name msg_types
-  index=zeek sourcetype=zeek:http id_resp_h IN (85.93.0.32, 86.106.93.167, 184.28.188.184, 128.183.114.107, 185.86.77.12, 192.210.137.123) | eval t=strftime(ts,"%H:%M:%S") | table t id_resp_h method uri referrer status_code resp_mime_types request_body_len response_body_len user_agent | sort t
-  index=zeek sourcetype=zeek:dns query IN ("*werbeartikel*", "*lsbery*", "*zdxwx3m*", "*tplandthe*") | eval t=strftime(ts,"%H:%M:%S") | table t query answers TTLs
-  index=zeek sourcetype=zeek:files mime_type IN ("-", "application/x-shockwave-flash", "application/vnd.ms-cab-compressed") | eval t=strftime(ts,"%H:%M:%S") | table t tx_hosts rx_hosts mime_type seen_bytes
-
-#EVIDENCE LOCATIONS#
-Team1: /home/<analyst>/Downloads/Investigation1.pcap  (original, SHA256 <insert>)
-Team1: /home/<analyst>/evidence/261118_dekker-pc_full.pcap  (full capture export, SHA256 <insert>)
-Team1: /home/<analyst>/evidence/http_objects/  (tshark --export-objects http - DO NOT EXECUTE)
-  Sessions of interest: 21:28:17-21:36:39Z, IPs per IOC table.
-
-#OPERATION LOG#
-[261118 2050, Analyst] Reviewing 7 phishing emails provided (headers/attachments) - Found: 3 campaigns, zipped .js downloaders, recipients mtsutsumi, jdekker(x2), smunro(x2), mtraugott, culyanova
-[261118 2055, Analyst] Identifying data sources in Splunk (tstats by index/sourcetype) - Found: index=zeek (conn, dhcp, dns, files, http, ssl, x509); index=main sourcetype=csv = Snort alert.log
-[261118 2100, Analyst] Identifying hosts in PCAP (zeek:conn) - Found: single originator 10.41.245.114 (321 conns)
-[261118 2102, Analyst] Looking for mail traffic (25/110/143/465/587/993/995) - Not Found
-[261118 2103, Analyst] Looking for phishing email sender IPs in PCAP - Not Found
-[261118 2104, Analyst] Locating IDS alerts for 10.41.245.114 - Not Found: alert.log only contains test rule sid 1000100 on unrelated 2025-04-24 traffic
-[261118 2115, Analyst] Identifying host 10.41.245.114 via DHCP - Found: Dekker-PC, MAC 00:17:31:7d:52:ba (Justini Dekker, Finance Director)
-[261118 2116, Analyst] Note: Splunk _time = index time (all events 2026-11-18 08:46:31); Zeek ts used for event times
-[261118 2125, Analyst] Establishing PCAP time range - Found: 2016-02-05 21:24:05 to 21:36:39 UTC
-[261118 2126, Analyst] Comparing capture with Dekker emails (Email 2 09:34Z, Email 6 18:23Z) - Not Found: no email IOC strings (cehost, love2date, hoast, mac7, t1host, faucibus, odioauctor) in any Zeek log; no exe/attachment download pattern
-[261118 2127, Analyst] Reviewing HTTP user agents and file types from 10.41.245.114 - Found: "Shockwave Flash" UA, non-browser "MSIE 8.0" UA, 2x Flash, 3x unknown mime (encrypted) files
-[261118 2132, Analyst] Following HTTP referrer chain - Found: www.source-werbeartikel.com -> lsbery.tk (85.93.0.32) -> bsbkxs.zdxwx3m.pw (86.106.93.167)
-[261118 2133, Analyst] Identifying exploit delivery - Found: Flash exploit /charge.zhtml and encrypted payload /today.jst from 86.106.93.167; client Flash 15.0.0.189 (outdated)
-[261118 2134, Analyst] Identifying post-infection traffic - Found: connectivity check to nssdc.gsfc.nasa.gov; C2 /images/<base64>/*.gif|jpeg|bmp to 185.86.77.12 and 192.210.137.123
-[261118 2140, Analyst] Resolving domains for suspicious IPs (zeek:dns) - Found: see IOC table
-[261118 2141, Analyst] Checking DNS for C2 IPs - Not Found (query error, see correction 2205)
-[261118 2200, Analyst] Verifying infection chain sessions in Arkime - Found: 21 sessions 21:28:17-21:36:39Z matching Zeek findings
-[261118 2202, Analyst] Reviewing C2 HTTP Host header - Found: tplandthepropforcontent.com for both C2 IPs
-[261118 2204, Analyst] Reviewing gate lsbery.tk sessions - Found: /shop.php Flash gate (x-flash-version), /hot.php redirect
-[261118 2205, Analyst] CORRECTION to 2141: C2 domain tplandthepropforcontent.com WAS resolved via 10.2.41.7 at 21:28:40Z and 21:31:02Z (round-robin); earlier "no DNS" result caused by comma-joined answers field in TSV logs - Found
-[261118 2210, Analyst] Reviewing EK sessions on 86.106.93.167 - Found: landing, Flash exploit served once (2nd request 404), payload application/octet-stream
-[261118 2212, Analyst] Reviewing C2 session 185.86.77.12 (49297) - Found: GET beacon (empty 200 response) + POST multipart upload_file "6D45.bin" starting "MSCF" (CAB) - data exfiltration
-[261118 2213, Analyst] CORRECTION: 4x application/vnd.ms-cab-compressed in zeek:files are the 4 CAB uploads to C2, not Windows CTL downloads - Found
-[261118 2214, Analyst] Assessing malware family from C2/upload pattern - Further Analysis Required: consistent with Ursnif (Gozi-ISFB), unconfirmed
-[261118 2220, Analyst] Reviewing C2 session 192.210.137.123 (49303) - Found: 230,507-byte encrypted module; UA switched to IE11 string but no Accept headers (non-browser)
-[261118 2221, Analyst] Comparing C2 server HTTP Date headers - Found: 192.210.137.123 ~58 min clock skew vs 185.86.77.12 (separate servers behind one domain)
-[261118 2222, Analyst] Hash reputation lookup - Not Performed: closed network; MD5 recorded for MC/intel follow-up
-[261118 2230, Analyst] Writing Snort rules for gate/EK/C2/exfil (sid 1000101-1000111) - Found
-[261118 2345, Analyst] Testing Snort rules against full PCAP - Found: all rules fired as expected, 0 alerts on benign traffic
-
-#TOOL OUTPUT / NOTES#
-[261118 2100, Analyst] index=zeek sourcetype=zeek:conn | stats count by id_orig_h
-  10.41.245.114   321   (only originator in capture - host of interest)
-[261118 2102, Analyst] zeek:conn id_resp_p IN (25,110,143,465,587,993,995) -> 0 results
-[261118 2103, Analyst] email sender IPs 213.133.123.17, 212.232.52.106, 67.222.128.148, 68.66.77.76, 61.9.189.140, 185.60.133.27 -> 0 results
-[261118 2104, Analyst] index=main sourcetype=csv "10.41.245.114" -> 0 results
-  alert.log content: 04/24-10:33:29 ,1,1000100,0,"test",TCP,10.0.0.167,51671,40.97.190.2,993,...  (unrelated test data)
-[261118 2115, Analyst] zeek:dhcp: client_addr 10.41.245.114 mac 00:17:31:7d:52:ba (ASUSTek) host_name Dekker-PC msg_types REQUEST/INFORM
-  Gateway MAC 88:43:e1:6c:b4:5a (Cisco). Internal DNS 10.2.41.7, 10.2.41.8.
-  Employee list: Dekker, Justini H. | justini.dekker | Finance Director | jdekker@<customer-domain> | 555-5189
-[261118 2116, Analyst] All zeek events have _time 2026-11-18 08:46:31 (ingest time). Event time from Zeek ts.
-[261118 2125, Analyst] stats min(ts) max(ts): 321 conns 2016-02-05 21:24:05 - 21:36:39 UTC
-[261118 2126, Analyst] index=zeek ("cehost" OR "love2date" OR "hoast" OR "mac7" OR "t1host" OR "faucibus" OR "odioauctor") -> 0 results
-[261118 2127, Analyst] User agents: IE11 browser "Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko";
-  21:28:27 184.28.188.184 UA "Shockwave Flash"; 21:28:39 128.183.114.107 and 21:28:41 185.86.77.12 UA "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1)" (non-browser)
-  zeek:files mime "-" x3 (593,407 bytes), x-shockwave-flash x2, vnd.ms-cab-compressed x4
-[261118 2132, Analyst] Referrer chain:
-  21:28:24 10.41.245.114:49257 -> 85.93.0.32:80 GET lsbery.tk/shop.php?sid=4046AAB187AB2C1563B214BE7AC6702950B304E2E9E1696E18244B8501B268FD92DA0D313D2273E24C283B
-           Referer http://www.source-werbeartikel.com/  200 application/x-shockwave-flash  UA IE11
-  21:28:25 10.41.245.114:49258 -> 85.93.0.32:80 GET lsbery.tk/hot.php?id=<same>  Referer http://www.source-werbeartikel.com/  200 text/html
-  21:28:26 10.41.245.114:49279 -> 86.106.93.167:80 GET bsbkxs.zdxwx3m.pw/civis/index.php?PHPSESSID=3.b7&action=714324p02212u2q4548f8
-           Referer http://lsbery.tk/hot.php?id=<same>  200 text/html (~100 KB)
-[261118 2133, Analyst] Exploit delivery (server nginx/1.2.1):
-  21:28:27 -> 184.28.188.184:80 GET /get/flashplayer/update/current/install/version.xml15.0.0.189~installVector=1&...  UA "Shockwave Flash"
-  21:28:29 :49278 -> 86.106.93.167:80 GET /charge.zhtml?dead=sVShjH&society=KgXs1bcH&level=O29Gm9T3&go=VdL&once=XN3S3cuYQ&way=Z41t&nothing=sTJVXv7X&art=Jw
-           x-flash-version; 200 application/x-shockwave-flash 38,557 bytes, MD5 cf90ba155fda322eeadd2fdeb4368849; 2nd request 404
-  21:28:32 :49284 -> 86.106.93.167:80 GET /today.jst?technical=_MNsOrB&captain=&something=gxPx-&own=&themselves=T_wh7g5&eye=l3_LBg&citizen=zdelxIDGFLQvZFA8KbsEuiX
-           Referer http://lsbery.tk/hot.php?id=...  200 application/octet-stream 360,468 bytes, MD5 4466cd2032944d03ffe9d4d7d74083c2
-[261118 2134, Analyst] 21:28:39 -> 128.183.114.107:80 GET nssdc.gsfc.nasa.gov/planetary/text/nasa_pr_20001220.txt UA MSIE 8.0 (connectivity check)
-[261118 2140, Analyst] zeek:dns: 21:28:15 www.source-werbeartikel.com 213.174.33.141; 21:28:23 lsbery.tk 85.93.0.32;
-  21:28:25 bsbkxs.zdxwx3m.pw 86.106.93.167; 21:28:39 nssdc.gsfc.nasa.gov 128.183.114.107
-[261118 2200, Analyst] Arkime: 21 sessions 2016/02/05 21:28:17 - 21:36:39 UTC
-[261118 2202, Analyst] Arkime: Host "tplandthepropforcontent.com" on all sessions to 185.86.77.12 and 192.210.137.123
-[261118 2204, Analyst] Arkime: lsbery.tk 85.93.0.32:80 Apache/2.2.15 (CentOS); /shop.php x-flash-version, Flash, Body MD5 5e251668b8a3e02e9da376d6f7da8229
-[261118 2205, Analyst] zeek:dns query="*tplandthe*":
-  ts 1454707720.899691 (21:28:40.9Z) :56313 -> 10.2.41.7:53 A tplandthepropforcontent.com NOERROR 185.86.77.12,192.210.137.123 TTL 59
-  ts 1454707862.298827 (21:31:02.3Z) :56397 -> 10.2.41.7:53 A tplandthepropforcontent.com NOERROR 192.210.137.123,185.86.77.12 TTL 43
-[261118 2210, Analyst] Arkime 86.106.93.167: 49279 landing+POST (MD5s 49143103a3e0a8e6fb35d02c61aa710e, f51880eb438f66a8de9fd674e1a036fb, 27776220a96b24954d66fb137f4ff01a);
-  49278 Flash exploit MD5 cf90ba155fda322eeadd2fdeb4368849 (200, 404); 49284 payload MD5 4466cd2032944d03ffe9d4d7d74083c2
-[261118 2212, Analyst] Arkime 49297 -> 185.86.77.12:80 natural view:
-  GET /images/N6bsv2yg/.../QPYTXoSJXUZ9/3.gif  UA MSIE 8.0  Host tplandthepropforcontent.com  (no Accept headers)
-    -> 200 nginx Content-Length 0
-  POST /images/yGOF1OPRgpsNLYRRXk/.../uD27YPGr.bmp  multipart/form-data  Content-Length 430
-    name="upload_file"; filename="6D45.bin"  body starts "MSCF" (CAB)  -> 200 Content-Length 0
-[261118 2213, Analyst] CAB uploads: 21:28:52 CTU.bmp, 21:30:54 uD27YPGr.bmp (185.86.77.12); 21:33:16 qS.bmp, 21:35:15 Pspw_2F.bmp (192.210.137.123)
-[261118 2220, Analyst] Arkime 49303 -> 192.210.137.123:80 GET /images/lYPocsAb06v/.../i.jpeg UA IE11 string, no Accept
-  -> 200 nginx Date 22:28:56 GMT application/octet-stream 230,507 bytes, MD5 032557398230f49a5310a9a60f00e33b
-  Idle connections (SYN only, 0/420 bytes): 49304, 49318, 49331, 49381
-[261118 2222, Analyst] MD5s: 5e2516... gate Flash; cf90ba15... EK Flash; 4466cd20... EK payload; 03255739... C2 module. SHA256 <generate>
-[261118 2345, Analyst] snort -c snort.conf -r Investigation1.pcap -A console -q -k none -U
-  1000101 DNS lsbery.tk 1 | 1000102 DNS *.zdxwx3m.pw 1 | 1000103 DNS C2 2 | 1000104 C2 SYN 10 | 1000105 gate 2 |
-  1000106 landing 1 | 1000108 payload 1 | 1000109 C2 Host 10 | 1000110 beacon 6 | 1000111 CAB upload 4 | benign 0
-
-#SNORT RULES#
-(sid 1000101-1000111 as in Part F)
-
-#LEADS FOR HOST OPERATOR#
-Isolate Dekker-PC, memory capture before reboot; window 21:28:17-21:28:41Z; children of iexplore.exe/Flash
-(Sysmon 1 / 4688); network by process (Sysmon 3); injection (Sysmon 8/10); new files in %TEMP%/%APPDATA%
-(Sysmon 11); persistence (Sysmon 13, 4698); remove Flash 15.0.0.189; reset Dekker's domain and finance credentials.
-
-#OTHER LEADS#
-7 phishing emails (zipped .js) to mtsutsumi, jdekker x2, smunro x2, mtraugott, culyanova - not in this capture;
-pull traffic / triage those hosts (priority culyanova, smunro, jdekker), search mailboxes for the subjects/attachments.
-```
-
----
-
 ## Copy-ready query sheet { #query-sheet }
 
 Replace `<…>`. Splunk time range: **All time** for old data; use `ts`, not `_time`, if `_time` looks wrong.
@@ -2086,7 +1924,7 @@ sudo snort -c /etc/snort/snort.conf -r <file>.pcap -A console -q -k none -U -l /
 
 1. **The obvious cause is a hypothesis, not a conclusion.** Phishing to the same user on the same day looked decisive; time, missing email artefacts and a complete web chain said otherwise. Let the evidence decide — and write "not observed in this capture" rather than "did not happen".
 2. **Check the data before trusting it.** `_time` was the ingest time; Splunk's `host` hid Zeek's `host`; `answers` was a comma-joined string; the Snort CSV had no header. Each one produced a wrong first answer.
-3. **Correct openly.** Four corrections are in the ticket (DNS for C2, the CAB files, the attacker's time zone, the "browser injection" reading). Add correction lines; do not erase.
+3. **Correct openly.** Four corrections are in the report (DNS for C2, the CAB files, the attacker's time zone, the "browser injection" reading). Add correction lines; do not erase.
 4. **User-Agents and headers tell you *who* made a request.** `Shockwave Flash`, IE8 on an IE11 PC, and no `Accept` header separated browser, plugin and malware.
 5. **Referrers rebuild the chain.** site → gate → EK, in seconds.
 6. **`-` (unknown MIME) of hundreds of KB = probably encrypted.** Magic bytes matter on the wire as much as in email.

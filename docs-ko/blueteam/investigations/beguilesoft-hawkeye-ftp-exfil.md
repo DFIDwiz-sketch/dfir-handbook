@@ -9,24 +9,23 @@ tags:
   - snort
   - ftp
   - exfiltration
-  - ticket
 ---
 
 # BEGUILESOFT — HawkEye Keylogger: FTP로 빠져나간 비밀번호, 키로그, 스크린샷 { #beguilesoft }
 
 !!! abstract "사례 요약"
-    malware-traffic-analysis.net 2019-05-02 "BEGUILESOFT" PCAP을 홈 랩의 **pcapbox** VM에서 **Splunk 중심**으로 분석하고, 패킷 내용이 필요할 때만 Arkime를 쓴 기록입니다. AD 도메인의 윈도우 7 PC 한 대(**Breaux-Win7-PC, 사용자 adriana.breaux**)가 자기 공인 IP를 확인한 다음, 무료 호스팅 서비스 `files.000webhost[.]com`에 **FTP** 계정 **`snifferzett`**으로 로그인합니다. 그리고 10~15분 간격으로 세 번 접속해 파일 5개를 올려요. **Gmail, BB&T 온라인뱅킹, Outlook 메일**의 저장된 비밀번호가 든 **"Stealer Records"** 파일, **키로그** 2개(Excel에 입력한 지급 데이터), **스크린샷** 2개로 모두 약 **5 MB**예요. 파일 이름에 **HawkEye Keylogger**라고 적혀 있어요. 마지막에 아주 간단한 Snort 룰 하나와 짧은 티켓으로 마무리합니다.
+    malware-traffic-analysis.net 2019-05-02 "BEGUILESOFT" PCAP을 홈 랩의 **pcapbox** VM에서 **Splunk 중심**으로 분석하고, 패킷 내용이 필요할 때만 Arkime를 쓴 기록입니다. AD 도메인의 윈도우 7 PC 한 대(**Breaux-Win7-PC, 사용자 adriana.breaux**)가 자기 공인 IP를 확인한 다음, 무료 호스팅 서비스 `files.000webhost[.]com`에 **FTP** 계정 **`snifferzett`**으로 로그인합니다. 그리고 10~15분 간격으로 세 번 접속해 파일 5개를 올려요. **Gmail, BB&T 온라인뱅킹, Outlook 메일**의 저장된 비밀번호가 든 **"Stealer Records"** 파일, **키로그** 2개(Excel에 입력한 지급 데이터), **스크린샷** 2개로 모두 약 **5 MB**예요. 파일 이름에 **HawkEye Keylogger**라고 적혀 있어요. 마지막에 아주 간단한 Snort 룰 하나와 짧은 보고서로 마무리합니다.
 
 | | |
 |---|---|
 | **증거** | `2019-05-02-traffic-analysis-exercise.pcap` — 2019-05-02 21:35:18 – 22:05:23 UTC (약 30분) |
 | **출처** | [malware-traffic-analysis.net 2019-05-02 "BEGUILESOFT"](https://malware-traffic-analysis.net/2019/05/02/index.html) |
 | **환경** | 폐쇄망. pcapbox VM: Splunk(`index=zeek`, 케이스 필드 `pcap_case`), Arkime(태그 = 케이스 이름), Snort 2.9.20. **Wireshark 사용 안 함.** |
-| **결과물** | 분석, Snort 룰 하나, 짧은 침해사고 티켓(txt) |
+| **결과물** | 분석, Snort 룰 하나 |
 | **관련 페이지** | [Night Dew 두 번째 분석(pcapbox 설정, Snort 테스트 가이드)](night-dew-arkime-splunk-netlogon-bruteforce.md) · [SPL 치트시트](../splunk/spl-cheatsheet.md) · [Arkime 검색 문법](../../network/arkime/search-syntax.md) · [Zeek 로그](../../network/zeek/index.md) · [플레이북: 데이터 유출](../playbooks/data-exfiltration.md) |
 
 !!! tip "이 페이지 읽는 법"
-    실제로 분석한 순서 그대로예요. **베이스라이닝 → 수상한 목적지 → FTP 상세 → Arkime로 내용 확인 → Snort → 티켓**. SPL 쿼리는 모두 한 줄씩 설명하고, 결과가 어떻게 나왔는지와 어떻게 읽는지를 붙였어요. **질문** 상자는 분석하면서 실제로 나온 질문과 답이에요.
+    실제로 분석한 순서 그대로예요. **베이스라이닝 → 수상한 목적지 → FTP 상세 → Arkime로 내용 확인 → Snort**. SPL 쿼리는 모두 한 줄씩 설명하고, 결과가 어떻게 나왔는지와 어떻게 읽는지를 붙였어요. **질문** 상자는 분석하면서 실제로 나온 질문과 답이에요.
 
 !!! warning "이 페이지의 지표는 실제 값입니다"
     도메인, IP, 계정 이름은 2019년 실제 악성 트래픽에서 나온 값입니다. 본문과 표에서는 무력화(`[.]`)했고, 코드 블록 안은 입력한 그대로 두었어요. **절대 접속하지 마세요.** 피해자의 실제 비밀번호는 이 페이지에 싣지 않았어요.
@@ -61,7 +60,7 @@ PCAP을 **`20190502_BEGUILESOFT.pcap`**이라는 이름으로 `\\10.50.10.60\inc
 
 ## 1단계 — 베이스라이닝 { #baseline }
 
-**목적:** 나쁜 것을 찾기 전에 기본부터 알아 둬요. 캡처가 **언제** 시작하고 끝나는지, **어떤 로그**가 있는지, **어떤 내부 PC**가 통신하는지, 그리고 **호스트명, MAC, DC, 사용자**예요. 호스트 정보 말고는 티켓에 넣지 않아요.
+**목적:** 나쁜 것을 찾기 전에 기본부터 알아 둬요. 캡처가 **언제** 시작하고 끝나는지, **어떤 로그**가 있는지, **어떤 내부 PC**가 통신하는지, 그리고 **호스트명, MAC, DC, 사용자**예요. 호스트 정보 말고는 보고서에 넣지 않아요.
 
 ### 1-1. 캡처 시간과 로그 종류 { #log-types }
 
@@ -114,7 +113,7 @@ index=zeek sourcetype=zeek:dhcp pcap_case="20190502_BEGUILESOFT"
 
 - `sourcetype=zeek:dhcp`는 DHCP 로그만 가져와요.
 - `table`은 원하는 칼럼만 원하는 순서로 보여 줘요.
-- `assigned_addr`는 DHCP 서버가 준 IP, `mac`은 PC의 MAC, `host_name`은 PC가 스스로 알린 이름(티켓의 HOSTNAME), `domain`은 DHCP가 알려 준 도메인 이름, `msg_types`는 DHCP 메시지 종류예요.
+- `assigned_addr`는 DHCP 서버가 준 IP, `mac`은 PC의 MAC, `host_name`은 PC가 스스로 알린 이름(보고서의 HOSTNAME), `domain`은 DHCP가 알려 준 도메인 이름, `msg_types`는 DHCP 메시지 종류예요.
 
 ```text
 time                 assigned_addr  mac                host_name       domain           msg_types
@@ -465,10 +464,10 @@ JDownloader Password Stealer
 - 맨 위 "Operating System Intel Recovery" 부분은 HawkEye 보고서의 기본 머리말이에요. PC 이름, OS, 내부 IP 같은 호스트 정보가 들어 있어요.
 - **털린 계정은 3개예요.** Chrome에 저장된 Gmail, IE에 저장된 **BB&T 온라인뱅킹**, Outlook POP3 메일이에요.
 - **세 계정의 비밀번호가 모두 같아요.** 한 계정이 털리면 나머지도 다 열려요. 모든 계정의 비밀번호를 바꿔야 해요.
-- **`External IP Address:` 칸이 비어 있어요.** 21:36:14 whatismyipaddress 요청의 응답이 564 B밖에 안 됐던 걸 보면, 공인 IP 확인이 실패한 것으로 보여요. 티켓에 넣을 만큼 중요하지는 않아요.
+- **`External IP Address:` 칸이 비어 있어요.** 21:36:14 whatismyipaddress 요청의 응답이 564 B밖에 안 됐던 걸 보면, 공인 IP 확인이 실패한 것으로 보여요. 보고서에 넣을 만큼 중요하지는 않아요.
 
-!!! note "피해자 비밀번호는 티켓에 적지 않아요"
-    티켓은 여러 사람이 보는 문서예요. 값 대신 "세 계정 같은 비밀번호 — 증거 PCAP 참고"라고 써요. 공격자의 FTP 비밀번호는 다르게 IOC로 남겨요.
+!!! note "피해자 비밀번호는 보고서에 적지 않아요"
+    보고서는 여러 사람이 보는 문서예요. 값 대신 "세 계정 같은 비밀번호 — 증거 PCAP 참고"라고 써요. 공격자의 FTP 비밀번호는 다르게 IOC로 남겨요.
 
 ### 4-3. 키로그의 내용 { #keylogs }
 
@@ -494,7 +493,7 @@ I t[BS][BS]t was a dark and story[BS]my night. ...
 
 ### 4-4. 초기 침투 { #initial-access }
 
-21:36 전에는 도메인 로그인과 윈도우 인터넷 연결 확인만 있어요. 이메일, 웹 다운로드, 인터넷에서 받은 파일이 없어요. 악성코드는 **이미 PC에 있었고** 로그인 뒤에 실행된 거예요. 티켓에는 "Initial access not in capture"로 써요. 호스트 확인: Run 키, 예약 작업, 이메일 첨부파일.
+21:36 전에는 도메인 로그인과 윈도우 인터넷 연결 확인만 있어요. 이메일, 웹 다운로드, 인터넷에서 받은 파일이 없어요. 악성코드는 **이미 PC에 있었고** 로그인 뒤에 실행된 거예요. 보고서에는 "Initial access not in capture"로 써요. 호스트 확인: Run 키, 예약 작업, 이메일 첨부파일.
 
 !!! question "질문: Arkime 명령어를 태그를 붙여서 다시 주세요"
     pcapbox에서는 앞에 `tags == <케이스> &&`를 붙여서 이 케이스 세션만 검색해요.
@@ -507,7 +506,7 @@ I t[BS][BS]t was a dark and story[BS]my night. ...
     tags == 20190502_BEGUILESOFT && ip.src == 10.0.0.227 && http.host == whatismyipaddress.com
     ```
 
-    티켓에는 **태그 없는** 버전을 그대로 둬요. `tags`는 pcapbox에서 케이스를 나누려고 붙인 것이라 팀 환경에는 없어요.
+    보고서에는 **태그 없는** 버전을 그대로 둬요. `tags`는 pcapbox에서 케이스를 나누려고 붙인 것이라 팀 환경에는 없어요.
 
 !!! question "질문: `HawkEye_Keylogger`를 Arkime에서 검색하려면?"
     Sessions 검색창에서는 바로 찾을 수 없어요. Arkime은 FTP 명령 안의 파일 이름을 필드로 저장하지 않거든요. **패킷 내용 속 글자**를 찾을 때는 **Hunt**를 써요.
@@ -584,21 +583,6 @@ alert tcp $HOME_NET any -> $EXTERNAL_NET 21 (msg:"HawkEye Keylogger FTP upload -
 
 ---
 
-## 침해사고 티켓 { #ticket }
-
-핵심만, 짧은 문장, 쉬운 영어로 썼어요. 오퍼레이터 이름과 로그 시간은 바꿔 쓸 자리예요.
-
-[:material-download: 티켓을 txt 파일로 내려받기](files/190502_BREAUX-WIN7-PC_ticket.txt){ .md-button }
-
-```text
---8<-- "docs-ko/blueteam/investigations/files/190502_BREAUX-WIN7-PC_ticket.txt"
-```
-
-!!! question "질문: 티켓 문장을 더 줄일 수 있나요?"
-    두 번째로 다듬으면서 줄였어요. DESCRIPTION 세 문단을 두 문단으로 줄였고(공인 IP 조회는 EXTERNAL MACHINES 칸에 이미 있어서 뺐어요), Arkime 관련 OPERATOR LOG 두 줄을 한 줄로 합쳤어요. ANALYST NOTES는 비슷한 내용끼리 묶었어요(로그인 + STOR 5줄 + "모두 226", 그리고 털린 계정 + 키로그). 포트 설명과 쿼리 라벨도 짧게 했어요. 사고를 증명하는 내용은 하나도 빼지 않았어요.
-
----
-
 ## 바로 쓰는 쿼리 모음 { #query-sheet }
 
 `<case>`를 케이스 이름으로 바꾸세요. 실제 망에서는 `pcap_case`/`tags`를 빼요.
@@ -646,7 +630,7 @@ alert tcp $HOME_NET any -> $EXTERNAL_NET 21 (msg:"HawkEye Keylogger FTP upload -
 5. **Zeek은 명령에 마지막 응답을 붙여요.** 업로드 실패라고 하기 전에 원본 세션을 봐요.
 6. **평문 프로토콜은 증거를 그대로 줘요.** FTP에서 공격자 계정과 훔친 파일 전부가 보였어요.
 7. **악성코드 이름은 조심해서 붙여요.** "HawkEye"는 악성코드가 스스로 쓴 파일 이름에서 나온 거라 강한 근거지만, 샘플 분석은 아니에요.
-8. **피해자 비밀번호는 티켓에 적지 않아요.** "증거 참고"라고 써요.
+8. **피해자 비밀번호는 보고서에 적지 않아요.** "증거 참고"라고 써요.
 
 ## 참고 { #references }
 

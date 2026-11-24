@@ -9,24 +9,23 @@ tags:
   - snort
   - ftp
   - exfiltration
-  - ticket
 ---
 
 # BEGUILESOFT — HawkEye Keylogger: stolen passwords, keylogs and screenshots over FTP { #beguilesoft }
 
 !!! abstract "Case summary"
-    The malware-traffic-analysis.net 2019-05-02 "BEGUILESOFT" PCAP, worked **Splunk-first** on the home-lab **pcapbox** VM, with Arkime only where the packet content is needed. One Windows 7 PC in an AD domain (**Breaux-Win7-PC, user adriana.breaux**) looks up its public IP, then logs in to the free hosting service `files.000webhost[.]com` over **FTP** with the account **`snifferzett`** and uploads five files in three sessions, 10–15 minutes apart: a **"Stealer Records"** file with saved passwords for **Gmail, BB&T online banking and Outlook mail**, two **keylogs** (payment data typed into Excel) and two **screenshots** — about **5 MB**. File names say **HawkEye Keylogger**. The page ends with one very simple Snort rule and a short ticket.
+    The malware-traffic-analysis.net 2019-05-02 "BEGUILESOFT" PCAP, worked **Splunk-first** on the home-lab **pcapbox** VM, with Arkime only where the packet content is needed. One Windows 7 PC in an AD domain (**Breaux-Win7-PC, user adriana.breaux**) looks up its public IP, then logs in to the free hosting service `files.000webhost[.]com` over **FTP** with the account **`snifferzett`** and uploads five files in three sessions, 10–15 minutes apart: a **"Stealer Records"** file with saved passwords for **Gmail, BB&T online banking and Outlook mail**, two **keylogs** (payment data typed into Excel) and two **screenshots** — about **5 MB**. File names say **HawkEye Keylogger**. The page ends with one very simple Snort rule and a short report.
 
 | | |
 |---|---|
 | **Evidence** | `2019-05-02-traffic-analysis-exercise.pcap` — 2019-05-02 21:35:18 – 22:05:23 UTC (about 30 min) |
 | **Source** | [malware-traffic-analysis.net 2019-05-02 "BEGUILESOFT"](https://malware-traffic-analysis.net/2019/05/02/index.html) |
 | **Environment** | Closed network. pcapbox VM: Splunk (`index=zeek`, case field `pcap_case`), Arkime (tag = case name), Snort 2.9.20. **No Wireshark.** |
-| **Deliverables** | Analysis, one Snort rule, one short incident ticket (txt) |
+| **Deliverables** | Analysis, one Snort rule |
 | **Related pages** | [Night Dew, second pass (pcapbox setup, Snort test guide)](night-dew-arkime-splunk-netlogon-bruteforce.md) · [SPL cheat sheet](../splunk/spl-cheatsheet.md) · [Arkime search syntax](../../network/arkime/search-syntax.md) · [Zeek logs](../../network/zeek/index.md) · [Playbook: data exfiltration](../playbooks/data-exfiltration.md) |
 
 !!! tip "How to read this page"
-    The order is the order the case was worked: **baselining → suspicious destinations → FTP detail → Arkime for content → Snort → ticket**. Every SPL query is explained line by line, followed by what the result looked like and how to read it. The **Question** boxes are questions asked while working the case, with their answers.
+    The order is the order the case was worked: **baselining → suspicious destinations → FTP detail → Arkime for content → Snort**. Every SPL query is explained line by line, followed by what the result looked like and how to read it. The **Question** boxes are questions asked while working the case, with their answers.
 
 !!! warning "The indicators on this page are real"
     Domains, IPs and account names come from real 2019 malware traffic. Prose and tables are defanged (`[.]`); code blocks keep values as typed. **Do not visit them.** The victim's real password is not shown on this page.
@@ -61,7 +60,7 @@ Setup and ingest are explained in [Night Dew, second pass — Step 0](night-dew-
 
 ## Step 1 — Baselining { #baseline }
 
-**Goal:** before looking for anything bad, learn the basics — **when** the capture runs, **which logs** exist, **which internal PCs** talk, and the **host name, MAC, DC and user**. None of this goes into the ticket except the host details.
+**Goal:** before looking for anything bad, learn the basics — **when** the capture runs, **which logs** exist, **which internal PCs** talk, and the **host name, MAC, DC and user**. None of this goes into the report except the host details.
 
 ### 1-1. Capture window and log types { #log-types }
 
@@ -114,7 +113,7 @@ index=zeek sourcetype=zeek:dhcp pcap_case="20190502_BEGUILESOFT"
 
 - `sourcetype=zeek:dhcp` takes DHCP logs only.
 - `table` shows only the columns you name, in that order.
-- `assigned_addr` = IP the DHCP server gave · `mac` = the PC's MAC · `host_name` = the name the PC announced (the ticket HOSTNAME) · `domain` = domain name from DHCP · `msg_types` = DHCP message types.
+- `assigned_addr` = IP the DHCP server gave · `mac` = the PC's MAC · `host_name` = the name the PC announced (the report HOSTNAME) · `domain` = domain name from DHCP · `msg_types` = DHCP message types.
 
 ```text
 time                 assigned_addr  mac                host_name       domain           msg_types
@@ -465,10 +464,10 @@ JDownloader Password Stealer
 - The header block is HawkEye's standard report: PC name, OS, internal IP.
 - **Three accounts stolen:** Gmail (saved in Chrome), **BB&T online banking** (saved in IE), Outlook POP3 mail.
 - **All three use the same password.** One theft opens all three — password reset for every account.
-- **`External IP Address:` is empty.** The whatismyipaddress lookup at 21:36:14 received only 564 bytes, so the public IP check probably failed. Too minor for the ticket.
+- **`External IP Address:` is empty.** The whatismyipaddress lookup at 21:36:14 received only 564 bytes, so the public IP check probably failed. Too minor for the report.
 
-!!! note "Do not copy victim passwords into tickets"
-    A ticket is read by many people. Write "same password for all 3 — see evidence PCAP" instead of the value. The attacker's FTP password is different: it is an IOC.
+!!! note "Do not copy victim passwords into reports"
+    A report is read by many people. Write "same password for all 3 — see evidence PCAP" instead of the value. The attacker's FTP password is different: it is an IOC.
 
 ### 4-3. What the keylogs contained { #keylogs }
 
@@ -494,7 +493,7 @@ I t[BS][BS]t was a dark and story[BS]my night. ...
 
 ### 4-4. Initial access { #initial-access }
 
-Before 21:36 there is only domain logon traffic and the Windows connectivity check — no email, no web download, no file transfer from the internet. The malware was **already on the PC** and ran after logon. Ticket: "Initial access not in capture". Host check: Run keys, scheduled tasks, email attachments.
+Before 21:36 there is only domain logon traffic and the Windows connectivity check — no email, no web download, no file transfer from the internet. The malware was **already on the PC** and ran after logon. Report: "Initial access not in capture". Host check: Run keys, scheduled tasks, email attachments.
 
 !!! question "Question: please give the Arkime queries again with the tag added"
     On pcapbox, add `tags == <case> &&` in front so only this case's sessions are searched:
@@ -507,7 +506,7 @@ Before 21:36 there is only domain logon traffic and the Windows connectivity che
     tags == 20190502_BEGUILESOFT && ip.src == 10.0.0.227 && http.host == whatismyipaddress.com
     ```
 
-    The ticket keeps the **untagged** versions: `tags` only exists on pcapbox, not in the team environment.
+    The report keeps the **untagged** versions: `tags` only exists on pcapbox, not in the team environment.
 
 !!! question "Question: how do I search for `HawkEye_Keylogger` in Arkime?"
     Not from the Sessions search bar. Arkime does not store FTP file names as a field. To find **any text inside packets**, use **Hunt**:
@@ -584,21 +583,6 @@ alert tcp $HOME_NET any -> $EXTERNAL_NET 21 (msg:"HawkEye Keylogger FTP upload -
 
 ---
 
-## Incident ticket { #ticket }
-
-Key findings only, short sentences, simple English. Operator name and log times are placeholders.
-
-[:material-download: Download the ticket as a txt file](files/190502_BREAUX-WIN7-PC_ticket.txt){ .md-button }
-
-```text
---8<-- "docs/blueteam/investigations/files/190502_BREAUX-WIN7-PC_ticket.txt"
-```
-
-!!! question "Question: can the ticket be shorter?"
-    It was cut in a second pass: three description paragraphs became two (the IP lookup is already under EXTERNAL MACHINES), two Arkime operator log lines became one, related analyst notes were merged (login + five STORs + "226 for all"; then accounts + keylog), and port descriptions and query labels were shortened. Nothing that proves the incident was dropped.
-
----
-
 ## Copy-ready queries { #query-sheet }
 
 Replace `<case>` with your case name. Drop `pcap_case`/`tags` on a live network.
@@ -646,7 +630,7 @@ alert tcp $HOME_NET any -> $EXTERNAL_NET 21 (msg:"HawkEye Keylogger FTP upload -
 5. **Zeek pairs a command with the last reply.** Check the raw session before calling an upload failed.
 6. **Clear-text protocols hand you the evidence.** FTP showed the attacker's account and every stolen file.
 7. **Name the family carefully.** "HawkEye" comes from file names the malware itself wrote — strong, but still not a sample analysis.
-8. **Keep victim passwords out of tickets.** Write "see evidence".
+8. **Keep victim passwords out of reports.** Write "see evidence".
 
 ## References { #references }
 

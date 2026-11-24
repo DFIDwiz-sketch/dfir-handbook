@@ -11,24 +11,23 @@ tags:
   - c2
   - tls
   - dce-rpc
-  - ticket
 ---
 
 # Night Dew 두 번째 분석 — Arkime + Splunk(Zeek), netlogon 비밀번호 대입, Snort 룰 하나 { #night-dew-2 }
 
 !!! abstract "사례 요약"
-    [첫 번째 분석](night-dew-hancitor-pony-zeus-panda-tls-c2.md)과 같은 malware-traffic-analysis.net 2018-05-11 "Night Dew" PCAP을, 홈 랩의 **pcapbox** VM에서 **처음 보는 PCAP이라고 생각하고 처음부터** 다시 분석한 기록입니다. Arkime를 중심으로 쓰고, 개수를 세거나 정렬하거나 프로토콜을 자세히 볼 때는 **Splunk(Zeek 로그)**를 같이 씁니다. Windows 7 PC 한 대(**CHICAGO-7FA3-PC, 사용자 faith.hoffman**)가 `lysedsohap[.]com`에 체크인하고, 명령(Base64 + XOR `0x7a`)을 받아 해킹된 WordPress 사이트에서 암호화된 파일 3개를 내려받고, **작은 암호화 POST 2개**(훔친 비밀번호로 추정)를 보냅니다. 그다음 기본값 자체 서명 인증서를 쓰는 **TLS로 두 번째 C2**를 시작하고, 이번 분석에서 새로 찾은 **DC에 32초 동안 1,522번 netlogon 로그인 확인 요청(비밀번호 대입)**을 보냅니다. 마지막에 체크인과 비콘 21개를 모두 잡는 **Snort 룰 하나**, 초보자용 룰 테스트 가이드, 짧은 티켓으로 마무리합니다.
+    [첫 번째 분석](night-dew-hancitor-pony-zeus-panda-tls-c2.md)과 같은 malware-traffic-analysis.net 2018-05-11 "Night Dew" PCAP을, 홈 랩의 **pcapbox** VM에서 **처음 보는 PCAP이라고 생각하고 처음부터** 다시 분석한 기록입니다. Arkime를 중심으로 쓰고, 개수를 세거나 정렬하거나 프로토콜을 자세히 볼 때는 **Splunk(Zeek 로그)**를 같이 씁니다. Windows 7 PC 한 대(**CHICAGO-7FA3-PC, 사용자 faith.hoffman**)가 `lysedsohap[.]com`에 체크인하고, 명령(Base64 + XOR `0x7a`)을 받아 해킹된 WordPress 사이트에서 암호화된 파일 3개를 내려받고, **작은 암호화 POST 2개**(훔친 비밀번호로 추정)를 보냅니다. 그다음 기본값 자체 서명 인증서를 쓰는 **TLS로 두 번째 C2**를 시작하고, 이번 분석에서 새로 찾은 **DC에 32초 동안 1,522번 netlogon 로그인 확인 요청(비밀번호 대입)**을 보냅니다. 마지막에 체크인과 비콘 21개를 모두 잡는 **Snort 룰 하나**, 초보자용 룰 테스트 가이드로 마무리합니다.
 
 | | |
 |---|---|
 | **증거** | `2018-05-11-traffic-analysis-exercise.pcap` — 2018-05-11 02:06:51 – 02:49:41 UTC (42분 50초), 세션 216개, SHA256 `b2c8d0fe…13e51e` |
 | **출처** | [malware-traffic-analysis.net 2018-05-11 "Night Dew"](https://malware-traffic-analysis.net/2018/05/11/index.html) |
 | **환경** | 폐쇄망. pcapbox VM: Arkime(태그 = 케이스 이름), Splunk(`index=zeek`, 필드 `pcap_case`), Snort 2.9.20, CyberChef |
-| **결과물** | 분석, 풀어 낸 C2 명령, PCAP으로 테스트한 Snort 룰 하나, 침해사고 티켓(txt) |
+| **결과물** | 분석, 풀어 낸 C2 명령, PCAP으로 테스트한 Snort 룰 하나 |
 | **관련 페이지** | [첫 번째 분석(Arkime + CyberChef + Snort 룰 8개)](night-dew-hancitor-pony-zeus-panda-tls-c2.md) · [Arkime 검색 문법](../../network/arkime/search-syntax.md) · [SPL 치트시트](../splunk/spl-cheatsheet.md) · [Zeek 로그](../../network/zeek/index.md) · [비콘과 C2](../../network/beaconing-c2.md) |
 
 !!! tip "이 페이지 읽는 법"
-    단계마다 같은 순서예요. **목적 → Arkime → Splunk(그쪽이 편할 때) → 결과 → 결과 읽기 → 티켓 기록**. **질문** 상자는 분석하면서 실제로 나온 질문과 답이에요. SPL 쿼리는 모두 한 줄씩 설명합니다.
+    단계마다 같은 순서예요. **목적 → Arkime → Splunk(그쪽이 편할 때) → 결과 → 결과 읽기**. **질문** 상자는 분석하면서 실제로 나온 질문과 답이에요. SPL 쿼리는 모두 한 줄씩 설명합니다.
 
     전체 원칙은 **모르는 PCAP을 분석한다**는 거예요. 공개된 정답을 가져다 쓰지 않고, 화면에 나온 것만으로 판단합니다. 그래서 악성코드 계열 이름은 **확인되지 않음**으로 둡니다.
 
@@ -44,7 +43,6 @@ tags:
 | 두 번째 구성 요소의 POST | 분석함(헤더 모양, 계열 이름까지) | 처음부터 다시: Splunk POST 요약 + 헤더, 계열은 확인 안 됨으로 ([3-6](#exfil)) |
 | C2 응답 | 첫 응답만 디코드 | 첫 응답 **과 비콘 응답**(`{n:}` = 명령 없음)까지 디코드, 예비 다운로드 사이트 접속 여부 확인 |
 | Snort | 룰 8개 | **룰 1개**를 조각조각 설명하고, 초보자용 테스트 가이드 전체 |
-| 티켓 | 모든 내용을 합친 티켓 | **핵심 발견만** 담은 짧은 티켓(베이스라인 제외) |
 
 ## 한눈에 보는 답 { #answers }
 
@@ -79,7 +77,7 @@ tail -f /data/logs/ingest.log
 ```
 
 - `tail -f`: 파일 끝을 보여 주고, 새 줄이 생기면 계속 출력해요. **Ctrl+C**로 멈춥니다.
-- `DONE case=20180511_NIGHT_DEW ...`가 나오면 끝이에요. 바로 위 `START` 줄의 `sha256=` 값이 티켓에 쓸 **증거 해시**입니다.
+- `DONE case=20180511_NIGHT_DEW ...`가 나오면 끝이에요. 바로 위 `START` 줄의 `sha256=` 값이 보고서에 쓸 **증거 해시**입니다.
 
 !!! question "질문: 지금 설정은 서로 다른 PCAP을 구분하려고 태그를 붙이는 것 같은데 맞나요?"
     맞아요. **확장자를 뺀 파일 이름이 케이스 이름**이 되고, 모든 도구가 그 이름을 씁니다.
@@ -114,7 +112,7 @@ Arkime   11:36:51 – 12:19:41
 Splunk   02:06:51 – 02:48:51
 ```
 
-차이가 정확히 **9시간 30분**이에요. Arkime는 **브라우저(노트북)의 현지 시간**으로 보여 주는데, 애들레이드는 2018년 5월에 UTC+9:30이었거든요. Splunk는 이미 UTC였고요. 티켓은 UTC로 쓰니까 Arkime를 한 번 맞춰 둡니다.
+차이가 정확히 **9시간 30분**이에요. Arkime는 **브라우저(노트북)의 현지 시간**으로 보여 주는데, 애들레이드는 2018년 5월에 UTC+9:30이었거든요. Splunk는 이미 UTC였고요. 보고서는 UTC로 쓰니까 Arkime를 한 번 맞춰 둡니다.
 
 - 오른쪽 위 사용자 메뉴 → **Settings** → **General** → **Timezone** → **UTC**
 - Splunk: 계정 메뉴 → **Preferences** → **Time zone** = UTC. `strftime`이나 `convert`는 Splunk 사용자 시간대로 출력하기 때문이에요.
@@ -194,8 +192,6 @@ id_orig_h      sessions   sent      received
 - **외부 목적지:** **185.174.175.14(54개)**와 **185.43.223.6(23개)**에 몰려 있고, 나머지 외부 IP 4개는 1개씩뿐이에요. 사람이 웹 서핑을 하면 CDN, 광고 서버 등 수십 개 IP에 흩어져야 해요. 특정 IP 두 개에만 반복 접속하는 건 **프로그램이 접속하는 모양(비콘)**이에요. 둘 다 용의자 목록에 올립니다.
 - **보낸 양이 많아요.** 보낸 948 KB, 받은 2.2 MB. 일반 PC는 받는 양이 훨씬 크고 보내는 건 적어요. 이 의문은 [5단계](#netlogon)에서 풉니다.
 - `tls 55`가 185.174.175.14의 세션 54개와 비슷해요. 나중에 맞춰 볼 단서입니다.
-
-**티켓 기록:** 없음. 베이스라인은 분석 과정이지 발견이 아니에요.
 
 ---
 
@@ -322,17 +318,6 @@ TGS           CHICAGO-7FA3-PC$/NIGHTDEW.ORG  cifs/nightdew-dc.nightdew.org      
 
 **결과 읽기:** IP 10.0.14.129, MAC 00:1a:92:06:5c:7b, 호스트 Chicago-7fa3-PC(DHCP 이름과 Kerberos 컴퓨터 계정 `CHICAGO-7FA3-PC$`가 일치 — 두 프로토콜이 서로를 뒷받침), 사용자 **faith.hoffman**, DC/KDC 10.0.14.3.
 
-!!! note "티켓 원칙: 핵심 발견만"
-    티켓에는 **핵심 발견만** 넣어요. 베이스라인(캡처 시간, DHCP·Kerberos 세부)과 그때 쓴 쿼리는 넣지 않습니다. 1~2단계에서 티켓에 남는 건 PC 정보뿐이에요.
-
-    ```text
-    Infected host (suspected)
-      IP address : 10.0.14.129
-      MAC address: 00:1a:92:06:5c:7b (ASUSTek)
-      Host name  : Chicago-7fa3-PC (chicago-7fa3-pc.nightdew.org)
-      User       : faith.hoffman
-    ```
-
 ---
 
 ## 3단계 — HTTP 먼저: 체크인과 다운로드 { #http }
@@ -429,7 +414,7 @@ GUID=10412771973665002240&BUILD=09fhx05&INFO=CHICAGO-7FA3-PC @ NIGHTDEW\faith.ho
 
 **⑦ 02:10:16 `robwassotdint[.]ru` 첫 DNS 질의** — 다운로드 2분 뒤에 새 목적지가 나타나요. [4단계](#tls)에서 봅니다.
 
-**최초 감염 경로는 이 캡처에 없어요.** 캡처는 로그인(02:06:51)부터 시작하고, 73초 뒤에 이미 체크인을 해요. 그 전에 메일, 문서, 익스플로잇 다운로드가 없어요. 그러니 **PC는 이미 감염돼 있었고**, 로그인할 때 악성코드가 자동 실행된 거예요. 티켓에는 "초기 감염 경로는 이 캡처에서 관찰되지 않음"이라고 씁니다.
+**최초 감염 경로는 이 캡처에 없어요.** 캡처는 로그인(02:06:51)부터 시작하고, 73초 뒤에 이미 체크인을 해요. 그 전에 메일, 문서, 익스플로잇 다운로드가 없어요. 그러니 **PC는 이미 감염돼 있었고**, 로그인할 때 악성코드가 자동 실행된 거예요. 보고서에는 "초기 감염 경로는 이 캡처에서 관찰되지 않음"이라고 씁니다.
 
 ### 3-4. C2 응답을 CyberChef로 풀기 { #decode }
 
@@ -460,13 +445,13 @@ bÙ©{l:http://wansaiful.com/wp-content/plugins/easy-media-download/1|http://www
 - 명령 코드 세 개(`l`, `b`, `r`)에 파일 번호가 하나씩(1, 2, 3)이에요. 글자마다 무슨 동작(실행, 주입 등)인지는 트래픽만으로 알 수 없어서 "명령 코드"라고만 부릅니다.
 - 명령마다 **사이트가 5개**예요. 첫 번째가 안 되면 다음으로 넘어가는 예비 주소예요. PC는 첫 번째만 썼어요.
 - 다섯 곳 모두 WordPress 경로(`wp-content/plugins`, `themes`)예요. 해킹된 WordPress 사이트를 파일 보관소로 쓴 거예요.
-- 맨 앞 3바이트(`bÙ©`)는 의미를 알 수 없는 머리말이라 티켓에서 빼요.
+- 맨 앞 3바이트(`bÙ©`)는 의미를 알 수 없는 머리말이라 보고서에서 빼요.
 
-!!! warning "직접 확인한 값만 티켓에 넣으세요"
-    스크린샷을 OCR로 읽어 푼 결과는 몇 글자가 틀릴 수 있어요. 티켓에 주소를 적기 전에 **원본 텍스트**를 직접 CyberChef로 풀어 보세요.
+!!! warning "직접 확인한 값만 보고서에 넣으세요"
+    스크린샷을 OCR로 읽어 푼 결과는 몇 글자가 틀릴 수 있어요. 보고서에 주소를 적기 전에 **원본 텍스트**를 직접 CyberChef로 풀어 보세요.
 
 !!! question "질문: 위에서 CyberChef에 넣는 이유는 무엇인가요? 설명해 주세요."
-    **CyberChef**는 영국 GCHQ가 공개한 브라우저용 데이터 변환 도구예요. 요리처럼 **Input(재료)** → **Recipe(작업을 순서대로 쌓기: base64, XOR, 압축 풀기 등)** → **Output(결과, 바로바로 보임)**. 코드 없이 여러 단계를 이을 수 있고, 레시피를 저장하거나 티켓에 적어 두면 다른 분석가가 **똑같이 재현**할 수 있어요. 실무에서는 **오프라인 버전**(HTML 파일 하나)을 쓰세요. 증거를 웹사이트에 붙여 넣으면 정보가 밖으로 나갈 수 있어요.
+    **CyberChef**는 영국 GCHQ가 공개한 브라우저용 데이터 변환 도구예요. 요리처럼 **Input(재료)** → **Recipe(작업을 순서대로 쌓기: base64, XOR, 압축 풀기 등)** → **Output(결과, 바로바로 보임)**. 코드 없이 여러 단계를 이을 수 있고, 레시피를 저장하거나 보고서에 적어 두면 다른 분석가가 **똑같이 재현**할 수 있어요. 실무에서는 **오프라인 버전**(HTML 파일 하나)을 쓰세요. 증거를 웹사이트에 붙여 넣으면 정보가 밖으로 나갈 수 있어요.
 
     **왜 base64를 먼저, XOR을 나중에?** 서버가 명령을 두 겹으로 포장했어요. (1) `{l:http://...}`를 XOR로 섞어 깨진 바이트로 만들고, (2) 그 바이트를 HTTP로 보내기 쉽게 base64 글자로 바꿨어요. 푸는 쪽은 **거꾸로** — 마지막에 싼 것부터 벗깁니다.
 
@@ -488,7 +473,7 @@ bÙ©{l:http://wansaiful.com/wp-content/plugins/easy-media-download/1|http://www
 
     Arkime에도 **Unbase64**, **UnXOR Brute** 버튼이 있지만, CyberChef는 단계를 자유롭게 잇고 재현 가능한 레시피를 남길 수 있어요.
 
-**예비 사이트에 접속했는지 확인.** 티켓에 나머지 4곳에 접속했는지 적어야 해요.
+**예비 사이트에 접속했는지 확인.** 보고서에 나머지 4곳에 접속했는지 적어야 해요.
 
 ```text
 tags == 20180511_NIGHT_DEW && host == [www.victoryoutreachvallejo.com, medleysoup.com, radiantheartcoaching.com, hdmicablereviews.com]
@@ -512,14 +497,6 @@ index=zeek sourcetype=zeek:dns pcap_case=20180511_NIGHT_DEW query IN ("www.victo
 ```
 
 첫 응답은 주소로 가득했는데, 이건 명령 글자만 있고 **내용이 비어 있어요** → "지금은 할 일 없음". 비콘 응답이 매번 12바이트로 똑같았던 이유예요. 한 번 방법을 알아내면 나머지 응답에도 그대로 써 보는 게 좋은 습관이에요.
-
-**티켓 기록:**
-
-```text
-[261121 2014, Lee] C2 check-in from 10.0.14.129 to lysedsohap.com - Found
-[261121 2049, Lee] Decode of C2 check-in reply - Found
-[261121 2100, Lee] Contact with fallback payload sites - Not Found
-```
 
 ### 3-5. 받은 파일 3개의 정체 { #files }
 
@@ -560,12 +537,6 @@ _time          tx_hosts       rx_hosts      mime_type  seen_bytes  total_bytes  
 
 !!! tip "해시는 옮겨 쓰지 말고 복사하세요"
     해시는 Splunk 결과에서 그대로 복사하세요. 한 글자만 틀려도 IOC로 쓸 수 없어요.
-
-**티켓 기록:**
-
-```text
-[261121 2106, Lee] Follow-up payload downloads from wansaiful.com - Found
-```
 
 ---
 
@@ -643,12 +614,6 @@ POST /d2/about.php HTTP/1.0
 
 !!! tip "Snort 룰을 하나 더 만든다면"
     POST에 `Content-Type: application/octet-stream` + `Content-Encoding: binary`가 같이 있으면, 서버가 바뀌어도 이 프로그램을 잡을 수 있어요. 이번 분석은 룰 **하나**만 만들었고([6단계](#snort)), [첫 번째 분석](night-dew-hancitor-pony-zeus-panda-tls-c2.md#snort)에 이 룰을 테스트한 버전(sid 1000013, 알림 2개)이 있어요.
-
-**티켓 기록:**
-
-```text
-[261121 2110, Lee] Data sent to lysedsohap.com other than check-ins - Found
-```
 
 ---
 
@@ -728,7 +693,7 @@ robwassotdint.ru  TLSv12   TLS_RSA_WITH_AES_128_CBC_SHA256  true         54     
 1. **파일을 받고 정확히 2분 뒤 시작해요**(02:08:14 → 02:10:16). robwassotdint.ru 첫 DNS 질의와 같은 초예요. 받은 파일이 실행된 뒤 생긴 새 통신이고, `lysedsohap.com`(다운로더)과는 **별개의 두 번째 C2**예요.
 2. **인증서가 결정적이에요.** Issuer = Subject = `Default Company Ltd`, `Default City`, `XX` → **자체 서명**이고, OpenSSL로 만들 때 질문마다 엔터만 치면 들어가는 **기본값**이에요. 감염 12일 전에 만들어졌고 유효 기간이 **2,000일**이에요(정상은 보통 1년 안팎).
 3. **약 5분 주기**(`gap` 288–301초: 02:10, 02:15, 02:20 … 02:45)로, 묶음 안에서 **짝**으로 나와요. 정확히 **548 / 1,060바이트**인 짧은 연결(0.75초 — 핸드셰이크와 인증서만 하고 끝), 그리고 약 1.8 / 1.5 KB인 데이터 연결(1.3초). 크기와 간격이 일정 = 자동으로 동작하는 **C2 비콘**. HTTP 비콘(2분)과 주기가 달라서 다른 프로그램이라는 해석과도 맞아요.
-4. **02:40–02:42에 약 1.5 MB가 내려와요**(152,790 / 197,264 / 174,971 / 403,937 / 502,927 / 22,702 / 38,723바이트). PC가 받은 2.2 MB의 대부분이 여기예요. 02:42:27 연결은 5분 주기에서도 벗어나요(gap 105초). C2가 **추가 모듈이나 설정**을 내려보낸 것으로 보여요. 내용은 암호화돼 있어서 티켓에는 크기와 시각만 적어요.
+4. **02:40–02:42에 약 1.5 MB가 내려와요**(152,790 / 197,264 / 174,971 / 403,937 / 502,927 / 22,702 / 38,723바이트). PC가 받은 2.2 MB의 대부분이 여기예요. 02:42:27 연결은 5분 주기에서도 벗어나요(gap 105초). C2가 **추가 모듈이나 설정**을 내려보낸 것으로 보여요. 내용은 암호화돼 있어서 보고서에는 크기와 시각만 적어요.
 5. 54개 모두 `SF`, `established = true` — 캡처 끝(02:45:46)까지 문제없이 통신했어요.
 6. `TLS_RSA_WITH_AES_128_CBC_SHA256`은 오래된 방식이에요. 그 자체로 증거는 아니지만 메모할 만해요.
 7. **JA3/JA4**는 TLS 클라이언트의 "지문"이에요. Windows에서 악성코드가 시스템 TLS 라이브러리를 쓰면 브라우저와 지문이 같아질 수 있어요. IOC로 쓰기 전에 이 PC의 다른 정상 TLS 세션과 비교하세요.
@@ -773,12 +738,6 @@ robwassotdint.ru  TLSv12   TLS_RSA_WITH_AES_128_CBC_SHA256  true         54     
     cert.hash == 86:af:39:2e:9b:42:ec:50:e2:87:f6:42:9e:f7:48:4c:48:bb:bd:95
     ```
 
-**티켓 기록:**
-
-```text
-[261121 2119, Lee] TLS C2 to robwassotdint.ru - Found
-```
-
 ---
 
 ## 5단계 — 948 KB는 어디로 갔나? netlogon 비밀번호 대입 { #netlogon }
@@ -813,7 +772,7 @@ _time          id_resp_h  id_resp_p  service            duration  orig_bytes  re
 **결과 읽기:**
 
 - **연결 하나가 거의 전부예요.** **DC**(10.0.14.3:49158, DCE/RPC)로 779,560바이트. 나머지는 몇 KB짜리 정상 도메인 통신(SMB 445, LDAP 389, Kerberos)이에요.
-- 그러니 **외부로 큰 업로드는 없었어요.** 티켓에 쓸 중요한 결론이에요. C2 통신 말고 밖으로 나간 데이터는 [3-6](#exfil)의 작은 암호화 POST 2개뿐이에요.
+- 그러니 **외부로 큰 업로드는 없었어요.** 보고서에 쓸 중요한 결론이에요. C2 통신 말고 밖으로 나간 데이터는 [3-6](#exfil)의 작은 암호화 POST 2개뿐이에요.
 - 하지만 이 연결도 정상이 아니에요. 시작이 **02:08:12.835**, MSIE 7.0으로 `/mlu/forum.php`에 POST한 순간(02:08:12.248)의 0.6초 뒤예요. 그리고 로그인 때의 RPC 연결(02:06:52)은 5.8 KB뿐이었어요. **어떤 RPC 기능을 불렀는지** 봐야 해요.
 
 ### 5-2. DCE/RPC를 1분 만에 { #dcerpc }
@@ -893,13 +852,6 @@ netlogon 보안 채널은 암호화돼 있어서 **어떤 계정에, 어떤 비�
 - **DC Security 로그, 이벤트 4776** — DC가 NTLM 계정 정보를 검증한 기록. 계정, 요청한 PC, 결과 코드가 남아요. `0xC000006A` = 비밀번호 틀림, `0xC0000064` = 없는 계정, **`0x0` = 성공**. 02:08:12–02:08:45 사이 CHICAGO-7FA3-PC가 요청한 4776을 모두 보세요.
 - **DC 이벤트 4740** — 계정 잠김. 대입 때문에 잠긴 계정이 있는지.
 - **PC Security 로그, 이벤트 4625 / 4624** — PC의 로그온 실패 / 성공. **Process Name**에 시도한 프로그램이 나와요. 악성 파일 경로를 찾는 단서예요.
-
-**티켓 기록:**
-
-```text
-[261121 2137, Lee] Password guessing through DC netlogon - Found
-[261121 2137, Lee] Large uploads to external hosts - Not Found
-```
 
 ---
 
@@ -1075,7 +1027,7 @@ sudo snort -c /etc/snort/snort.conf -r /data/pcap/20180511_NIGHT_DEW.pcap -A con
 1. **0개:** 문법 검사를 다시 하고, `-k none`을 빠뜨리지 않았는지 보세요.
 2. **그래도 0개:** 룰을 아주 단순하게 줄여 봐요(예: `content:"GUID=";` 하나만). 울리면 옵션을 하나씩 다시 넣으면서 문제를 찾아요.
 3. **개수가 다름:** 안 울린 세션을 Arkime에서 찾아 본문을 비교해요.
-4. **고칠 때마다** `rev:1` → `rev:2`로 올려서, 어떤 버전으로 시험했는지 티켓에 남겨요.
+4. **고칠 때마다** `rev:1` → `rev:2`로 올려서, 어떤 버전으로 시험했는지 보고서에 남겨요.
 
 **pcapbox에서 만난 오류**
 
@@ -1083,12 +1035,6 @@ sudo snort -c /etc/snort/snort.conf -r /data/pcap/20180511_NIGHT_DEW.pcap -A con
 |---|---|---|
 | `sudo: snort: command not found` | `make install`은 snort를 `/usr/local/bin`에 넣는데, Oracle Linux의 `sudo`는 보안 때문에 `secure_path`에서만 찾고 거기에 `/usr/local/bin`이 없어요 | `sudo ln -sf /usr/local/bin/snort /usr/sbin/snort`(`sudo`가 찾는 곳에 바로가기, pcapbox 스크립트도 이걸로 찾아요). 먼저 `ls -l /usr/local/bin/snort`로 파일이 있는지 확인 — 없으면 `make install` 실패 |
 | `ERROR: log_tcpdump: Failed to open log file "/var/log/snort/snort.log.<숫자>": No such file or directory` | Snort가 패킷 기록 파일도 남기려는데 기본 폴더 `/var/log/snort`가 없어요 | `-l /tmp/snortlog` 추가(`mkdir -p /tmp/snortlog` 먼저), 또는 기본 폴더를 한 번 만들기: `sudo mkdir -p /var/log/snort`. `snort-test`는 자체 임시 폴더를 써서 이 오류가 안 나요 |
-
-**티켓 기록:**
-
-```text
-[261121 2200, Lee] Snort rule test for C2 check-in - Found
-```
 
 ---
 
@@ -1107,20 +1053,6 @@ sudo snort -c /etc/snort/snort.conf -r /data/pcap/20180511_NIGHT_DEW.pcap -A con
 | 02:10:16–02:45:46 | `robwassotdint[.]ru`에 약 5분마다 TLS C2(세션 54개) |
 | 02:40:18–02:42:37 | TLS C2에서 PC로 약 1.5 MB |
 | 02:49:41 | 캡처 끝, 두 C2 모두 아직 동작 중 |
-
----
-
-## 침해사고 티켓 { #ticket }
-
-핵심 발견만, 짧은 문장, 쉬운 영어로 썼어요. 팀 양식대로 티켓 본문은 영어예요. 작업자 이름, 작업 로그 시각, 증거 해시는 바꿔 넣을 자리예요.
-
-[:material-download: 티켓 txt 파일 내려받기](files/180511_CHICAGO-7FA3-PC_ticket_pass2.txt){ .md-button }
-
-```text
---8<-- "docs-ko/blueteam/investigations/files/180511_CHICAGO-7FA3-PC_ticket_pass2.txt"
-```
-
-보내기 전에: EVIDENCE LOCATIONS에 `ingest.log`의 SHA256을 넣고, **파일 해시 3개를 Splunk 결과와 한 번 대조**하고, 작업 로그 시각과 이름을 실제 값으로 바꾸세요.
 
 ---
 

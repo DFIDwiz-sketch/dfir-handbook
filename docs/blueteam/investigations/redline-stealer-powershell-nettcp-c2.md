@@ -8,7 +8,6 @@ tags:
   - redline
   - infostealer
   - c2
-  - ticket
 ---
 
 # RedLine Stealer — PowerShell Script to net.tcp C2 Data Theft { #redline-stealer }
@@ -20,7 +19,7 @@ tags:
 |---|---|
 | **Evidence** | Unit 42 Wireshark quiz PCAP, July 2023: 2023-07-10 22:39:22 – 22:39:58 UTC (36 s), about 120 sessions |
 | **Environment** | Treated as closed network (no hash/reputation lookups). Steps and queries in Arkime terms, decoding with CyberChef |
-| **Deliverable** | Answers to the 6 quiz questions and an incident ticket |
+| **Deliverable** | Answers to the 6 quiz questions |
 | **Related pages** | [Arkime-only walkthrough — Trickbot case](arkime-only-credential-theft-tls-c2.md) · [Arkime search syntax](../../network/arkime/search-syntax.md) · [Arkime offline PCAP guide](../../network/arkime/offline-pcap-guide.md) |
 
 !!! warning "Want to solve it first?"
@@ -37,7 +36,7 @@ tags:
     The PCAP was parsed directly with Python to compute what Arkime would show (sessions, bytes, fields), and each value is paired with the Arkime query that finds it. Some numbers, such as the session count, may differ slightly in the Arkime UI — check as you follow along. Results were [compared with the official Unit 42 answers](#official-answers).
 
 !!! tip "How to read this page"
-    Same structure as the [Trickbot case](arkime-only-credential-theft-tls-c2.md): every step has **goal → query → query explained → actual result → reading the result → ticket entry**. Copy queries with the **copy button**. Basics such as time range, time zone and SPI View are covered in detail in [steps 0–1 of the Trickbot case](arkime-only-credential-theft-tls-c2.md#step-0).
+    Same structure as the [Trickbot case](arkime-only-credential-theft-tls-c2.md): every step has **goal → query → query explained → actual result → reading the result**. Copy queries with the **copy button**. Basics such as time range, time zone and SPI View are covered in detail in [steps 0–1 of the Trickbot case](arkime-only-credential-theft-tls-c2.md#step-0).
 
 ## Answers at a glance { #answers }
 
@@ -97,17 +96,7 @@ tcp 445 (1)   tcp 55390 (1) tcp 12432 (1)
 | **80 (2)** | HTTP | **Cleartext** — look first |
 | **12432 (1)** | ??? | No standard service uses it — **most suspicious** |
 
-In a 36-second PCAP, "one unknown port" jumps out. We still fill in the basics first, because the ticket needs IP, MAC, hostname and account.
-
-**Ticket entry:**
-
-```text
-[251118 0010, Analyst] Establishing data time range and session count - Found
-[251118 0012, Analyst] Reviewing protocols and internal hosts - Found
-
-[251118 0010, Analyst] Data range 2023-07-10 22:39:22 - 22:39:58 UTC (36 seconds), about 120 sessions. Capture starts with a DHCP request.
-[251118 0012, Analyst] Only one internal client: 10.7.10.47 (118 sessions as source). Server 10.7.10.9. Normal AD logon traffic + tls (20) + http (2) + one tcp session to port 12432.
-```
+In a 36-second PCAP, "one unknown port" jumps out. We still fill in the basics first, because the report needs IP, MAC, hostname and account.
 
 ---
 
@@ -155,16 +144,6 @@ SPI View → **dhcp** → **Load All**. The key fields are `dhcp.host` (hostname
 
 !!! tip "When there is no DHCP"
     A capture that starts after the PC already had its IP has no DHCP. Then use NetBIOS names (udp 137/138 broadcast), the Kerberos cname ending in `$` (next step) or host details in SMB sessions.
-
-**Ticket entry:**
-
-```text
-[251118 0015, Analyst] Identifying client IP, MAC, hostname and domain from DHCP - Found
-
-[251118 0015, Analyst] Query: protocols == dhcp
-230710 22:39:22 DHCP Request - client MAC 80:86:5b:ab:1e:c4, hostname DESKTOP-9PEA63H, FQDN DESKTOP-9PEA63H.coolweathercoat.com, requested IP 10.7.10.47, vendor MSFT 5.0
-230710 22:39:22 DHCP ACK from 10.7.10.9 - 10.7.10.47, mask 255.255.255.0, router 10.7.10.1, DNS 10.7.10.9, domain coolweathercoat.com
-```
 
 ---
 
@@ -224,15 +203,6 @@ sname   krbtgt/COOLWEATHERCOAT.COM   ...
 - **`rwalters`** has no `$` — the **user account**. Answer to Q5.
 - 26 Kerberos sessions right after the capture starts (22:39:23~) fit step 1: the PC starting and **the user logging on**.
 
-**Ticket entry:**
-
-```text
-[251118 0017, Analyst] Identifying DC from DNS SRV and user account from Kerberos - Found
-
-[251118 0017, Analyst] Query: host.dns == _ldap._tcp.dc._msdcs.* -> SRV win-s3wt6lgqfvx.coolweathercoat.com -> A 10.7.10.9 (DC).
-Query: ip.src == 10.7.10.47 && protocols == krb5 -> krb5.cname rwalters, desktop-9pea63h$; realm COOLWEATHERCOAT.COM.
-```
-
 ---
 
 ## Step 3 — Odd domains in DNS { #dns }
@@ -269,14 +239,6 @@ SPI View → **dns** → `host.dns` values; Sessions sorted by Start Time ascend
 - **`checkappexec.microsoft.com` (22:39:44)** is where Windows Defender **SmartScreen** asks Microsoft "is this program/file safe to run?". A legitimate service, but it appears **when the user is about to run something**, three seconds before the suspicious traffic. (What was checked is encrypted — inferred.)
 - The two left over, **`623start.site`** and **`guiatelefonos.com`**, are names a company PC has no reason to visit. `.site` is a cheap TLD frequently abused. Step 4 shows what HTTP did with them.
 - **Note for later:** 194.26.135.119 (port 12432) is **not in this list**. The PC connected to the IP with no DNS lookup — typical of an IP **hard-coded** in the malware.
-
-**Ticket entry:**
-
-```text
-[251118 0020, Analyst] Reviewing DNS queries for unusual domains - Found
-
-[251118 0020, Analyst] Query: ip.src == 10.7.10.47 && protocols == dns -> AD SRV lookups, Microsoft/Bing/MSN/Azure CDN names (benign), checkappexec.microsoft.com 22:39:44 (SmartScreen), 623start.site 22:39:47 -> 195.161.114.3, guiatelefonos.com 22:39:49 -> 92.118.151.9 (unusual). No DNS for 194.26.135.119.
-```
 
 ---
 
@@ -351,17 +313,6 @@ Location: https://guiatelefonos.com:443/data/czx.jpg
 - The name ends in `.jpg`, but there is no reason to fetch an "image" right after a PowerShell check-in — suspect a **payload disguised as an image**.
 - Timing: 22:39:47.579 start → 22:39:48.415 install → **0.8 s later** 22:39:49.250 czx.jpg. It reported "install" and went straight for the payload.
 
-**Ticket entry:**
-
-```text
-[251118 0025, Analyst] Reviewing cleartext HTTP (PowerShell user agent, downloads) - Found
-
-[251118 0025, Analyst] Query: ip.src == 10.7.10.47 && protocols == http -> 2 sessions.
-230710 22:39:47.579UTC 10.7.10.47 49741 195.161.114.3 80 GET 200 623start.site /?status=start&av=Windows%20Defender 1.1 Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.19041.3031
-230710 22:39:48.415UTC 10.7.10.47 49741 195.161.114.3 80 GET 200 623start.site /?status=install 1.1 (same UA). Body "404 HTTP Error" with status 200.
-230710 22:39:49.250UTC 10.7.10.47 49742 92.118.151.9 80 GET 301 guiatelefonos.com /data/czx.jpg 1.1 (no User-Agent) -> https://guiatelefonos.com:443/data/czx.jpg
-```
-
 ---
 
 ## Step 5 — The HTTPS download and JA3 { #step-5 }
@@ -422,15 +373,6 @@ JA3                                  count   destinations (SNI)
 - And the C2 (12432) **is not TLS at all**, so it has no JA3.
 - In this case, "a change in the number of JA3 values" would not have caught the infection. A JA3 change is **strong evidence when present, but its absence does not mean clean**. On the other hand, the same JA3 going to an **odd destination (SNI)** instead of Microsoft services stands out — read JA3 together with destinations.
 
-**Ticket entry:**
-
-```text
-[251118 0030, Analyst] Reviewing HTTPS download from guiatelefonos.com (size, certificate, JA3) - Found
-
-[251118 0030, Analyst] 230710 22:39:49.323-22:39:49.874UTC 10.7.10.47 49743 -> 92.118.151.9 443 tls, SNI guiatelefonos.com, server databytes 353,715 / client 413 (download).
-Certificate CN=guiatelefonos.com, issuer Let's Encrypt R3, valid 2023-07-08 to 2023-10-06. JA3 3b5074b1b5d032e5620f69f9f700ff0e (same as Windows services in this capture). JA3S 389ed42c02ebecc32e73aa31def07e14.
-```
-
 ---
 
 ## Step 6 — Find the C2 by unusual port { #c2-hunt }
@@ -464,14 +406,6 @@ Exactly one session remains.
 - As step 3 showed, **no DNS lookup** points to this IP — it is built into the program.
 - It starts **0.3 s** (22:39:50.151) after the payload download ended (22:39:49.874) — the downloaded file ran and connected immediately.
 - Above all, **the PC sent 75 times more data (542,386 bytes) than it received (7,179 bytes)**: an upload, i.e. **exfiltration**.
-
-**Ticket entry:**
-
-```text
-[251118 0035, Analyst] Hunting outbound connections on non-standard ports - Found
-
-[251118 0035, Analyst] Query: ip.src == 10.7.10.47 && ip.dst != 10.0.0.0/8 && ip.dst != 224.0.0.0/4 && port.dst != 80 && port.dst != 443 && port.dst != 53 -> 1 session: 194.26.135.119:12432. No DNS query for this IP (hard-coded).
-```
 
 ---
 
@@ -520,17 +454,7 @@ Authorization   c75a68098b33270de4b87af925fb5ffd
 ```
 
 - **"Get settings → collect for 5 seconds → upload in one go"** — the textbook infostealer flow.
-- Unlike Trickbot, there is **no beacon**: no connection held open for minutes, no repeated check-ins. A **one-shot** session finished in 8 seconds — infostealers often "steal and leave". In the ticket's C2 field: "single short session, no repeating beacon".
-
-**Ticket entry:**
-
-```text
-[251118 0040, Analyst] Reviewing C2 session to 194.26.135.119:12432 (protocol, direction, timing) - Found
-
-[251118 0040, Analyst] 230710 22:39:50.151-22:39:58.364UTC 10.7.10.47 49744 -> 194.26.135.119 12432 tcp, Src 380 pkts 542,386 databytes / Dst 407 pkts 7,179 databytes.
-.NET net.tcp binary SOAP, http://tempuri.org/Contract/MSValue1/2/3, Authorization c75a68098b33270de4b87af925fb5ffd.
-Phases: MSValue1 check-in 22:39:50.753; MSValue2 config 22:39:51.042 -> 6,899 B response; MSValue3 upload 22:39:56.522-57.806 (541,961 B); ack 22:39:58.311.
-```
+- Unlike Trickbot, there is **no beacon**: no connection held open for minutes, no repeated check-ins. A **one-shot** session finished in 8 seconds — infostealers often "steal and leave". In the report's C2 field: "single short session, no repeating beacon".
 
 ---
 
@@ -586,19 +510,11 @@ SLACK_TOKEN  STRIPE_API_KEY  TWILIO_ACCOUNT_SID  HEROKU_API_KEY  VAULT_TOKEN ...
 
 This is the answer to **Q6 (what it tried to steal)**. Importantly, the list is **not built into the malware: the server sends it at run time**. The operator can change the targets by changing the server config, so this response tells you exactly what **this** operator was after.
 
-**Ticket entry:**
-
-```text
-[251118 0045, Analyst] Reviewing C2 server instructions (target list) - Found
-
-[251118 0045, Analyst] Server MSValue2Response (6,899 bytes): Desktop and Documents |*.txt,*.doc*,*key*,*wallet*,*seed*|; ~40 Chromium browser User Data paths; Firefox, Waterfox, Thunderbird, Pale Moon; Steam, Battle.net; wallets Armory, Atomic, Binance, Coinomi, Electrum, Ethereum, Exodus, Guarda, Jaxx, Monero; ~30 wallet extension IDs (Metamask, Phantom, Coinbase ...); env vars AWS_ACCESS_KEY_ID, AZURE_CLIENT_SECRET, GH_TOKEN, DOCKER_PASSWORD, SLACK_TOKEN, STRIPE_API_KEY, VAULT_TOKEN ...
-```
-
 ---
 
 ## Step 9 — What was actually uploaded { #exfil }
 
-**Goal:** read what `MSValue3` (PC → server, 541,961 bytes) contained. This fills the ticket's exfil fields (time, what, bytes, method).
+**Goal:** read what `MSValue3` (PC → server, 541,961 bytes) contained. This fills the report's exfil fields (time, what, bytes, method).
 
 Download **Source Raw** and open it in CyberChef; add **Strings** to the recipe to see readable text.
 
@@ -663,17 +579,6 @@ Bytes    541,961 (MSValue3), 542,386 total client data in the session
 Method   .NET net.tcp binary SOAP over raw TCP 12432 to 194.26.135.119 (unencrypted)
 ```
 
-**Ticket entry:**
-
-```text
-[251118 0050, Analyst] Reviewing data uploaded to C2 (exfil content) - Found
-
-[251118 0050, Analyst] Client MSValue3 upload (541,961 bytes): HWID 3154E784D973FE3C24082CC1E80F37A9, user rwalters, Windows 10 Pro for Workstations x64, 1440x900, AV Windows Defender;
-process list incl. powershell.exe ... & 'C:\Users\rwalters\Documents\mystery_file.ps1'; CPU i5-10200H, RAM 32765 MB;
-Edge credential https://www.overcoats-r-us.com/ | rwalters@coolweathercoat.com | My_p@****** (masked);
-Top_secret_ducment.docx; PNG screenshot 1536x864 534,297 bytes (one 1,459-byte segment missing -> partly corrupted).
-```
-
 ---
 
 ## Step 10 — Scope { #scope }
@@ -700,14 +605,6 @@ ip.src == 10.7.10.47 && ip.dst == 10.7.10.0/24 && ip.dst != 10.7.10.9
 
 ```text
 ip.dst == [195.161.114.3, 92.118.151.9, 194.26.135.119] && ip.src != 10.7.10.47
-```
-
-**Ticket entry:**
-
-```text
-[251118 0055, Analyst] Checking for lateral movement to other internal hosts - Not Found
-
-[251118 0055, Analyst] Query: ip.src == 10.7.10.47 && ip.dst == 10.7.10.0/24 && ip.dst != 10.7.10.9 -> only NetBIOS broadcast to 10.7.10.255. No SMB/RDP/RPC to other hosts.
 ```
 
 ---
@@ -809,153 +706,6 @@ The official write-up found the hostname via NetBIOS and the account via Kerbero
 
 ---
 
-## The incident ticket { #ticket }
-
-Template rules are the same as in the [Trickbot case](arkime-only-credential-theft-tls-c2.md#ticket-rules). Specific to this case:
-
-- **C2 field:** no beacon, so the state is written as "single short session, no repeating beacon".
-- **Exfil field:** time, content, bytes and method from the step 9 checklist.
-- **Lateral fields:** none, so left blank (template rule).
-- The password is masked. Operator, ticket link and evidence paths are placeholders; operation-log times are illustrative.
-
-```text
-#INDEX ENTRY#
-
-[] -- 230710 2239 -- 10.7.10.47 DESKTOP-9PEA63H -- RedLine Stealer infection: PowerShell script, payload download, data exfil over raw TCP 12432 -- <ticket-link>
-
-
-#TICKET METADATA#
-
-OPERATORS: <Analyst>
-
-TIME OF INCIDENT: 230710 22:39:47 UTC
-
-RELATED TICKETS:
-N/A
-
-DESCRIPTION OF INVESTIGATION:
-
-At 230710 22:39:47 UTC DESKTOP-9PEA63H (10.7.10.47, user rwalters, domain COOLWEATHERCOAT) ran a PowerShell script (process list shows powershell.exe executing C:\Users\rwalters\Documents\mystery_file.ps1 with ExecutionPolicy Bypass). The script sent two HTTP GET requests (port 80) to 195.161.114.3 (623start[.]site) with User-Agent "WindowsPowerShell/5.1": /?status=start&av=Windows%20Defender (reports the installed antivirus) and /?status=install (both answered "404 HTTP Error" with status 200). At 22:39:49 the host requested /data/czx.jpg from 92.118.151.9 (guiatelefonos[.]com) over HTTP with no User-Agent, was redirected (301) to HTTPS, and downloaded about 353 KB over TLS 443 (Let's Encrypt certificate issued 230708); the file name ends in .jpg but the size and timing indicate the malware payload (reported by Unit 42 as a 348,160-byte RedLine Stealer executable).
-
-At 22:39:50 the host connected directly (no DNS lookup) to 194.26.135.119 on non-standard TCP port 12432 using .NET net.tcp binary SOAP (tempuri.org namespace, methods MSValue1-3, Authorization c75a68098b33270de4b87af925fb5ffd). This is the C2 channel; it is a single short session, not a repeating beacon. The server sent a 6,899-byte target list (Desktop/Documents files *.txt, *.doc*, *key*, *wallet*, *seed*; Chromium and Firefox browser profiles; about 40 crypto wallets and wallet extensions; cloud/CI/developer API keys in environment variables). Between 22:39:56 and 22:39:57 the host uploaded 541,961 bytes (exfil): a 534 KB PNG desktop screenshot, system details (user, OS, language, screen size, antivirus, CPU, RAM, process list), one saved Microsoft Edge credential for rwalters@coolweathercoat[.]com, and the document C:\Users\rwalters\Documents\Top_secret_ducment.docx. The server acknowledged at 22:39:58. Determination: MALICIOUS - RedLine Stealer information stealer (C2 protocol, target list and data layout match RedLine; confirmed by Unit 42 answers). No lateral movement seen. Credentials for rwalters are compromised.
-
-
-#IMPACTED MACHINES#
-
-INTERNAL IP/s & HOSTNAME/s:
-10.7.10.47 DESKTOP-9PEA63H (user rwalters, MAC 80:86:5b:ab:1e:c4, Windows 10 Pro for Workstations x64)
-
-INTERNAL SOURCE PORT/s: (If Ephemeral Leave Blank.)
-
-LATERAL DESTINATION IP/s & HOSTNAME/s: (If No Lateral Leave Blank.)
-
-LATERAL DESTINATION PORT/s: (If No Lateral OR If Ephemeral Leave Blank.)
-
-
-#EXTERNAL MACHINES#
-
-EXTERNAL IP/s & HOSTNAME/s:
-195.161.114.3 (623start[.]site) - PowerShell status check-ins (HTTP 80)
-92.118.151.9 (guiatelefonos[.]com) - payload czx.jpg (HTTP 80 redirect, HTTPS 443 download)
-194.26.135.119 - RedLine C2 and exfil (TCP 12432, no domain)
-
-EXTERNAL SOURCE PORT/s: (If Ephemeral Leave Blank.)
-
-EXTERNAL DESTINATION PORT/s:
-Port 80 - HTTP
-Port 443 - TLS
-Port 12432 - .NET net.tcp (non-standard)
-
-
-#SEARCH QUERIES#
-
-ARKIME (MOLOCH):
-ip == 10.7.10.47 && ip == [195.161.114.3, 92.118.151.9, 194.26.135.119]
-ip.src == 10.7.10.47 && port.dst == 12432
-
-SPLUNK: (not run - equivalent Zeek query)
-index=zeek sourcetype=conn:zeek id_orig_h=10.7.10.47 AND id_resp_h IN (195.161.114.3, 92.118.151.9, 194.26.135.119)
-
-
-#EVIDENCE LOCATIONS#
-
-Team1: /home/<analyst>/evidence/230710_DESKTOP-9PEA63H_powershell_http_checkin.pcap
-Team1: /home/<analyst>/evidence/230710_DESKTOP-9PEA63H_czx_jpg_download.pcap
-Team1: /home/<analyst>/evidence/230710_DESKTOP-9PEA63H_redline_c2_12432.pcap
-(Exported from Arkime "Download PCAP". Full credential is in the C2 PCAP only - masked in this ticket.)
-
-
-#OPERATION LOG / ANALYST NOTES#
-
-[251118 0010, Analyst] Establishing data time range and session count - Found
-[251118 0012, Analyst] Reviewing protocols and internal hosts - Found
-[251118 0015, Analyst] Identifying client IP, MAC, hostname and domain from DHCP - Found
-[251118 0017, Analyst] Identifying DC from DNS SRV and user account from Kerberos - Found
-[251118 0020, Analyst] Reviewing DNS queries for unusual domains - Found
-[251118 0025, Analyst] Reviewing cleartext HTTP (PowerShell user agent, downloads) - Found
-[251118 0030, Analyst] Reviewing HTTPS download from guiatelefonos.com (size, certificate, JA3) - Found
-[251118 0035, Analyst] Hunting outbound connections on non-standard ports - Found
-[251118 0040, Analyst] Reviewing C2 session to 194.26.135.119:12432 (protocol, direction, timing) - Found
-[251118 0045, Analyst] Reviewing C2 server instructions (target list) - Found
-[251118 0050, Analyst] Reviewing data uploaded to C2 (exfil content) - Found
-[251118 0055, Analyst] Checking for lateral movement to other internal hosts - Not Found
-
-[Time -- Operator]
-
-Tool Output / Notes:
-
-[251118 0010, Analyst] Data range 2023-07-10 22:39:22 - 22:39:58 UTC (36 seconds), about 120 sessions. Capture starts with a DHCP request: host was just starting up / logging on.
-
-[251118 0012, Analyst] Only one internal client: 10.7.10.47 (118 sessions as source). Server 10.7.10.9. Protocols: dns, krb5, ldap, smb, dcerpc, ntp, nbns, mdns, igmp, dhcp (normal AD logon), tls (20 sessions), http (2 sessions), plus one tcp session to port 12432.
-
-[251118 0015, Analyst] Query: protocols == dhcp
-230710 22:39:22 DHCP Request from 0.0.0.0 - client MAC 80:86:5b:ab:1e:c4, hostname DESKTOP-9PEA63H, FQDN DESKTOP-9PEA63H.coolweathercoat.com, requested IP 10.7.10.47, vendor class MSFT 5.0
-230710 22:39:22 DHCP ACK from 10.7.10.9 - yiaddr 10.7.10.47, mask 255.255.255.0, router 10.7.10.1, DNS 10.7.10.9, domain coolweathercoat.com
-
-[251118 0017, Analyst] Query: host.dns == _ldap._tcp.dc._msdcs.* -> SRV win-s3wt6lgqfvx.coolweathercoat.com -> A 10.7.10.9 (DC).
-Query: ip.src == 10.7.10.47 && protocols == krb5 -> krb5.cname rwalters, desktop-9pea63h$; realm COOLWEATHERCOAT.COM.
-
-[251118 0020, Analyst] Query: ip.src == 10.7.10.47 && protocols == dns -> AD SRV lookups, Microsoft/Bing/MSN/Azure CDN names (benign), checkappexec.microsoft.com 22:39:44 (SmartScreen app reputation check), then 623start.site 22:39:47 -> 195.161.114.3 and guiatelefonos.com 22:39:49 -> 92.118.151.9 (unusual).
-
-[251118 0025, Analyst] Query: ip.src == 10.7.10.47 && protocols == http -> 2 sessions.
-230710 22:39:47.579UTC 10.7.10.47 49741 195.161.114.3 80 GET 200 623start.site /?status=start&av=Windows%20Defender 1.1 Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.19041.3031
-230710 22:39:48.415UTC 10.7.10.47 49741 195.161.114.3 80 GET 200 623start.site /?status=install 1.1 (same UA)
-  Responses: Server Apache/2.4.6 (CentOS) PHP/7.4.33, Content-Length 14, body "404 HTTP Error" with status 200.
-230710 22:39:49.250UTC 10.7.10.47 49742 92.118.151.9 80 GET 301 guiatelefonos.com /data/czx.jpg 1.1 (no User-Agent) -> Location https://guiatelefonos.com:443/data/czx.jpg (nginx/1.20.2)
-
-[251118 0030, Analyst] 230710 22:39:49.323-22:39:49.874UTC 10.7.10.47 49743 -> 92.118.151.9 443 tls, SNI guiatelefonos.com, server databytes 353,715 / client 413 (download).
-Certificate CN=guiatelefonos.com, issuer Let's Encrypt R3, valid 2023-07-08 to 2023-10-06. JA3 3b5074b1b5d032e5620f69f9f700ff0e (same JA3 as Windows services client.wns.windows.com and evoke-windowsservices-tas.msedge.net in this capture). JA3S 389ed42c02ebecc32e73aa31def07e14.
-
-[251118 0035, Analyst] Query: ip.src == 10.7.10.47 && ip.dst != 10.0.0.0/8 && ip.dst != 224.0.0.0/4 && port.dst != 80 && port.dst != 443 && port.dst != 53 -> 1 session: 194.26.135.119:12432. No DNS query resolves to this IP (hard-coded).
-
-[251118 0040, Analyst] 230710 22:39:50.151-22:39:58.364UTC 10.7.10.47 49744 -> 194.26.135.119 12432 tcp, Src 380 pkts 542,386 databytes / Dst 407 pkts 7,179 databytes. Dst MAC 00:b0:64:98:ad:54 (gateway).
-Payload: .NET Message Framing "net.tcp://194.26.135.119:12432/", binary SOAP, http://tempuri.org/Contract/MSValue1/2/3, Authorization c75a68098b33270de4b87af925fb5ffd.
-Phases: 22:39:50.753 MSValue1 (218 B) -> 22:39:51.037 response (159 B); 22:39:51.042 MSValue2 (166 B) -> 22:39:51.347 response (6,899 B, target list); 22:39:56.522-22:39:57.806 MSValue3 upload (541,961 B); 22:39:58.311 response (120 B).
-
-[251118 0045, Analyst] Server MSValue2Response (6,899 bytes): %userprofile%\Desktop and \Documents |*.txt,*.doc*,*key*,*wallet*,*seed*|; Chromium browser User Data paths (Chrome, Edge, Brave, Opera, Vivaldi, Yandex ...); Firefox, Waterfox, Thunderbird, Pale Moon; wallets Armory, Atomic, Binance, Coinomi, Electrum, Ethereum, Exodus, Guarda, Jaxx, Monero; wallet extension IDs (Metamask, Phantom, Coinbase, Tronlink, Ronin ...); env vars AWS_ACCESS_KEY_ID, AZURE_CLIENT_SECRET, GH_TOKEN, DOCKER_PASSWORD, SLACK_TOKEN, STRIPE_API_KEY, VAULT_TOKEN ...
-
-[251118 0050, Analyst] Client MSValue3 upload (541,961 bytes) contents:
- Hardware ID 3154E784D973FE3C24082CC1E80F37A9, time zone (UTC), user rwalters, Windows 10 Pro for Workstations x64, English (United States), screen 1440x900, AV Windows Defender
- Process list incl. powershell.exe "-Command" "if((Get-ExecutionPolicy ) -ne 'AllSigned') { Set-ExecutionPolicy -Scope Process Bypass }; & 'C:\Users\rwalters\Documents\mystery_file.ps1'"
- CPU Intel Core i5-10200H, RAM 32765 MB
- Microsoft_[Edge] Default: https://www.overcoats-r-us.com/ | rwalters@coolweathercoat.com | My_p@****** (masked)
- File Top_secret_ducment.docx (C:\Users\rwalters\Documents\), text "This is a top secret document. For my eyes only! Do not view this!"
- PNG screenshot 1536x864, 534,297 bytes (desktop with PowerShell window showing "404 HTTP Error"); one 1,459-byte TCP segment missing from the capture, so the lower part of the image is corrupted.
-
-[251118 0055, Analyst] Query: ip.src == 10.7.10.47 && ip.dst == 10.7.10.0/24 && ip.dst != 10.7.10.9 -> only NetBIOS broadcast to 10.7.10.255 (udp 137/138). No SMB/RDP/RPC to other hosts. No lateral movement.
-
-RECOMMENDATIONS:
-- Isolate DESKTOP-9PEA63H (10.7.10.47); host triage for mystery_file.ps1 and the dropped executable.
-- Reset rwalters domain password and the overcoats-r-us.com password; check reuse.
-- Treat Top_secret_ducment.docx as disclosed.
-- Block 623start[.]site, guiatelefonos[.]com, 194.26.135.119 (and port 12432 egress).
-- Hunt for other hosts with outbound sessions to 194.26.135.119 or URIs /?status=start&av=.
-```
-
-For a blank template see the [Trickbot case's blank ticket template](arkime-only-credential-theft-tls-c2.md#ticket-template).
-
----
-
 ## Copy-ready query sheet { #query-sheet }
 
 Replace `<…>`.
@@ -1038,7 +788,7 @@ ip.dst == [<IOC-IP-1>, <IOC-IP-2>, <IOC-IP-3>] && ip.src != <host-IP>
 - **No JA3 change does not mean clean.** Here the payload download shared a JA3 with Windows services and the C2 was not even TLS.
 - **Sessions where upload ≫ download are the first exfil candidates** (`databytes.src`).
 - **Unencrypted C2 shows both the orders and the loot.** Report "what was targeted" (the server's list) separately from "what was lost" (the upload).
-- **Record capture loss.** A missing segment damaged part of the evidence (the screenshot) — the ticket should say so.
+- **Record capture loss.** A missing segment damaged part of the evidence (the screenshot) — the report should say so.
 
 ## References { #references }
 
