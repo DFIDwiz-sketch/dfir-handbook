@@ -9,7 +9,7 @@ TICKET 1 – Fake Chrome update (SocGholish-style) to WScript C2, payload downlo
 
 #INDEX ENTRY#
 
-[] – 261124 0020 – 172.16.2.169 CONSERVATOR-PC – Fake Chrome update JS run by user, WScript C2 to kimbrelelectric.com, payload download and Dridex-style C2 attempts – http://ticket:9001/p/Inv##
+[] – 261124 1951 – 172.16.2.169 CONSERVATOR-PC – Fake Chrome update JS run by user, WScript C2 to kimbrelelectric.com, payload download and Dridex-style C2 attempts – http://ticket:9001/p/Inv##
 
 
 #FINAL SUMMARY OF TICKET# (End of Mission / Closing of Ticket – MC ENTRY ONLY)
@@ -27,16 +27,16 @@ RELATED TICKETS:
 
 DESCRIPTION OF INVESTIGATION:
 
-At 180630 20:27:53 UTC CONSERVATOR-PC (172.16.2.169, user lloyd.maxwell) browsed via http (port 80) to the compromised site www.stmarybahrain[.]com. Script injected into the site sent the browser through track.positiverefreshment[.]org to a fake "Update Chrome" page on lw2e.sineadhollywoodnutt[.]com. The page downloaded Chrome_72.3.22.js from Dropbox (https) at 20:28:01.
+At 180630 20:27:53 UTC CONSERVATOR-PC (172.16.2.169, user lloyd.maxwell) browsed via http (port 80) to the compromised site www.stmarybahrain[.]com. Script injected into the site sent the browser through track.positiverefreshment[.]org to a fake "Update Chrome" page on lw2e.sineadhollywoodnutt[.]com. After 3 s the page downloaded Chrome_72.3.22.js from Dropbox (https).
 
-At 20:28:47 the user ran the file (wscript.exe). It sent 3 XOR-encoded POSTs to bb17eb22.login3.kimbrelelectric[.]com (93.95.100.138) with host, user, domain and process list, and received a 349 KB encrypted payload, saved and run as Chrome_72.3.22.exe in %TEMP%. From 20:29:00 the host tried C2 to 46.105.131.66:443 (refused) and 107.170.231.118:4143 (no answer) every ~7.5 min until end of capture – consistent with Dridex (unconfirmed). No working follow-on C2 or exfil observed. Malware analysis required.
+At 20:28:47 the user ran the file (wscript.exe). It sent 3 encoded POSTs to bb17eb22.login3.kimbrelelectric[.]com (93.95.100.138) with host, user, domain and process list, received a 349 KB encoded payload and reported it saved as Chrome_72.3.22.exe in %TEMP%. From 20:29:00 the host tried C2 to 46.105.131.66:443 (refused) and 107.170.231.118:4143 (no answer) every ~7.5 min until end of capture – consistent with Dridex (unconfirmed). No working C2 or exfil observed. Malware analysis required.
 
 
 #IMPACTED INTERNAL MACHINES#
 
 INTERNAL IP/s & HOSTNAME/s:
 
-172.16.2.169 CONSERVATOR-PC (MAC 00:13:d4:1f:a2:5e) – user FABULOUSDUKES\lloyd.maxwell
+172.16.2.169 CONSERVATOR-PC – user FABULOUSDUKES\lloyd.maxwell
 
 INTERNAL SOURCE PORT/s: (If Ephemeral Leave Blank.)
 
@@ -63,15 +63,15 @@ EXTERNAL IP/s & HOSTNAME/s:
 
 93.95.100.138 (bb17eb22.login3.kimbrelelectric[.]com) – WScript C2 and payload download
 
-46.105.131.66 (port 443), 107.170.231.118 (port 4143) – follow-on C2 attempts (refused / no answer)
+46.105.131.66, 107.170.231.118 – follow-on C2 attempts (refused / no answer)
 
 EXTERNAL SOURCE PORT/s: (If Ephemeral Leave Blank.)
 
 EXTERNAL DESTINATION PORT/s: (If Ephemeral Leave Blank.)
 
 Port 80 – HTTP (redirect chain, fake update page, C2, payload)
-Port 443 – HTTPS (Dropbox download, C2 attempts)
-Port 4143 – TCP (C2 attempts)
+Port 443 – HTTPS (Dropbox download, C2 attempts to 46.105.131.66)
+Port 4143 – TCP (C2 attempts to 107.170.231.118)
 
 
 #SEARCH QUERIES#
@@ -80,13 +80,13 @@ ARKIME: (Format= [What Command Finds] - <Command>)
 
 [Infection chain and C2 over http] - ip.src == 172.16.2.169 && host.http == [www.stmarybahrain.com, track.positiverefreshment.org, lw2e.sineadhollywoodnutt.com, bb17eb22.login3.kimbrelelectric.com]
 
-[Follow-on C2 attempts] - ip.src == 172.16.2.169 && (ip.dst == 46.105.131.66 || ip.dst == 107.170.231.118)
+[Follow-on C2 attempts] - ip.src == 172.16.2.169 && ip.dst == [46.105.131.66, 107.170.231.118]
 
 SPLUNK: (Format= [What Command Finds] - <Command>)
 
 [Infection chain and C2 over http] - index=zeek sourcetype=zeek:http id_orig_h=172.16.2.169 host IN ("www.stmarybahrain.com", "track.positiverefreshment.org", "lw2e.sineadhollywoodnutt.com", "bb17eb22.login3.kimbrelelectric.com")
 
-[WScript C2 POSTs] - index=zeek sourcetype=zeek:http id_orig_h=172.16.2.169 host="bb17eb22.login3.kimbrelelectric.com" method=POST
+[Dropbox download of Chrome_72.3.22.js] - index=zeek sourcetype=zeek:ssl id_orig_h=172.16.2.169 server_name="*dropbox*"
 
 [Follow-on C2 attempts] - index=zeek sourcetype=zeek:conn id_orig_h=172.16.2.169 id_resp_h IN (46.105.131.66, 107.170.231.118)
 
@@ -106,44 +106,60 @@ Team<#>: /home/<username>/evidence/180630_c2_attempts_46_105_131_66_107_170_231_
 
 #OPERATOR LOG#
 
-[0020 261124, Sung] – Investigating HTTP referer chain from www.stmarybahrain.com to fake Chrome update page – Found – Further Analysis Required
+[1951 261124, Sung] – Looking for external connections by 172.16.2.169 without a DNS lookup – Found
 
-[0034 261124, Sung] – Looking for download of the fake update file by 172.16.2.169 – Found – Further Analysis Required
+[2005 261124, Sung] – Investigating HTTP referer chain from www.stmarybahrain.com to track.positiverefreshment.org and lw2e.sineadhollywoodnutt.com – Found – Further Analysis Required
 
-[0041 261124, Sung] – Investigating HTTP POSTs from 172.16.2.169 to kimbrelelectric.com (WScript C2) – Found – Further Analysis Required
+[2122 261124, Sung] – Reviewing content of fake page from lw2e.sineadhollywoodnutt.com in Arkime and decoding its download URL – Found – Further Analysis Required
 
-[0058 261124, Sung] – Decoding C2 POST bodies in CyberChef – Found
+[2213 261124, Sung] – Looking for download of Chrome_72.3.22.js from Dropbox by 172.16.2.169 – Found – Further Analysis Required
 
-[0109 261124, Sung] – Looking for new external connections by 172.16.2.169 after the payload download – Found
+[2224 261124, Sung] – Investigating HTTP POSTs from 172.16.2.169 to bb17eb22.login3.kimbrelelectric.com – Found – Further Analysis Required
+
+[2235 261124, Sung] – Decoding POST bodies to kimbrelelectric.com in CyberChef – Found
+
+[2329 261124, Sung] – Investigating repeated connection attempts from 172.16.2.169 to 46.105.131.66 and 107.170.231.118 after the payload download – Found
 
 
 #TOOL OUTPUT / ANALYST NOTES#
 
-[0020 261124, Sung] Script injected into 7 .js files on www.stmarybahrain.com loaded track.positiverefreshment.org/s_code.js (browser fingerprint). Its reply loaded the fake "Update Chrome" page. All requests carry Referer http://www.stmarybahrain.com/new/.
+[1951 261124, Sung] 2 external IPs contacted with no DNS lookup, repeated until end of capture. No connection succeeded (0 bytes).
 
-    180630 20:27:53 UTC  172.16.2.169  49193  66.226.144.232  80  GET  /new/  www.stmarybahrain.com  Referer: http://www.stmarybahrain.com/
-    180630 20:27:55 UTC  172.16.2.169  49243  185.244.149.74  80  GET  /s_code.js?cid=220&v=24eca7c911f5e102e2ba  track.positiverefreshment.org  (3 requests)
-    180630 20:27:57 UTC  172.16.2.169  49288  93.95.100.178   80  GET  /topics/index.php?s=775118&b=220&a=88a209071dc04d3568f791712c740240  lw2e.sineadhollywoodnutt.com
-    Page title: Update Chrome  –  "You are using an older version of Chrome"
+    180630 20:29:00 – 20:59:06 UTC  172.16.2.169  46.105.131.66    443   REJ  30 connections  0 B / 0 B
+    180630 20:31:14 – 20:53:51 UTC  172.16.2.169  107.170.231.118  4143  S0   16 connections  0 B / 0 B
 
-[0034 261124, Sung] Page script decoded in CyberChef: download URL https://www.dropbox.com/s/fvl9rd86cmdilns/Chrome_72.3.22.js?dl=1, opened after 3 s. TLS to Dropbox 3–4 s later. File content not visible (https).
+[2005 261124, Sung] User opened www.stmarybahrain.com (no Referer). The site page loaded track.positiverefreshment.org/s_code.js 3 times (browser fingerprint sent: screen, GPU, plugins), then lw2e.sineadhollywoodnutt.com/topics/index.php with files under /chromefiles/. All requests carry Referer http://www.stmarybahrain.com/new/ – site likely compromised.
 
-    180630 20:28:00 UTC  172.16.2.169  49333  162.125.6.1  443  TLS  SNI www.dropbox.com
-    180630 20:28:01 UTC  172.16.2.169  49354  162.125.9.6  443  TLS  SNI uc7cfbc6f640f168ed8036c6d5bb.dl.dropboxusercontent.com  (~23 KB received)
+    180630 20:27:53 UTC  172.16.2.169  66.226.144.232  80  GET  www.stmarybahrain.com/  Referer: (none)
+    180630 20:27:55 UTC  172.16.2.169  185.244.149.74  80  GET  track.positiverefreshment.org/s_code.js?cid=220&v=24eca7c911f5e102e2ba  Referer: http://www.stmarybahrain.com/new/
+    180630 20:27:57 UTC  172.16.2.169  93.95.100.178   80  GET  lw2e.sineadhollywoodnutt.com/topics/index.php?s=775118&b=220&a=88a209071dc04d3568f791712c740240  Referer: http://www.stmarybahrain.com/new/
 
-[0041 261124, Sung] WScript C2: 3 POSTs to /blank.gif 46 s after the download. User-Agent changes from Chrome 67 to "MSIE 7.0" (script engine). Reply 2 is a 349 KB encrypted payload.
+[2122 261124, Sung] lw2e.sineadhollywoodnutt.com returned a script that replaced the page with a fake "Update Chrome" page. After 3 s (or on button click) it opened an obfuscated URL (every 2nd character, reversed), decoded in browser console: Dropbox link to Chrome_72.3.22.js (JavaScript file, not an installer; Chrome 72 did not exist in June 2018).
+
+    <title>Update Chrome</title>  "You are using an older version of Chrome"  button "Update Chrome"
+    setTimeout(..., 3000) -> window.location.href = fileUrl
+    fileUrl = hxxps://www.dropbox[.]com/s/fvl9rd86cmdilns/Chrome_72.3.22.js?dl=1
+
+[2213 261124, Sung] TLS to Dropbox 3 s after the fake page, matching the page's 3 s timer. ~23 KB received from the Dropbox file server – size fits a small .js file. Content and hash not visible (https) – collect the file from host.
+
+    180630 20:28:00 UTC  172.16.2.169  162.125.6.1  443  TLSv1.2  SNI www.dropbox.com
+    180630 20:28:01 UTC  172.16.2.169  162.125.9.6  443  TLSv1.2  SNI uc7cfbc6f640f168ed8036c6d5bb.dl.dropboxusercontent.com  sent 1237 B / recv 23469 B  SF
+
+[2224 261124, Sung] 3 POSTs to /blank.gif on one connection, 46 s after the Dropbox download. Not a browser: User-Agent "MSIE 7.0" + "UA-CPU: AMD64" (Windows script HTTP object). Request carries "Age" header with a 16-hex value (likely victim ID). Bodies and replies are hex text. Reply 2 is 349 KB (~174 KB of data). MD5 below is of the hex text, not of any file on disk.
 
     180630 20:28:47 UTC  172.16.2.169  49440  93.95.100.138  80  POST  bb17eb22.login3.kimbrelelectric.com/blank.gif  req 72 B    resp 11866 B
     180630 20:28:48 UTC  172.16.2.169  49440  93.95.100.138  80  POST  bb17eb22.login3.kimbrelelectric.com/blank.gif  req 2644 B  resp 348868 B  MD5 dd83bbcc7dd4184b352f9882c3fe8408
     180630 20:28:50 UTC  172.16.2.169  49440  93.95.100.138  80  POST  bb17eb22.login3.kimbrelelectric.com/blank.gif  req 256 B   resp 0 B
-    User-Agent: Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; Win64; x64; Trident/7.0; ...)   UA-CPU: AMD64   Age: 464b8967d47e14d7
+    Age: 464b8967d47e14d7   UA-CPU: AMD64   Content-Type: application/x-www-form-urlencoded
 
-[0058 261124, Sung] POST bodies are hex + 1-byte XOR (From Hex -> XOR key db / c8 -> URL Decode). They show the script path, host, user and domain, then the run of the payload from %TEMP%.
+[2235 261124, Sung] POST bodies are hex + 1-byte XOR (key differs per message) + URL encoding. Recipe: From Hex -> XOR Brute Force (crib "&1=") -> XOR -> URL Decode. b= confirms the user ran Chrome_72.3.22.js from Downloads (wscript.exe in process list). c= reports a new EXE in %TEMP% right after the 349 KB reply – payload likely saved and run.
 
-    b= 1=C:\Users\lloyd.maxwell\Downloads\Chrome_72.3.22.js  3=CONSERVATOR-PC  4=lloyd.maxwell  7=FABULOUSDUKES  11=Windows Defender  17=... chrome.exe | wscript.exe ...
-    c= 1=C:\Users\LLOYD~1.MAX\AppData\Local\Temp\Chrome_72.3.22.exe
+    a= (key 5d)  0=c8ae6d45  1=507  2=1530390526937 (20:28:46.937 UTC)
+    b= (key db)  1=C:\Users\lloyd.maxwell\Downloads\Chrome_72.3.22.js  3=CONSERVATOR-PC  4=lloyd.maxwell  7=FABULOUSDUKES
+                 11=Windows Defender  16=1024x768  17=...|explorer.exe|chrome.exe (x23)|wscript.exe|...
+    c= (key c8)  1=C:\Users\LLOYD~1.MAX\AppData\Local\Temp\Chrome_72.3.22.exe  9=1530390529896 (20:28:49.896 UTC)
 
-[0109 261124, Sung] 10 s after the payload, new C2 attempts to 2 IPs with no DNS lookup, alternating ~every 7.5 min until end of capture (20:59:05). 46.105.131.66 answered with RST (REJ), 107.170.231.118 did not answer (S0). No data sent.
+[2329 261124, Sung] 10 s after the script reported the new EXE, the host began connecting to the 2 hard-coded IPs, alternating every ~7.5 min until end of capture. 46.105.131.66:443 refused every attempt (RST), 107.170.231.118:4143 never answered. No C2 traffic, downloads or exfil seen. Consistent with Dridex (unconfirmed). Snort sid 1000041 fired 3 times (the 3 POSTs).
 
-    180630 20:29:00 UTC  172.16.2.169  49447  46.105.131.66    443   REJ   (5 rounds x 2 connections, last 20:59:05)
-    180630 20:31:14 UTC  172.16.2.169  49471  107.170.231.118  4143  S0    (4 rounds x 2 connections, last 20:53:42)
+    180630 20:29:00 UTC  172.16.2.169  46.105.131.66    443   REJ  history Sr  (5 rounds: 20:29, 20:36, 20:43, 20:51, 20:59)
+    180630 20:31:14 UTC  172.16.2.169  107.170.231.118  4143  S0   history S   (4 rounds: 20:31, 20:38, 20:45, 20:53)
