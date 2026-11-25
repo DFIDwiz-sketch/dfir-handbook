@@ -49,7 +49,7 @@ stat -c "%s bytes  %n" "http_objs/<file>"
 - `response_body_len`: 서버가 보낸 본문 크기(바이트).
 - `http.response_for.uri`: 그 응답이 어느 URL에 대한 것인지 전체 URL로. `http.content_length`: 서버가 헤더에 적은 크기.
 - `stat -c "%s bytes %n"`: 꺼낸 파일의 실제 크기. 서버가 적은 크기와 다르면 캡처에서 일부가 빠진 것이니 두 값을 모두 적습니다.
-- Wireshark에서는 요청 패킷의 상세 창에 **[Full request URI]**가 있습니다. 우클릭 → **Copy → Value**.
+- Wireshark에서는 요청 패킷의 상세 창에 **[Full request URI]**&#8203;가 있습니다. 우클릭 → **Copy → Value**.
 
 ## 파일 꺼내기 { #extracting }
 

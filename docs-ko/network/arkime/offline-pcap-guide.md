@@ -167,7 +167,7 @@ http.bodymagic == application/msword          # 예전 .doc
 http.bodymagic == *zip*                       # zip, docx/xlsx(내부가 zip)
 ```
 
-- `http.bodymagic`은 본문 **내용(매직 바이트)**으로 알아낸 파일 종류입니다. Zeek의 `mime_type`과 같은 역할입니다.
+- `http.bodymagic`은 본문 **내용(매직 바이트)**&#8203;으로 알아낸 파일 종류입니다. Zeek의 `mime_type`과 같은 역할입니다.
 - 전체 URL = 세션 상세의 `host.http` + `http.uri`.
 - **크기**: 세션 상세 아래 패킷 영역의 응답 헤더에서 `Content-Length`를 읽습니다. 목록의 바이트 수(`databytes.dst`)는 헤더까지 포함한 값이라 파일 크기와 조금 다릅니다.
 
