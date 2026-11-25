@@ -2268,8 +2268,6 @@
       
         
       
-        
-      
     
     
     
@@ -2413,35 +2411,7 @@
   <span class="md-ellipsis">
     
   
-    Night Dew — Hancitor check-ins to follow-up downloads, credential exfil and a self-signed TLS C2 (Arkime + CyberChef + Snort)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../night-dew-arkime-splunk-netlogon-bruteforce/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Night Dew, second pass — Arkime + Splunk (Zeek) on pcapbox, decoding every C2 reply, netlogon password guessing and one tested Snort rule
+    Night Dew — Hancitor check-ins, follow-up downloads, credential theft, netlogon password guessing and a self-signed TLS C2 (Arkime + Splunk + CyberChef + Snort)
   
 
     
@@ -11980,7 +11950,7 @@
 </tr>
 <tr>
 <td><strong>Related pages</strong></td>
-<td><a href="../night-dew-arkime-splunk-netlogon-bruteforce/">Night Dew, second pass (pcapbox setup, Snort test guide)</a> · <a href="../../splunk/spl-cheatsheet/">SPL cheat sheet</a> · <a href="../../../network/arkime/search-syntax/">Arkime search syntax</a> · <a href="../../../network/zeek/">Zeek logs</a> · <a href="../../playbooks/data-exfiltration/">Playbook: data exfiltration</a></td>
+<td><a href="../night-dew-hancitor-pony-zeus-panda-tls-c2/">Night Dew (pcapbox setup, Snort test guide)</a> · <a href="../../splunk/spl-cheatsheet/">SPL cheat sheet</a> · <a href="../../../network/arkime/search-syntax/">Arkime search syntax</a> · <a href="../../../network/zeek/">Zeek logs</a> · <a href="../../playbooks/data-exfiltration/">Playbook: data exfiltration</a></td>
 </tr>
 </tbody>
 </table>
@@ -12061,7 +12031,7 @@
 <li><strong>Splunk time range = All time.</strong> On pcapbox <code>_time</code> is the packet time (2019), so the default "Last 24 hours" returns nothing.</li>
 <li><strong>Splunk account time zone = UTC</strong> (account menu → Preferences), because <code>strftime</code> prints in your Splunk time zone.</li>
 </ol>
-<p>Setup and ingest are explained in <a href="../night-dew-arkime-splunk-netlogon-bruteforce/#prep">Night Dew, second pass — Step 0</a>.</p>
+<p>Setup and ingest are explained in <a href="../night-dew-hancitor-pony-zeus-panda-tls-c2/#prep">Night Dew — Step 0</a>.</p>
 <hr>
 <h2 id="baseline">Step 1 — Baselining<a class="headerlink" href="#baseline" title="Permanent link">¶</a></h2>
 <p><strong>Goal:</strong> before looking for anything bad, learn the basics — <strong>when</strong> the capture runs, <strong>which logs</strong> exist, <strong>which internal PCs</strong> talk, and the <strong>host name, MAC, DC and user</strong>. None of this goes into the report except the host details.</p>
@@ -12509,7 +12479,7 @@
 <p class="admonition-title">Question: can the rule be written without <code>depth</code> or <code>distance</code>?</p>
 <p>Yes — the rule above. <code>depth</code> and <code>distance</code> say <strong>where</strong> in the packet the text must be, to cut false positives and speed things up. Here the text <code>HawkEye_Keylogger</code> is so unusual that normal FTP traffic will not contain it, so position does not matter. The <code>STOR</code> condition was dropped for the same reason: this file name going to port 21 is practically always an upload. <code>flow</code> and <code>classtype</code> were dropped too; the <code>-&gt;</code> and port 21 in the header already fix the direction.</p>
 </div>
-<p><strong>Expected result:</strong> put it in <code>\\10.50.10.60\rules\local.rules</code> and run <code>snort-test 20190502_BEGUILESOFT</code> → <strong>3 alerts</strong> (the three STORs with HawkEye_Keylogger in the name: Stealer_Records, Keylog_Records_2, Keylog_Records_3). The two screenshot STORs do not contain the text. The full testing guide is in <a href="../night-dew-arkime-splunk-netlogon-bruteforce/#snort-test">Night Dew, second pass — 6-3</a>.</p>
+<p><strong>Expected result:</strong> put it in <code>\\10.50.10.60\rules\local.rules</code> and run <code>snort-test 20190502_BEGUILESOFT</code> → <strong>3 alerts</strong> (the three STORs with HawkEye_Keylogger in the name: Stealer_Records, Keylog_Records_2, Keylog_Records_3). The two screenshot STORs do not contain the text. The full testing guide is in <a href="../night-dew-hancitor-pony-zeus-panda-tls-c2/#snort-test">Night Dew — 8-3</a>.</p>
 <hr>
 <h2 id="timeline">Timeline (2019-05-02, UTC)<a class="headerlink" href="#timeline" title="Permanent link">¶</a></h2>
 <table>
@@ -12632,7 +12602,7 @@
 </ol>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">¶</a></h2>
 <ul>
-<li><a href="../night-dew-arkime-splunk-netlogon-bruteforce/">Night Dew, second pass — pcapbox setup and Snort test guide</a></li>
+<li><a href="../night-dew-hancitor-pony-zeus-panda-tls-c2/">Night Dew — pcapbox setup and Snort test guide</a></li>
 <li><a href="../../splunk/spl-cheatsheet/">SPL cheat sheet</a> · <a href="../../../network/arkime/search-syntax/">Arkime search syntax</a></li>
 <li><a href="../../../network/zeek/">Zeek logs</a> · <a href="../../../network/zeek/conn-log/">conn.log</a> · <a href="../../../network/zeek/files-log/">files.log</a></li>
 <li><a href="../../playbooks/data-exfiltration/">Playbook: data exfiltration</a> · <a href="../../playbooks/account-compromise/">Playbook: account compromise</a></li>
