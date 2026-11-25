@@ -553,7 +553,7 @@ alert tcp $HOME_NET any -> $HOME_NET 55555 (msg:"minishell.php webshell access -
 - `content:"minishell.php"` + `nocase` — any request containing the webshell's name, in any case.
 - `sid:1000031; rev:1;` — own rule number and version.
 
-Expect roughly **one alert per webshell request** (16 in the HTTP list); replies come **from** port 55555 and are not matched. Testing steps: [Night Dew, second pass — 6-3](night-dew-arkime-splunk-netlogon-bruteforce.md#snort-test).
+Expect roughly **one alert per webshell request** (16 in the HTTP list); replies come **from** port 55555 and are not matched. Testing steps: [Night Dew — 8-3](night-dew-hancitor-pony-zeus-panda-tls-c2.md#snort-test).
 
 ---
 
@@ -648,4 +648,4 @@ alert tcp $HOME_NET any -> $HOME_NET 55555 (msg:"minishell.php webshell access -
 - [Playbook: web shell / server](../playbooks/webshell-server.md) · [Playbook: lateral movement](../playbooks/lateral-domain.md)
 - [Zeek conn.log](../../network/zeek/conn-log.md) · [http.log](../../network/zeek/http-log.md) · [files.log](../../network/zeek/files-log.md)
 - [SPL cheat sheet](../splunk/spl-cheatsheet.md) · [Arkime search syntax](../../network/arkime/search-syntax.md)
-- [Night Dew, second pass — Snort test guide](night-dew-arkime-splunk-netlogon-bruteforce.md#snort-test)
+- [Night Dew — Snort test guide](night-dew-hancitor-pony-zeus-panda-tls-c2.md#snort-test)

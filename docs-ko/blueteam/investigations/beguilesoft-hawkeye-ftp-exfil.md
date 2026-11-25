@@ -22,7 +22,7 @@ tags:
 | **출처** | [malware-traffic-analysis.net 2019-05-02 "BEGUILESOFT"](https://malware-traffic-analysis.net/2019/05/02/index.html) |
 | **환경** | 폐쇄망. pcapbox VM: Splunk(`index=zeek`, 케이스 필드 `pcap_case`), Arkime(태그 = 케이스 이름), Snort 2.9.20. **Wireshark 사용 안 함.** |
 | **결과물** | 분석, Snort 룰 하나 |
-| **관련 페이지** | [Night Dew 두 번째 분석(pcapbox 설정, Snort 테스트 가이드)](night-dew-arkime-splunk-netlogon-bruteforce.md) · [SPL 치트시트](../splunk/spl-cheatsheet.md) · [Arkime 검색 문법](../../network/arkime/search-syntax.md) · [Zeek 로그](../../network/zeek/index.md) · [플레이북: 데이터 유출](../playbooks/data-exfiltration.md) |
+| **관련 페이지** | [Night Dew(pcapbox 설정, Snort 테스트 가이드)](night-dew-hancitor-pony-zeus-panda-tls-c2.md) · [SPL 치트시트](../splunk/spl-cheatsheet.md) · [Arkime 검색 문법](../../network/arkime/search-syntax.md) · [Zeek 로그](../../network/zeek/index.md) · [플레이북: 데이터 유출](../playbooks/data-exfiltration.md) |
 
 !!! tip "이 페이지 읽는 법"
     실제로 분석한 순서 그대로예요. **베이스라이닝 → 수상한 목적지 → FTP 상세 → Arkime로 내용 확인 → Snort**. SPL 쿼리는 모두 한 줄씩 설명하고, 결과가 어떻게 나왔는지와 어떻게 읽는지를 붙였어요. **질문** 상자는 분석하면서 실제로 나온 질문과 답이에요.
@@ -54,7 +54,7 @@ PCAP을 **`20190502_BEGUILESOFT.pcap`**이라는 이름으로 `\\10.50.10.60\inc
 1. **Splunk 시간 범위 = All time.** pcapbox에서는 `_time`이 패킷 시간(2019년)이라서, 기본값 "Last 24 hours"로 두면 결과가 하나도 안 나와요.
 2. **Splunk 계정 시간대 = UTC** (계정 메뉴 → Preferences). `strftime`은 Splunk 계정 시간대로 출력하기 때문이에요.
 
-설치와 넣는 방법은 [Night Dew 두 번째 분석 — 0단계](night-dew-arkime-splunk-netlogon-bruteforce.md#prep)에 있어요.
+설치와 넣는 방법은 [Night Dew — 0단계](night-dew-hancitor-pony-zeus-panda-tls-c2.md#prep)에 있어요.
 
 ---
 
@@ -554,7 +554,7 @@ alert tcp $HOME_NET any -> $EXTERNAL_NET 21 (msg:"HawkEye Keylogger FTP upload -
 !!! question "질문: depth나 distance 없이 룰을 쓸 수 있나요?"
     네, 위 룰이에요. `depth`와 `distance`는 "글자가 패킷의 **어디쯤**에 있는지"를 지정해서 오탐을 줄이고 속도를 높여요. 하지만 `HawkEye_Keylogger`라는 글자 자체가 아주 특이해서, 정상 FTP 트래픽에서 나올 일이 거의 없어요. 그래서 위치를 지정하지 않아도 충분해요. `STOR ` 조건을 뺀 것도 같은 이유예요. 포트 21로 이 파일 이름이 나가는 경우는 사실상 업로드뿐이에요. `flow`와 `classtype`도 뺐어요. 방향은 헤더의 `->`와 포트 21이 이미 정해 주니까요.
 
-**예상 결과:** `\\10.50.10.60\rules\local.rules`에 넣고 `snort-test 20190502_BEGUILESOFT`를 돌리면 **알림 3건**이에요. HawkEye_Keylogger가 들어간 STOR가 3번이었거든요(Stealer_Records, Keylog_Records_2, Keylog_Records_3). 스크린샷 STOR 2번은 파일 이름에 그 글자가 없어서 안 잡혀요. 자세한 테스트 방법은 [Night Dew 두 번째 분석 — 6-3](night-dew-arkime-splunk-netlogon-bruteforce.md#snort-test)에 있어요.
+**예상 결과:** `\\10.50.10.60\rules\local.rules`에 넣고 `snort-test 20190502_BEGUILESOFT`를 돌리면 **알림 3건**이에요. HawkEye_Keylogger가 들어간 STOR가 3번이었거든요(Stealer_Records, Keylog_Records_2, Keylog_Records_3). 스크린샷 STOR 2번은 파일 이름에 그 글자가 없어서 안 잡혀요. 자세한 테스트 방법은 [Night Dew — 8-3](night-dew-hancitor-pony-zeus-panda-tls-c2.md#snort-test)에 있어요.
 
 ---
 
@@ -634,7 +634,7 @@ alert tcp $HOME_NET any -> $EXTERNAL_NET 21 (msg:"HawkEye Keylogger FTP upload -
 
 ## 참고 { #references }
 
-- [Night Dew 두 번째 분석 — pcapbox 설정과 Snort 테스트 가이드](night-dew-arkime-splunk-netlogon-bruteforce.md)
+- [Night Dew — pcapbox 설정과 Snort 테스트 가이드](night-dew-hancitor-pony-zeus-panda-tls-c2.md)
 - [SPL 치트시트](../splunk/spl-cheatsheet.md) · [Arkime 검색 문법](../../network/arkime/search-syntax.md)
 - [Zeek 로그](../../network/zeek/index.md) · [conn.log](../../network/zeek/conn-log.md) · [files.log](../../network/zeek/files-log.md)
 - [플레이북: 데이터 유출](../playbooks/data-exfiltration.md) · [플레이북: 계정 침해](../playbooks/account-compromise.md)

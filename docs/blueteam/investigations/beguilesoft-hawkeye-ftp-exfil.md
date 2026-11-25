@@ -22,7 +22,7 @@ tags:
 | **Source** | [malware-traffic-analysis.net 2019-05-02 "BEGUILESOFT"](https://malware-traffic-analysis.net/2019/05/02/index.html) |
 | **Environment** | Closed network. pcapbox VM: Splunk (`index=zeek`, case field `pcap_case`), Arkime (tag = case name), Snort 2.9.20. **No Wireshark.** |
 | **Deliverables** | Analysis, one Snort rule |
-| **Related pages** | [Night Dew, second pass (pcapbox setup, Snort test guide)](night-dew-arkime-splunk-netlogon-bruteforce.md) · [SPL cheat sheet](../splunk/spl-cheatsheet.md) · [Arkime search syntax](../../network/arkime/search-syntax.md) · [Zeek logs](../../network/zeek/index.md) · [Playbook: data exfiltration](../playbooks/data-exfiltration.md) |
+| **Related pages** | [Night Dew (pcapbox setup, Snort test guide)](night-dew-hancitor-pony-zeus-panda-tls-c2.md) · [SPL cheat sheet](../splunk/spl-cheatsheet.md) · [Arkime search syntax](../../network/arkime/search-syntax.md) · [Zeek logs](../../network/zeek/index.md) · [Playbook: data exfiltration](../playbooks/data-exfiltration.md) |
 
 !!! tip "How to read this page"
     The order is the order the case was worked: **baselining → suspicious destinations → FTP detail → Arkime for content → Snort**. Every SPL query is explained line by line, followed by what the result looked like and how to read it. The **Question** boxes are questions asked while working the case, with their answers.
@@ -54,7 +54,7 @@ The PCAP was dropped into `\\10.50.10.60\incoming` as **`20190502_BEGUILESOFT.pc
 1. **Splunk time range = All time.** On pcapbox `_time` is the packet time (2019), so the default "Last 24 hours" returns nothing.
 2. **Splunk account time zone = UTC** (account menu → Preferences), because `strftime` prints in your Splunk time zone.
 
-Setup and ingest are explained in [Night Dew, second pass — Step 0](night-dew-arkime-splunk-netlogon-bruteforce.md#prep).
+Setup and ingest are explained in [Night Dew — Step 0](night-dew-hancitor-pony-zeus-panda-tls-c2.md#prep).
 
 ---
 
@@ -554,7 +554,7 @@ alert tcp $HOME_NET any -> $EXTERNAL_NET 21 (msg:"HawkEye Keylogger FTP upload -
 !!! question "Question: can the rule be written without `depth` or `distance`?"
     Yes — the rule above. `depth` and `distance` say **where** in the packet the text must be, to cut false positives and speed things up. Here the text `HawkEye_Keylogger` is so unusual that normal FTP traffic will not contain it, so position does not matter. The `STOR ` condition was dropped for the same reason: this file name going to port 21 is practically always an upload. `flow` and `classtype` were dropped too; the `->` and port 21 in the header already fix the direction.
 
-**Expected result:** put it in `\\10.50.10.60\rules\local.rules` and run `snort-test 20190502_BEGUILESOFT` → **3 alerts** (the three STORs with HawkEye_Keylogger in the name: Stealer_Records, Keylog_Records_2, Keylog_Records_3). The two screenshot STORs do not contain the text. The full testing guide is in [Night Dew, second pass — 6-3](night-dew-arkime-splunk-netlogon-bruteforce.md#snort-test).
+**Expected result:** put it in `\\10.50.10.60\rules\local.rules` and run `snort-test 20190502_BEGUILESOFT` → **3 alerts** (the three STORs with HawkEye_Keylogger in the name: Stealer_Records, Keylog_Records_2, Keylog_Records_3). The two screenshot STORs do not contain the text. The full testing guide is in [Night Dew — 8-3](night-dew-hancitor-pony-zeus-panda-tls-c2.md#snort-test).
 
 ---
 
@@ -634,7 +634,7 @@ alert tcp $HOME_NET any -> $EXTERNAL_NET 21 (msg:"HawkEye Keylogger FTP upload -
 
 ## References { #references }
 
-- [Night Dew, second pass — pcapbox setup and Snort test guide](night-dew-arkime-splunk-netlogon-bruteforce.md)
+- [Night Dew — pcapbox setup and Snort test guide](night-dew-hancitor-pony-zeus-panda-tls-c2.md)
 - [SPL cheat sheet](../splunk/spl-cheatsheet.md) · [Arkime search syntax](../../network/arkime/search-syntax.md)
 - [Zeek logs](../../network/zeek/index.md) · [conn.log](../../network/zeek/conn-log.md) · [files.log](../../network/zeek/files-log.md)
 - [Playbook: data exfiltration](../playbooks/data-exfiltration.md) · [Playbook: account compromise](../playbooks/account-compromise.md)

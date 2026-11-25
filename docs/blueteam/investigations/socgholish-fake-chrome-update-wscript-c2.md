@@ -26,7 +26,7 @@ tags:
 | **Environment** | Closed network. pcapbox VM: Splunk (`index=zeek`, case field `pcap_case`), Arkime (tag = case name), Snort 2.9.20, CyberChef. **No Wireshark.** |
 | **Case name** | `20180630_SORTING_THROUGH_THE_ALERTS` |
 | **Deliverables** | Analysis, decoded download URL and C2 bodies, one Snort rule |
-| **Related pages** | [Night Dew, second pass (pcapbox, Snort test guide)](night-dew-arkime-splunk-netlogon-bruteforce.md) · [BEGUILESOFT (Splunk-first baselining)](beguilesoft-hawkeye-ftp-exfil.md) · [SPL cheat sheet](../splunk/spl-cheatsheet.md) · [Arkime search syntax](../../network/arkime/search-syntax.md) · [Zeek logs](../../network/zeek/index.md) |
+| **Related pages** | [Night Dew (pcapbox, Snort test guide)](night-dew-hancitor-pony-zeus-panda-tls-c2.md) · [BEGUILESOFT (Splunk-first baselining)](beguilesoft-hawkeye-ftp-exfil.md) · [SPL cheat sheet](../splunk/spl-cheatsheet.md) · [Arkime search syntax](../../network/arkime/search-syntax.md) · [Zeek logs](../../network/zeek/index.md) |
 
 !!! tip "How to read this page"
     This is the case as it was actually worked: every result block is what the analyst's Splunk or Arkime showed. Each step goes **Goal → Splunk → Arkime (only when Splunk cannot show it) → Result → Reading the result**. Every SPL query is explained line by line. **Question** boxes are questions asked during the work, with their answers.
@@ -977,7 +977,7 @@ Epoch ms:            From UNIX Timestamp (Units: Milliseconds)
 
 ## References { #references }
 
-- [Night Dew, second pass — pcapbox, Snort test guide](night-dew-arkime-splunk-netlogon-bruteforce.md) · [BEGUILESOFT — Splunk-first baselining](beguilesoft-hawkeye-ftp-exfil.md)
+- [Night Dew — pcapbox, Snort test guide](night-dew-hancitor-pony-zeus-panda-tls-c2.md) · [BEGUILESOFT — Splunk-first baselining](beguilesoft-hawkeye-ftp-exfil.md)
 - [SPL cheat sheet](../splunk/spl-cheatsheet.md) · [Arkime search syntax](../../network/arkime/search-syntax.md)
 - [Zeek logs](../../network/zeek/index.md) · [conn.log](../../network/zeek/conn-log.md) · [files.log](../../network/zeek/files-log.md) · [ssl & x509](../../network/zeek/ssl-x509.md)
 - [Beaconing & C2](../../network/beaconing-c2.md) · [Playbook: compromised workstation](../playbooks/compromised-workstation.md)

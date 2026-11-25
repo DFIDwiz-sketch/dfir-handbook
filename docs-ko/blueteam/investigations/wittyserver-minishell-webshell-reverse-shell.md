@@ -553,7 +553,7 @@ alert tcp $HOME_NET any -> $HOME_NET 55555 (msg:"minishell.php webshell access -
 - `content:"minishell.php"` + `nocase`는 웹셸 이름이 들어간 요청을 대소문자 상관없이 잡아요.
 - `sid:1000031; rev:1;`은 룰 번호와 버전이에요.
 
-**웹셸 요청마다 알림이 하나쯤** 나올 거예요(HTTP 목록에 16건). 응답은 포트 55555**에서** 나가는 패킷이라 안 잡혀요. 테스트 방법은 [Night Dew 두 번째 분석 — 6-3](night-dew-arkime-splunk-netlogon-bruteforce.md#snort-test)에 있어요.
+**웹셸 요청마다 알림이 하나쯤** 나올 거예요(HTTP 목록에 16건). 응답은 포트 55555**에서** 나가는 패킷이라 안 잡혀요. 테스트 방법은 [Night Dew — 8-3](night-dew-hancitor-pony-zeus-panda-tls-c2.md#snort-test)에 있어요.
 
 ---
 
@@ -648,4 +648,4 @@ alert tcp $HOME_NET any -> $HOME_NET 55555 (msg:"minishell.php webshell access -
 - [플레이북: 웹셸/서버](../playbooks/webshell-server.md) · [플레이북: 내부 확산](../playbooks/lateral-domain.md)
 - [Zeek conn.log](../../network/zeek/conn-log.md) · [http.log](../../network/zeek/http-log.md) · [files.log](../../network/zeek/files-log.md)
 - [SPL 치트시트](../splunk/spl-cheatsheet.md) · [Arkime 검색 문법](../../network/arkime/search-syntax.md)
-- [Night Dew 두 번째 분석 — Snort 테스트 가이드](night-dew-arkime-splunk-netlogon-bruteforce.md#snort-test)
+- [Night Dew — Snort 테스트 가이드](night-dew-hancitor-pony-zeus-panda-tls-c2.md#snort-test)

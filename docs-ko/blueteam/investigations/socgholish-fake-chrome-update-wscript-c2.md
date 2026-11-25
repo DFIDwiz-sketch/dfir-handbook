@@ -26,7 +26,7 @@ tags:
 | **환경** | 폐쇄망. pcapbox VM: Splunk(`index=zeek`, 케이스 필드 `pcap_case`), Arkime(태그 = 케이스 이름), Snort 2.9.20, CyberChef. **Wireshark 사용 안 함.** |
 | **케이스 이름** | `20180630_SORTING_THROUGH_THE_ALERTS` |
 | **결과물** | 분석, 풀어 낸 다운로드 URL과 C2 본문, Snort 룰 하나 |
-| **관련 페이지** | [Night Dew 두 번째 분석(pcapbox, Snort 테스트 가이드)](night-dew-arkime-splunk-netlogon-bruteforce.md) · [BEGUILESOFT(Splunk 중심 베이스라이닝)](beguilesoft-hawkeye-ftp-exfil.md) · [SPL 치트시트](../splunk/spl-cheatsheet.md) · [Arkime 검색 문법](../../network/arkime/search-syntax.md) · [Zeek 로그](../../network/zeek/index.md) |
+| **관련 페이지** | [Night Dew(pcapbox, Snort 테스트 가이드)](night-dew-hancitor-pony-zeus-panda-tls-c2.md) · [BEGUILESOFT(Splunk 중심 베이스라이닝)](beguilesoft-hawkeye-ftp-exfil.md) · [SPL 치트시트](../splunk/spl-cheatsheet.md) · [Arkime 검색 문법](../../network/arkime/search-syntax.md) · [Zeek 로그](../../network/zeek/index.md) |
 
 !!! tip "이 페이지 읽는 법"
     실제로 분석한 순서 그대로예요. 결과 블록은 모두 분석자의 Splunk나 Arkime에 실제로 나온 값이에요. 단계마다 **목적 → Splunk → Arkime(Splunk로 안 보일 때만) → 결과 → 결과 읽기** 순서예요. SPL 쿼리는 모두 한 줄씩 설명해요. **질문** 상자는 분석하면서 나온 질문과 답이에요.
@@ -977,7 +977,7 @@ epoch 밀리초:    From UNIX Timestamp (Units: Milliseconds)
 
 ## 참고 자료 { #references }
 
-- [Night Dew 두 번째 분석 — pcapbox, Snort 테스트 가이드](night-dew-arkime-splunk-netlogon-bruteforce.md) · [BEGUILESOFT — Splunk 중심 베이스라이닝](beguilesoft-hawkeye-ftp-exfil.md)
+- [Night Dew — pcapbox, Snort 테스트 가이드](night-dew-hancitor-pony-zeus-panda-tls-c2.md) · [BEGUILESOFT — Splunk 중심 베이스라이닝](beguilesoft-hawkeye-ftp-exfil.md)
 - [SPL 치트시트](../splunk/spl-cheatsheet.md) · [Arkime 검색 문법](../../network/arkime/search-syntax.md)
 - [Zeek 로그](../../network/zeek/index.md) · [conn.log](../../network/zeek/conn-log.md) · [files.log](../../network/zeek/files-log.md) · [ssl & x509](../../network/zeek/ssl-x509.md)
 - [비콘과 C2](../../network/beaconing-c2.md) · [플레이북: 침해된 워크스테이션](../playbooks/compromised-workstation.md)
