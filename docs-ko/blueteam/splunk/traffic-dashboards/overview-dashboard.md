@@ -161,7 +161,7 @@ zeek:ntlm           3
 |---|---|
 | `kerberos`, `ldap`, `dce_rpc`, `smb_*`, `ntlm` | Windows 도메인(AD) PC. 사용자와 컴퓨터 이름을 찾을 수 있어요 → [대시보드 2](smb-dashboard.md) |
 | `dhcp` | PC가 캡처 중에 IP를 받았어요. 이름·MAC을 바로 알 수 있어요 (C4) |
-| `pe` | Zeek가 트래픽 안에서 **Windows 프로그램(EXE/DLL)**을 봤어요 (H4) |
+| `pe` | Zeek가 트래픽 안에서 **Windows 프로그램(EXE/DLL)**&#8203;을 봤어요 (H4) |
 | `smtp`, `ftp` | 메일 / FTP — 평문이라 내용까지 보여요 |
 | `weird`, `notice` | 규칙에 안 맞는 트래픽 / Zeek 경고 (I 섹션) |
 | `http`가 없음 | 웹은 모두 HTTPS. 내용 대신 SNI·인증서로 판단해요 |
@@ -778,7 +778,7 @@ index=zeek pcap_case="<case>" (sourcetype=zeek:ssl OR sourcetype=zeek:x509)
 | table sni ips conns subject issuer self_signed days_valid not_before not_after san
 ```
 
-- 1줄: ssl과 x509 로그를 함께. x509(인증서 로그)에는 IP가 없어서 ssl과 **지문(fingerprint)**으로 이어요.
+- 1줄: ssl과 x509 로그를 함께. x509(인증서 로그)에는 IP가 없어서 ssl과 **지문(fingerprint)**&#8203;으로 이어요.
 - 2줄 `fp=if(sourcetype="zeek:x509", fingerprint, mvindex(cert_chain_fps,0))` — x509는 자기 지문, ssl은 서버가 보낸 인증서 사슬의 **첫 번째(서버 자신)** 지문.
 - 4줄 `stats ... by fp` — 같은 지문끼리 묶어서 SNI·IP(ssl 쪽)와 subject·issuer·SAN·유효기간(x509 쪽)을 한 줄로 만들어요. **join 없이 두 로그를 잇는 방법**이에요.
 - 5줄 `where conns>0 AND isnotnull(subject)` — 양쪽이 다 있는 것만.

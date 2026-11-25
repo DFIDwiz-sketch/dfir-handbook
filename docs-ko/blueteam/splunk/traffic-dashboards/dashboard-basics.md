@@ -283,7 +283,7 @@ index=$idx$ sourcetype=zeek:dce_rpc $case$
 
 - `<search id="b_dce">` — `<form>` 바로 안(첫 `<row>` 앞)에 두는 **이름 붙은 검색**이에요. 혼자서는 아무것도 그리지 않아요.
 - `<search base="b_dce">` — "b_dce 결과를 받아서 이어서 계산해"라는 뜻. 쿼리는 **`|`로 시작**해요. 시간 범위는 베이스를 따르니 쓰지 않아요.
-- 후처리 `stats sum(count) as calls by endpoint` — 베이스가 이미 `count`를 세어 두었으니 **더하기(`sum`)**만 해요. 다시 `count`를 쓰면 줄 수를 세게 되어 틀린 숫자가 나와요.
+- 후처리 `stats sum(count) as calls by endpoint` — 베이스가 이미 `count`를 세어 두었으니 **더하기(`sum`)**&#8203;만 해요. 다시 `count`를 쓰면 줄 수를 세게 되어 틀린 숫자가 나와요.
 
 **베이스 검색 규칙**
 

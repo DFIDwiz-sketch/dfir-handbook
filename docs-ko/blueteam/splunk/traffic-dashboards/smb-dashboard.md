@@ -804,7 +804,7 @@ time                     id_orig_h   id_resp_h   id_resp_p  user                
 2026-01-20 01:20:03.861  10.0.0.101  10.0.0.102  445        administrator@LAB   PC-01     PC-02                    success
 ```
 
-**읽는 법:** 두 번째 줄 — 01:20:03에 PC-01이 **administrator 계정으로 PC-02에 NTLM 로그온**, 바로 뒤에 ADMIN$ 연결(E5)과 서비스 만들기(C5)가 와요. 도메인에서 Kerberos 대신 **NTLM으로 PC에 로그온**하는 것은 IP로 접속했거나 **해시로 로그온(pass-the-hash)**했을 때 자주 보여요 → [Pass-the-Hash](../../../adversary/pass-the-hash.md).
+**읽는 법:** 두 번째 줄 — 01:20:03에 PC-01이 **administrator 계정으로 PC-02에 NTLM 로그온**, 바로 뒤에 ADMIN$ 연결(E5)과 서비스 만들기(C5)가 와요. 도메인에서 Kerberos 대신 **NTLM으로 PC에 로그온**하는 것은 IP로 접속했거나 **해시로 로그온(pass-the-hash)**&#8203;했을 때 자주 보여요 → [Pass-the-Hash](../../../adversary/pass-the-hash.md).
 
 ### F6. 비밀번호 추측, 스프레이, 퍼짐 — 출발지별 { #f6 }
 
