@@ -13,7 +13,7 @@ tags:
 !!! abstract "이 페이지는"
     Zeek로 풀던 PCAP 침해사고 질문을 Arkime로 푸는 방법입니다. PCAP을 넣고, 검색하고, 웹 화면에서 답을 읽습니다. Arkime는 PCAP을 **세션(연결) 단위로 색인**하므로 `zeek-cut | grep | awk` 대신 **검색창 + 클릭**으로 같은 답에 도달합니다. 필드 이름과 `capture` 옵션은 Arkime 소스 코드(`capture/parsers/*.c`, `capture/main.c`)에서 확인했습니다.
 
-따라 하기 예제는 Zeek로 먼저 풀었던 [PCAP 실습 06](../../blueteam/investigations/pcap-lab-06-invoice-macro-c2.md)과 [PCAP 실습 07](../../blueteam/investigations/pcap-lab-07-autoit-downloader-multi-c2.md)을 다시 풉니다.
+따라 하기 예제는 Zeek로 먼저 풀었던 [청구서 메일 사례](../../blueteam/investigations/pcap-lab-06-invoice-macro-c2.md)과 [웹메일 AutoIt 사례](../../blueteam/investigations/pcap-lab-07-autoit-downloader-multi-c2.md)을 다시 풉니다.
 
 ## Arkime와 Zeek 비교 { #vs-zeek }
 

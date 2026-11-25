@@ -22,7 +22,7 @@ tags:
 | **Source** | malware-traffic-analysis.net 2018-05-11 exercise "Night Dew" |
 | **Environment** | Closed network (no VirusTotal, no OSINT). Arkime web UI, CyberChef, tshark and Snort 2.9 on the analysis VM |
 | **Deliverables** | Baseline, analysis of the malicious activity, CyberChef decode, Snort rules that find the traffic again (tested) |
-| **Related pages** | [Arkime search syntax](../../network/arkime/search-syntax.md) · [Beaconing & C2](../../network/beaconing-c2.md) · [PCAP Lab 06 — same Hancitor style](pcap-lab-06-invoice-macro-c2.md) · [Previous case: Back to the Present](back-to-the-present-chthonic-c2-tech-support-scam.md) |
+| **Related pages** | [Arkime search syntax](../../network/arkime/search-syntax.md) · [Beaconing & C2](../../network/beaconing-c2.md) · [Invoice email — same Hancitor style](pcap-lab-06-invoice-macro-c2.md) · [Previous case: Back to the Present](back-to-the-present-chthonic-c2-tech-support-scam.md) |
 
 !!! tip "How to read this page"
     Written so a complete beginner can follow from the first query to the finished report. Every step uses the same order.
@@ -757,7 +757,7 @@ sha256sum http_objects/*
 
 - [Arkime search syntax](../../network/arkime/search-syntax.md) · [Analysing a PCAP with Arkime](../../network/arkime/offline-pcap-guide.md)
 - [Beaconing & C2](../../network/beaconing-c2.md) · [Wireshark & tshark](../../network/wireshark-tshark.md)
-- [PCAP Lab 06 — Invoice Word macro to Hancitor-style C2](pcap-lab-06-invoice-macro-c2.md) · [Back to the Present](back-to-the-present-chthonic-c2-tech-support-scam.md) · [IcedID (Cold as Ice)](icedid-tds-gzip-loader-backconnect.md)
+- [Invoice email — Word macro to Hancitor-style C2](pcap-lab-06-invoice-macro-c2.md) · [Back to the Present](back-to-the-present-chthonic-c2-tech-support-scam.md) · [IcedID (Cold as Ice)](icedid-tds-gzip-loader-backconnect.md)
 - [Playbook: compromised workstation](../playbooks/compromised-workstation.md)
 - Original exercise: [malware-traffic-analysis.net — 2018-05-11 Traffic Analysis Exercise: Night Dew](https://malware-traffic-analysis.net/2018/05/11/index.html) · [answers page](https://malware-traffic-analysis.net/2018/05/11/page2.html)
 - Hancitor + Zeus Panda Banker infection from the same week: [malware-traffic-analysis.net — 2018-05-14](https://malware-traffic-analysis.net/2018/05/14/index.html)

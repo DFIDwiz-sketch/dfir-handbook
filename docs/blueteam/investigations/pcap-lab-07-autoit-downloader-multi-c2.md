@@ -1,5 +1,5 @@
 ---
-title: PCAP Lab 07 — Webmail to AutoIt Downloader and Multi-C2 Traffic
+title: Webmail to an AutoIt downloader and multi-C2 traffic
 tags:
   - blue-team
   - pcap
@@ -11,7 +11,7 @@ tags:
   - capture-loss
 ---
 
-# PCAP Lab 07 — Webmail to AutoIt Downloader and Multi-C2 Traffic { #lab-07 }
+# Webmail to an AutoIt downloader and multi-C2 traffic { #lab-07 }
 
 !!! abstract "Case summary"
     A stand-alone Windows 7 PC opened Yahoo Mail in Internet Explorer. About 45 seconds later a non-browser program downloaded `jjjj.exe`. Fourteen minutes later, an AutoIt-based program downloaded a second EXE, `zugu.exe`, checked the public IP and started talking to several C2 servers:
@@ -76,7 +76,7 @@ zeek -C -r ../Phase1_PCAP_7.pcap local \
 ll
 ```
 
-The options are explained in [Lab 06, step 0](pcap-lab-06-invoice-macro-c2.md#step-0). This time, **the list of logs is already evidence**:
+The options are explained in [Invoice email case, step 0](pcap-lab-06-invoice-macro-c2.md#step-0). This time, **the list of logs is already evidence**:
 
 ```text
 capture_loss.log  conn.log  dhcp.log  dns.log  extract_files/  files.log  http.log

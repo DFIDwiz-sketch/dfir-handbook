@@ -1,5 +1,5 @@
 ---
-title: PCAP 실습 06 — 청구서 Word 매크로에서 Hancitor 유형 C2까지
+title: 청구서 메일 — Word 매크로에서 Hancitor 유형 C2까지
 tags:
   - blue-team
   - pcap
@@ -10,7 +10,7 @@ tags:
   - c2
 ---
 
-# PCAP 실습 06 — 청구서 Word 매크로에서 Hancitor 유형 C2까지 { #lab-06 }
+# 청구서 메일 — Word 매크로에서 Hancitor 유형 C2까지 { #lab-06 }
 
 !!! abstract "사례 요약"
     `maricheika.net` 도메인의 윈도우 7 PC가 Internet Explorer로 `invoice_284615.doc`를 받았습니다. 이 문서에는 자동 실행 VBA 매크로가 들어 있었습니다. 약 2분 뒤 PC는 `api.ipify.org`로 공인 IP를 확인했습니다. 이어서 `perranrowsin.com`으로 2분마다 POST를 보냈고, 해킹된 워드프레스 사이트에서 파일 3개를 더 받았습니다. 이 통신 패턴은 **Hancitor**와 일치합니다(추정, 오프라인이라 해시 조회는 못 함).

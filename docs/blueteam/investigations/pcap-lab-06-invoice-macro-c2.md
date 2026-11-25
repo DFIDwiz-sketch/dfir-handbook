@@ -1,5 +1,5 @@
 ---
-title: PCAP Lab 06 — Invoice Word Macro to Hancitor-Style C2
+title: Invoice email — Word macro to Hancitor-style C2
 tags:
   - blue-team
   - pcap
@@ -10,7 +10,7 @@ tags:
   - c2
 ---
 
-# PCAP Lab 06 — Invoice Word Macro to Hancitor-Style C2 { #lab-06 }
+# Invoice email — Word macro to Hancitor-style C2 { #lab-06 }
 
 !!! abstract "Case summary"
     A Windows 7 client in the `maricheika.net` domain downloaded `invoice_284615.doc` with Internet Explorer. The document carried an auto-run VBA macro. About two minutes later the host checked its public IP with `api.ipify.org`, began POSTing to `perranrowsin.com` every two minutes, and downloaded three more files from a hijacked WordPress site. The traffic pattern matches **Hancitor** (inferred; no hash lookup was possible offline).

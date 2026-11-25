@@ -1,5 +1,5 @@
 ---
-title: PCAP 실습 07 — 웹메일 이후 AutoIt 다운로더와 여러 C2
+title: 웹메일에서 AutoIt 다운로더와 여러 C2까지
 tags:
   - blue-team
   - pcap
@@ -11,7 +11,7 @@ tags:
   - capture-loss
 ---
 
-# PCAP 실습 07 — 웹메일 이후 AutoIt 다운로더와 여러 C2 { #lab-07 }
+# 웹메일에서 AutoIt 다운로더와 여러 C2까지 { #lab-07 }
 
 !!! abstract "사례 요약"
     도메인에 속하지 않은 윈도우 7 PC가 Internet Explorer로 Yahoo 메일을 열었습니다. 약 45초 뒤 브라우저가 아닌 프로그램이 `jjjj.exe`를 받았습니다. 14분 뒤에는 AutoIt 기반 프로그램이 두 번째 EXE `zugu.exe`를 받았습니다. 그다음 공인 IP를 확인하고 여러 C2와 통신하기 시작했습니다.
@@ -76,7 +76,7 @@ zeek -C -r ../Phase1_PCAP_7.pcap local \
 ll
 ```
 
-옵션 설명은 [실습 06의 0단계](pcap-lab-06-invoice-macro-c2.md#step-0)와 같습니다. 이번에는 **생긴 로그 목록 자체가 증거**입니다.
+옵션 설명은 [청구서 메일 사례의 0단계](pcap-lab-06-invoice-macro-c2.md#step-0)와 같습니다. 이번에는 **생긴 로그 목록 자체가 증거**입니다.
 
 ```text
 capture_loss.log  conn.log  dhcp.log  dns.log  extract_files/  files.log  http.log

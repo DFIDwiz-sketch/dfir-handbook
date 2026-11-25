@@ -90,7 +90,7 @@ Word 문서 → 첫 실행파일 → `.png`로 위장한 추가 실행파일 →
 ## 실습 6 — 문서 안전하게 다루기와 공인 IP { #lab-6 }
 
 !!! example "전체 풀이"
-    이 실습의 전체 풀이(모든 명령과 실제 출력)는 [블루팀 → 분석 사례 → PCAP 실습 06](../../blueteam/investigations/pcap-lab-06-invoice-macro-c2.md)에 있습니다.
+    이 실습의 전체 풀이(모든 명령과 실제 출력)는 [블루팀 → 분석 사례 → 청구서 메일 — Word 매크로에서 Hancitor 유형 C2까지](../../blueteam/investigations/pcap-lab-06-invoice-macro-c2.md)에 있습니다.
 
 - **Q1** — 감염 날짜·시각 → 문서 다운로드 시각([다운로드 목록](files-and-hashes.md#listing-downloads))
 - **Q2–5** — IP, 호스트 이름, MAC, 사용자 계정 → [IP, MAC, 호스트 이름](host-identification.md#ip-mac-hostname), [윈도우 사용자 계정](host-identification.md#user-account)
@@ -103,7 +103,7 @@ Word 문서 → 첫 실행파일 → `.png`로 위장한 추가 실행파일 →
 ## 실습 7 — 방향과 다운로드 도구 { #lab-7 }
 
 !!! example "전체 풀이"
-    이 실습의 전체 풀이(모든 명령과 실제 출력)는 [블루팀 → 분석 사례 → PCAP 실습 07](../../blueteam/investigations/pcap-lab-07-autoit-downloader-multi-c2.md)에 있습니다.
+    이 실습의 전체 풀이(모든 명령과 실제 출력)는 [블루팀 → 분석 사례 → 웹메일에서 AutoIt 다운로더와 여러 C2까지](../../blueteam/investigations/pcap-lab-07-autoit-downloader-multi-c2.md)에 있습니다.
 
 침해 호스트가 윈도우라는 전제가 없습니다.
 

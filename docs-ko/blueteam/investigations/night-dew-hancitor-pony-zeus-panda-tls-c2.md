@@ -22,7 +22,7 @@ tags:
 | **출처** | malware-traffic-analysis.net 2018-05-11 실습 "Night Dew" |
 | **환경** | 폐쇄망(VirusTotal, OSINT 불가). Arkime 웹 화면, CyberChef, 분석 VM의 tshark와 Snort 2.9 |
 | **결과물** | 베이스라인, 악성 활동 분석, CyberChef 디코드, 트래픽을 다시 찾는 Snort 룰(테스트 완료) |
-| **관련 페이지** | [Arkime 검색 문법](../../network/arkime/search-syntax.md) · [비콘과 C2](../../network/beaconing-c2.md) · [PCAP 실습 06 — 같은 Hancitor 유형](pcap-lab-06-invoice-macro-c2.md) · [앞의 사례: Back to the Present](back-to-the-present-chthonic-c2-tech-support-scam.md) |
+| **관련 페이지** | [Arkime 검색 문법](../../network/arkime/search-syntax.md) · [비콘과 C2](../../network/beaconing-c2.md) · [청구서 메일 — 같은 Hancitor 유형](pcap-lab-06-invoice-macro-c2.md) · [앞의 사례: Back to the Present](back-to-the-present-chthonic-c2-tech-support-scam.md) |
 
 !!! tip "이 페이지 읽는 법"
     완전한 초보자도 첫 쿼리부터 보고서 완성까지 따라 할 수 있게 썼습니다. 단계마다 같은 순서로 설명합니다.
@@ -757,7 +757,7 @@ sha256sum http_objects/*
 
 - [Arkime 검색 문법](../../network/arkime/search-syntax.md) · [Arkime로 PCAP 분석하기](../../network/arkime/offline-pcap-guide.md)
 - [비콘과 C2](../../network/beaconing-c2.md) · [Wireshark & tshark](../../network/wireshark-tshark.md)
-- [PCAP 실습 06 — 청구서 Word 매크로에서 Hancitor 유형 C2까지](pcap-lab-06-invoice-macro-c2.md) · [Back to the Present](back-to-the-present-chthonic-c2-tech-support-scam.md) · [IcedID (Cold as Ice)](icedid-tds-gzip-loader-backconnect.md)
+- [청구서 메일 — Word 매크로에서 Hancitor 유형 C2까지](pcap-lab-06-invoice-macro-c2.md) · [Back to the Present](back-to-the-present-chthonic-c2-tech-support-scam.md) · [IcedID (Cold as Ice)](icedid-tds-gzip-loader-backconnect.md)
 - [플레이북: 감염된 워크스테이션](../playbooks/compromised-workstation.md)
 - 원본 실습: [malware-traffic-analysis.net — 2018-05-11 Traffic Analysis Exercise: Night Dew](https://malware-traffic-analysis.net/2018/05/11/index.html) · [정답 페이지](https://malware-traffic-analysis.net/2018/05/11/page2.html)
 - 같은 주의 Hancitor + Zeus Panda Banker 감염 기록: [malware-traffic-analysis.net — 2018-05-14](https://malware-traffic-analysis.net/2018/05/14/index.html)

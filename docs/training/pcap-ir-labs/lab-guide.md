@@ -90,7 +90,7 @@ A Word document leads to a first executable, more executables disguised as `.png
 ## Lab 6 — Safe document handling and public IP { #lab-6 }
 
 !!! example "Full walkthrough"
-    A complete worked solution of this lab, with every command and its output, is in [Blue Team → Investigations → PCAP Lab 06](../../blueteam/investigations/pcap-lab-06-invoice-macro-c2.md).
+    A complete worked solution of this lab, with every command and its output, is in [Blue Team → Investigations → Invoice email — Word macro to Hancitor-style C2](../../blueteam/investigations/pcap-lab-06-invoice-macro-c2.md).
 
 - **Q1** — Time and date of infection → time of the document download ([Listing downloads](files-and-hashes.md#listing-downloads))
 - **Q2–5** — IP, hostname, MAC, user account → [IP, MAC and hostname](host-identification.md#ip-mac-hostname), [Windows user account](host-identification.md#user-account)
@@ -103,7 +103,7 @@ A Word document leads to a first executable, more executables disguised as `.png
 ## Lab 7 — Direction and download tool { #lab-7 }
 
 !!! example "Full walkthrough"
-    A complete worked solution of this lab, with every command and its output, is in [Blue Team → Investigations → PCAP Lab 07](../../blueteam/investigations/pcap-lab-07-autoit-downloader-multi-c2.md).
+    A complete worked solution of this lab, with every command and its output, is in [Blue Team → Investigations → Webmail to an AutoIt downloader and multi-C2 traffic](../../blueteam/investigations/pcap-lab-07-autoit-downloader-multi-c2.md).
 
 The compromised host is not assumed to be Windows.
 

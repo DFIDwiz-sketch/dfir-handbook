@@ -13,7 +13,7 @@ tags:
 !!! abstract "What this page is"
     How to answer the usual PCAP incident questions with Arkime instead of Zeek: import a capture, search it, and read the answers off the web UI. Arkime indexes the PCAP **session by session**, so you reach the same answers with **a search bar and clicks** instead of `zeek-cut | grep | awk`. Field names and `capture` options were checked against the Arkime source code (`capture/parsers/*.c`, `capture/main.c`).
 
-The worked examples re-solve [PCAP Lab 06](../../blueteam/investigations/pcap-lab-06-invoice-macro-c2.md) and [PCAP Lab 07](../../blueteam/investigations/pcap-lab-07-autoit-downloader-multi-c2.md), which were first solved with Zeek.
+The worked examples re-solve [the invoice email case](../../blueteam/investigations/pcap-lab-06-invoice-macro-c2.md) and [the webmail AutoIt case](../../blueteam/investigations/pcap-lab-07-autoit-downloader-multi-c2.md), which were first solved with Zeek.
 
 ## Arkime vs Zeek for one PCAP { #vs-zeek }
 
