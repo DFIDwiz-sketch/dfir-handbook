@@ -714,7 +714,7 @@ Open the three sessions one at a time and view them as **ASCII**. Direction is s
 
 **Reading the result:**
 
-- The attacker looked around in the order **drive list → Z:\ → C:\\**. They **did not upload or download files** yet (the session ends at 20:49:46 and only a few hundred bytes moved).
+- The attacker looked around in the order **drive list → Z:\\ → C:\\**. They **did not upload or download files** yet (the session ends at 20:49:46 and only a few hundred bytes moved).
 - Answer to Q6: **there was follow-up malicious activity, and it was IcedID BackConnect**. The attacker used a remote shell to list the domain computers and a file manager to look at the drives and folders.
 - This PCAP has **no trace of Cobalt Strike or VNC** (Unit 42 reached the same conclusion). But listing the domain computers is a sign the attacker is **about to move to the next stage (lateral movement, ransomware preparation)**. In a real incident, isolate the PC right at this point.
 
