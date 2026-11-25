@@ -97,7 +97,7 @@ index=zeek sourcetype=zeek:kerberos
 ```
 
 - 이번에 추가한 `client_addr`는 요청을 보낸 PC의 현재 IP예요. `assigned_addr`가 빌 때(DHCP INFORM) 유용해요.
-- **둘 다 "No results found."**예요. 5분 동안 DHCP가 없었고(주소가 이미 정해져 있었음), **Kerberos가 없으니 윈도우 도메인도 없어요.**
+- **둘 다 "No results found."**&#8203;예요. 5분 동안 DHCP가 없었고(주소가 이미 정해져 있었음), **Kerberos가 없으니 윈도우 도메인도 없어요.**
 
 ### 1-3. 내부 호스트 { #internal-hosts }
 
@@ -281,7 +281,7 @@ time      id_resp_h      method     uri                                         
 **그 밖에:**
 
 - 09:57:49 `dynupdate.noip[.]com` 요청의 User-Agent가 `DUC v4.1.1 ... Service`예요. **No-IP 동적 DNS 업데이트 프로그램**이 .102에 서비스로 설치돼 있다는 뜻이에요. 집 인터넷 IP가 바뀌어도 도메인으로 접속할 수 있게 해 주는 정상 프로그램이지만, 공격자가 리스너를 열어 둘 때도 자주 써요. 09:54:08 173.192.194.69:5938(TeamViewer)과 함께, 누가 .102를 원격으로 조종하고 있었는지 확인해 볼 만해요. 다만 둘 다 웹셸 공격과 이어지는 증거는 없어요.
-- `host` 칸이 전부 **"workstation"**으로 나와요. 여기서는 HTTP Host 헤더가 아니라 Splunk가 붙인 호스트 값이라서, 도메인 이름은 DNS나 Arkime에서 봐요.
+- `host` 칸이 전부 **"workstation"**&#8203;으로 나와요. 여기서는 HTTP Host 헤더가 아니라 Splunk가 붙인 호스트 값이라서, 도메인 이름은 DNS나 Arkime에서 봐요.
 
 !!! question "질문: cmd.exe는 어디서 나온 거죠?"
     `cmd.exe`가 아니라 **`cmdexe`**예요. 점이 없어요. 윈도우의 명령 프롬프트(cmd.exe)와는 관계없어요.
@@ -419,7 +419,7 @@ ip.dst == 192.168.1.100 && http.uri == *cmdexe*
 
 ### 5-1. 리버스 셸 (.100:57978 → .101:4444) { #reverse-shell }
 
-패킷 화면의 **Source(.100)**는 서버가 보낸 출력이고, **Destination(.101)**은 공격자가 친 명령이에요.
+패킷 화면의 **Source(.100)**&#8203;는 서버가 보낸 출력이고, **Destination(.101)**&#8203;은 공격자가 친 명령이에요.
 
 **연결되자마자 서버가 스스로 보낸 정보**(PHP 리버스 셸 스크립트가 접속하자마자 `uname -a`, `w`, `id`를 보내요):
 
@@ -497,7 +497,7 @@ IHDR ... sRGB ... gAMA ... pHYs ... IDAT ...
 ## 6단계 — 초기 침투는 보이나요? { #initial-access }
 
 !!! question "질문: 이니셜 액세스는 안 보이는 건가요?"
-    네, 이번 캡처에서는 보이지 않아요. 여기서 초기 침투는 **"minishell.php가 처음에 어떻게 서버에 올라갔나"**예요. 근거는 세 가지예요.
+    네, 이번 캡처에서는 보이지 않아요. 여기서 초기 침투는 **"minishell.php가 처음에 어떻게 서버에 올라갔나"**&#8203;예요. 근거는 세 가지예요.
 
     **1. 웹셸은 캡처 시작 전부터 서버에 있었어요.** .102가 .100:55555에 처음 보낸 요청은 09:53:35 `GET /`이고, 이어서 `/icons/blank.gif`, `folder.gif`, `unknown.gif`, `text.gif`, `tar.gif`를 불러왔어요. **Apache 디렉터리 목록 페이지**의 아이콘이에요(폴더에 index.html이 없으면 Apache가 파일 목록을 보여 줘요). 4초 뒤 `GET /minishell.php`의 Referer가 `http://192.168.1.100:55555/`이에요. **목록 화면에서 클릭해서** 들어간 거예요. 파일이 이미 있었다는 뜻이에요.
 
@@ -530,7 +530,7 @@ GET     /icons/folder.gif      09:53:35  1
 첫 요청이 `GET /`이고 그 전에 업로드가 없어요. 웹셸은 **이미 서버에 있었어요.**
 
 !!! question "질문: Wireshark를 쓰면 안 되는데, 목록 페이지의 파일 날짜는 어떻게 보나요?"
-    Apache 목록 페이지에는 파일마다 **Last modified(수정 날짜)**가 나와서, minishell.php가 언제 생겼는지 알 수 있어요. 응답이 gzip으로 압축돼 있어서 풀어야 해요. **Arkime + CyberChef**만으로 하는 방법이에요.
+    Apache 목록 페이지에는 파일마다 **Last modified(수정 날짜)**&#8203;가 나와서, minishell.php가 언제 생겼는지 알 수 있어요. 응답이 gzip으로 압축돼 있어서 풀어야 해요. **Arkime + CyberChef**만으로 하는 방법이에요.
 
     1. Arkime: `ip.src == 192.168.1.102 && ip.dst == 192.168.1.100 && port.dst == 55555 && http.method == GET`으로 검색하고, 09:53:35 세션 중 URI가 `/`인 것을 펼쳐요.
     2. **Packet Options → Show Images & Files**를 켜면 Destination 쪽에 응답 본문 다운로드 링크가 생겨요(헤더 없이 본문만).

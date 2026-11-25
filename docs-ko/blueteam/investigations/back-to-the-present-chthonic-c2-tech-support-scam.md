@@ -16,7 +16,7 @@ tags:
 # Back to the Present — 네트워크 베이스라이닝부터 .bit C2, 기술지원 사기 팝업, Snort 룰까지 { #back-to-the-present }
 
 !!! abstract "사례 요약"
-    Marty와 Doc의 "스테인리스 타임머신" 안에 있는 **Windows 10 PC 한 대(DELOREAN-PC)**의 12분짜리 캡처입니다. 먼저 **네트워크 베이스라이닝**을 처음부터 합니다. 내부 IP와 대역, 라우터, DNS·DHCP 서버, DC·파일 서버·웹/메일 서버가 있는지, 장치 수, 프로토콜, OS, 외부 통신을 하나씩 찾아요. 그다음 이상한 점을 따라갑니다. Office 활동 직후 PC가 **User-Agent 없이 `.exe`를 내려받았고**, 1분 뒤부터 **회사 DNS를 거치지 않고 외부 DNS 서버들에 TCP로** `.bit` 도메인(`amellet.bit`)을 물었습니다. 그 주소로 **HTTP/1.0 암호화 POST를 39번** 보내 약 **2.3MB**를 받았어요(**Chthonic 유형 C2**와 같은 모양). 마지막에 사용자가 연 웹사이트에 숨어 있던 **팝언더 스크립트**가 **가짜 Windows Defender 경고(기술지원 사기)** 페이지를 띄웠습니다. **Snort 룰 14개를 만들어 PCAP으로 테스트**하고, MC나 다른 헌트 팀에 넘길 **보고서**과 **호스트 오퍼레이터용 단서**를 완성합니다.
+    Marty와 Doc의 "스테인리스 타임머신" 안에 있는 **Windows 10 PC 한 대(DELOREAN-PC)**&#8203;의 12분짜리 캡처입니다. 먼저 **네트워크 베이스라이닝**을 처음부터 합니다. 내부 IP와 대역, 라우터, DNS·DHCP 서버, DC·파일 서버·웹/메일 서버가 있는지, 장치 수, 프로토콜, OS, 외부 통신을 하나씩 찾아요. 그다음 이상한 점을 따라갑니다. Office 활동 직후 PC가 **User-Agent 없이 `.exe`를 내려받았고**, 1분 뒤부터 **회사 DNS를 거치지 않고 외부 DNS 서버들에 TCP로** `.bit` 도메인(`amellet.bit`)을 물었습니다. 그 주소로 **HTTP/1.0 암호화 POST를 39번** 보내 약 **2.3MB**를 받았어요(**Chthonic 유형 C2**와 같은 모양). 마지막에 사용자가 연 웹사이트에 숨어 있던 **팝언더 스크립트**가 **가짜 Windows Defender 경고(기술지원 사기)** 페이지를 띄웠습니다. **Snort 룰 14개를 만들어 PCAP으로 테스트**하고, MC나 다른 헌트 팀에 넘길 **보고서**과 **호스트 오퍼레이터용 단서**를 완성합니다.
 
 | | |
 |---|---|
@@ -514,7 +514,7 @@ index=zeek sourcetype=zeek:conn
 | stats count BY ip
 ```
 
-- `eval ip=mvappend(id_orig_h, id_resp_h)` — 출발지와 목적지 IP를 한 칸에 **여러 값(multivalue)**으로 모읍니다.
+- `eval ip=mvappend(id_orig_h, id_resp_h)` — 출발지와 목적지 IP를 한 칸에 **여러 값(multivalue)**&#8203;으로 모읍니다.
 - `mvexpand ip` — 여러 값을 **줄 하나에 하나씩** 펼칩니다. 이제 출발지든 목적지든 모든 IP를 한 번에 셀 수 있어요.
 - `where cidrmatch("대역", ip)` — `cidrmatch`는 IP가 그 대역 안에 있으면 참입니다. `where`는 조건이 참인 줄만 남깁니다.
 - `stats count BY ip` — IP별 등장 횟수.
@@ -629,7 +629,7 @@ id_resp_h        count  clients  proto
 - **파일 서버 없음.** SMB(445), NetBIOS 세션(139) 연결이 없습니다. 137/138은 이름 알리기용이라 파일 공유가 아닙니다.
 - **내부 웹·메일 서버 없음.** 내부 목적지에 80/443/메일 포트가 없습니다.
 - **`224.0.0.252`와 `10.0.1.255`는 서버가 아니라** LLMNR 멀티캐스트와 NetBIOS 브로드캐스트입니다. dns.log에 섞여 있는 이유는 Zeek가 NetBIOS 이름 질의(UDP 137)도 DNS 형식으로 읽기 때문이에요. 그 줄의 `qtype_name`이 `NIMLOC`(번호 32)로 나오는데, NetBIOS에서는 이 번호가 "NB(이름)" 질의입니다.
-- **!! 표시 — 외부 DNS 서버 6곳에 TCP로 질문했습니다.** 정상 PC는 **DHCP가 알려 준 DNS 서버(10.0.1.1)**에, 보통 **UDP**로 묻습니다. 외부 DNS 서버에 직접, 그것도 TCP로 묻는 건 **베이스라인에서 벗어난 첫 번째 큰 이상**입니다. D3단계에서 파고듭니다.
+- **!! 표시 — 외부 DNS 서버 6곳에 TCP로 질문했습니다.** 정상 PC는 **DHCP가 알려 준 DNS 서버(10.0.1.1)**&#8203;에, 보통 **UDP**로 묻습니다. 외부 DNS 서버에 직접, 그것도 TCP로 묻는 건 **베이스라인에서 벗어난 첫 번째 큰 이상**입니다. D3단계에서 파고듭니다.
 
 **NetBIOS로 본 작업 그룹 (Arkime 세션 상세 또는 tshark):** PC가 브로드캐스트로 `DOC-BROWN-GROUP`이라는 **작업 그룹(workgroup)** 이름을 알리고, 스스로 **마스터 브라우저**가 됐습니다. 마스터 브라우저는 같은 망의 윈도우 PC 목록을 관리하는 역할인데, 망에 윈도우가 자기 하나뿐이라 자기가 맡은 거예요. **도메인이 아니라 작업 그룹 = AD 없는 가정·소규모 환경**이라는 것이 다시 확인됩니다.
 
@@ -818,7 +818,7 @@ index=zeek sourcetype=zeek:ssl
 **결과 읽기:**
 
 - 외부 통신은 **80, 443, 53(TCP)** 세 포트뿐입니다. 80/443은 평범하지만 **TCP 53이 46번**이나 됩니다.
-- **35.198.166.240이 연결 수 1위, 받은 양 1위(약 2.35MB)**입니다. 평문 HTTP로 이렇게 많이 받는 곳이 Microsoft나 Google이 아니라면 수상합니다.
+- **35.198.166.240이 연결 수 1위, 받은 양 1위(약 2.35MB)**&#8203;입니다. 평문 HTTP로 이렇게 많이 받는 곳이 Microsoft나 Google이 아니라면 수상합니다.
 - **188.165.200.156**은 C6단계에서 본 외부 DNS 서버입니다. TCP 53으로 31번.
 - TLS는 모두 큰 정상 서비스 → 이번 사건의 수상한 통신은 **평문 HTTP와 TCP DNS**에 있습니다.
 - Zeek notice.log에 `SSL::Invalid_Server_Cert` 7개가 있지만, 모두 Microsoft/Google 인증서이고 이유는 "unable to get local issuer certificate"(센서에 루트 인증서 목록이 없어서)입니다. 사건과 관계없는 **센서 쪽 잡음**이에요.
@@ -871,7 +871,7 @@ index=zeek sourcetype=zeek:dns qtype_name=A
 
 ### D1단계 — User-Agent 없는 HTTP 요청은 누구인가 { #no-ua }
 
-**목적:** C8단계에서 User-Agent가 없는 요청 123개를 찾았습니다. 브라우저도 윈도우 구성 요소도 대부분 User-Agent를 보내니, 없는 쪽은 **직접 만든 프로그램(악성코드 포함)**일 가능성이 큽니다.
+**목적:** C8단계에서 User-Agent가 없는 요청 123개를 찾았습니다. 브라우저도 윈도우 구성 요소도 대부분 User-Agent를 보내니, 없는 쪽은 **직접 만든 프로그램(악성코드 포함)**&#8203;일 가능성이 큽니다.
 
 **Arkime:**
 
@@ -1016,7 +1016,7 @@ http_objects/30_723bio_152.exe: PE32 executable (GUI) Intel 80386, for MS Window
 - **Referer도 없습니다.** 어떤 웹페이지의 링크를 눌러서 받은 게 아니라 **주소를 직접 알고** 받았다는 뜻이에요.
 - 경로가 `/3cgconsulting.com/…`처럼 **다른 도메인 이름을 폴더로 쓰고** 있습니다. 해킹된 웹 서버에 악성 파일을 올려 둘 때 흔한 모양입니다.
 - 파일은 **완전히 캡처**됐고(`seen_bytes = total_bytes = 61440`), 첫 바이트가 `MZ` = 윈도우 실행 파일입니다. `Content-Type: application/x-msdownload`도 실행 파일 형식이에요.
-- **32비트 GUI 프로그램, 서명 없음, 섹션 두 개(`.text`, `.data`)뿐.** 정상 프로그램은 보통 섹션이 더 많고 서명이 있습니다. 섹션이 적고 작은(60KB) 파일은 **진짜 악성코드를 감싸 숨긴 포장(packer)**일 때가 많아요.
+- **32비트 GUI 프로그램, 서명 없음, 섹션 두 개(`.text`, `.data`)뿐.** 정상 프로그램은 보통 섹션이 더 많고 서명이 있습니다. 섹션이 적고 작은(60KB) 파일은 **진짜 악성코드를 감싸 숨긴 포장(packer)**&#8203;일 때가 많아요.
 - 서버의 `Last-Modified`가 **2017-10-19**(이틀 전) — 최근에 올린 파일입니다.
 
 **바로 직전에 무슨 일이 있었나?** 다운로드 30초 전부터의 DNS 질의를 봅니다.
@@ -1046,7 +1046,7 @@ t         query                          answers
 04:52:52  nexusrules.officeapps.live.com 40.117.144.240
 ```
 
-**결과 읽기:** 04:52:40부터 **Microsoft Office**가 켜지면서 하는 질의(`officeclient`, `nexus.officeapps`, `messaging.office`)가 나오고, **1초 뒤에** `jgbennett.com`을 묻고 `.exe`를 받았습니다. Office 문서를 열었더니 **문서 안의 매크로나 스크립트가 파일을 받은** 흔한 감염 방식과 같은 모양이에요. 다만 문서 자체는 캡처에 없습니다(메일, 웹메일, 파일 다운로드 흔적 없음). 그래서 **"추정"**이고, 호스트 오퍼레이터가 확인할 단서가 됩니다.
+**결과 읽기:** 04:52:40부터 **Microsoft Office**가 켜지면서 하는 질의(`officeclient`, `nexus.officeapps`, `messaging.office`)가 나오고, **1초 뒤에** `jgbennett.com`을 묻고 `.exe`를 받았습니다. Office 문서를 열었더니 **문서 안의 매크로나 스크립트가 파일을 받은** 흔한 감염 방식과 같은 모양이에요. 다만 문서 자체는 캡처에 없습니다(메일, 웹메일, 파일 다운로드 흔적 없음). 그래서 **"추정"**&#8203;이고, 호스트 오퍼레이터가 확인할 단서가 됩니다.
 
 ### D3단계 — `.bit` 도메인과 외부 DNS 서버, 그리고 TCP DNS { #bit-dns }
 
@@ -1248,7 +1248,7 @@ possible_split_routing             23.56.3.183     1
 - **서버 시계가 약 6분 49초 느립니다.** 패킷 시각은 04:54:03인데 서버의 `Date`는 04:47:14예요. 같은 C2 서버를 다른 사건에서 찾을 때 작은 지문이 됩니다.
 - 서버 `lighttpd/1.4.45` + `X-Powered-By: PHP/5.3.3` — PHP 5.3.3은 2010년 버전입니다. 오래된 PHP로 C2 패널을 돌리는 흔한 모습이에요.
 
-**악성코드 계열:** 외부 DNS로 `.bit` C2 주소를 찾고, 암호화된 POST로 모듈을 받는 모양은 **Zeus 계열 은행 트로이목마인 Chthonic**과 같습니다. 이 실습의 공개 분석도 Chthonic으로 봤습니다. 다만 우리는 폐쇄망이라 해시 조회를 하지 않았으므로 **"consistent with Chthonic — unconfirmed"**로 적습니다.
+**악성코드 계열:** 외부 DNS로 `.bit` C2 주소를 찾고, 암호화된 POST로 모듈을 받는 모양은 **Zeus 계열 은행 트로이목마인 Chthonic**과 같습니다. 이 실습의 공개 분석도 Chthonic으로 봤습니다. 다만 우리는 폐쇄망이라 해시 조회를 하지 않았으므로 **"consistent with Chthonic — unconfirmed"**&#8203;로 적습니다.
 
 ### D5단계 — C2 타이밍: 비콘인가 { #c2-timing }
 
@@ -1383,7 +1383,7 @@ Call Microsoft Technical Department: 888-779-0939 (Toll Free)
 - **05:02:30 급증의 정체:** 사용자가 IE11로 `www.singlemoms.org`를 열었습니다. 이 페이지가 **광고·분석 도메인 수십 곳**(media.net, doubleclick, openx, addthis, statcounter …)을 한꺼번에 불러서 세션이 몰렸어요. 이것 자체는 평범한 광고 많은 사이트의 모습입니다.
 - **그런데 페이지 끝에 "팝언더(pop-under)" 스크립트가 숨어 있었습니다.** 사용자가 페이지 **어디든 처음 클릭하면** 새 창을 열어 `helpcenterforall.bid`로 보내고, 그 창을 **뒤로 숨깁니다**. 그래서 Referer가 비어 있었어요(빈 창 `about:blank`에서 주소를 바꿨기 때문).
 - 05:03:25 사용자가 클릭 → `helpcenterforall.bid`가 **302**로 `krep2010123.tk/?number=888-779-0939`로 보냄 → **가짜 Windows Defender 경고** 페이지, 방패 그림(`defender.png`), **경고음**(`err.mp3`, 251KB), 그리고 **"Microsoft에 전화하세요 888-779-0939"**.
-- 이게 **기술지원 사기(tech support scam)**입니다. 전화하면 가짜 상담원이 원격 접속 프로그램을 깔게 하고 돈을 받거나 정보를 훔칩니다. **악성코드 감염은 아니지만**, 사용자가 전화했거나 원격 접속을 허용했다면 **두 번째 사건**이 됩니다. 호스트 오퍼레이터와 사용자에게 꼭 확인할 일이에요.
+- 이게 **기술지원 사기(tech support scam)**&#8203;입니다. 전화하면 가짜 상담원이 원격 접속 프로그램을 깔게 하고 돈을 받거나 정보를 훔칩니다. **악성코드 감염은 아니지만**, 사용자가 전화했거나 원격 접속을 허용했다면 **두 번째 사건**이 됩니다. 호스트 오퍼레이터와 사용자에게 꼭 확인할 일이에요.
 - 재미있는 우연: 가짜 경고는 "**Zeus** Virus Detected"라고 하는데, 이 PC에는 실제로 **Zeus 계열(Chthonic 유형)** 악성코드가 돌고 있었습니다. 사기 페이지의 고정 문구일 뿐 진짜 탐지와는 관계없어요.
 - **두 사건은 별개입니다.** `.exe` → C2(04:52~05:02)와 웹사이트 팝언더 → 사기 페이지(05:02~05:03)는 서로 연결된 흔적이 없습니다. 한 보고서에 둘 다 적되, 별개라는 것을 분명히 합니다.
 
@@ -1412,7 +1412,7 @@ index=zeek sourcetype=zeek:conn id_orig_h=10.0.1.95 (id_resp_h=10.0.0.0/8 OR id_
 
 - **다른 감염 PC: 없음** — 캡처에 PC가 한 대뿐입니다.
 - **측면 이동: 없음** — PC가 다른 내부 장치에 연결한 적이 없습니다(SMB, RDP, WinRM 없음).
-- **유출:** C2로 보낸 **본문 합계 22,992바이트**(약 23KB, 39번 POST). 암호화돼서 **무엇이 나갔는지는 알 수 없습니다.** Zeus 계열은 PC 정보, 저장된 비밀번호, 은행 사이트 입력값을 보내곤 하니 **"가능성 있음, 내용 미확인"**으로 적습니다. 큰 파일을 올린 흔적(수 MB POST)은 없습니다.
+- **유출:** C2로 보낸 **본문 합계 22,992바이트**(약 23KB, 39번 POST). 암호화돼서 **무엇이 나갔는지는 알 수 없습니다.** Zeus 계열은 PC 정보, 저장된 비밀번호, 은행 사이트 입력값을 보내곤 하니 **"가능성 있음, 내용 미확인"**&#8203;으로 적습니다. 큰 파일을 올린 흔적(수 MB POST)은 없습니다.
 
 ---
 
@@ -1478,11 +1478,11 @@ alert udp $HOME_NET any -> any 53 (msg:"LOCAL DNS query for .bit (Namecoin) doma
 alert tcp $HOME_NET any -> $EXTERNAL_NET 53 (msg:"LOCAL Internal host DNS over TCP to external resolver"; flags:S; threshold:type limit, track by_src, count 1, seconds 600; classtype:policy-violation; sid:1000204; rev:1;)
 ```
 
-- **DNS는 점 대신 "글자 수 + 글자"**로 이름을 적습니다. `amellet.bit` → `|07|amellet|03|bit|00|` = 7글자 `amellet`, 3글자 `bit`, 끝(`00`). 패킷 안에 `amellet.bit`라는 글자는 없어서, 점을 넣은 `content:"amellet.bit"`는 **절대 안 맞습니다.**
+- **DNS는 점 대신 "글자 수 + 글자"**&#8203;로 이름을 적습니다. `amellet.bit` → `|07|amellet|03|bit|00|` = 7글자 `amellet`, 3글자 `bit`, 끝(`00`). 패킷 안에 `amellet.bit`라는 글자는 없어서, 점을 넣은 `content:"amellet.bit"`는 **절대 안 맞습니다.**
 - **TCP DNS도 같은 형식**입니다. TCP DNS는 앞에 길이 2바이트가 더 붙을 뿐이라, 위치를 지정하지 않은 `content`는 그대로 맞아요.
 - **sid 1000201 (IOC)** — `amellet.bit`를 묻는 TCP DNS. `flow:established,to_server` = 연결이 맺어진 뒤 PC가 DNS 서버로 보낸 질문.
 - **sid 1000202/1000203 (행동)** — **어떤 `.bit` 이름이든.** 이름 끝이 `|03|bit|00|`이면 `.bit`입니다. 회사 PC가 `.bit`를 물을 이유는 거의 없어서 오탐이 적고, 공격자가 `.bit` 이름을 바꿔도 잡힙니다. TCP와 UDP 두 개를 만든 이유: 이번엔 TCP였지만 다른 변종은 UDP를 쓸 수 있으니까요. UDP 룰은 `flow`를 쓰지 않습니다(UDP는 "연결"이 없음).
-- **sid 1000204 (행동)** — 내부 PC가 **외부**의 53번 포트로 **TCP 연결을 시작(SYN)**하면. `threshold:type limit, track by_src, count 1, seconds 600` = 같은 PC에 대해 **10분에 한 번만** 알림. 이게 없으면 이 PCAP에서만 46번 울립니다. 회사에서는 `$EXTERNAL_NET` 대신 `!$DNS_SERVERS`(회사 DNS 서버가 아닌 곳)를 쓰면 더 정확합니다 — `DNS_SERVERS`를 실제 DNS 서버 IP로 정해 둔 경우에만요.
+- **sid 1000204 (행동)** — 내부 PC가 **외부**의 53번 포트로 **TCP 연결을 시작(SYN)**&#8203;하면. `threshold:type limit, track by_src, count 1, seconds 600` = 같은 PC에 대해 **10분에 한 번만** 알림. 이게 없으면 이 PCAP에서만 46번 울립니다. 회사에서는 `$EXTERNAL_NET` 대신 `!$DNS_SERVERS`(회사 DNS 서버가 아닌 곳)를 쓰면 더 정확합니다 — `DNS_SERVERS`를 실제 DNS 서버 IP로 정해 둔 경우에만요.
 
 아무 도메인이나 DNS 형식으로 바꾸기:
 
@@ -1525,7 +1525,7 @@ alert tcp $EXTERNAL_NET $HTTP_PORTS -> $HOME_NET any (msg:"LOCAL Windows EXE dow
 - **sid 1000209 + 1000210 (행동, flowbits 한 쌍)** — "User-Agent 없이 `.exe`를 요청했고, 응답이 진짜 윈도우 실행 파일이면" 알림.
     - **1000209 (요청):** GET + URI가 `.exe`로 끝남(`pcre:"/\.exe$/Ui"`) + User-Agent 없음 → `flowbits:set,exe.noua`로 **이 연결에 표시**만 하고, `flowbits:noalert`로 알림은 안 냅니다.
     - **1000210 (응답):** 방향이 반대(`$EXTERNAL_NET $HTTP_PORTS -> $HOME_NET any`, `to_client`) = **서버의 응답**. `flowbits:isset,exe.noua` = 표시된 연결에서만. `file_data;` = 응답 **본문**에서, `content:"MZ"; within:2;` = 본문 **첫 2바이트**가 `MZ`(실행 파일 표시), 그 뒤 200바이트 안에 `This program cannot be run in DOS mode`(모든 윈도우 EXE에 있는 문구).
-    - 왜 두 룰로 나누나요? 요청만 보면 이름만 `.exe`인 가짜일 수 있고, 응답만 보면 정상 업데이트 다운로드도 걸립니다. **"브라우저가 아닌 것이 + 진짜 EXE를 받았다"**를 함께 보려면 요청과 응답을 이어야 하고, 그게 flowbits입니다.
+    - 왜 두 룰로 나누나요? 요청만 보면 이름만 `.exe`인 가짜일 수 있고, 응답만 보면 정상 업데이트 다운로드도 걸립니다. **"브라우저가 아닌 것이 + 진짜 EXE를 받았다"**&#8203;를 함께 보려면 요청과 응답을 이어야 하고, 그게 flowbits입니다.
 
 #### D. 기술지원 사기 (sid 1000211–1000214) { #rules-scam }
 
