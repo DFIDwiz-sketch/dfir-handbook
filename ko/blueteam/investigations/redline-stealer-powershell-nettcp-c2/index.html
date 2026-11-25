@@ -12376,7 +12376,7 @@
 <ul>
 <li>페이로드 다운로드(<code>guiatelefonos.com</code>)의 JA3는 <strong>윈도우 서비스(WNS 등)가 3초 전에 쓴 것과 같은 값</strong>입니다. PowerShell/.NET이 윈도우 기본 TLS 기능을 쓰기 때문이에요. 그래서 <strong>감염 뒤에 새 JA3가 생기지 않았습니다.</strong></li>
 <li>그리고 C2(12432)는 <strong>TLS가 아니라서 JA3 자체가 없습니다.</strong></li>
-<li>즉 이 사례에서는 "JA3 개수 변화"로 감염을 잡을 수 없었습니다. JA3 변화는 <strong>있으면 강한 정황, 없다고 깨끗하다는 뜻은 아닌</strong> 근거라는 걸 보여 주는 예예요. 반대로 같은 JA3를 쓰더라도 **목적지(SNI)**가 정상 Microsoft 서비스와 전혀 다른 이상한 도메인이라는 점은 눈에 띕니다. JA3는 목적지와 같이 읽어야 합니다.</li>
+<li>즉 이 사례에서는 "JA3 개수 변화"로 감염을 잡을 수 없었습니다. JA3 변화는 <strong>있으면 강한 정황, 없다고 깨끗하다는 뜻은 아닌</strong> 근거라는 걸 보여 주는 예예요. 반대로 같은 JA3를 쓰더라도 <strong>목적지(SNI)</strong>​가 정상 Microsoft 서비스와 전혀 다른 이상한 도메인이라는 점은 눈에 띕니다. JA3는 목적지와 같이 읽어야 합니다.</li>
 </ul>
 <hr>
 <h2 id="c2-hunt">6단계 — 이상한 포트로 C2 찾기<a class="headerlink" href="#c2-hunt" title="Permanent link">¶</a></h2>
@@ -12454,7 +12454,7 @@
 </span><span id="__span-25-10"><a id="__codelineno-25-10" name="__codelineno-25-10" href="#__codelineno-25-10"></a>22:39:58.311  server → PC   120 B     MSValue3Response (ack)
 </span></code></pre></div>
 <ul>
-<li>**"설정 받기 → 5초 동안 수집 → 한 번에 업로드"**라는 전형적인 인포스틸러 흐름입니다.</li>
+<li><strong>"설정 받기 → 5초 동안 수집 → 한 번에 업로드"</strong>​라는 전형적인 인포스틸러 흐름입니다.</li>
 <li>Trickbot처럼 연결을 몇 분씩 붙잡고 있거나 반복 접속하는 <strong>비콘이 없습니다.</strong> 8초 만에 끝나는 <strong>한 번짜리</strong> 연결이에요. 인포스틸러는 "훔치고 바로 빠지는" 경우가 많습니다. 보고서의 C2 칸에는 "single short session, no repeating beacon"이라고 씁니다.</li>
 </ul>
 <hr>
@@ -12525,7 +12525,7 @@
 </tr>
 </tbody>
 </table>
-<p>이게 **Q6(무엇을 훔치려 했나)**의 답입니다. 중요한 점은 이 목록이 <strong>악성코드 안에 들어 있지 않고 서버가 실행 중에 내려 준다</strong>는 거예요. 공격자는 서버 설정만 바꿔서 훔칠 대상을 바꿀 수 있습니다. 그래서 네트워크에서 이 응답을 보면 "이번 공격자가 무엇을 노렸는지"를 정확히 알 수 있어요.</p>
+<p>이게 <strong>Q6(무엇을 훔치려 했나)</strong>​의 답입니다. 중요한 점은 이 목록이 <strong>악성코드 안에 들어 있지 않고 서버가 실행 중에 내려 준다</strong>는 거예요. 공격자는 서버 설정만 바꿔서 훔칠 대상을 바꿀 수 있습니다. 그래서 네트워크에서 이 응답을 보면 "이번 공격자가 무엇을 노렸는지"를 정확히 알 수 있어요.</p>
 <hr>
 <h2 id="exfil">9단계 — 실제로 올라간 것: 유출 내용<a class="headerlink" href="#exfil" title="Permanent link">¶</a></h2>
 <p><strong>목적:</strong> <code>MSValue3</code>(PC → 서버 541,961바이트)에 무엇이 들어 있었는지 봅니다. 보고서의 Exfil 칸(시간, 무엇을, 바이트, 방법)을 채우는 핵심 단계입니다.</p>
@@ -12582,7 +12582,7 @@
 </tr>
 </tbody>
 </table>
-<p>이 명령줄 모양은 윈도우 탐색기에서 <code>.ps1</code> 파일을 오른쪽 클릭하고 **"PowerShell에서 실행"**을 눌렀을 때 윈도우가 만드는 것과 같습니다. 즉 <strong>사용자가 받은 스크립트를 직접 실행</strong>했다는 강한 정황이에요(추정). 3단계에서 본 SmartScreen 확인(22:39:44)과 <code>smartscreen.exe</code> 프로세스도 이 흐름과 맞습니다. 이것이 <strong>초기 실행(Execution)</strong> 단계입니다.</p>
+<p>이 명령줄 모양은 윈도우 탐색기에서 <code>.ps1</code> 파일을 오른쪽 클릭하고 <strong>"PowerShell에서 실행"</strong>​을 눌렀을 때 윈도우가 만드는 것과 같습니다. 즉 <strong>사용자가 받은 스크립트를 직접 실행</strong>했다는 강한 정황이에요(추정). 3단계에서 본 SmartScreen 확인(22:39:44)과 <code>smartscreen.exe</code> 프로세스도 이 흐름과 맞습니다. 이것이 <strong>초기 실행(Execution)</strong> 단계입니다.</p>
 <p><strong>3. Edge에 저장된 비밀번호</strong> — <code>https://www.overcoats-r-us.com/</code> 사이트의 <code>rwalters@coolweathercoat.com</code> 계정과 비밀번호가 <strong>평문으로</strong> 올라갔습니다. 이번에도 아이디가 회사 이메일이라 회사 비밀번호와 같은지 확인해야 합니다.</p>
 <p><strong>4. 문서 파일</strong> — <code>C:\Users\rwalters\Documents\Top_secret_ducment.docx</code>. 8단계의 "문서 폴더의 <code>*.doc*</code>" 규칙에 걸렸어요. 바로 뒤에 <code>PK</code>로 시작하는 docx 파일 내용이 통째로 들어 있습니다. (<code>.docx</code>는 사실 zip 파일이라 <code>PK</code>로 시작합니다.) 내용을 꺼내 보면 <code>This is a top secret document. For my eyes only! Do not view this!</code> — 연습용 문서지만, 실제라면 <strong>기밀 문서 유출</strong>로 보고해야 합니다.</p>
 <p><strong>5. 화면 캡처</strong> — <code>‰PNG</code>(16진수 <code>89 50 4E 47</code>)부터 <code>IEND</code>까지 <strong>534,297바이트</strong>짜리 PNG, 1536×864. 업로드의 <strong>98%가 이 그림</strong>입니다. CyberChef의 <strong>Extract Files</strong>(파일 조각 꺼내기)나 <code>0x89</code> 위치부터 잘라내서 <strong>Render Image</strong>로 볼 수 있어요.</p>

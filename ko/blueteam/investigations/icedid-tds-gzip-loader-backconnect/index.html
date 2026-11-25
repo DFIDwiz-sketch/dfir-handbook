@@ -12516,7 +12516,7 @@
 </tr>
 </tbody>
 </table>
-<p>SPI View → <strong>krb5</strong> → <code>krb5.cname</code>을 <strong>Load All</strong>. 그리고 같은 화면 <strong>General</strong>에서 <code>ip.src</code>와 <code>mac.src</code>도 펼칩니다. 값을 누르고 **"and"**를 고르면 그 값으로 검색이 좁혀져서, IP마다 cname을 하나씩 확인할 수 있어요.</p>
+<p>SPI View → <strong>krb5</strong> → <code>krb5.cname</code>을 <strong>Load All</strong>. 그리고 같은 화면 <strong>General</strong>에서 <code>ip.src</code>와 <code>mac.src</code>도 펼칩니다. 값을 누르고 <strong>"and"</strong>​를 고르면 그 값으로 검색이 좁혀져서, IP마다 cname을 하나씩 확인할 수 있어요.</p>
 <p><strong>실제 결과:</strong></p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Src IP        Src MAC             krb5.cname (컴퓨터 계정, $로 끝남)
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>10.4.19.136   14:58:d0:2e:c5:ae   desktop-sff9ljf$  (+ 사용자 계정 csilva → 3단계)
@@ -12582,7 +12582,7 @@
 </tbody>
 </table>
 <ul>
-<li><strong>MAC은 같은 LAN 안에서만 의미가 있습니다.</strong> 이 PC들의 패킷이 바깥으로 갈 때 <code>mac.dst</code>는 모두 <strong>00:02:17:5c:e6:13</strong>인데, 이건 상대 서버가 아니라 **게이트웨이(10.4.19.1)**의 MAC이에요. Q3의 답은 PC가 보낸 패킷의 <code>mac.src</code>에서 찾아야 합니다.</li>
+<li><strong>MAC은 같은 LAN 안에서만 의미가 있습니다.</strong> 이 PC들의 패킷이 바깥으로 갈 때 <code>mac.dst</code>는 모두 <strong>00:02:17:5c:e6:13</strong>인데, 이건 상대 서버가 아니라 <strong>게이트웨이(10.4.19.1)</strong>​의 MAC이에요. Q3의 답은 PC가 보낸 패킷의 <code>mac.src</code>에서 찾아야 합니다.</li>
 <li>DC가 <code>WIN-</code> + 무작위 글자 이름인 건 RedLine 사례와 같아요(윈도우 서버 기본 이름).</li>
 <li>아직 어느 PC가 감염됐는지는 모릅니다. 다음 단계에서 찾습니다.</li>
 </ul>
@@ -12741,13 +12741,13 @@
 <ul>
 <li><strong>15:31:07이 이 PCAP에서 보이는 첫 악성 요청</strong>입니다. Q1의 답은 <strong>2023-04-19 15:31 UTC</strong>예요.</li>
 <li><strong>주소가 도메인이 아니라 IP</strong>이고, DNS 조회도 없습니다. 사용자가 링크를 눌렀는데 그 링크가 처음부터 IP로 되어 있었다는 뜻이에요. User-Agent가 진짜 <strong>Edge 112</strong>이니 사람이 브라우저로 연 것입니다(링크가 메일에서 왔는지는 PCAP으로 알 수 없음).</li>
-<li>응답은 내용 없이 **302(다른 곳으로 가라)**만 주고, <strong>Firebase Storage의 <code>Scan_Inv.zip</code></strong>으로 보냅니다. 이렇게 "방문자를 골라서 다음 장소로 보내는 서버"를 **TDS(Traffic Distribution System)**라고 해요. <code>_subid</code>, JWT 안의 <code>streams</code>·<code>campaigns</code>는 TDS가 "어느 캠페인에서 온 방문자인지" 세는 값으로 보입니다(추정).</li>
+<li>응답은 내용 없이 <strong>302(다른 곳으로 가라)</strong>​만 주고, <strong>Firebase Storage의 <code>Scan_Inv.zip</code></strong>으로 보냅니다. 이렇게 "방문자를 골라서 다음 장소로 보내는 서버"를 <strong>TDS(Traffic Distribution System)</strong>​라고 해요. <code>_subid</code>, JWT 안의 <code>streams</code>·<code>campaigns</code>는 TDS가 "어느 캠페인에서 온 방문자인지" 세는 값으로 보입니다(추정).</li>
 <li>재미있는 점: 브라우저가 <strong>요청할 때 이미</strong> 이 쿠키를 갖고 있었고, 쿠키 안 시간은 <strong>15:20:41</strong>입니다. 캡처 시작(15:26:28)보다 앞이에요. 이 PC가 <strong>10분 전에도 이 서버에 왔었다</strong>는 뜻으로 보입니다(추정). 다만 PCAP에 보이는 첫 악성 통신은 15:31이니, 보고서에는 15:31을 쓰고 이 사실은 메모로 남깁니다.</li>
 <li>파일 이름 <code>Scan_Inv</code>(스캔한 송장)는 업무 메일로 위장할 때 흔한 이름입니다.</li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">왜 Firebase일까</p>
-<p><code>firebasestorage.googleapis.com</code>은 Google 인증서를 쓰는 정상 도메인이라 차단 목록에 잘 안 걸리고, 평판 검사도 통과하기 쉽습니다. 공격자가 <strong>정상 클라우드 서비스에 파일을 올려 두는</strong> 건 아주 흔한 방법이에요. 그래서 "도메인이 정상"인 것보다 **"어디서 그 주소로 보내졌나(302의 출처)"**가 더 중요합니다.</p>
+<p><code>firebasestorage.googleapis.com</code>은 Google 인증서를 쓰는 정상 도메인이라 차단 목록에 잘 안 걸리고, 평판 검사도 통과하기 쉽습니다. 공격자가 <strong>정상 클라우드 서비스에 파일을 올려 두는</strong> 건 아주 흔한 방법이에요. 그래서 "도메인이 정상"인 것보다 <strong>"어디서 그 주소로 보내졌나(302의 출처)"</strong>​가 더 중요합니다.</p>
 </div>
 <hr>
 <h2 id="firebase">5단계 — HTTPS 다운로드: Firebase의 Scan_Inv.zip<a class="headerlink" href="#firebase" title="Permanent link">¶</a></h2>
@@ -12765,7 +12765,7 @@
 <tbody>
 <tr>
 <td><code>host.http</code></td>
-<td>HTTP의 Host 헤더, 그리고 **HTTPS의 서버 이름(SNI)**도 이 필드에 들어감</td>
+<td>HTTP의 Host 헤더, 그리고 <strong>HTTPS의 서버 이름(SNI)</strong>​도 이 필드에 들어감</td>
 </tr>
 </tbody>
 </table>
@@ -12778,7 +12778,7 @@
 <p><strong>결과 읽기:</strong></p>
 <ul>
 <li>302를 받고 <strong>7초 뒤</strong> HTTPS로 <strong>약 273KB</strong>를 받았습니다. 암호화돼서 내용은 못 보지만 크기가 Unit 42가 밝힌 <code>Scan_Inv.zip</code>(262,343바이트)에 TLS 머리 몫을 더한 정도와 맞아요.</li>
-<li>Unit 42에 따르면 이 zip은 <strong>비밀번호(1235)가 걸린 압축</strong>이고 안에 **<code>Scan_Inv.exe</code>(IcedID 설치 파일)**가 있습니다. 비밀번호 압축은 메일 게이트웨이의 백신 검사를 피하려는 흔한 방법이에요.</li>
+<li>Unit 42에 따르면 이 zip은 <strong>비밀번호(1235)가 걸린 압축</strong>이고 안에 <strong><code>Scan_Inv.exe</code>(IcedID 설치 파일)</strong>​가 있습니다. 비밀번호 압축은 메일 게이트웨이의 백신 검사를 피하려는 흔한 방법이에요.</li>
 </ul>
 <h3 id="4">그다음 4분 — 사용자가 압축을 풀고 실행하는 시간<a class="headerlink" href="#4" title="Permanent link">¶</a></h3>
 <p>다음 이상한 통신(skigimeetroc.com)은 <strong>15:35:39</strong>입니다. 그 사이 15:34:33에 이런 요청이 있어요.</p>
@@ -12976,7 +12976,7 @@
 </ul>
 <hr>
 <h2 id="beacon">8단계 — 비콘 주기 재기<a class="headerlink" href="#beacon" title="Permanent link">¶</a></h2>
-<p><strong>목적:</strong> <code>skansnekssky.com</code> 69번 접속이 사람이 아닌 **프로그램의 규칙적인 체크인(비콘)**인지 확인합니다.</p>
+<p><strong>목적:</strong> <code>skansnekssky.com</code> 69번 접속이 사람이 아닌 <strong>프로그램의 규칙적인 체크인(비콘)</strong>​인지 확인합니다.</p>
 <p><strong>쿼리:</strong></p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>ip.dst == 217.199.121.56
 </span></code></pre></div>
@@ -13111,7 +13111,7 @@
 </span><span id="__span-37-14"><a id="__codelineno-37-14" name="__codelineno-37-14" href="#__codelineno-37-14"></a>                     c:\&gt;
 </span></code></pre></div>
 <ul>
-<li><code>Active code page: 65001</code>과 <code>c:\&gt;</code>는 **윈도우 명령 프롬프트(cmd.exe)**가 뜰 때 나오는 글자입니다. PC가 공격자에게 <strong>셸을 넘겨준</strong> 거예요(역방향 셸).</li>
+<li><code>Active code page: 65001</code>과 <code>c:\&gt;</code>는 <strong>윈도우 명령 프롬프트(cmd.exe)</strong>​가 뜰 때 나오는 글자입니다. PC가 공격자에게 <strong>셸을 넘겨준</strong> 거예요(역방향 셸).</li>
 <li>공격자가 친 명령: <strong><code>net group "Domain Computers" /domain</code></strong> — "이 도메인에 가입된 컴퓨터 목록을 보여 줘". 결과로 <strong>3대 이름이 전부</strong> 공격자에게 갔습니다. 다음 표적을 고르는 <strong>정찰</strong>이에요.</li>
 <li>같은 시각(20:49:17)에 10.4.19.136 → DC(10.4.19.19:445) <strong>SMB 세션</strong>이 하나 있습니다(보냄 10,200 / 받음 7,165바이트). <code>net group … /domain</code>이 DC에 물어볼 때 생기는 통신이에요. <strong>명령과 네트워크 흔적이 시간상 딱 맞습니다.</strong></li>
 <li>사람이 직접 친 것이라 명령 사이 간격이 몇 초씩 됩니다(20:49:12 프롬프트 → 20:49:17 명령). 이걸 <strong>hands-on-keyboard</strong>(공격자가 직접 조작)라고 해요.</li>
@@ -13224,10 +13224,10 @@
 </span></code></pre></div>
 <p><strong>결과 읽기:</strong></p>
 <ul>
-<li>10.4.19.138의 사용자가 Edge로 <strong><code>/폴더/16진수.zip</code></strong> 모양의 파일을 받았고, 안에는 **<code>.wsf</code>(윈도우 스크립트 파일)**가 들어 있습니다. 문서처럼 보이는 이름(<code>Complaint_Copy</code>, "민원 사본")에 스크립트 확장자 — 전형적인 미끼예요. 바로 전(17:12~17:15)에 조회한 <code>*.joansstudio.store</code> 이름은 **존재하지 않는 이름(NXDOMAIN)**이었습니다.</li>
+<li>10.4.19.138의 사용자가 Edge로 <strong><code>/폴더/16진수.zip</code></strong> 모양의 파일을 받았고, 안에는 <strong><code>.wsf</code>(윈도우 스크립트 파일)</strong>​가 들어 있습니다. 문서처럼 보이는 이름(<code>Complaint_Copy</code>, "민원 사본")에 스크립트 확장자 — 전형적인 미끼예요. 바로 전(17:12~17:15)에 조회한 <code>*.joansstudio.store</code> 이름은 <strong>존재하지 않는 이름(NXDOMAIN)</strong>​이었습니다.</li>
 <li>이 모양(<strong>zip 안의 .wsf, 16진수 zip 이름</strong>)은 바로 이날(2023-04-19) 보고된 <strong>Qakbot 배포 방식과 같습니다.</strong> 다만 계열은 <strong>추정</strong>이에요.</li>
 <li>28초 뒤 <strong>DNS 없이 IP로 직접</strong> 85.239.53.73:80에 접속을 <strong>5번 시도했지만 실패</strong>(데이터 0, RST)했습니다. 스크립트가 실행돼서 다음 단계를 받으려다 실패한 것일 <strong>가능성</strong>이 있습니다(추정 — 스크립트가 실행됐는지는 네트워크만으로 확정 불가).</li>
-<li>그 뒤 10.4.19.138에는 수상한 통신이 없습니다. 그래서 **"감염된 PC는 한 대(10.4.19.136)"**라는 퀴즈의 설명과 맞아요. 하지만 실제 업무라면 **"깨끗함"이 아니라 "추가 분석 필요"**로 적고 호스트 점검을 요청해야 합니다. 그래서 보고서에도 <strong>Further Analysis Required</strong>로 남깁니다.</li>
+<li>그 뒤 10.4.19.138에는 수상한 통신이 없습니다. 그래서 <strong>"감염된 PC는 한 대(10.4.19.136)"</strong>​라는 퀴즈의 설명과 맞아요. 하지만 실제 업무라면 <strong>"깨끗함"이 아니라 "추가 분석 필요"</strong>​로 적고 호스트 점검을 요청해야 합니다. 그래서 보고서에도 <strong>Further Analysis Required</strong>로 남깁니다.</li>
 </ul>
 <hr>
 <h2 id="conclusion">전체 결론<a class="headerlink" href="#conclusion" title="Permanent link">¶</a></h2>
@@ -13523,7 +13523,7 @@
 </tr>
 </tbody>
 </table>
-<p>세 사례 공통으로 <strong>IP 직접 접속, 이름과 내용이 안 맞는 파일, 자체 서명 인증서, 일정한 주기</strong>가 핵심 단서였습니다. 그리고 IcedID는 **"정상 포트(443)와 정상 서비스(Firebase) 안에 숨는다"**는 점에서 한 단계 어려워요.</p>
+<p>세 사례 공통으로 <strong>IP 직접 접속, 이름과 내용이 안 맞는 파일, 자체 서명 인증서, 일정한 주기</strong>가 핵심 단서였습니다. 그리고 IcedID는 <strong>"정상 포트(443)와 정상 서비스(Firebase) 안에 숨는다"</strong>​는 점에서 한 단계 어려워요.</p>
 <hr>
 <h2 id="official-answers">Unit 42 공식 정답과 대조<a class="headerlink" href="#official-answers" title="Permanent link">¶</a></h2>
 <table>
