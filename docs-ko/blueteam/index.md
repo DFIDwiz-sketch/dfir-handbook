@@ -22,7 +22,7 @@ tags:
 
     ---
 
-    SPL 치트시트, 데이터 탐색, 필드 추출, 질문별 보안 검색, 헌팅 패턴, BOTSv3 진행 방법.
+    SPL 치트시트, 데이터 탐색, 필드 추출, 질문별 보안 검색, 헌팅 패턴, BOTSv3 진행 방법, 바로 쓰는 Zeek 트래픽 분석 대시보드(개요 + SMB·도메인).
 
     [:octicons-arrow-right-24: Splunk](splunk/index.md)
 

@@ -1,0 +1,1263 @@
+<form version="1.1" theme="dark">
+  <label>Zeek Traffic Analysis - Overview</label>
+  <description>Baselining and first-look triage for a PCAP processed by Zeek. Pick a case, keep the time range on All time, then read the sections top to bottom.</description>
+  <search id="b_kpi">
+    <query><![CDATA[
+index=$idx$ sourcetype=zeek:conn $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval src_scope=case(match(id_orig_h,"^(22[4-9]|23[0-9]|255)\.|\.255$$|^ff"),"multicast/broadcast", match(id_orig_h,"^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|127\.|169\.254\.|0\.0\.0\.0$$|fe80:|fc|fd)"),"internal", true(),"external")
+| eval dst_scope=case(match(id_resp_h,"^(22[4-9]|23[0-9]|255)\.|\.255$$|^ff"),"multicast/broadcast", match(id_resp_h,"^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|127\.|169\.254\.|0\.0\.0\.0$$|fe80:|fc|fd)"),"internal", true(),"external")
+| stats min(ts) as first max(ts) as last count as conns dc(eval(if(src_scope="internal",id_orig_h,null()))) as int_hosts dc(eval(if(dst_scope="external",id_resp_h,null()))) as ext_ips sum(eval(if(dst_scope="external",orig_bytes,0))) as ext_out sum(eval(if(dst_scope="external",resp_bytes,0))) as ext_in
+]]></query>
+    <earliest>$tp.earliest$</earliest>
+    <latest>$tp.latest$</latest>
+  </search>
+  <search id="b_ext">
+    <query><![CDATA[
+index=$idx$ $case$ (sourcetype=zeek:conn OR sourcetype=zeek:ssl OR sourcetype=zeek:http) (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval dst_scope=case(match(id_resp_h,"^(22[4-9]|23[0-9]|255)\.|\.255$$|^ff"),"multicast/broadcast", match(id_resp_h,"^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|127\.|169\.254\.|0\.0\.0\.0$$|fe80:|fc|fd)"),"internal", true(),"external")
+| where dst_scope="external"
+| eval name=case(sourcetype="zeek:ssl", server_name, sourcetype="zeek:http", mvdedup(host))
+| stats count(eval(sourcetype="zeek:conn")) as conns dc(id_orig_h) as clients values(id_resp_p) as ports values(name) as names sum(orig_bytes) as out sum(resp_bytes) as in min(ts) as first max(ts) as last by id_resp_h
+| eval out_KB=round(out/1024,1), in_KB=round(in/1024,1), names=mvindex(names,0,4)
+]]></query>
+    <earliest>$tp.earliest$</earliest>
+    <latest>$tp.latest$</latest>
+  </search>
+  <search id="b_dnsq">
+    <query><![CDATA[
+index=$idx$ sourcetype=zeek:dns $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| where isnotnull(query)
+| eval q=lower(query)
+| stats count as queries dc(id_orig_h) as clients values(id_orig_h) as srcs values(qtype_name) as types values(rcode_name) as rcodes values(answers) as answers min(ts) as first max(ts) as last by q
+| eval answers=mvindex(answers,0,3)
+]]></query>
+    <earliest>$tp.earliest$</earliest>
+    <latest>$tp.latest$</latest>
+  </search>
+  <fieldset submitButton="false" autoRun="true">
+    <input type="time" token="tp" searchWhenChanged="true">
+      <label>Time range (All time for old PCAPs)</label>
+      <default>
+        <earliest>0</earliest>
+        <latest></latest>
+      </default>
+    </input>
+    <input type="text" token="idx" searchWhenChanged="true">
+      <label>Zeek index</label>
+      <default>zeek</default>
+    </input>
+    <input type="text" token="sidx" searchWhenChanged="true">
+      <label>Snort index</label>
+      <default>snort</default>
+    </input>
+    <input type="dropdown" token="case" searchWhenChanged="true">
+      <label>Case (pcap_case)</label>
+      <choice value="*">All data</choice>
+      <default>*</default>
+      <fieldForLabel>pcap_case</fieldForLabel>
+      <fieldForValue>filter</fieldForValue>
+      <search>
+        <query><![CDATA[
+index=$idx$ sourcetype=zeek:conn
+| stats count by pcap_case
+| eval filter="pcap_case=\"".pcap_case."\""
+| sort pcap_case
+]]></query>
+        <earliest>0</earliest>
+        <latest>now</latest>
+      </search>
+    </input>
+    <input type="text" token="ip" searchWhenChanged="true">
+      <label>Host IP (* = all, 10.0.0.* works)</label>
+      <default>*</default>
+    </input>
+    <input type="dropdown" token="span" searchWhenChanged="true">
+      <label>Timeline bucket</label>
+      <choice value="1s">1s</choice>
+      <choice value="10s">10s</choice>
+      <choice value="30s">30s</choice>
+      <choice value="1m">1m</choice>
+      <choice value="5m">5m</choice>
+      <choice value="10m">10m</choice>
+      <choice value="30m">30m</choice>
+      <choice value="1h">1h</choice>
+      <choice value="1d">1d</choice>
+      <default>1m</default>
+    </input>
+  </fieldset>
+  <row>
+    <panel id="ov_help">
+      <html>
+        <div style="padding:4px 8px">
+          <p><b>How to use:</b> 1) choose a <b>Case</b> and keep <b>Time range = All time</b>. 2) Read sections A to J in order - A to C are the baseline (what is normal here), D to I look for what does not fit. 3) Type an IP in <b>Host IP</b> to focus every panel on one host. 4) Click a row with a <code>uid</code> in section J to see every Zeek log of that connection. Times are UTC if your Splunk time zone preference is UTC. Guide: DFIR Handbook - Blue Team - Splunk - Traffic Analysis Dashboards.</p>
+        </div>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel id="k_first">
+      <title>A1. First event (UTC)</title>
+      <single>
+        <search base="b_kpi">
+          <query><![CDATA[
+| eval v=strftime(first,"%Y-%m-%d %H:%M:%S") | fields v
+]]></query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="colorMode">none</option>
+        <option name="height">110</option>
+      </single>
+    </panel>
+    <panel id="k_last">
+      <title>A2. Last event (UTC)</title>
+      <single>
+        <search base="b_kpi">
+          <query><![CDATA[
+| eval v=strftime(last,"%Y-%m-%d %H:%M:%S") | fields v
+]]></query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="colorMode">none</option>
+        <option name="height">110</option>
+      </single>
+    </panel>
+    <panel id="k_dur">
+      <title>A3. Duration (minutes)</title>
+      <single>
+        <search base="b_kpi">
+          <query><![CDATA[
+| eval v=round((last-first)/60,1) | fields v
+]]></query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="colorMode">none</option>
+        <option name="height">110</option>
+      </single>
+    </panel>
+    <panel id="k_conns">
+      <title>A4. Connections</title>
+      <single>
+        <search base="b_kpi">
+          <query><![CDATA[
+| fields conns
+]]></query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="colorMode">none</option>
+        <option name="height">110</option>
+      </single>
+    </panel>
+    <panel id="k_hosts">
+      <title>A5. Internal hosts starting connections</title>
+      <single>
+        <search base="b_kpi">
+          <query><![CDATA[
+| fields int_hosts
+]]></query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="colorMode">none</option>
+        <option name="height">110</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel id="k_ext">
+      <title>A6. External IPs contacted</title>
+      <single>
+        <search base="b_kpi">
+          <query><![CDATA[
+| fields ext_ips
+]]></query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="colorMode">none</option>
+        <option name="height">110</option>
+      </single>
+    </panel>
+    <panel id="k_out">
+      <title>A7. MB sent to external</title>
+      <single>
+        <search base="b_kpi">
+          <query><![CDATA[
+| eval v=round(ext_out/1024/1024,2) | fields v
+]]></query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="colorMode">none</option>
+        <option name="height">110</option>
+      </single>
+    </panel>
+    <panel id="k_in">
+      <title>A8. MB received from external</title>
+      <single>
+        <search base="b_kpi">
+          <query><![CDATA[
+| eval v=round(ext_in/1024/1024,2) | fields v
+]]></query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="colorMode">none</option>
+        <option name="height">110</option>
+      </single>
+    </panel>
+    <panel id="k_domains">
+      <title>A9. Distinct names looked up (DNS)</title>
+      <single>
+        <search base="b_dnsq">
+          <query><![CDATA[
+| stats count as v
+]]></query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="colorMode">none</option>
+        <option name="height">110</option>
+      </single>
+    </panel>
+    <panel id="k_snort">
+      <title>A10. Snort alerts</title>
+      <single>
+        <search>
+          <query><![CDATA[
+index=$sidx$ sourcetype=snort:alert $case$ (src_ip="$ip$" OR dest_ip="$ip$")
+| stats count as v
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="useColors">1</option>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="rangeValues">[0]</option>
+        <option name="rangeColors">["0x53a051","0xdc4e41"]</option>
+        <option name="height">110</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel id="b_logs">
+      <title>B1. Zeek log types in this case (Host IP filter not applied)</title>
+      <chart>
+        <search>
+          <query><![CDATA[
+index=$idx$ $case$
+| stats count by sourcetype
+| sort - count
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="charting.chart">bar</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.axisTitleY.visibility">collapsed</option>
+        <option name="charting.drilldown">none</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+    <panel id="b_service">
+      <title>B2. Connections by service (what Zeek recognised)</title>
+      <chart>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:conn $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| fillnull value="(not recognised)" service
+| stats count by service
+| sort - count
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+    <panel id="b_state">
+      <title>B3. Connection states</title>
+      <chart>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:conn $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval state=case(conn_state="SF","SF - opened and closed normally", conn_state="S0","S0 - no reply", conn_state="REJ","REJ - rejected", conn_state="S1","S1 - open, never closed", conn_state="S2","S2 - client closed, no server reply", conn_state="S3","S3 - server closed, no client reply", conn_state="RSTO","RSTO - client sent reset", conn_state="RSTR","RSTR - server sent reset", conn_state="RSTOS0","RSTOS0 - SYN then reset, no reply", conn_state="RSTRH","RSTRH - server SYN-ACK then reset", conn_state="SH","SH - SYN then FIN, no reply", conn_state="SHR","SHR - server SYN-ACK and FIN only", conn_state="OTH","OTH - no SYN seen (mid-stream)", true(), conn_state)
+| stats count by state
+| sort - count
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel id="b_proto">
+      <title>B4. Transport protocol</title>
+      <chart>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:conn $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| stats count by proto
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+    <panel id="b_timeline">
+      <title>B5. Connections over time</title>
+      <input type="dropdown" token="conn_split" searchWhenChanged="true">
+        <label>Split by</label>
+        <choice value="service">Service</choice>
+        <choice value="proto">Protocol</choice>
+        <choice value="conn_state">Connection state</choice>
+        <choice value="id_orig_h">Source IP</choice>
+        <choice value="id_resp_h">Destination IP</choice>
+        <choice value="id_resp_p">Destination port</choice>
+        <default>service</default>
+      </input>
+      <chart>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:conn $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| fillnull value="(not recognised)" service
+| eval _time=ts
+| timechart span=$span$ limit=10 useother=t count by $conn_split$
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.drilldown">none</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel id="b_ports">
+      <title>B6. Destination ports</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:conn $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval dst_scope=case(match(id_resp_h,"^(22[4-9]|23[0-9]|255)\.|\.255$$|^ff"),"multicast/broadcast", match(id_resp_h,"^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|127\.|169\.254\.|0\.0\.0\.0$$|fe80:|fc|fd)"),"internal", true(),"external")
+| fillnull value="-" service
+| stats count as conns dc(id_orig_h) as clients dc(id_resp_h) as servers values(service) as service values(dst_scope) as scope by id_resp_p proto
+| sort - conns
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="c_hosts">
+      <title>C1. Internal hosts that start connections</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:conn $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval src_scope=case(match(id_orig_h,"^(22[4-9]|23[0-9]|255)\.|\.255$$|^ff"),"multicast/broadcast", match(id_orig_h,"^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|127\.|169\.254\.|0\.0\.0\.0$$|fe80:|fc|fd)"),"internal", true(),"external")
+| where src_scope="internal"
+| stats count as sessions dc(id_resp_h) as destinations dc(id_resp_p) as ports sum(orig_bytes) as sent sum(resp_bytes) as received min(ts) as first max(ts) as last values(orig_l2_addr) as mac by id_orig_h
+| eval sent_KB=round(sent/1024,1), received_KB=round(received/1024,1)
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S"), last=strftime(last,"%Y-%m-%d %H:%M:%S")
+| table id_orig_h mac sessions destinations ports sent_KB received_KB first last
+| sort - sessions
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="c_identity">
+      <title>C2. Host identity - name, domain, users, MAC, OS hint</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ $case$ (sourcetype=zeek:dhcp OR sourcetype=zeek:ntlm OR sourcetype=zeek:kerberos OR sourcetype=zeek:http)
+| eval ip=if(sourcetype="zeek:dhcp", coalesce(assigned_addr, client_addr, requested_addr), id_orig_h)
+| eval kc=mvindex(split(client,"/"),0), realm=mvindex(split(client,"/"),1)
+| eval hostname_seen=case(sourcetype="zeek:dhcp", host_name, sourcetype="zeek:ntlm", hostname, sourcetype="zeek:kerberos" AND like(kc,"%$$"), upper(rtrim(kc,"$$")))
+| eval user_seen=case(sourcetype="zeek:ntlm" AND len(username)>0 AND NOT like(username,"%$$"), username."@".coalesce(domainname,"?"), sourcetype="zeek:kerberos" AND len(kc)>0 AND NOT like(kc,"%$$"), kc."@".coalesce(realm,"?"))
+| eval domain_seen=case(sourcetype="zeek:dhcp", domain, sourcetype="zeek:ntlm", domainname, sourcetype="zeek:kerberos", realm)
+| eval mac_seen=if(sourcetype="zeek:dhcp", mac, null())
+| eval ua=if(sourcetype="zeek:http", user_agent, null())
+| eval os_hint=case(match(ua,"Windows NT 10\.0"),"Windows 10/11", match(ua,"Windows NT 6\.3"),"Windows 8.1", match(ua,"Windows NT 6\.2"),"Windows 8", match(ua,"Windows NT 6\.1"),"Windows 7", match(ua,"Windows NT 6\.0"),"Windows Vista", match(ua,"Windows NT 5\.1"),"Windows XP", match(ua,"iPhone|iPad"),"iOS", match(ua,"Android"),"Android", match(ua,"Macintosh|Mac OS X"),"macOS", match(ua,"Linux"),"Linux")
+| where match(ip,"^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.)")
+| search ip="$ip$"
+| stats values(hostname_seen) as hostname values(domain_seen) as domain values(user_seen) as users values(mac_seen) as mac values(os_hint) as os_hint dc(ua) as user_agents values(sourcetype) as seen_in by ip
+| eval seen_in=replace(mvjoin(seen_in," "),"zeek:","")
+| sort ip
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="c_servers">
+      <title>C3. Internal servers and their roles (answered connections only)</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:conn $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval dst_scope=case(match(id_resp_h,"^(22[4-9]|23[0-9]|255)\.|\.255$$|^ff"),"multicast/broadcast", match(id_resp_h,"^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|127\.|169\.254\.|0\.0\.0\.0$$|fe80:|fc|fd)"),"internal", true(),"external")
+| where dst_scope="internal" AND NOT (conn_state="S0" OR conn_state="REJ")
+| eval role=case(id_resp_p=53,"DNS", id_resp_p=67,"DHCP server", id_resp_p=88,"Kerberos - domain controller", id_resp_p=389,"LDAP - domain controller", id_resp_p=636,"LDAPS - domain controller", id_resp_p=3268,"Global Catalog - domain controller", id_resp_p=464,"Kerberos password change - DC", id_resp_p=135,"RPC endpoint mapper", id_resp_p=445,"SMB file sharing", id_resp_p=139,"NetBIOS session (old SMB)", id_resp_p=137,"NetBIOS name", id_resp_p=138,"NetBIOS datagram", id_resp_p=123,"NTP time", id_resp_p=80,"Web (HTTP)", id_resp_p=443,"Web (HTTPS)", id_resp_p=8080,"Web proxy or alt HTTP", id_resp_p=3128,"Web proxy", id_resp_p=25,"Mail (SMTP)", id_resp_p=587,"Mail submission", id_resp_p=110,"Mail (POP3)", id_resp_p=143,"Mail (IMAP)", id_resp_p=3389,"Remote Desktop (RDP)", id_resp_p=5985,"WinRM (HTTP)", id_resp_p=5986,"WinRM (HTTPS)", id_resp_p=22,"SSH", id_resp_p=21,"FTP", id_resp_p=1433,"MS SQL", id_resp_p=9100,"Printer (RAW)", id_resp_p=5355,"LLMNR name lookup", id_resp_p=1900,"SSDP discovery", id_resp_p=5353,"mDNS", true(),"port ".id_resp_p."/".proto)
+| stats dc(id_orig_h) as clients count as conns values(role) as roles by id_resp_h
+| eval roles=mvindex(roles,0,11)
+| sort - clients
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="c_dhcp">
+      <title>C4. DHCP - IP, MAC and host name handed out</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:dhcp $case$ | search client_addr="$ip$" OR assigned_addr="$ip$" OR requested_addr="$ip$"
+| sort 0 ts
+| eval time=strftime(ts,"%Y-%m-%d %H:%M:%S"), msg_types=mvjoin(msg_types," ")
+| table time client_addr requested_addr assigned_addr mac host_name client_fqdn domain server_addr msg_types
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="d_ext">
+      <title>D1. External destinations - most connections first</title>
+      <table>
+        <search base="b_ext">
+          <query><![CDATA[
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S"), last=strftime(last,"%Y-%m-%d %H:%M:%S")
+| table id_resp_h names ports conns clients out_KB in_KB first last
+| sort - conns
+]]></query>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="d_rare">
+      <title>D2. Rare external destinations (3 connections or fewer, one client)</title>
+      <table>
+        <search base="b_ext">
+          <query><![CDATA[
+| where conns<=3 AND clients=1
+| sort first
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S"), last=strftime(last,"%Y-%m-%d %H:%M:%S")
+| table first id_resp_h names ports conns out_KB in_KB
+]]></query>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+    <panel id="d_ports">
+      <title>D3. External traffic on unusual ports (not 80, 443, 53, 123)</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:conn $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval dst_scope=case(match(id_resp_h,"^(22[4-9]|23[0-9]|255)\.|\.255$$|^ff"),"multicast/broadcast", match(id_resp_h,"^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|127\.|169\.254\.|0\.0\.0\.0$$|fe80:|fc|fd)"),"internal", true(),"external")
+| where dst_scope="external" AND NOT (id_resp_p=80 OR id_resp_p=443 OR id_resp_p=53 OR id_resp_p=123)
+| fillnull value="-" service
+| stats count as conns values(conn_state) as states sum(orig_bytes) as out sum(resp_bytes) as in min(ts) as first by id_orig_h id_resp_h id_resp_p proto service
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S")
+| sort - conns
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="d_beacon">
+      <title>D4. Beacon candidates - regular repeated connections (low jitter = more regular)</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:conn $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval dst_scope=case(match(id_resp_h,"^(22[4-9]|23[0-9]|255)\.|\.255$$|^ff"),"multicast/broadcast", match(id_resp_h,"^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|127\.|169\.254\.|0\.0\.0\.0$$|fe80:|fc|fd)"),"internal", true(),"external")
+| where dst_scope="external"
+| sort 0 ts
+| streamstats current=f last(ts) as prev_ts by id_orig_h id_resp_h id_resp_p
+| eval gap=ts-prev_ts
+| stats count as conns avg(gap) as avg_gap stdev(gap) as sd_gap avg(orig_bytes) as avg_out min(ts) as first max(ts) as last by id_orig_h id_resp_h id_resp_p
+| where conns>=5
+| eval jitter=round(sd_gap/avg_gap,2), avg_gap=round(avg_gap,1), sd_gap=round(sd_gap,1), avg_out=round(avg_out,0), span_min=round((last-first)/60,1)
+| sort jitter
+| table id_orig_h id_resp_h id_resp_p conns avg_gap sd_gap jitter avg_out span_min
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="d_bytes">
+      <title>D5. Most data sent to external (KB) - exfiltration check</title>
+      <chart>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:conn $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval dst_scope=case(match(id_resp_h,"^(22[4-9]|23[0-9]|255)\.|\.255$$|^ff"),"multicast/broadcast", match(id_resp_h,"^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|127\.|169\.254\.|0\.0\.0\.0$$|fe80:|fc|fd)"),"internal", true(),"external")
+| where dst_scope="external"
+| stats sum(orig_bytes) as out sum(resp_bytes) as in by id_orig_h id_resp_h
+| sort - out
+| head 10
+| eval pair=id_orig_h." > ".id_resp_h, KB_sent=round(out/1024,1), KB_received=round(in/1024,1)
+| table pair KB_sent KB_received
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="charting.chart">bar</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.axisTitleY.visibility">collapsed</option>
+        <option name="charting.drilldown">none</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+    <panel id="d_long">
+      <title>D6. Longest connections</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:conn $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| where isnotnull(duration)
+| sort - duration
+| head 25
+| eval time=strftime(ts,"%Y-%m-%d %H:%M:%S"), minutes=round(duration/60,1)
+| table time id_orig_h id_resp_h id_resp_p proto service minutes orig_bytes resp_bytes conn_state uid
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="d_timeline">
+      <title>D7. External connections over time (top 10 destinations)</title>
+      <chart>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:conn $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval dst_scope=case(match(id_resp_h,"^(22[4-9]|23[0-9]|255)\.|\.255$$|^ff"),"multicast/broadcast", match(id_resp_h,"^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|127\.|169\.254\.|0\.0\.0\.0$$|fe80:|fc|fd)"),"internal", true(),"external")
+| where dst_scope="external"
+| eval _time=ts
+| timechart span=$span$ limit=10 useother=t count by id_resp_h
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.drilldown">none</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel id="e_qtype">
+      <title>E1. DNS query types</title>
+      <chart>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:dns $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| fillnull value="(none)" qtype_name
+| stats count by qtype_name
+| sort - count
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+    <panel id="e_rcode">
+      <title>E2. DNS response codes</title>
+      <chart>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:dns $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| fillnull value="(no reply)" rcode_name
+| stats count by rcode_name
+| sort - count
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+    <panel id="e_servers">
+      <title>E3. DNS servers used</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:dns $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval dst_scope=case(match(id_resp_h,"^(22[4-9]|23[0-9]|255)\.|\.255$$|^ff"),"multicast/broadcast", match(id_resp_h,"^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|127\.|169\.254\.|0\.0\.0\.0$$|fe80:|fc|fd)"),"internal", true(),"external")
+| stats count as queries dc(id_orig_h) as clients by id_resp_h id_resp_p dst_scope
+| sort - queries
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="e_rare">
+      <title>E4. Rarest names looked up</title>
+      <table>
+        <search base="b_dnsq">
+          <query><![CDATA[
+| sort queries, first
+| head 100
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S")
+| table q queries clients types rcodes answers first
+]]></query>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+    <panel id="e_first">
+      <title>E5. Names in the order they were first looked up</title>
+      <table>
+        <search base="b_dnsq">
+          <query><![CDATA[
+| sort first
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S.%3N")
+| table first q srcs queries types rcodes answers
+]]></query>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="e_odd">
+      <title>E6. Odd names - long, many labels, TXT/NULL type or NXDOMAIN</title>
+      <table>
+        <search base="b_dnsq">
+          <query><![CDATA[
+| eval len=len(q), labels=mvcount(split(q,".")), t=mvjoin(types," "), r=mvjoin(rcodes," ")
+| where len>=40 OR labels>=6 OR match(t,"TXT|NULL") OR match(r,"NXDOMAIN")
+| sort - len
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S")
+| table q len labels queries types rcodes srcs first
+]]></query>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="f_method">
+      <title>F1. HTTP methods</title>
+      <chart>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:http $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| fillnull value="(none)" method
+| stats count by method
+| sort - count
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+    <panel id="f_status">
+      <title>F2. HTTP status codes</title>
+      <chart>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:http $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| fillnull value="(no reply)" status_code
+| stats count by status_code
+| sort - count
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+    <panel id="f_mime">
+      <title>F3. HTTP response file types</title>
+      <chart>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:http $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval mime=coalesce(mvindex(resp_mime_types,0),"(none)")
+| stats count by mime
+| sort - count
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel id="f_hosts">
+      <title>F4. HTTP hosts (Host header)</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:http $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval h=mvdedup(host)
+| stats count as requests dc(id_orig_h) as clients values(method) as methods dc(uri) as uris sum(response_body_len) as resp_bytes values(id_resp_h) as ips min(ts) as first by h
+| eval resp_KB=round(resp_bytes/1024,1)
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S")
+| table h ips requests clients methods uris resp_KB first
+| sort - requests
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+    <panel id="f_ua">
+      <title>F5. User-Agents - rarest first</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:http $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| fillnull value="(none)" user_agent
+| stats count as requests dc(id_orig_h) as clients values(id_orig_h) as srcs dc(host) as hosts min(ts) as first by user_agent
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S")
+| sort requests
+| table user_agent requests clients srcs hosts first
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="f_post">
+      <title>F6. POST requests (data sent by the client)</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:http $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$") method=POST
+| sort 0 ts
+| eval time=strftime(ts,"%Y-%m-%d %H:%M:%S.%3N"), h=mvdedup(host)
+| table time id_orig_h id_resp_h h uri request_body_len response_body_len status_code user_agent uid
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="f_exe">
+      <title>F7. Programs, scripts, archives and documents downloaded over HTTP</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:http $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval mime=mvjoin(resp_mime_types,","), h=mvdedup(host)
+| eval fname=lower(mvindex(split(mvindex(split(uri,"?"),0),"/"),-1)), ext=if(match(fname,"\."), mvindex(split(fname,"."),-1), "")
+| where match(mime,"dosexec|x-msdownload|x-executable|java-archive|x-shockwave-flash|zip|x-rar|7z|octet-stream|hta|x-ms-shortcut|msi|msword|ms-excel|ms-powerpoint|officedocument|rtf|pdf") OR match(ext,"^(exe|dll|scr|ps1|vbs|hta|bat|cmd|msi|jar|zip|rar|7z|iso|lnk|doc|docm|xls|xlsm|ppt|pptm|rtf|swf)$$")
+| eval mismatch=if(match(mime,"dosexec") AND NOT match(ext,"^(exe|dll|scr|sys|msi|com)$$"),"EXE under another name","")
+| sort 0 ts
+| eval time=strftime(ts,"%Y-%m-%d %H:%M:%S")
+| table time id_orig_h id_resp_h h uri mime response_body_len mismatch status_code uid
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <format type="color" field="mismatch"><colorPalette type="map">{"EXE under another name":#DC4E41}</colorPalette></format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="f_ip">
+      <title>F8. HTTP straight to an IP address or with no Host header</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:http $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval h=mvdedup(host)
+| where isnull(h) OR match(h,"^\d+\.\d+\.\d+\.\d+(:\d+)?$$")
+| sort 0 ts
+| eval time=strftime(ts,"%Y-%m-%d %H:%M:%S")
+| table time id_orig_h id_resp_h id_resp_p h method uri status_code user_agent uid
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="f_chain">
+      <title>F9. Web timeline with referrer (follow the redirect chain)</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:http $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| sort 0 ts
+| head 3000
+| eval time=strftime(ts,"%Y-%m-%d %H:%M:%S.%3N"), h=mvdedup(host), ref=replace(referrer,"^https?://",""), mime=mvindex(resp_mime_types,0)
+| table time id_orig_h method h uri ref status_code mime response_body_len user_agent uid
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">20</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="g_version">
+      <title>G1. TLS versions</title>
+      <chart>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:ssl $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| fillnull value="(unknown)" version
+| stats count by version
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+    <panel id="g_sni">
+      <title>G2. TLS server names (SNI)</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:ssl $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| fillnull value="(no SNI)" server_name
+| stats count as conns dc(id_orig_h) as clients values(id_resp_h) as ips values(id_resp_p) as ports values(version) as versions values(established) as established min(ts) as first by server_name
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S")
+| sort - conns
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="g_nosni">
+      <title>G3. TLS without a server name, or on a port other than 443</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:ssl $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| where isnull(server_name) OR id_resp_p!=443
+| stats count as conns values(version) as versions values(established) as established min(ts) as first max(ts) as last by id_orig_h id_resp_h id_resp_p server_name
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S"), last=strftime(last,"%Y-%m-%d %H:%M:%S")
+| sort - conns
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="g_certs">
+      <title>G4. Server certificates - self-signed and short-lived ones stand out</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ $case$ (sourcetype=zeek:ssl OR sourcetype=zeek:x509)
+| eval fp=if(sourcetype="zeek:x509", fingerprint, mvindex(cert_chain_fps,0))
+| where isnotnull(fp)
+| stats values(server_name) as sni values(id_resp_h) as ips count(eval(sourcetype="zeek:ssl")) as conns values(certificate_subject) as subject values(certificate_issuer) as issuer values(san_dns) as san min(certificate_not_valid_before) as nvb max(certificate_not_valid_after) as nva by fp
+| where conns>0 AND isnotnull(subject)
+| search ips="$ip$"
+| eval self_signed=if(mvjoin(subject,"")=mvjoin(issuer,""),"YES",""), days_valid=round((nva-nvb)/86400,0), not_before=strftime(nvb,"%Y-%m-%d"), not_after=strftime(nva,"%Y-%m-%d"), san=mvindex(san,0,4)
+| sort -self_signed, days_valid
+| table sni ips conns subject issuer self_signed days_valid not_before not_after san
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <format type="color" field="self_signed"><colorPalette type="map">{"YES":#DC4E41}</colorPalette></format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="h_mime">
+      <title>H1. Files by type (files.log)</title>
+      <chart>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:files $case$ (tx_hosts="$ip$" OR rx_hosts="$ip$")
+| fillnull value="(unknown)" mime_type
+| stats count by mime_type
+| sort - count
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+    <panel id="h_source">
+      <title>H2. Files by protocol</title>
+      <chart>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:files $case$ (tx_hosts="$ip$" OR rx_hosts="$ip$")
+| fillnull value="(unknown)" file_source
+| stats count by file_source
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel id="h_files">
+      <title>H3. Programs, scripts, archives and documents seen in any protocol (with hashes)</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:files $case$ (tx_hosts="$ip$" OR rx_hosts="$ip$")
+| eval fname=coalesce(filename,"")
+| where match(mime_type,"dosexec|x-msdownload|x-executable|java-archive|zip|x-rar|7z|x-msi|vnd.ms-cab|x-shockwave-flash|msword|ms-excel|ms-powerpoint|officedocument|rtf|pdf|x-ms-shortcut|iso9660") OR match(lower(fname),"\.(exe|dll|scr|ps1|vbs|js|hta|bat|cmd|msi|jar|lnk|iso|zip|rar|7z|docm|xlsm)$$")
+| sort 0 ts
+| eval time=strftime(ts,"%Y-%m-%d %H:%M:%S"), KB=round(seen_bytes/1024,1), tx=mvjoin(tx_hosts,","), rx=mvjoin(rx_hosts,",")
+| table time file_source tx rx mime_type fname KB md5 sha1 sha256 fuid
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="h_pe">
+      <title>H4. Windows programs (PE) - compile time, 64-bit, signed</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ $case$ (sourcetype=zeek:files OR sourcetype=zeek:pe)
+| eval f=if(sourcetype="zeek:pe", id, fuid)
+| stats values(tx_hosts) as tx values(rx_hosts) as rx values(file_source) as proto values(filename) as fname values(md5) as md5 values(sha256) as sha256 values(machine) as machine values(os) as os values(subsystem) as subsystem values(is_exe) as is_exe values(is_64bit) as is_64bit values(has_cert_table) as signed values(compile_ts) as compile_ts min(ts) as first by f
+| where isnotnull(machine)
+| search tx="$ip$" OR rx="$ip$"
+| eval compiled=strftime(compile_ts,"%Y-%m-%d %H:%M:%S"), first=strftime(first,"%Y-%m-%d %H:%M:%S")
+| table first tx rx proto fname is_exe is_64bit machine subsystem compiled signed md5 sha256
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="i_snort_msg">
+      <title>I1. Snort alerts by rule</title>
+      <chart>
+        <search>
+          <query><![CDATA[
+index=$sidx$ sourcetype=snort:alert $case$ (src_ip="$ip$" OR dest_ip="$ip$")
+| stats count by msg
+| sort - count
+| head 15
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="charting.chart">bar</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.axisTitleY.visibility">collapsed</option>
+        <option name="charting.drilldown">none</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+    <panel id="i_weird">
+      <title>I2. Zeek weird - traffic that breaks protocol rules</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:weird $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| stats count min(ts) as first values(id_orig_h) as srcs values(id_resp_h) as dsts by name
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S")
+| sort - count
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="i_snort">
+      <title>I3. Snort alerts in time order</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$sidx$ sourcetype=snort:alert $case$ (src_ip="$ip$" OR dest_ip="$ip$")
+| sort 0 _time
+| eval time=strftime(_time,"%Y-%m-%d %H:%M:%S")
+| table time sid msg src_ip src_port dest_ip dest_port
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+    <panel id="i_notice">
+      <title>I4. Zeek notices</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:notice $case$
+| sort 0 ts
+| eval time=strftime(ts,"%Y-%m-%d %H:%M:%S")
+| table time note msg sub src dst p uid
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="j_activity">
+      <title>J1. Activity timeline - every log in time order (set Host IP to focus; click a row to open its uid)</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ $case$ (sourcetype=zeek:conn OR sourcetype=zeek:dns OR sourcetype=zeek:http OR sourcetype=zeek:ssl OR sourcetype=zeek:files OR sourcetype=zeek:smb_mapping OR sourcetype=zeek:smb_files OR sourcetype=zeek:dce_rpc OR sourcetype=zeek:ntlm OR sourcetype=zeek:kerberos)
+(id_orig_h="$ip$" OR id_resp_h="$ip$" OR tx_hosts="$ip$" OR rx_hosts="$ip$")
+| eval log=replace(sourcetype,"zeek:","")
+| eval src=coalesce(id_orig_h, mvjoin(tx_hosts,",")), dst=coalesce(id_resp_h, mvjoin(rx_hosts,",")), dport=id_resp_p
+| eval what=case(
+    log="conn", coalesce(proto,"")." ".coalesce(service,"-")." state=".coalesce(conn_state,"")." out=".coalesce(orig_bytes,0)." in=".coalesce(resp_bytes,0),
+    log="dns", coalesce(qtype_name,"")." ".coalesce(query,"")." > ".coalesce(mvjoin(answers," "), rcode_name, ""),
+    log="http", coalesce(method,"")." ".coalesce(mvdedup(host),"").coalesce(uri,"")." [".coalesce(status_code,"-")."]",
+    log="ssl", "TLS ".coalesce(server_name,"(no SNI)")." ".coalesce(version,""),
+    log="files", coalesce(file_source,"")." ".coalesce(mime_type,"")." ".coalesce(filename,"")." ".coalesce(seen_bytes,"")." B md5=".coalesce(md5,""),
+    log="smb_mapping", "MAP ".coalesce(path,""),
+    log="smb_files", replace(coalesce(action,""),"SMB::","")." ".coalesce(path,"")." ".coalesce(name,""),
+    log="dce_rpc", "RPC ".coalesce(endpoint,"")."::".coalesce(operation,""),
+    log="ntlm", "NTLM ".coalesce(username,"")."@".coalesce(domainname,"")." from ".coalesce(hostname,"")." success=".coalesce(success,""),
+    log="kerberos", "KRB ".coalesce(request_type,"")." ".coalesce(client,"")." > ".coalesce(service,"")." ".coalesce(error_msg,""))
+| sort 0 ts
+| head 5000
+| eval time=strftime(ts,"%Y-%m-%d %H:%M:%S.%3N")
+| table time log src dst dport what uid
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">20</option>
+        <option name="drilldown">row</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <drilldown><set token="sel_uid">$row.uid$</set></drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="j_uid" depends="$sel_uid$">
+      <title>J2. Every Zeek log for the clicked connection (uid)</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ $case$ (uid="$sel_uid$" OR conn_uids="$sel_uid$" OR uids="$sel_uid$")
+| sort 0 ts
+| eval time=strftime(ts,"%Y-%m-%d %H:%M:%S.%3N")
+| table time sourcetype _raw
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">20</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+</form>

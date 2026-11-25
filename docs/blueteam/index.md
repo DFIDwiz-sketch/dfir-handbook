@@ -22,7 +22,7 @@ The defender's side of the handbook: hands-on **packet and log investigations**,
 
     ---
 
-    SPL cheat sheet, data discovery, field extraction, security searches by question, hunting patterns and the BOTSv3 workflow.
+    SPL cheat sheet, data discovery, field extraction, security searches by question, hunting patterns, the BOTSv3 workflow and ready-made Zeek traffic analysis dashboards (overview + SMB/domain).
 
     [:octicons-arrow-right-24: Splunk](splunk/index.md)
 

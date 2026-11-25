@@ -1,0 +1,1684 @@
+<form version="1.1" theme="dark">
+  <label>Zeek SMB and Windows Domain Analysis</label>
+  <description>SMB shares and files, DCE/RPC calls, NTLM and Kerberos logons, LDAP searches and lateral movement checks from Zeek logs. Click a pie slice to fill the matching filter box; type * in a box to clear it.</description>
+  <search id="b_smbconn">
+    <query><![CDATA[
+index=$idx$ sourcetype=zeek:conn $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$") (id_resp_p=445 OR id_resp_p=139 OR service="*smb*")
+| fillnull value="-" conn_state service
+| stats count as sessions sum(orig_bytes) as out sum(resp_bytes) as in sum(duration) as dur min(ts) as first max(ts) as last values(service) as service by id_orig_h id_resp_h id_resp_p conn_state
+]]></query>
+    <earliest>$tp.earliest$</earliest>
+    <latest>$tp.latest$</latest>
+  </search>
+  <search id="b_dce">
+    <query><![CDATA[
+index=$idx$ sourcetype=zeek:dce_rpc $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval pipe=lower(mvindex(split(named_pipe,"\\"),-1))
+| fillnull value="-" pipe endpoint operation
+| stats count min(ts) as first max(ts) as last avg(rtt) as rtt by id_orig_h id_resp_h id_resp_p pipe endpoint operation
+| eval ep_l=lower(endpoint), op_l=lower(operation)
+| eval rule=case(
+    ep_l="drsuapi" AND op_l="drsgetncchanges", "HIGH|Credential access|DCSync - AD replication of password data (normal only DC to DC)|T1003.006",
+    ep_l="drsuapi" AND op_l="drsreplicaadd", "HIGH|Defense evasion|New replication partner added (DCShadow)|T1207",
+    match(op_l,"^efs"), "HIGH|Credential access|EFSRPC call - authentication coercion (PetitPotam)|T1187",
+    ep_l="spoolss" AND match(op_l,"^rpcremotefindfirstprinterchangenotification"), "HIGH|Credential access|Printer change notification - authentication coercion (PrinterBug)|T1187",
+    ep_l="spoolss" AND match(op_l,"^rpcaddprinterdriver"), "HIGH|Privilege escalation|Remote printer driver install (PrintNightmare)|T1068",
+    ep_l="dfsnm" AND match(op_l,"^netrdfs(add|remove)stdroot"), "HIGH|Credential access|DFS root change - authentication coercion (DFSCoerce)|T1187",
+    ep_l="svcctl" AND match(op_l,"^(createservice|startservice|changeserviceconfig)"), "HIGH|Execution|Remote service created or started (PsExec, smbexec)|T1569.002",
+    ep_l="svcctl" AND match(op_l,"^deleteservice"), "MEDIUM|Defense evasion|Remote service deleted (clean-up after remote execution)|T1070",
+    ep_l="svcctl", "LOW|Discovery|Remote Service Control Manager opened or queried|T1007",
+    ep_l="atsvc" AND op_l="jobadd", "HIGH|Execution|Remote scheduled job created (at)|T1053.002",
+    ep_l="itaskschedulerservice" AND match(op_l,"^schrpc(registertask|run|enabletask)"), "HIGH|Execution|Remote scheduled task created or run (schtasks /s, atexec)|T1053.005",
+    ep_l="itaskschedulerservice" AND op_l="schrpcdelete", "MEDIUM|Defense evasion|Remote scheduled task deleted|T1070",
+    ep_l="iwbemservices" AND match(op_l,"^execmethod"), "HIGH|Execution|Remote WMI method run (wmic process call create, wmiexec)|T1047",
+    ep_l="iwbemlevel1login", "MEDIUM|Execution|Remote WMI logon (comes before WMI execution)|T1047",
+    (ep_l="iremotescmactivator" OR ep_l="isystemactivator") AND op_l="remotecreateinstance", "MEDIUM|Lateral movement|Remote DCOM object created (WMI or DCOM execution)|T1021.003",
+    ep_l="winreg" AND op_l="baseregsavekey", "HIGH|Credential access|Registry hive saved remotely (SAM/SYSTEM/SECURITY dump)|T1003.002",
+    ep_l="winreg" AND match(op_l,"^basereg(createkey|setvalue|deletevalue|deletekey|restorekey|replacekey)"), "MEDIUM|Persistence|Remote registry write|T1112",
+    ep_l="winreg", "LOW|Discovery|Remote registry read|T1012",
+    ep_l="samr" AND match(op_l,"^samr(createuser2indomain|createuserindomain|addmembertogroup|addmembertoalias)"), "HIGH|Persistence|Account created or added to a group|T1136.002",
+    ep_l="samr" AND match(op_l,"^samr(setinformationuser|changepassworduser|unicodechangepassworduser|oemchangepassworduser)"), "MEDIUM|Persistence|Account password or settings changed|T1098",
+    ep_l="samr" AND match(op_l,"^samr(enumerate|querydisplayinformation|getmembers|getaliasmembership|querygroupinfo|queryinformationuser|getgroupsforuser|lookupnamesindomain)"), "MEDIUM|Discovery|Account or group enumeration (net user /domain, BloodHound)|T1087.002",
+    ep_l="lsarpc" AND match(op_l,"^lsar(retrieveprivatedata|querysecret|opensecret)"), "HIGH|Credential access|LSA secret read|T1003.004",
+    ep_l="lsarpc" AND match(op_l,"^lsar(enumerateaccounts|enumerateaccountrights|enumerateaccountswithuserright|enumeratetrusteddomains)"), "MEDIUM|Discovery|Privilege or trust enumeration|T1069",
+    ep_l="srvsvc" AND op_l="netrsessionenum", "MEDIUM|Discovery|Session enumeration - who is logged on where (BloodHound)|T1049",
+    ep_l="srvsvc" AND op_l="netrshareenum", "MEDIUM|Discovery|Share enumeration (net view, share scanners)|T1135",
+    ep_l="wkssvc" AND op_l="netrwkstauserenum", "MEDIUM|Discovery|Logged-on user enumeration|T1033",
+    ep_l="eventlog" AND match(op_l,"^elfrclearelf"), "HIGH|Defense evasion|Event log cleared remotely|T1070.001",
+    match(ep_l,"backupkey|bkrp"), "HIGH|Credential access|DPAPI domain backup key request|T1555",
+    ep_l="netlogon" AND op_l="netrserverpasswordset2", "MEDIUM|Privilege escalation|Machine password set - Zerologon if many NetrServerAuthenticate calls came first|T1210",
+    ep_l="netlogon" AND match(op_l,"^netrlogonsamlogon"), "INFO|Credential access|NTLM logon check passed to the DC - many in a short time = password guessing|T1110",
+    match(op_l,"^unknown-"), "LOW|Unknown|Operation number Zeek could not name - unusual|-",
+    true(), "INFO|-|Normal or not classified|-")
+| eval sev=mvindex(split(rule,"|"),0), category=mvindex(split(rule,"|"),1), meaning=mvindex(split(rule,"|"),2), attack=mvindex(split(rule,"|"),3)
+| fields - ep_l op_l rule
+]]></query>
+    <earliest>$tp.earliest$</earliest>
+    <latest>$tp.latest$</latest>
+  </search>
+  <search id="b_smbf">
+    <query><![CDATA[
+index=$idx$ sourcetype=zeek:smb_files $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval act=replace(action,"SMB::",""), share=upper(mvindex(split(path,"\\"),-1)), fname=mvindex(split(name,"\\"),-1)
+| eval ext=if(match(fname,"\.[A-Za-z0-9]{1,6}$$"), lower(mvindex(split(fname,"."),-1)), "(none)")
+| fillnull value="-" act share name fname ext
+| stats count min(ts) as first max(ts) as last max(size) as size by id_orig_h id_resp_h act share name fname ext
+]]></query>
+    <earliest>$tp.earliest$</earliest>
+    <latest>$tp.latest$</latest>
+  </search>
+  <search id="b_map">
+    <query><![CDATA[
+index=$idx$ sourcetype=zeek:smb_mapping $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval share=upper(mvindex(split(path,"\\"),-1)), server_name=upper(mvindex(split(path,"\\"),2))
+| eval share_class=case(share="IPC$$","IPC$$ - named pipes for RPC", share="ADMIN$$","ADMIN$$ - Windows folder (admin only)", match(share,"^[A-Z]\$$$$"),"Drive admin share (C$$ etc.)", share="SYSVOL" OR share="NETLOGON","SYSVOL / NETLOGON - Group Policy and logon scripts", like(share,"%$$"),"Other hidden share", true(),"Normal share")
+| fillnull value="-" share server_name share_type service native_file_system share_class
+| stats count min(ts) as first max(ts) as last by id_orig_h id_resp_h path share server_name share_class share_type service native_file_system
+]]></query>
+    <earliest>$tp.earliest$</earliest>
+    <latest>$tp.latest$</latest>
+  </search>
+  <search id="b_ntlm">
+    <query><![CDATA[
+index=$idx$ sourcetype=zeek:ntlm $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval result=case(success="true" OR success="T","success", success="false" OR success="F","FAILED", true(),"no result seen")
+| eval user=if(len(username)>0, username."@".coalesce(domainname,"?"), "(no user name seen)")
+| fillnull value="-" hostname server_nb_computer_name server_dns_computer_name server_tree_name domainname
+| stats count min(ts) as first max(ts) as last by id_orig_h id_resp_h id_resp_p user hostname server_nb_computer_name result
+]]></query>
+    <earliest>$tp.earliest$</earliest>
+    <latest>$tp.latest$</latest>
+  </search>
+  <search id="b_krb">
+    <query><![CDATA[
+index=$idx$ sourcetype=zeek:kerberos $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval result=case(success="true","success", isnotnull(error_msg), error_msg, success="false","failed", true(),"no reply seen")
+| eval account=lower(mvindex(split(client,"/"),0)), acct_type=case(like(account,"%$$"),"computer", len(account)>0,"user", true(),"(hidden in ticket)")
+| fillnull value="-" request_type service cipher account
+| stats count min(ts) as first max(ts) as last by id_orig_h id_resp_h request_type account acct_type service cipher result
+]]></query>
+    <earliest>$tp.earliest$</earliest>
+    <latest>$tp.latest$</latest>
+  </search>
+  <fieldset submitButton="false" autoRun="true">
+    <input type="time" token="tp" searchWhenChanged="true">
+      <label>Time range (All time for old PCAPs)</label>
+      <default>
+        <earliest>0</earliest>
+        <latest></latest>
+      </default>
+    </input>
+    <input type="text" token="idx" searchWhenChanged="true">
+      <label>Zeek index</label>
+      <default>zeek</default>
+    </input>
+    <input type="text" token="sidx" searchWhenChanged="true">
+      <label>Snort index</label>
+      <default>snort</default>
+    </input>
+    <input type="dropdown" token="case" searchWhenChanged="true">
+      <label>Case (pcap_case)</label>
+      <choice value="*">All data</choice>
+      <default>*</default>
+      <fieldForLabel>pcap_case</fieldForLabel>
+      <fieldForValue>filter</fieldForValue>
+      <search>
+        <query><![CDATA[
+index=$idx$ sourcetype=zeek:conn
+| stats count by pcap_case
+| eval filter="pcap_case=\"".pcap_case."\""
+| sort pcap_case
+]]></query>
+        <earliest>0</earliest>
+        <latest>now</latest>
+      </search>
+    </input>
+    <input type="text" token="ip" searchWhenChanged="true">
+      <label>Host IP (* = all, 10.0.0.* works)</label>
+      <default>*</default>
+    </input>
+    <input type="dropdown" token="span" searchWhenChanged="true">
+      <label>Timeline bucket</label>
+      <choice value="1s">1s</choice>
+      <choice value="10s">10s</choice>
+      <choice value="30s">30s</choice>
+      <choice value="1m">1m</choice>
+      <choice value="5m">5m</choice>
+      <choice value="10m">10m</choice>
+      <choice value="30m">30m</choice>
+      <choice value="1h">1h</choice>
+      <choice value="1d">1d</choice>
+      <default>1m</default>
+    </input>
+    <input type="text" token="pipe" searchWhenChanged="true">
+      <label>RPC named pipe</label>
+      <default>*</default>
+    </input>
+    <input type="text" token="ep" searchWhenChanged="true">
+      <label>RPC endpoint</label>
+      <default>*</default>
+    </input>
+    <input type="text" token="op" searchWhenChanged="true">
+      <label>RPC operation</label>
+      <default>*</default>
+    </input>
+    <input type="text" token="act" searchWhenChanged="true">
+      <label>SMB file action</label>
+      <default>*</default>
+    </input>
+    <input type="text" token="share" searchWhenChanged="true">
+      <label>SMB share</label>
+      <default>*</default>
+    </input>
+    <input type="text" token="nuser" searchWhenChanged="true">
+      <label>NTLM user</label>
+      <default>*</default>
+    </input>
+  </fieldset>
+  <row>
+    <panel id="smb_help">
+      <html>
+        <div style="padding:4px 8px">
+          <p><b>Read this first.</b> <b>SMB</b> (TCP 445) is Windows file sharing. A client first <b>maps a share</b> (smb_mapping: <code>\\SERVER\SHARE</code>), then <b>opens files</b> on it (smb_files). The special share <code>IPC$$</code> holds <b>named pipes</b> - doors to Windows services. Through a pipe (or a high TCP port found via port 135) the client makes <b>DCE/RPC calls</b> (dce_rpc: <i>endpoint</i> = which service, <i>operation</i> = which function). Logons appear in <b>ntlm</b> and <b>kerberos</b>.</p>
+          <p><b>Normal:</b> PCs talk to the domain controller - <code>IPC$$</code>, <code>SYSVOL</code>, <code>NETLOGON</code>, calls to lsarpc / samr / netlogon / drsuapi at logon. <b>Look closer:</b> PC to PC SMB, <code>ADMIN$$</code> or <code>C$$</code>, a program written to a share, svcctl / atsvc / ITaskSchedulerService / IWbemServices calls, DRSGetNCChanges from a non-DC, bursts of the same call, many NTLM failures.</p>
+          <p><b>Filters:</b> click a pie slice to put its value in the matching box above (pipe, endpoint, operation, action, share, user). Timelines and detail tables then show only that value. Type <code>*</code> to clear. Click a row in section H to open all logs of that connection.</p>
+        </div>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel id="k_smb_sessions">
+      <title>A1. SMB connections</title>
+      <single>
+        <search base="b_smbconn">
+          <query><![CDATA[
+| stats sum(sessions) as v
+]]></query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="colorMode">none</option>
+        <option name="height">110</option>
+      </single>
+    </panel>
+    <panel id="k_smb_clients">
+      <title>A2. SMB clients</title>
+      <single>
+        <search base="b_smbconn">
+          <query><![CDATA[
+| stats dc(id_orig_h) as v
+]]></query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="colorMode">none</option>
+        <option name="height">110</option>
+      </single>
+    </panel>
+    <panel id="k_smb_servers">
+      <title>A3. SMB servers</title>
+      <single>
+        <search base="b_smbconn">
+          <query><![CDATA[
+| stats dc(id_resp_h) as v
+]]></query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="colorMode">none</option>
+        <option name="height">110</option>
+      </single>
+    </panel>
+    <panel id="k_shares">
+      <title>A4. Shares mapped</title>
+      <single>
+        <search base="b_map">
+          <query><![CDATA[
+| stats dc(path) as v
+]]></query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="colorMode">none</option>
+        <option name="height">110</option>
+      </single>
+    </panel>
+    <panel id="k_files">
+      <title>A5. Files touched (not IPC$$)</title>
+      <single>
+        <search base="b_smbf">
+          <query><![CDATA[
+| where share!="IPC$$"
+| stats dc(name) as v
+]]></query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="colorMode">none</option>
+        <option name="height">110</option>
+      </single>
+    </panel>
+    <panel id="k_rpc">
+      <title>A6. DCE/RPC calls</title>
+      <single>
+        <search base="b_dce">
+          <query><![CDATA[
+| stats sum(count) as v
+]]></query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="colorMode">none</option>
+        <option name="height">110</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel id="k_rpc_ops">
+      <title>A7. Different RPC operations</title>
+      <single>
+        <search base="b_dce">
+          <query><![CDATA[
+| stats dc(operation) as v
+]]></query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="colorMode">none</option>
+        <option name="height">110</option>
+      </single>
+    </panel>
+    <panel id="k_rpc_high">
+      <title>A8. HIGH-risk RPC calls</title>
+      <single>
+        <search base="b_dce">
+          <query><![CDATA[
+| where sev="HIGH"
+| stats sum(count) as v
+| eval v=coalesce(v,0)
+]]></query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="useColors">1</option>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="rangeValues">[0]</option>
+        <option name="rangeColors">["0x53a051","0xdc4e41"]</option>
+        <option name="height">110</option>
+      </single>
+    </panel>
+    <panel id="k_admin">
+      <title>A9. Admin share mappings (ADMIN$$, C$$ ...)</title>
+      <single>
+        <search base="b_map">
+          <query><![CDATA[
+| where like(share,"%$$") AND share!="IPC$$"
+| stats sum(count) as v
+| eval v=coalesce(v,0)
+]]></query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="useColors">1</option>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="rangeValues">[0]</option>
+        <option name="rangeColors">["0x53a051","0xdc4e41"]</option>
+        <option name="height">110</option>
+      </single>
+    </panel>
+    <panel id="k_ntlm">
+      <title>A10. NTLM logons</title>
+      <single>
+        <search base="b_ntlm">
+          <query><![CDATA[
+| stats sum(count) as v
+]]></query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="colorMode">none</option>
+        <option name="height">110</option>
+      </single>
+    </panel>
+    <panel id="k_ntlm_fail">
+      <title>A11. NTLM failures</title>
+      <single>
+        <search base="b_ntlm">
+          <query><![CDATA[
+| where result="FAILED"
+| stats sum(count) as v
+| eval v=coalesce(v,0)
+]]></query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="useColors">1</option>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="rangeValues">[0]</option>
+        <option name="rangeColors">["0x53a051","0xdc4e41"]</option>
+        <option name="height">110</option>
+      </single>
+    </panel>
+    <panel id="k_krb_err">
+      <title>A12. Kerberos errors (not PREAUTH_REQUIRED)</title>
+      <single>
+        <search base="b_krb">
+          <query><![CDATA[
+| where result!="success" AND result!="KDC_ERR_PREAUTH_REQUIRED" AND result!="no reply seen" AND result!="KRB_ERR_RESPONSE_TOO_BIG"
+| stats sum(count) as v
+| eval v=coalesce(v,0)
+]]></query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="useColors">1</option>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="rangeValues">[0]</option>
+        <option name="rangeColors">["0x53a051","0xdc4e41"]</option>
+        <option name="height">110</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel id="s_pairs">
+      <title>B1. SMB client to server pairs (conn.log, ports 445/139)</title>
+      <table>
+        <search base="b_smbconn">
+          <query><![CDATA[
+| stats sum(sessions) as sessions sum(out) as out sum(in) as in sum(dur) as dur min(first) as first max(last) as last values(conn_state) as states by id_orig_h id_resp_h id_resp_p
+| eval KB_sent=round(out/1024,1), KB_received=round(in/1024,1), seconds=round(dur,1)
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S"), last=strftime(last,"%Y-%m-%d %H:%M:%S")
+| table id_orig_h id_resp_h id_resp_p sessions KB_sent KB_received seconds states first last
+| sort - sessions
+]]></query>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="s_states">
+      <title>B2. SMB connection states</title>
+      <chart>
+        <search base="b_smbconn">
+          <query><![CDATA[
+| eval state=case(conn_state="SF","SF - opened and closed normally", conn_state="S0","S0 - no reply", conn_state="REJ","REJ - rejected", conn_state="S1","S1 - open, never closed", conn_state="S2","S2 - client closed, no server reply", conn_state="S3","S3 - server closed, no client reply", conn_state="RSTO","RSTO - client sent reset", conn_state="RSTR","RSTR - server sent reset", conn_state="RSTOS0","RSTOS0 - SYN then reset, no reply", conn_state="RSTRH","RSTRH - server SYN-ACK then reset", conn_state="SH","SH - SYN then FIN, no reply", conn_state="SHR","SHR - server SYN-ACK and FIN only", conn_state="OTH","OTH - no SYN seen (mid-stream)", true(), conn_state)
+| stats sum(sessions) as sessions by state
+| sort - sessions
+]]></query>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+    <panel id="s_bytes">
+      <title>B3. Most SMB data per pair (KB)</title>
+      <chart>
+        <search base="b_smbconn">
+          <query><![CDATA[
+| stats sum(out) as out sum(in) as in by id_orig_h id_resp_h
+| eval total=out+in
+| sort - total
+| head 10
+| eval pair=id_orig_h." > ".id_resp_h, KB_sent=round(out/1024,1), KB_received=round(in/1024,1)
+| table pair KB_sent KB_received
+]]></query>
+        </search>
+        <option name="charting.chart">bar</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.axisTitleY.visibility">collapsed</option>
+        <option name="charting.drilldown">none</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel id="s_scan">
+      <title>B4. Failed SMB connections and scanning (one source, many targets)</title>
+      <table>
+        <search base="b_smbconn">
+          <query><![CDATA[
+| eval failed=if(conn_state="S0" OR conn_state="REJ" OR conn_state="RSTOS0" OR conn_state="SH" OR conn_state="RSTRH", sessions, 0)
+| stats sum(sessions) as attempts sum(failed) as failed dc(id_resp_h) as targets values(id_resp_h) as target_list min(first) as first max(last) as last by id_orig_h
+| eval fail_pct=round(100*failed/attempts,0), target_list=mvindex(target_list,0,9)
+| eval verdict=case(targets>=10 AND fail_pct>=50,"Likely SMB scanning or worm spread", targets>=5,"Many SMB targets - check", attempts>=10 AND fail_pct>=80,"Repeated failed SMB connections", true(),"")
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S"), last=strftime(last,"%Y-%m-%d %H:%M:%S")
+| table id_orig_h attempts failed fail_pct targets target_list verdict first last
+| sort - targets
+]]></query>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="s_timeline">
+      <title>B5. SMB connections over time</title>
+      <input type="dropdown" token="smbconn_split" searchWhenChanged="true">
+        <label>Split by</label>
+        <choice value="id_resp_h">Server</choice>
+        <choice value="id_orig_h">Client</choice>
+        <choice value="conn_state">Connection state</choice>
+        <default>id_resp_h</default>
+      </input>
+      <chart>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:conn $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$") (id_resp_p=445 OR id_resp_p=139 OR service="*smb*")
+| eval _time=ts
+| timechart span=$span$ limit=10 useother=t count by $smbconn_split$
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.drilldown">none</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel id="r_pipe">
+      <title>C1. RPC Named Pipe (click to filter)</title>
+      <chart>
+        <search base="b_dce">
+          <query><![CDATA[
+| stats sum(count) as calls by pipe
+| sort - calls
+]]></query>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+        <drilldown><set token="form.pipe">$click.value$</set></drilldown>
+      </chart>
+    </panel>
+    <panel id="r_endpoint">
+      <title>C2. DCE_RPC Endpoint (click to filter)</title>
+      <chart>
+        <search base="b_dce">
+          <query><![CDATA[
+| stats sum(count) as calls by endpoint
+| sort - calls
+]]></query>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+        <drilldown><set token="form.ep">$click.value$</set></drilldown>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel id="r_ops">
+      <title>C3. RPC Operations (click to filter)</title>
+      <chart>
+        <search base="b_dce">
+          <query><![CDATA[
+| stats sum(count) as calls by operation
+| sort - calls
+]]></query>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+        <drilldown><set token="form.op">$click.value$</set></drilldown>
+      </chart>
+    </panel>
+    <panel id="r_sev">
+      <title>C4. RPC calls by risk level</title>
+      <chart>
+        <search base="b_dce">
+          <query><![CDATA[
+| stats sum(count) as calls by sev
+]]></query>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+        <option name="charting.fieldColors">{"HIGH":0xDC4E41,"MEDIUM":0xF1813F,"LOW":0xF8BE34,"INFO":0x708794}</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel id="r_high">
+      <title>C5. Risky RPC calls (HIGH, MEDIUM, LOW) with ATT&amp;CK technique</title>
+      <table>
+        <search base="b_dce">
+          <query><![CDATA[
+| where sev!="INFO"
+| stats sum(count) as calls min(first) as first max(last) as last values(pipe) as pipes by sev category meaning attack id_orig_h id_resp_h endpoint operation
+| eval order=case(sev="HIGH",1, sev="MEDIUM",2, true(),3)
+| sort order, first
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S"), last=strftime(last,"%Y-%m-%d %H:%M:%S")
+| table sev category meaning attack id_orig_h id_resp_h endpoint operation pipes calls first last
+]]></query>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <format type="color" field="sev"><colorPalette type="map">{"HIGH":#DC4E41,"MEDIUM":#F1813F,"LOW":#F8BE34,"INFO":#708794}</colorPalette></format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="r_map">
+      <title>C6. Endpoint and operation map - what was called, how often, by how many hosts</title>
+      <table>
+        <search base="b_dce">
+          <query><![CDATA[
+| stats sum(count) as calls dc(id_orig_h) as clients dc(id_resp_h) as servers values(pipe) as pipes min(first) as first max(last) as last by sev endpoint operation meaning
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S"), last=strftime(last,"%Y-%m-%d %H:%M:%S")
+| sort - calls
+| table sev endpoint operation calls clients servers pipes meaning first last
+]]></query>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <format type="color" field="sev"><colorPalette type="map">{"HIGH":#DC4E41,"MEDIUM":#F1813F,"LOW":#F8BE34,"INFO":#708794}</colorPalette></format>
+      </table>
+    </panel>
+    <panel id="r_pipemap">
+      <title>C7. Which pipe or port carried which endpoint</title>
+      <table>
+        <search base="b_dce">
+          <query><![CDATA[
+| stats sum(count) as calls values(endpoint) as endpoints dc(id_orig_h) as clients by pipe id_resp_p
+| sort - calls
+]]></query>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="r_burst">
+      <title>C8. Bursts - the same RPC call 50+ times in one minute (guessing, enumeration, Zerologon)</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:dce_rpc $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| fillnull value="-" endpoint operation
+| eval _time=ts
+| bin _time span=1m
+| stats count as calls by _time id_orig_h id_resp_h endpoint operation
+| where calls>=50
+| eval minute=strftime(_time,"%Y-%m-%d %H:%M")
+| sort - calls
+| table minute id_orig_h id_resp_h endpoint operation calls
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="r_timeline">
+      <title>C9. DCE_RPC Timeline (uses the pipe / endpoint / operation boxes)</title>
+      <input type="dropdown" token="dce_split" searchWhenChanged="true">
+        <label>Split by</label>
+        <choice value="endpoint">Endpoint</choice>
+        <choice value="operation">Operation</choice>
+        <choice value="pipe">Named pipe</choice>
+        <choice value="id_orig_h">Client</choice>
+        <choice value="id_resp_h">Server</choice>
+        <default>endpoint</default>
+      </input>
+      <chart>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:dce_rpc $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval pipe=lower(mvindex(split(named_pipe,"\\"),-1))
+| fillnull value="-" pipe endpoint operation
+| search pipe="$pipe$" endpoint="$ep$" operation="$op$"
+| eval _time=ts
+| timechart span=$span$ limit=12 useother=t count by $dce_split$
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.drilldown">none</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel id="r_detail">
+      <title>C10. DCE_RPC Timeline - every call in time order (click a row to open its uid)</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:dce_rpc $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval pipe=lower(mvindex(split(named_pipe,"\\"),-1))
+| fillnull value="-" pipe endpoint operation
+| search pipe="$pipe$" endpoint="$ep$" operation="$op$"
+| eval ep_l=lower(endpoint), op_l=lower(operation)
+| eval rule=case(
+    ep_l="drsuapi" AND op_l="drsgetncchanges", "HIGH|Credential access|DCSync - AD replication of password data (normal only DC to DC)|T1003.006",
+    ep_l="drsuapi" AND op_l="drsreplicaadd", "HIGH|Defense evasion|New replication partner added (DCShadow)|T1207",
+    match(op_l,"^efs"), "HIGH|Credential access|EFSRPC call - authentication coercion (PetitPotam)|T1187",
+    ep_l="spoolss" AND match(op_l,"^rpcremotefindfirstprinterchangenotification"), "HIGH|Credential access|Printer change notification - authentication coercion (PrinterBug)|T1187",
+    ep_l="spoolss" AND match(op_l,"^rpcaddprinterdriver"), "HIGH|Privilege escalation|Remote printer driver install (PrintNightmare)|T1068",
+    ep_l="dfsnm" AND match(op_l,"^netrdfs(add|remove)stdroot"), "HIGH|Credential access|DFS root change - authentication coercion (DFSCoerce)|T1187",
+    ep_l="svcctl" AND match(op_l,"^(createservice|startservice|changeserviceconfig)"), "HIGH|Execution|Remote service created or started (PsExec, smbexec)|T1569.002",
+    ep_l="svcctl" AND match(op_l,"^deleteservice"), "MEDIUM|Defense evasion|Remote service deleted (clean-up after remote execution)|T1070",
+    ep_l="svcctl", "LOW|Discovery|Remote Service Control Manager opened or queried|T1007",
+    ep_l="atsvc" AND op_l="jobadd", "HIGH|Execution|Remote scheduled job created (at)|T1053.002",
+    ep_l="itaskschedulerservice" AND match(op_l,"^schrpc(registertask|run|enabletask)"), "HIGH|Execution|Remote scheduled task created or run (schtasks /s, atexec)|T1053.005",
+    ep_l="itaskschedulerservice" AND op_l="schrpcdelete", "MEDIUM|Defense evasion|Remote scheduled task deleted|T1070",
+    ep_l="iwbemservices" AND match(op_l,"^execmethod"), "HIGH|Execution|Remote WMI method run (wmic process call create, wmiexec)|T1047",
+    ep_l="iwbemlevel1login", "MEDIUM|Execution|Remote WMI logon (comes before WMI execution)|T1047",
+    (ep_l="iremotescmactivator" OR ep_l="isystemactivator") AND op_l="remotecreateinstance", "MEDIUM|Lateral movement|Remote DCOM object created (WMI or DCOM execution)|T1021.003",
+    ep_l="winreg" AND op_l="baseregsavekey", "HIGH|Credential access|Registry hive saved remotely (SAM/SYSTEM/SECURITY dump)|T1003.002",
+    ep_l="winreg" AND match(op_l,"^basereg(createkey|setvalue|deletevalue|deletekey|restorekey|replacekey)"), "MEDIUM|Persistence|Remote registry write|T1112",
+    ep_l="winreg", "LOW|Discovery|Remote registry read|T1012",
+    ep_l="samr" AND match(op_l,"^samr(createuser2indomain|createuserindomain|addmembertogroup|addmembertoalias)"), "HIGH|Persistence|Account created or added to a group|T1136.002",
+    ep_l="samr" AND match(op_l,"^samr(setinformationuser|changepassworduser|unicodechangepassworduser|oemchangepassworduser)"), "MEDIUM|Persistence|Account password or settings changed|T1098",
+    ep_l="samr" AND match(op_l,"^samr(enumerate|querydisplayinformation|getmembers|getaliasmembership|querygroupinfo|queryinformationuser|getgroupsforuser|lookupnamesindomain)"), "MEDIUM|Discovery|Account or group enumeration (net user /domain, BloodHound)|T1087.002",
+    ep_l="lsarpc" AND match(op_l,"^lsar(retrieveprivatedata|querysecret|opensecret)"), "HIGH|Credential access|LSA secret read|T1003.004",
+    ep_l="lsarpc" AND match(op_l,"^lsar(enumerateaccounts|enumerateaccountrights|enumerateaccountswithuserright|enumeratetrusteddomains)"), "MEDIUM|Discovery|Privilege or trust enumeration|T1069",
+    ep_l="srvsvc" AND op_l="netrsessionenum", "MEDIUM|Discovery|Session enumeration - who is logged on where (BloodHound)|T1049",
+    ep_l="srvsvc" AND op_l="netrshareenum", "MEDIUM|Discovery|Share enumeration (net view, share scanners)|T1135",
+    ep_l="wkssvc" AND op_l="netrwkstauserenum", "MEDIUM|Discovery|Logged-on user enumeration|T1033",
+    ep_l="eventlog" AND match(op_l,"^elfrclearelf"), "HIGH|Defense evasion|Event log cleared remotely|T1070.001",
+    match(ep_l,"backupkey|bkrp"), "HIGH|Credential access|DPAPI domain backup key request|T1555",
+    ep_l="netlogon" AND op_l="netrserverpasswordset2", "MEDIUM|Privilege escalation|Machine password set - Zerologon if many NetrServerAuthenticate calls came first|T1210",
+    ep_l="netlogon" AND match(op_l,"^netrlogonsamlogon"), "INFO|Credential access|NTLM logon check passed to the DC - many in a short time = password guessing|T1110",
+    match(op_l,"^unknown-"), "LOW|Unknown|Operation number Zeek could not name - unusual|-",
+    true(), "INFO|-|Normal or not classified|-")
+| eval sev=mvindex(split(rule,"|"),0), category=mvindex(split(rule,"|"),1), meaning=mvindex(split(rule,"|"),2), attack=mvindex(split(rule,"|"),3)
+| fields - ep_l op_l rule
+| sort 0 ts
+| head 5000
+| eval time=strftime(ts,"%Y-%m-%d %H:%M:%S.%3N"), rtt_ms=round(rtt*1000,1)
+| table time sev id_orig_h id_resp_h id_resp_p pipe endpoint operation rtt_ms meaning uid
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">20</option>
+        <option name="drilldown">row</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <format type="color" field="sev"><colorPalette type="map">{"HIGH":#DC4E41,"MEDIUM":#F1813F,"LOW":#F8BE34,"INFO":#708794}</colorPalette></format>
+        <drilldown><set token="sel_uid">$row.uid$</set></drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="f_action">
+      <title>D1. SMB Files action (click to filter)</title>
+      <chart>
+        <search base="b_smbf">
+          <query><![CDATA[
+| stats sum(count) as events by act
+| sort - events
+]]></query>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+        <drilldown><set token="form.act">$click.value$</set></drilldown>
+      </chart>
+    </panel>
+    <panel id="f_share">
+      <title>D2. SMB files by share (click to filter)</title>
+      <chart>
+        <search base="b_smbf">
+          <query><![CDATA[
+| stats sum(count) as events by share
+| sort - events
+]]></query>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+        <drilldown><set token="form.share">$click.value$</set></drilldown>
+      </chart>
+    </panel>
+    <panel id="f_ext">
+      <title>D3. SMB file extensions (not IPC$$)</title>
+      <chart>
+        <search base="b_smbf">
+          <query><![CDATA[
+| where share!="IPC$$"
+| stats sum(count) as events by ext
+| sort - events
+]]></query>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel id="f_timeline">
+      <title>D4. SMB Files Timeline (uses the action / share boxes)</title>
+      <input type="dropdown" token="smbf_split" searchWhenChanged="true">
+        <label>Split by</label>
+        <choice value="act">Action</choice>
+        <choice value="share">Share</choice>
+        <choice value="ext">Extension</choice>
+        <choice value="id_orig_h">Client</choice>
+        <choice value="id_resp_h">Server</choice>
+        <default>act</default>
+      </input>
+      <chart>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:smb_files $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval act=replace(action,"SMB::",""), share=upper(mvindex(split(path,"\\"),-1)), fname=mvindex(split(name,"\\"),-1)
+| eval ext=if(match(fname,"\.[A-Za-z0-9]{1,6}$$"), lower(mvindex(split(fname,"."),-1)), "(none)")
+| fillnull value="-" act share name fname ext
+| search act="$act$" share="$share$"
+| eval _time=ts
+| timechart span=$span$ limit=10 useother=t count by $smbf_split$
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.drilldown">none</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel id="f_detail">
+      <title>D5. SMB Files Timeline - every file event in time order (click a row to open its uid)</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:smb_files $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval act=replace(action,"SMB::",""), share=upper(mvindex(split(path,"\\"),-1)), fname=mvindex(split(name,"\\"),-1)
+| eval ext=if(match(fname,"\.[A-Za-z0-9]{1,6}$$"), lower(mvindex(split(fname,"."),-1)), "(none)")
+| fillnull value="-" act share name fname ext
+| search act="$act$" share="$share$"
+| sort 0 ts
+| head 5000
+| eval time=strftime(ts,"%Y-%m-%d %H:%M:%S.%3N"), KB=round(size/1024,1), created=strftime(times_created,"%Y-%m-%d %H:%M:%S"), modified=strftime(times_modified,"%Y-%m-%d %H:%M:%S")
+| table time id_orig_h id_resp_h act share name prev_name KB created modified uid fuid
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">20</option>
+        <option name="drilldown">row</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <drilldown><set token="sel_uid">$row.uid$</set></drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="f_exec">
+      <title>D6. Programs and scripts on SMB shares (ADMIN$$ / C$$ = remote execution sign)</title>
+      <table>
+        <search base="b_smbf">
+          <query><![CDATA[
+| where match(ext,"^(exe|dll|scr|sys|ps1|psm1|bat|cmd|vbs|vbe|js|jse|wsf|hta|msi|lnk|jar|py)$$")
+| eval on_admin_share=if(like(share,"%$$") AND share!="IPC$$","YES","")
+| stats sum(count) as events values(act) as actions max(size) as size min(first) as first max(last) as last by id_orig_h id_resp_h share name on_admin_share
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S"), last=strftime(last,"%Y-%m-%d %H:%M:%S")
+| sort first
+| table first id_orig_h id_resp_h share name on_admin_share actions size events last
+]]></query>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <format type="color" field="on_admin_share"><colorPalette type="map">{"YES":#DC4E41}</colorPalette></format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="f_pipes">
+      <title>D7. Named pipes opened through IPC$$ (PsExec and C2 pipe names are flagged)</title>
+      <table>
+        <search base="b_smbf">
+          <query><![CDATA[
+| where share="IPC$$"
+| eval p=lower(fname)
+| eval note=case(match(p,"^psexesvc"),"HIGH - PsExec service pipe", match(p,"^remcom"),"HIGH - RemCom (PsExec clone)", match(p,"^paexec"),"HIGH - PAExec", match(p,"^csexec"),"HIGH - CSExec", match(p,"^(msagent_|postex_|status_|mojo\.5688\.8052)"),"HIGH - Cobalt Strike style pipe name", match(p,"^msse-[0-9]+-server"),"HIGH - Cobalt Strike style pipe name", p="atsvc","MEDIUM - remote scheduled job", p="svcctl" OR p="ntsvcs","MEDIUM - service control", p="winreg","MEDIUM - remote registry", match(p,"^(samr|lsarpc|lsass|netlogon|srvsvc|wkssvc|spoolss|epmapper|browser|eventlog|efsrpc|netdfs|protected_storage|drsuapi|initshutdown)$$"),"INFO - common Windows pipe", true(),"LOW - uncommon pipe name, check")
+| eval sev=mvindex(split(note," - "),0)
+| stats sum(count) as opens dc(id_orig_h) as clients dc(id_resp_h) as servers min(first) as first by sev note fname
+| eval order=case(sev="HIGH",1, sev="MEDIUM",2, sev="LOW",3, true(),4)
+| sort order, -opens
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S")
+| table sev note fname opens clients servers first
+]]></query>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <format type="color" field="sev"><colorPalette type="map">{"HIGH":#DC4E41,"MEDIUM":#F1813F,"LOW":#F8BE34,"INFO":#708794}</colorPalette></format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="f_delren">
+      <title>D8. Deleted and renamed files (many in a short time = ransomware or clean-up)</title>
+      <table>
+        <search base="b_smbf">
+          <query><![CDATA[
+| where act="FILE_DELETE" OR act="FILE_RENAME"
+| stats sum(count) as events dc(name) as files values(ext) as exts min(first) as first max(last) as last by id_orig_h id_resp_h share act
+| eval minutes=round((last-first)/60,1)
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S"), last=strftime(last,"%Y-%m-%d %H:%M:%S")
+| sort - files
+| table id_orig_h id_resp_h share act files events minutes exts first last
+]]></query>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+    <panel id="f_sensitive">
+      <title>D9. Sensitive file names (AD database, hives, dumps, tickets, GPP passwords)</title>
+      <table>
+        <search base="b_smbf">
+          <query><![CDATA[
+| eval f=lower(fname)
+| eval why=case(f="ntds.dit","AD database (all password hashes)", match(f,"^(sam|system|security)(\.(save|bak|hiv|hive|old))?$$"),"Registry hive copy (local hashes, LSA secrets)", match(f,"\.dmp$$"),"Memory dump (lsass?)", match(f,"\.(kirbi|ccache)$$"),"Kerberos ticket file", f="groups.xml" OR f="services.xml" OR f="scheduledtasks.xml" OR f="datasources.xml","Group Policy Preferences file (may hold a password, T1552.006)", match(f,"\.(kdbx|pfx|p12|pem|key)$$"),"Password vault, certificate or key", match(f,"^(unattend|sysprep)\.xml$$"),"Install answer file (may hold a password)")
+| where isnotnull(why)
+| stats sum(count) as events values(act) as actions min(first) as first by id_orig_h id_resp_h share name why
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S")
+| sort first
+]]></query>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="f_transfer">
+      <title>D10. Files that crossed SMB (files.log) - direction and hashes</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:files $case$ (tx_hosts="$ip$" OR rx_hosts="$ip$") file_source=SMB
+| eval direction=if(is_orig="true" OR is_orig="T","upload: client > server","download: server > client")
+| sort 0 ts
+| eval time=strftime(ts,"%Y-%m-%d %H:%M:%S"), KB=round(seen_bytes/1024,1), tx=mvjoin(tx_hosts,","), rx=mvjoin(rx_hosts,",")
+| table time tx rx direction filename mime_type KB md5 sha256 fuid
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="m_type">
+      <title>E1. Share types</title>
+      <chart>
+        <search base="b_map">
+          <query><![CDATA[
+| stats sum(count) as maps by share_type
+]]></query>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+    <panel id="m_share">
+      <title>E2. Shares mapped (click to filter)</title>
+      <chart>
+        <search base="b_map">
+          <query><![CDATA[
+| stats sum(count) as maps by share
+| sort - maps
+]]></query>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+        <drilldown><set token="form.share">$click.value$</set></drilldown>
+      </chart>
+    </panel>
+    <panel id="m_class">
+      <title>E3. Share categories</title>
+      <chart>
+        <search base="b_map">
+          <query><![CDATA[
+| stats sum(count) as maps by share_class
+| sort - maps
+]]></query>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel id="m_timeline">
+      <title>E4. SMB Mapping Timeline (uses the share box)</title>
+      <input type="dropdown" token="map_split" searchWhenChanged="true">
+        <label>Split by</label>
+        <choice value="share">Share</choice>
+        <choice value="share_class">Share category</choice>
+        <choice value="share_type">Share type</choice>
+        <choice value="id_orig_h">Client</choice>
+        <choice value="id_resp_h">Server</choice>
+        <default>share</default>
+      </input>
+      <chart>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:smb_mapping $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval share=upper(mvindex(split(path,"\\"),-1)), server_name=upper(mvindex(split(path,"\\"),2))
+| eval share_class=case(share="IPC$$","IPC$$ - named pipes for RPC", share="ADMIN$$","ADMIN$$ - Windows folder (admin only)", match(share,"^[A-Z]\$$$$"),"Drive admin share (C$$ etc.)", share="SYSVOL" OR share="NETLOGON","SYSVOL / NETLOGON - Group Policy and logon scripts", like(share,"%$$"),"Other hidden share", true(),"Normal share")
+| fillnull value="-" share server_name share_type service native_file_system share_class
+| search share="$share$"
+| eval _time=ts
+| timechart span=$span$ limit=10 useother=t count by $map_split$
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.drilldown">none</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel id="m_detail">
+      <title>E5. SMB Mapping Timeline - every share connection in time order (click a row to open its uid)</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:smb_mapping $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval share=upper(mvindex(split(path,"\\"),-1)), server_name=upper(mvindex(split(path,"\\"),2))
+| eval share_class=case(share="IPC$$","IPC$$ - named pipes for RPC", share="ADMIN$$","ADMIN$$ - Windows folder (admin only)", match(share,"^[A-Z]\$$$$"),"Drive admin share (C$$ etc.)", share="SYSVOL" OR share="NETLOGON","SYSVOL / NETLOGON - Group Policy and logon scripts", like(share,"%$$"),"Other hidden share", true(),"Normal share")
+| fillnull value="-" share server_name share_type service native_file_system share_class
+| search share="$share$"
+| sort 0 ts
+| head 5000
+| eval time=strftime(ts,"%Y-%m-%d %H:%M:%S.%3N")
+| table time id_orig_h id_resp_h path share share_class share_type service native_file_system uid
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">15</option>
+        <option name="drilldown">row</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <drilldown><set token="sel_uid">$row.uid$</set></drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="m_admin">
+      <title>E6. Admin and hidden share access (not IPC$$)</title>
+      <table>
+        <search base="b_map">
+          <query><![CDATA[
+| where like(share,"%$$") AND share!="IPC$$"
+| stats sum(count) as maps min(first) as first max(last) as last by id_orig_h id_resp_h path share_class
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S"), last=strftime(last,"%Y-%m-%d %H:%M:%S")
+| sort first
+]]></query>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+    <panel id="m_matrix">
+      <title>E7. Which client mapped which shares</title>
+      <table>
+        <search base="b_map">
+          <query><![CDATA[
+| stats sum(count) as maps values(share) as shares min(first) as first max(last) as last by id_orig_h id_resp_h server_name
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S"), last=strftime(last,"%Y-%m-%d %H:%M:%S")
+| sort - maps
+]]></query>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="m_nondc">
+      <title>E8. SMB to hosts that are not domain controllers (PC to PC SMB is a lateral movement sign)</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ $case$ (sourcetype=zeek:smb_mapping OR sourcetype=zeek:kerberos)
+| eval kdc=if(sourcetype="zeek:kerberos", id_resp_h, null())
+| eventstats values(kdc) as dcs
+| where sourcetype="zeek:smb_mapping"
+| search id_orig_h="$ip$" OR id_resp_h="$ip$"
+| eval dclist=",".coalesce(mvjoin(dcs,","),"").","
+| eval target=if(like(dclist,"%,".id_resp_h.",%"),"domain controller","NOT a domain controller")
+| eval share=upper(mvindex(split(path,"\\"),-1))
+| stats count as maps values(share) as shares min(ts) as first max(ts) as last by id_orig_h id_resp_h target
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S"), last=strftime(last,"%Y-%m-%d %H:%M:%S")
+| sort target, -maps
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <format type="color" field="target"><colorPalette type="map">{"NOT a domain controller":#F1813F}</colorPalette></format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="n_result">
+      <title>F1. NTLM results</title>
+      <chart>
+        <search base="b_ntlm">
+          <query><![CDATA[
+| stats sum(count) as logons by result
+]]></query>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+        <option name="charting.fieldColors">{"FAILED":0xDC4E41,"success":0x53A051,"no result seen":0x708794}</option>
+      </chart>
+    </panel>
+    <panel id="n_user">
+      <title>F2. NTLM users (click to filter)</title>
+      <chart>
+        <search base="b_ntlm">
+          <query><![CDATA[
+| stats sum(count) as logons by user
+| sort - logons
+]]></query>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+        <drilldown><set token="form.nuser">$click.value$</set></drilldown>
+      </chart>
+    </panel>
+    <panel id="n_host">
+      <title>F3. Client computer names sent in NTLM</title>
+      <chart>
+        <search base="b_ntlm">
+          <query><![CDATA[
+| stats sum(count) as logons by hostname
+| sort - logons
+]]></query>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel id="n_timeline">
+      <title>F4. NTLM Timeline (uses the NTLM user box)</title>
+      <input type="dropdown" token="ntlm_split" searchWhenChanged="true">
+        <label>Split by</label>
+        <choice value="result">Result</choice>
+        <choice value="user">User</choice>
+        <choice value="hostname">Client name</choice>
+        <choice value="id_orig_h">Client IP</choice>
+        <choice value="id_resp_h">Server IP</choice>
+        <default>result</default>
+      </input>
+      <chart>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:ntlm $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval result=case(success="true" OR success="T","success", success="false" OR success="F","FAILED", true(),"no result seen")
+| eval user=if(len(username)>0, username."@".coalesce(domainname,"?"), "(no user name seen)")
+| fillnull value="-" hostname server_nb_computer_name server_dns_computer_name server_tree_name domainname
+| search user="$nuser$"
+| eval _time=ts
+| timechart span=$span$ limit=10 useother=t count by $ntlm_split$
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.drilldown">none</option>
+        <option name="height">300</option>
+        <option name="charting.fieldColors">{"FAILED":0xDC4E41,"success":0x53A051,"no result seen":0x708794}</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel id="n_detail">
+      <title>F5. NTLM Timeline - every logon in time order (click a row to open its uid)</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:ntlm $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval result=case(success="true" OR success="T","success", success="false" OR success="F","FAILED", true(),"no result seen")
+| eval user=if(len(username)>0, username."@".coalesce(domainname,"?"), "(no user name seen)")
+| fillnull value="-" hostname server_nb_computer_name server_dns_computer_name server_tree_name domainname
+| search user="$nuser$"
+| sort 0 ts
+| head 5000
+| eval time=strftime(ts,"%Y-%m-%d %H:%M:%S.%3N")
+| table time id_orig_h id_resp_h id_resp_p user hostname server_nb_computer_name server_dns_computer_name server_tree_name result uid
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">15</option>
+        <option name="drilldown">row</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <format type="color" field="result"><colorPalette type="map">{"FAILED":#DC4E41,"success":#53A051}</colorPalette></format>
+        <drilldown><set token="sel_uid">$row.uid$</set></drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="n_pattern">
+      <title>F6. Password guessing, spraying and spread - per source</title>
+      <table>
+        <search base="b_ntlm">
+          <query><![CDATA[
+| eval failed=if(result="FAILED",count,0)
+| stats sum(count) as attempts sum(failed) as failures dc(user) as users dc(id_resp_h) as targets dc(hostname) as client_names values(hostname) as names min(first) as first max(last) as last by id_orig_h
+| eval verdict=case(users>=5 AND failures>=5,"Password spraying - many users fail", users<=2 AND failures>=10,"Brute force - one user, many failures", targets>=5,"One source logs on to many hosts - lateral movement / pass-the-hash?", client_names>=2,"Source sends more than one computer name - check", true(),"")
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S"), last=strftime(last,"%Y-%m-%d %H:%M:%S")
+| sort -failures, -targets
+| table id_orig_h attempts failures users targets client_names names verdict first last
+]]></query>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+    <panel id="n_spread">
+      <title>F7. Accounts used against more than one host</title>
+      <table>
+        <search base="b_ntlm">
+          <query><![CDATA[
+| stats sum(count) as logons dc(id_orig_h) as sources dc(id_resp_h) as targets values(id_resp_h) as target_list values(result) as results min(first) as first by user
+| where targets>=2
+| eval target_list=mvindex(target_list,0,9)
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S")
+| sort - targets
+]]></query>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="kb_result">
+      <title>G1. Kerberos results (PREAUTH_REQUIRED is normal)</title>
+      <chart>
+        <search base="b_krb">
+          <query><![CDATA[
+| stats sum(count) as events by result
+| sort - events
+]]></query>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+    <panel id="kb_type">
+      <title>G2. Kerberos request types and ciphers</title>
+      <chart>
+        <search base="b_krb">
+          <query><![CDATA[
+| eval t=request_type." ".cipher
+| stats sum(count) as events by t
+| sort - events
+]]></query>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.showPercent">true</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel id="kb_errors">
+      <title>G3. Kerberos errors explained</title>
+      <table>
+        <search base="b_krb">
+          <query><![CDATA[
+| where result!="success"
+| stats sum(count) as events dc(account) as accounts values(account) as account_list min(first) as first by id_orig_h result
+| eval account_list=mvindex(account_list,0,9)
+| eval meaning=case(result="KDC_ERR_PREAUTH_REQUIRED","Normal - first step of a logon, the client then sends pre-authentication", result="KDC_ERR_PREAUTH_FAILED","Wrong password", result="KDC_ERR_C_PRINCIPAL_UNKNOWN","User name does not exist (user enumeration if many)", result="KDC_ERR_S_PRINCIPAL_UNKNOWN","Service name (SPN) does not exist", result="KDC_ERR_CLIENT_REVOKED","Account disabled or locked out", result="KDC_ERR_KEY_EXPIRED","Password expired", result="KDC_ERR_ETYPE_NOSUPP","Encryption type not supported", result="KRB_AP_ERR_SKEW","Clock difference too big", result="KDC_ERR_BADOPTION","Option not allowed (sometimes delegation abuse)", result="KRB_ERR_RESPONSE_TOO_BIG","Normal - reply too big for UDP, client retries over TCP", result="KDC_ERR_WRONG_REALM","Wrong domain name", true(),"")
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S")
+| sort - events
+| table id_orig_h result meaning events accounts account_list first
+]]></query>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="kb_roast">
+      <title>G4. RC4 service tickets per account (Kerberoasting check)</title>
+      <table>
+        <search base="b_krb">
+          <query><![CDATA[
+| where request_type="TGS" AND match(cipher,"rc4") AND NOT like(service,"krbtgt%")
+| stats sum(count) as tickets dc(service) as services values(service) as service_list min(first) as first by id_orig_h account
+| eval verdict=if(services>=3,"Possible Kerberoasting - many RC4 service tickets",""), service_list=mvindex(service_list,0,9)
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S")
+| sort - services
+]]></query>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+    <panel id="kb_services">
+      <title>G5. Services asked for (cifs/ = SMB to that host)</title>
+      <table>
+        <search base="b_krb">
+          <query><![CDATA[
+| where request_type="TGS"
+| eval svc_type=mvindex(split(service,"/"),0)
+| stats sum(count) as tickets dc(account) as accounts values(account) as account_list min(first) as first by service svc_type
+| eval account_list=mvindex(account_list,0,9)
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S")
+| sort - tickets
+]]></query>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="kb_timeline">
+      <title>G6. Kerberos timeline</title>
+      <input type="dropdown" token="krb_split" searchWhenChanged="true">
+        <label>Split by</label>
+        <choice value="result">Result</choice>
+        <choice value="request_type">Request type</choice>
+        <choice value="account">Account</choice>
+        <choice value="id_orig_h">Client IP</choice>
+        <default>result</default>
+      </input>
+      <chart>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:kerberos $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval result=case(success="true","success", isnotnull(error_msg), error_msg, success="false","failed", true(),"no reply seen")
+| eval account=lower(mvindex(split(client,"/"),0)), acct_type=case(like(account,"%$$"),"computer", len(account)>0,"user", true(),"(hidden in ticket)")
+| fillnull value="-" request_type service cipher account
+| eval _time=ts
+| timechart span=$span$ limit=10 useother=t count by $krb_split$
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.drilldown">none</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel id="l_search">
+      <title>G7. LDAP searches that Zeek could read (recon filters are flagged)</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:ldap_search $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval fl=lower(filter)
+| eval flag=case(match(fl,"ntver"),"DC locator ping (normal)", match(fl,"serviceprincipalname"),"SPN search - Kerberoasting recon", match(fl,"4194304"),"No pre-auth search - AS-REP roasting recon", match(fl,"admincount"),"adminCount search - privileged accounts", match(fl,"msds-allowedtodelegateto|524288|msds-allowedtoactonbehalfofotheridentity"),"Delegation search", match(fl,"\(objectclass=\*\)"),"Everything search - bulk directory dump", match(fl,"objectcategory=computer|objectclass=computer"),"Computer list", match(fl,"samaccounttype=805306368|objectcategory=person|objectclass=user"),"User list", match(fl,"objectclass=group|objectcategory=group"),"Group list", match(fl,"trusteddomain"),"Domain trust search", true(),"")
+| stats count as searches sum(result_count) as results values(flag) as flags min(ts) as first by id_orig_h id_resp_h base_object scope filter
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S")
+| sort - results
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="x_lateral">
+      <title>H1. Lateral movement checklist per client &gt; server pair (1 = seen)</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ $case$ (sourcetype=zeek:smb_mapping OR sourcetype=zeek:smb_files OR sourcetype=zeek:dce_rpc) (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval share=upper(mvindex(split(path,"\\"),-1)), fname=lower(mvindex(split(name,"\\"),-1)), ep=lower(endpoint), op=lower(operation)
+| eval s_admin=if(sourcetype="zeek:smb_mapping" AND like(share,"%$$") AND share!="IPC$$",1,0)
+| eval s_exe=if(sourcetype="zeek:smb_files" AND like(share,"%$$") AND share!="IPC$$" AND match(fname,"\.(exe|dll|bat|ps1|cmd|vbs|scr)$$"),1,0)
+| eval s_svc=if(sourcetype="zeek:dce_rpc" AND ep="svcctl" AND match(op,"^(createservice|startservice|changeserviceconfig)"),1,0)
+| eval s_pipe=if(sourcetype="zeek:smb_files" AND share="IPC$$" AND match(fname,"^(psexesvc|remcom|paexec|csexec)"),1,0)
+| eval s_task=if(sourcetype="zeek:dce_rpc" AND (ep="atsvc" OR ep="itaskschedulerservice") AND match(op,"^(jobadd|schrpcregistertask|schrpcrun|schrpcenabletask)"),1,0)
+| eval s_wmi=if(sourcetype="zeek:dce_rpc" AND ((ep="iwbemservices" AND match(op,"^execmethod")) OR ep="iwbemlevel1login"),1,0)
+| eval s_dcom=if(sourcetype="zeek:dce_rpc" AND (ep="iremotescmactivator" OR ep="isystemactivator") AND op="remotecreateinstance",1,0)
+| eval s_reg=if(sourcetype="zeek:dce_rpc" AND ep="winreg" AND match(op,"^basereg(createkey|setvalue|savekey)"),1,0)
+| eval s_dcsync=if(sourcetype="zeek:dce_rpc" AND ep="drsuapi" AND op="drsgetncchanges",1,0)
+| eval exe_name=if(s_exe=1, share."\\".fname, null()), rpc_call=if(s_svc+s_task+s_wmi+s_dcom+s_reg+s_dcsync>0, endpoint."::".operation, null())
+| stats max(s_admin) as admin_share max(s_exe) as exe_copied max(s_svc) as service max(s_pipe) as psexec_pipe max(s_task) as task max(s_wmi) as wmi max(s_dcom) as dcom max(s_reg) as reg_write max(s_dcsync) as dcsync values(exe_name) as files values(rpc_call) as rpc_calls min(ts) as first max(ts) as last by id_orig_h id_resp_h
+| eval score=admin_share+exe_copied+service+psexec_pipe+task+wmi+dcom+reg_write+dcsync
+| where score>0
+| eval verdict=case(dcsync=1,"HIGH - DCSync (replication request)", exe_copied=1 AND (service=1 OR psexec_pipe=1),"HIGH - PsExec-style: program copied, then run as a service", service=1,"HIGH - remote service created or started", task=1,"HIGH - remote scheduled task", wmi=1,"HIGH - remote WMI execution", psexec_pipe=1,"HIGH - PsExec pipe", dcom=1,"MEDIUM - remote DCOM activation", exe_copied=1,"MEDIUM - program copied to an admin share", reg_write=1,"MEDIUM - remote registry write", admin_share=1,"LOW - admin share opened", true(),"")
+| eval sev=mvindex(split(verdict," - "),0)
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S"), last=strftime(last,"%Y-%m-%d %H:%M:%S")
+| sort - score
+| table sev verdict id_orig_h id_resp_h admin_share exe_copied service psexec_pipe task wmi dcom reg_write dcsync files rpc_calls first last
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <format type="color" field="sev"><colorPalette type="map">{"HIGH":#DC4E41,"MEDIUM":#F1813F,"LOW":#F8BE34,"INFO":#708794}</colorPalette></format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="x_methods">
+      <title>H2. Remote access between internal hosts (SMB, RPC, RDP, WinRM, SSH, VNC)</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ sourcetype=zeek:conn $case$ (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval src_scope=case(match(id_orig_h,"^(22[4-9]|23[0-9]|255)\.|\.255$$|^ff"),"multicast/broadcast", match(id_orig_h,"^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|127\.|169\.254\.|0\.0\.0\.0$$|fe80:|fc|fd)"),"internal", true(),"external")
+| eval dst_scope=case(match(id_resp_h,"^(22[4-9]|23[0-9]|255)\.|\.255$$|^ff"),"multicast/broadcast", match(id_resp_h,"^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|127\.|169\.254\.|0\.0\.0\.0$$|fe80:|fc|fd)"),"internal", true(),"external")
+| where src_scope="internal" AND dst_scope="internal" AND NOT (conn_state="S0" OR conn_state="REJ")
+| eval method=case(id_resp_p=445 OR id_resp_p=139,"SMB", id_resp_p=135,"RPC endpoint mapper (DCOM / WMI start)", id_resp_p=3389,"RDP", id_resp_p=5985 OR id_resp_p=5986,"WinRM / PowerShell remoting", id_resp_p=22,"SSH", id_resp_p=23,"Telnet", id_resp_p=5900,"VNC", true(),null())
+| where isnotnull(method)
+| stats count as conns values(method) as methods sum(orig_bytes) as out sum(resp_bytes) as in min(ts) as first max(ts) as last by id_orig_h id_resp_h
+| eval KB_sent=round(out/1024,1), KB_received=round(in/1024,1)
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S"), last=strftime(last,"%Y-%m-%d %H:%M:%S")
+| sort - conns
+| table id_orig_h id_resp_h methods conns KB_sent KB_received first last
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="x_cred">
+      <title>H3. Credential access signs (DCSync, hive or LSA secret reads, credential files)</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ $case$ (sourcetype=zeek:dce_rpc OR sourcetype=zeek:smb_files) (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval ep_l=lower(endpoint), op_l=lower(operation)
+| eval rule=case(
+    ep_l="drsuapi" AND op_l="drsgetncchanges", "HIGH|Credential access|DCSync - AD replication of password data (normal only DC to DC)|T1003.006",
+    ep_l="drsuapi" AND op_l="drsreplicaadd", "HIGH|Defense evasion|New replication partner added (DCShadow)|T1207",
+    match(op_l,"^efs"), "HIGH|Credential access|EFSRPC call - authentication coercion (PetitPotam)|T1187",
+    ep_l="spoolss" AND match(op_l,"^rpcremotefindfirstprinterchangenotification"), "HIGH|Credential access|Printer change notification - authentication coercion (PrinterBug)|T1187",
+    ep_l="spoolss" AND match(op_l,"^rpcaddprinterdriver"), "HIGH|Privilege escalation|Remote printer driver install (PrintNightmare)|T1068",
+    ep_l="dfsnm" AND match(op_l,"^netrdfs(add|remove)stdroot"), "HIGH|Credential access|DFS root change - authentication coercion (DFSCoerce)|T1187",
+    ep_l="svcctl" AND match(op_l,"^(createservice|startservice|changeserviceconfig)"), "HIGH|Execution|Remote service created or started (PsExec, smbexec)|T1569.002",
+    ep_l="svcctl" AND match(op_l,"^deleteservice"), "MEDIUM|Defense evasion|Remote service deleted (clean-up after remote execution)|T1070",
+    ep_l="svcctl", "LOW|Discovery|Remote Service Control Manager opened or queried|T1007",
+    ep_l="atsvc" AND op_l="jobadd", "HIGH|Execution|Remote scheduled job created (at)|T1053.002",
+    ep_l="itaskschedulerservice" AND match(op_l,"^schrpc(registertask|run|enabletask)"), "HIGH|Execution|Remote scheduled task created or run (schtasks /s, atexec)|T1053.005",
+    ep_l="itaskschedulerservice" AND op_l="schrpcdelete", "MEDIUM|Defense evasion|Remote scheduled task deleted|T1070",
+    ep_l="iwbemservices" AND match(op_l,"^execmethod"), "HIGH|Execution|Remote WMI method run (wmic process call create, wmiexec)|T1047",
+    ep_l="iwbemlevel1login", "MEDIUM|Execution|Remote WMI logon (comes before WMI execution)|T1047",
+    (ep_l="iremotescmactivator" OR ep_l="isystemactivator") AND op_l="remotecreateinstance", "MEDIUM|Lateral movement|Remote DCOM object created (WMI or DCOM execution)|T1021.003",
+    ep_l="winreg" AND op_l="baseregsavekey", "HIGH|Credential access|Registry hive saved remotely (SAM/SYSTEM/SECURITY dump)|T1003.002",
+    ep_l="winreg" AND match(op_l,"^basereg(createkey|setvalue|deletevalue|deletekey|restorekey|replacekey)"), "MEDIUM|Persistence|Remote registry write|T1112",
+    ep_l="winreg", "LOW|Discovery|Remote registry read|T1012",
+    ep_l="samr" AND match(op_l,"^samr(createuser2indomain|createuserindomain|addmembertogroup|addmembertoalias)"), "HIGH|Persistence|Account created or added to a group|T1136.002",
+    ep_l="samr" AND match(op_l,"^samr(setinformationuser|changepassworduser|unicodechangepassworduser|oemchangepassworduser)"), "MEDIUM|Persistence|Account password or settings changed|T1098",
+    ep_l="samr" AND match(op_l,"^samr(enumerate|querydisplayinformation|getmembers|getaliasmembership|querygroupinfo|queryinformationuser|getgroupsforuser|lookupnamesindomain)"), "MEDIUM|Discovery|Account or group enumeration (net user /domain, BloodHound)|T1087.002",
+    ep_l="lsarpc" AND match(op_l,"^lsar(retrieveprivatedata|querysecret|opensecret)"), "HIGH|Credential access|LSA secret read|T1003.004",
+    ep_l="lsarpc" AND match(op_l,"^lsar(enumerateaccounts|enumerateaccountrights|enumerateaccountswithuserright|enumeratetrusteddomains)"), "MEDIUM|Discovery|Privilege or trust enumeration|T1069",
+    ep_l="srvsvc" AND op_l="netrsessionenum", "MEDIUM|Discovery|Session enumeration - who is logged on where (BloodHound)|T1049",
+    ep_l="srvsvc" AND op_l="netrshareenum", "MEDIUM|Discovery|Share enumeration (net view, share scanners)|T1135",
+    ep_l="wkssvc" AND op_l="netrwkstauserenum", "MEDIUM|Discovery|Logged-on user enumeration|T1033",
+    ep_l="eventlog" AND match(op_l,"^elfrclearelf"), "HIGH|Defense evasion|Event log cleared remotely|T1070.001",
+    match(ep_l,"backupkey|bkrp"), "HIGH|Credential access|DPAPI domain backup key request|T1555",
+    ep_l="netlogon" AND op_l="netrserverpasswordset2", "MEDIUM|Privilege escalation|Machine password set - Zerologon if many NetrServerAuthenticate calls came first|T1210",
+    ep_l="netlogon" AND match(op_l,"^netrlogonsamlogon"), "INFO|Credential access|NTLM logon check passed to the DC - many in a short time = password guessing|T1110",
+    match(op_l,"^unknown-"), "LOW|Unknown|Operation number Zeek could not name - unusual|-",
+    true(), "INFO|-|Normal or not classified|-")
+| eval sev=mvindex(split(rule,"|"),0), category=mvindex(split(rule,"|"),1), meaning=mvindex(split(rule,"|"),2), attack=mvindex(split(rule,"|"),3)
+| fields - ep_l op_l rule
+| eval f=lower(mvindex(split(name,"\\"),-1))
+| eval finding=case(sourcetype="zeek:dce_rpc" AND category="Credential access" AND sev!="INFO", endpoint."::".operation." - ".meaning, sourcetype="zeek:smb_files" AND f="ntds.dit", "File ntds.dit - AD database", sourcetype="zeek:smb_files" AND match(f,"^(sam|system|security)(\.(save|bak|hiv|hive|old))?$$"), "File ".f." - registry hive copy", sourcetype="zeek:smb_files" AND match(f,"\.dmp$$"), "File ".f." - memory dump", sourcetype="zeek:smb_files" AND match(f,"\.(kirbi|ccache)$$"), "File ".f." - Kerberos ticket", sourcetype="zeek:smb_files" AND f="groups.xml", "File groups.xml - GPP password file")
+| where isnotnull(finding)
+| stats count min(ts) as first max(ts) as last by id_orig_h id_resp_h finding
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S"), last=strftime(last,"%Y-%m-%d %H:%M:%S")
+| sort first
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="x_story">
+      <title>H4. Windows domain story - SMB, RPC, NTLM, Kerberos and LDAP in one time line (click a row to open its uid)</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ $case$ (sourcetype=zeek:dce_rpc OR sourcetype=zeek:smb_mapping OR sourcetype=zeek:smb_files OR sourcetype=zeek:ntlm OR sourcetype=zeek:kerberos OR sourcetype=zeek:ldap_search) (id_orig_h="$ip$" OR id_resp_h="$ip$")
+| eval ep_l=lower(endpoint), op_l=lower(operation)
+| eval rule=case(
+    ep_l="drsuapi" AND op_l="drsgetncchanges", "HIGH|Credential access|DCSync - AD replication of password data (normal only DC to DC)|T1003.006",
+    ep_l="drsuapi" AND op_l="drsreplicaadd", "HIGH|Defense evasion|New replication partner added (DCShadow)|T1207",
+    match(op_l,"^efs"), "HIGH|Credential access|EFSRPC call - authentication coercion (PetitPotam)|T1187",
+    ep_l="spoolss" AND match(op_l,"^rpcremotefindfirstprinterchangenotification"), "HIGH|Credential access|Printer change notification - authentication coercion (PrinterBug)|T1187",
+    ep_l="spoolss" AND match(op_l,"^rpcaddprinterdriver"), "HIGH|Privilege escalation|Remote printer driver install (PrintNightmare)|T1068",
+    ep_l="dfsnm" AND match(op_l,"^netrdfs(add|remove)stdroot"), "HIGH|Credential access|DFS root change - authentication coercion (DFSCoerce)|T1187",
+    ep_l="svcctl" AND match(op_l,"^(createservice|startservice|changeserviceconfig)"), "HIGH|Execution|Remote service created or started (PsExec, smbexec)|T1569.002",
+    ep_l="svcctl" AND match(op_l,"^deleteservice"), "MEDIUM|Defense evasion|Remote service deleted (clean-up after remote execution)|T1070",
+    ep_l="svcctl", "LOW|Discovery|Remote Service Control Manager opened or queried|T1007",
+    ep_l="atsvc" AND op_l="jobadd", "HIGH|Execution|Remote scheduled job created (at)|T1053.002",
+    ep_l="itaskschedulerservice" AND match(op_l,"^schrpc(registertask|run|enabletask)"), "HIGH|Execution|Remote scheduled task created or run (schtasks /s, atexec)|T1053.005",
+    ep_l="itaskschedulerservice" AND op_l="schrpcdelete", "MEDIUM|Defense evasion|Remote scheduled task deleted|T1070",
+    ep_l="iwbemservices" AND match(op_l,"^execmethod"), "HIGH|Execution|Remote WMI method run (wmic process call create, wmiexec)|T1047",
+    ep_l="iwbemlevel1login", "MEDIUM|Execution|Remote WMI logon (comes before WMI execution)|T1047",
+    (ep_l="iremotescmactivator" OR ep_l="isystemactivator") AND op_l="remotecreateinstance", "MEDIUM|Lateral movement|Remote DCOM object created (WMI or DCOM execution)|T1021.003",
+    ep_l="winreg" AND op_l="baseregsavekey", "HIGH|Credential access|Registry hive saved remotely (SAM/SYSTEM/SECURITY dump)|T1003.002",
+    ep_l="winreg" AND match(op_l,"^basereg(createkey|setvalue|deletevalue|deletekey|restorekey|replacekey)"), "MEDIUM|Persistence|Remote registry write|T1112",
+    ep_l="winreg", "LOW|Discovery|Remote registry read|T1012",
+    ep_l="samr" AND match(op_l,"^samr(createuser2indomain|createuserindomain|addmembertogroup|addmembertoalias)"), "HIGH|Persistence|Account created or added to a group|T1136.002",
+    ep_l="samr" AND match(op_l,"^samr(setinformationuser|changepassworduser|unicodechangepassworduser|oemchangepassworduser)"), "MEDIUM|Persistence|Account password or settings changed|T1098",
+    ep_l="samr" AND match(op_l,"^samr(enumerate|querydisplayinformation|getmembers|getaliasmembership|querygroupinfo|queryinformationuser|getgroupsforuser|lookupnamesindomain)"), "MEDIUM|Discovery|Account or group enumeration (net user /domain, BloodHound)|T1087.002",
+    ep_l="lsarpc" AND match(op_l,"^lsar(retrieveprivatedata|querysecret|opensecret)"), "HIGH|Credential access|LSA secret read|T1003.004",
+    ep_l="lsarpc" AND match(op_l,"^lsar(enumerateaccounts|enumerateaccountrights|enumerateaccountswithuserright|enumeratetrusteddomains)"), "MEDIUM|Discovery|Privilege or trust enumeration|T1069",
+    ep_l="srvsvc" AND op_l="netrsessionenum", "MEDIUM|Discovery|Session enumeration - who is logged on where (BloodHound)|T1049",
+    ep_l="srvsvc" AND op_l="netrshareenum", "MEDIUM|Discovery|Share enumeration (net view, share scanners)|T1135",
+    ep_l="wkssvc" AND op_l="netrwkstauserenum", "MEDIUM|Discovery|Logged-on user enumeration|T1033",
+    ep_l="eventlog" AND match(op_l,"^elfrclearelf"), "HIGH|Defense evasion|Event log cleared remotely|T1070.001",
+    match(ep_l,"backupkey|bkrp"), "HIGH|Credential access|DPAPI domain backup key request|T1555",
+    ep_l="netlogon" AND op_l="netrserverpasswordset2", "MEDIUM|Privilege escalation|Machine password set - Zerologon if many NetrServerAuthenticate calls came first|T1210",
+    ep_l="netlogon" AND match(op_l,"^netrlogonsamlogon"), "INFO|Credential access|NTLM logon check passed to the DC - many in a short time = password guessing|T1110",
+    match(op_l,"^unknown-"), "LOW|Unknown|Operation number Zeek could not name - unusual|-",
+    true(), "INFO|-|Normal or not classified|-")
+| eval sev=mvindex(split(rule,"|"),0), category=mvindex(split(rule,"|"),1), meaning=mvindex(split(rule,"|"),2), attack=mvindex(split(rule,"|"),3)
+| fields - ep_l op_l rule
+| eval log=replace(sourcetype,"zeek:",""), share=upper(mvindex(split(path,"\\"),-1)), fname=lower(mvindex(split(name,"\\"),-1))
+| eval what=case(
+    log="dce_rpc", "RPC ".coalesce(endpoint,"?")."::".coalesce(operation,"?")." via ".coalesce(named_pipe,"?"),
+    log="smb_mapping", "MAP ".coalesce(path,"?")." (".coalesce(share_type,"?").")",
+    log="smb_files", replace(coalesce(action,"?"),"SMB::","")." ".coalesce(path,"")." ".coalesce(name,"?"),
+    log="ntlm", "NTLM ".coalesce(username,"?")."@".coalesce(domainname,"?")." from ".coalesce(hostname,"?")." success=".coalesce(success,"?"),
+    log="kerberos", "KRB ".coalesce(request_type,"?")." ".coalesce(client,"?")." > ".coalesce(service,"?")." ".if(success="true","ok",coalesce(error_msg,"failed")),
+    log="ldap_search", "LDAP search base=".coalesce(base_object,"")." filter=".coalesce(filter,""))
+| eval sev=case(log="dce_rpc", sev,
+    log="smb_mapping" AND like(share,"%$$") AND share!="IPC$$", "MEDIUM",
+    log="smb_files" AND like(share,"%$$") AND share!="IPC$$" AND match(fname,"\.(exe|dll|bat|ps1|cmd|vbs|scr)$$"), "HIGH",
+    log="smb_files" AND share="IPC$$" AND match(fname,"^(psexesvc|remcom|paexec|csexec)"), "HIGH",
+    log="ntlm" AND success="false", "LOW",
+    log="kerberos" AND match(error_msg,"PREAUTH_FAILED|PRINCIPAL_UNKNOWN|CLIENT_REVOKED"), "LOW",
+    true(), "INFO")
+| sort 0 ts
+| head 5000
+| eval time=strftime(ts,"%Y-%m-%d %H:%M:%S.%3N")
+| table time sev log id_orig_h id_resp_h id_resp_p what uid
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">25</option>
+        <option name="drilldown">row</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+        <format type="color" field="sev"><colorPalette type="map">{"HIGH":#DC4E41,"MEDIUM":#F1813F,"LOW":#F8BE34,"INFO":#708794}</colorPalette></format>
+        <drilldown><set token="sel_uid">$row.uid$</set></drilldown>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="x_uid" depends="$sel_uid$">
+      <title>H5. Every Zeek log for the clicked connection (uid)</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$idx$ $case$ (uid="$sel_uid$" OR conn_uids="$sel_uid$" OR uids="$sel_uid$")
+| sort 0 ts
+| eval time=strftime(ts,"%Y-%m-%d %H:%M:%S.%3N")
+| table time sourcetype _raw
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">20</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="z_snort">
+      <title>I1. Snort alerts on SMB, RPC, Kerberos and LDAP ports</title>
+      <table>
+        <search>
+          <query><![CDATA[
+index=$sidx$ sourcetype=snort:alert $case$ (dest_port=445 OR dest_port=139 OR dest_port=135 OR dest_port=88 OR dest_port=389 OR src_port=445 OR src_port=139) (src_ip="$ip$" OR dest_ip="$ip$")
+| stats count min(_time) as first max(_time) as last by sid msg src_ip dest_ip dest_port
+| eval first=strftime(first,"%Y-%m-%d %H:%M:%S"), last=strftime(last,"%Y-%m-%d %H:%M:%S")
+| sort first
+]]></query>
+          <earliest>$tp.earliest$</earliest>
+          <latest>$tp.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="wrap">true</option>
+        <option name="rowNumbers">false</option>
+      </table>
+    </panel>
+  </row>
+</form>

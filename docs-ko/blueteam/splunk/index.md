@@ -18,6 +18,7 @@ title: Splunk
 | **BOTSv3 (또는 어떤 CTF 데이터셋이든) 제대로 풀려면?** | [BOTSv3 조사 워크플로](botsv3-workflow.md) |
 | **Splunk에서 비코닝 / C2** | [비코닝과 C2](../../network/beaconing-c2.md) (네트워크 섹션, `streamstats` 설명) |
 | **이벤트 ID 4xxx는 무슨 뜻인가?** | [Windows 이벤트 ID](../../basics/windows-event-ids.md) |
+| **PCAP(Zeek)을 Splunk에 넣었다 — 베이스라이닝, SMB, 횡적 이동을 한 번에 보는 대시보드는?** | [트래픽 분석 대시보드](traffic-dashboards/index.md) (개요 + SMB·도메인, 초보자용 만들기 가이드 포함) |
 
 ## 페이지 { #pages }
 
@@ -29,6 +30,7 @@ title: Splunk
 -   **[보안 검색](security-searches.md)** — 로그온, 실행, 지속성, 횡적 이동, 네트워크, 변조, 호스트 타임라인
 -   **[헌팅 패턴](hunting-patterns.md)** — 희소, 신규, 급증, 규칙성, 긴 꼬리, 동료 대비 이상치, 순서, 떨어뜨리고 실행, 점수화
 -   **[BOTSv3 워크플로](botsv3-workflow.md)** — 데이터 지도, 피벗 키, 조사 루프, 첫 확인용 검색 (스포일러 없음)
+-   **[트래픽 분석 대시보드](traffic-dashboards/index.md)** — 바로 쓰는 Zeek 대시보드 두 개(개요 57패널, SMB·Windows 도메인 66패널), Simple XML 대시보드 만드는 법, 패널마다 SPL 설명, 분석 순서
 
 </div>
 

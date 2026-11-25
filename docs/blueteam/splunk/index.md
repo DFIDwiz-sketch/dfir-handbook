@@ -18,6 +18,7 @@ SPL for incident response and threat hunting — syntax notes, reusable searches
 | **How do I work through BOTSv3 (or any CTF dataset) properly?** | [BOTSv3 investigation workflow](botsv3-workflow.md) |
 | **Beaconing / C2 in Splunk** | [Beaconing & C2](../../network/beaconing-c2.md) (network section, `streamstats` walkthrough) |
 | **What does event ID 4xxx mean?** | [Windows Event IDs](../../basics/windows-event-ids.md) |
+| **I loaded a PCAP (Zeek) into Splunk — is there a ready-made dashboard for baselining, SMB and lateral movement?** | [Traffic analysis dashboards](traffic-dashboards/index.md) (overview + SMB/domain, with a beginner build guide) |
 
 ## Pages
 
@@ -29,6 +30,7 @@ SPL for incident response and threat hunting — syntax notes, reusable searches
 -   **[Security searches](security-searches.md)** — logons, execution, persistence, lateral movement, network, tampering, host timeline
 -   **[Hunting patterns](hunting-patterns.md)** — rare, new, spike, regular, long tail, peer outlier, sequences, drop-and-run, scoring
 -   **[BOTSv3 workflow](botsv3-workflow.md)** — data map, pivot keys, investigation loop, first-look searches (no spoilers)
+-   **[Traffic analysis dashboards](traffic-dashboards/index.md)** — two ready-made Zeek dashboards (overview: 57 panels, SMB & Windows domain: 66 panels), how to build Simple XML dashboards, every panel's SPL explained, analysis order
 
 </div>
 
