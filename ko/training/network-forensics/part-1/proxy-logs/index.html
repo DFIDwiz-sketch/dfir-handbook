@@ -11907,7 +11907,7 @@
 </div>
 <div class="admonition note">
 <p class="admonition-title">표기</p>
-<p>이번 회차의 명령 결과 중 **(직접 실행 결과)**라고 적은 것은 직접 만든 표본 로그 12줄에 실제로 명령을 돌려 얻은 출력입니다. 표본 로그의 주소와 도메인은 모두 가상이며, 날짜는 2025-10-12(UTC)입니다. 이 작업 환경의 시스템 시간대는 UTC입니다.</p>
+<p>이번 회차의 명령 결과 중 <strong>(직접 실행 결과)</strong>​라고 적은 것은 직접 만든 표본 로그 12줄에 실제로 명령을 돌려 얻은 출력입니다. 표본 로그의 주소와 도메인은 모두 가상이며, 날짜는 2025-10-12(UTC)입니다. 이 작업 환경의 시스템 시간대는 UTC입니다.</p>
 </div>
 <h2 id="one-line">1. 숫자 덩어리 한 줄<a class="headerlink" href="#one-line" title="Permanent link">¶</a></h2>
 <p><strong>(가상 사례)</strong> 동료가 프록시 서버에서 이런 줄을 복사해 보내며 묻습니다. "이 PC, 뭔가 받은 것 같은데 이게 무슨 뜻이야?"</p>
@@ -12068,7 +12068,7 @@
 </tbody>
 </table>
 <p>상태 이름 뒤에 <code>_ABORTED</code>(도중에 끊김)나 <code>_TIMEDOUT</code>(시간 초과)이 붙기도 합니다. 예를 들어 <code>TCP_MISS_ABORTED/200</code>은 "서버에서 받아 오다가 도중에 끊겼다"는 뜻이라, 응답 크기가 파일 전체가 아닐 수 있어요.</p>
-<p><strong>[변경됨]</strong> 교재의 예시 로그에는 <code>TCP_REFRESH_HIT/304</code>가 나옵니다. Squid 7의 상태 이름 목록에는 이 이름이 없고, 같은 경우가 <code>TCP_REFRESH_UNMODIFIED</code>로 기록됩니다(2026-11-05, Squid 7 소스 <code>src/LogTags.cc</code>로 확인). 오래된 서버의 로그를 볼 때는 옛 이름도, 지금 이름도 알아볼 수 있어야 합니다. 또 Squid 버전에 따라 <code>CONNECT</code> 줄이 <code>TCP_MISS/200</code>으로 찍히기도 하고 <code>TCP_TUNNEL/200</code>으로 찍히기도 하니, <code>CONNECT</code>를 찾을 때는 상태 이름보다 **메서드 칸(6번)**으로 거르는 편이 안전합니다.</p>
+<p><strong>[변경됨]</strong> 교재의 예시 로그에는 <code>TCP_REFRESH_HIT/304</code>가 나옵니다. Squid 7의 상태 이름 목록에는 이 이름이 없고, 같은 경우가 <code>TCP_REFRESH_UNMODIFIED</code>로 기록됩니다(2026-11-05, Squid 7 소스 <code>src/LogTags.cc</code>로 확인). 오래된 서버의 로그를 볼 때는 옛 이름도, 지금 이름도 알아볼 수 있어야 합니다. 또 Squid 버전에 따라 <code>CONNECT</code> 줄이 <code>TCP_MISS/200</code>으로 찍히기도 하고 <code>TCP_TUNNEL/200</code>으로 찍히기도 하니, <code>CONNECT</code>를 찾을 때는 상태 이름보다 <strong>메서드 칸(6번)</strong>​으로 거르는 편이 안전합니다.</p>
 <p>HTTP 상태 코드는 자주 보는 것만 정리합니다. 전체 목록은 <a href="../../../../basics/http-status-codes/">HTTP 상태 코드 레퍼런스</a>를 보세요.</p>
 <table>
 <thead>
@@ -12140,7 +12140,7 @@
 <ul>
 <li><strong>403 줄:</strong> <code>10.10.7.15</code>가 <code>c2.example.net</code>에 요청했지만 프록시가 막았습니다. 응답 3,870바이트는 프록시가 보낸 "차단됨" 안내 페이지 크기이고, 서버 IP가 <code>-</code>이니 외부와는 통신하지 않았습니다. <strong>관측 사실:</strong> 그 PC가 차단된 도메인으로 요청을 보냈다. <strong>가설:</strong> 그 PC에서 무언가가 C2에 접속하려 한다. 이 PC는 2초 전에 <code>update.bin</code>을 받은 바로 그 PC예요(1절). 두 줄을 이어 보면 가설이 강해지지만, 결론을 내리려면 단말에서 어떤 프로세스가 요청했는지 확인해야 합니다.</li>
 <li><strong>407 줄:</strong> 보안 담당 PC가 인증 없이 요청해서 "프록시 인증이 필요하다"는 답을 받았습니다. 사람이 쓰는 브라우저는 보통 이 답을 받고 바로 인증 정보를 붙여 다시 요청합니다. 그래서 407이 한두 번 있는 건 정상이에요. 하지만 같은 PC에서 407만 수백 번 반복된다면, 프록시 인증을 모르는 프로그램(악성코드일 수도 있음)이 계속 나가려 한다는 신호일 수 있습니다.</li>
-<li><strong>POST 세 줄:</strong> 같은 PC가 같은 주소에 <strong>5분(300초) 간격</strong>으로 **같은 크기(2,211바이트)**의 POST를 보냈습니다. 사람이 손으로 하기는 어려운 규칙성이라, 1.1강에서 말한 "주기적으로 외부와 통신하는 프로그램"의 전형적인 모양입니다. 정상적인 원격 측정(telemetry) 프로그램도 이렇게 생겼으니, 도메인 평판과 단말의 프로세스를 함께 봐야 합니다.</li>
+<li><strong>POST 세 줄:</strong> 같은 PC가 같은 주소에 <strong>5분(300초) 간격</strong>으로 <strong>같은 크기(2,211바이트)</strong>​의 POST를 보냈습니다. 사람이 손으로 하기는 어려운 규칙성이라, 1.1강에서 말한 "주기적으로 외부와 통신하는 프로그램"의 전형적인 모양입니다. 정상적인 원격 측정(telemetry) 프로그램도 이렇게 생겼으니, 도메인 평판과 단말의 프로세스를 함께 봐야 합니다.</li>
 </ul>
 <h2 id="what-is-missing">4. 기본 형식에 없는 것<a class="headerlink" href="#what-is-missing" title="Permanent link">¶</a></h2>
 <p>기본 형식은 쓸 만하지만 조사자에게 아쉬운 점이 세 가지 있습니다.</p>

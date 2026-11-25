@@ -11930,7 +11930,7 @@
 </div>
 <div class="admonition note">
 <p class="admonition-title">실습 환경과 표기</p>
-<p>**(직접 실행 결과)**는 2.6강에서 만든 <strong>연습용 DNS 계층</strong>(Unbound 1.19.2, 루프백 주소)에 공격자 역할의 영역 <code>example.org</code>를 더해 얻었습니다. 공격자 쪽 동작(이름을 <code>127.0.0.1</code>에 두었다가 바꾸기, 주소를 계속 갈아 끼우는 빠른 플럭스, 날짜로 이름 만들기)은 모두 <strong>연습용으로 직접 흉내 낸 것</strong>이고, 실제 악성코드는 쓰지 않았습니다. 시간은 압축했어요. 실제로는 몇 시간, 며칠에 걸칠 일을 몇십 초 안에 일으켰습니다. 패시브 DNS 기록은 Zeek 9.0.1(공식 Docker 이미지)과 TShark 4.2.2로 만들었습니다. 교재가 소개하는 passivedns 도구는 이 환경에서 소스를 빌드해 실행할 수 없어서 <strong>돌려 보지 못했고</strong>, 그 출력 형식은 설명으로만 다룹니다. 암호화 DNS는 Unbound의 DoT(853)·DoH(443) 기능을 <code>127.0.0.20</code>에 켜고 curl 8.5.0과 dig 9.18.39로 확인했습니다. 주소는 문서용 주소, 도메인은 예시용입니다.</p>
+<p><strong>(직접 실행 결과)</strong>​는 2.6강에서 만든 <strong>연습용 DNS 계층</strong>(Unbound 1.19.2, 루프백 주소)에 공격자 역할의 영역 <code>example.org</code>를 더해 얻었습니다. 공격자 쪽 동작(이름을 <code>127.0.0.1</code>에 두었다가 바꾸기, 주소를 계속 갈아 끼우는 빠른 플럭스, 날짜로 이름 만들기)은 모두 <strong>연습용으로 직접 흉내 낸 것</strong>이고, 실제 악성코드는 쓰지 않았습니다. 시간은 압축했어요. 실제로는 몇 시간, 며칠에 걸칠 일을 몇십 초 안에 일으켰습니다. 패시브 DNS 기록은 Zeek 9.0.1(공식 Docker 이미지)과 TShark 4.2.2로 만들었습니다. 교재가 소개하는 passivedns 도구는 이 환경에서 소스를 빌드해 실행할 수 없어서 <strong>돌려 보지 못했고</strong>, 그 출력 형식은 설명으로만 다룹니다. 암호화 DNS는 Unbound의 DoT(853)·DoH(443) 기능을 <code>127.0.0.20</code>에 켜고 curl 8.5.0과 dig 9.18.39로 확인했습니다. 주소는 문서용 주소, 도메인은 예시용입니다.</p>
 </div>
 <h2 id="architecture">1. 조사에 유리한 DNS 구조<a class="headerlink" href="#architecture" title="Permanent link">¶</a></h2>
 <p>2.6강에서 봤듯이 DNS 분석은 네트워크에서 쓰이는 거의 모든 프로토콜의 맥박을 짚게 해 주고, 여러 악성 활동을 구체적으로 보여 줍니다. 그래서 위협 헌팅과 실시간 경보의 좋은 기반이에요.</p>
@@ -12019,7 +12019,7 @@
 <p>끝의 <code>C0 00 02 0A</code>가 <code>192.0.2.10</code>이고, 그 앞의 <code>C0 0C</code>는 2.6강에서 배운 <strong>압축 포인터</strong>(질문의 이름을 다시 가리킴)입니다. 대규모로 ETW 로그를 다루기는 까다로워서, 이를 사람이 읽기 좋은 형식으로 바꾸고 위협 정보와 대조해 주는 공개 도구도 나와 있습니다.</p>
 <div class="admonition info">
 <p class="admonition-title">[보충] 클라이언트 쪽 기록: Sysmon 이벤트 22</p>
-<p>DNS 서버가 아니라 <strong>각 PC에서</strong> 어느 프로세스가 어떤 이름을 물었는지 남기고 싶다면, Sysmon 10.0(2019년 6월)부터 생긴 **이벤트 ID 22(DNSEvent)**가 있습니다. 네트워크 기록에 없는 "누가(어느 프로그램이)"를 채워 주는 기록이에요. 다만 운영체제의 DNS 클라이언트를 거치는 질의만 남기 때문에, 프로그램이 직접 DoH로 묻는 것(7절)은 남지 않습니다. 설정 없이 켜면 양이 많아 필터가 필요합니다.</p>
+<p>DNS 서버가 아니라 <strong>각 PC에서</strong> 어느 프로세스가 어떤 이름을 물었는지 남기고 싶다면, Sysmon 10.0(2019년 6월)부터 생긴 <strong>이벤트 ID 22(DNSEvent)</strong>​가 있습니다. 네트워크 기록에 없는 "누가(어느 프로그램이)"를 채워 주는 기록이에요. 다만 운영체제의 DNS 클라이언트를 거치는 질의만 남기 때문에, 프로그램이 직접 DoH로 묻는 것(7절)은 남지 않습니다. 설정 없이 켜면 양이 많아 필터가 필요합니다.</p>
 </div>
 <h2 id="fast-flux">3. 빠른 플럭스<a class="headerlink" href="#fast-flux" title="Permanent link">¶</a></h2>
 <h3 id="single-flux">3.1 단일 플럭스<a class="headerlink" href="#single-flux" title="Permanent link">¶</a></h3>
@@ -12039,7 +12039,7 @@
 </span></code></pre></div>
 <p>세 번 모두 <strong>13개 전부가 다른 주소</strong>였습니다. 주소 목록으로 막으려면 매번 새로 13개를 더해야 하는 거예요.</p>
 <h3 id="double-flux">3.2 이중 플럭스<a class="headerlink" href="#double-flux" title="Permanent link">¶</a></h3>
-<p>**이중 플럭스(double-flux)**는 같은 생각을 한 겹 더 씌웁니다. A 레코드뿐 아니라 <strong>NS 레코드</strong>(이 도메인의 권한 서버)에도 장악한 컴퓨터를 씁니다. 첫 번째 층의 장악된 컴퓨터들이 <strong>DNS 프록시</strong> 노릇을 해서 공격자의 진짜 DNS 서버를 숨기고, 그 DNS 프록시들이 돌려주는 답에는 또 다른 장악된 컴퓨터들(C2 트래픽을 중계하는)의 짧은 TTL A 레코드들이 들어 있어요.</p>
+<p><strong>이중 플럭스(double-flux)</strong>​는 같은 생각을 한 겹 더 씌웁니다. A 레코드뿐 아니라 <strong>NS 레코드</strong>(이 도메인의 권한 서버)에도 장악한 컴퓨터를 씁니다. 첫 번째 층의 장악된 컴퓨터들이 <strong>DNS 프록시</strong> 노릇을 해서 공격자의 진짜 DNS 서버를 숨기고, 그 DNS 프록시들이 돌려주는 답에는 또 다른 장악된 컴퓨터들(C2 트래픽을 중계하는)의 짧은 TTL A 레코드들이 들어 있어요.</p>
 <p><strong>그림 3-1. 단일 플럭스와 이중 플럭스의 층</strong> (위에서 아래로: 피해자가 묻고 연결하는 순서)</p>
 <pre class="mermaid"><code>flowchart TD
     V["피해 PC의 악성코드"] --&gt;|"① c2.example.org A?"| RES["사내 리졸버"]
@@ -12082,7 +12082,7 @@
 </div>
 <h2 id="dga">4. DGA: 이름을 만들어 내는 악성코드<a class="headerlink" href="#dga" title="Permanent link">¶</a></h2>
 <h3 id="dga-concept">4.1 원리<a class="headerlink" href="#dga-concept" title="Permanent link">¶</a></h3>
-<p>**DGA(Domain Generation Algorithm)**는 아주 새롭지는 않지만 여전히 효과적인 기법입니다. 악성코드가 C2 접속에 쓸 수 있는 도메인 이름 후보를 <strong>수백, 수천 개</strong> 만들어 냅니다. 알고리즘에는 보통 <strong>날짜</strong> 같은 씨앗(seed)을 넣어요. 같은 날이면 모든 감염 PC가 <strong>같은 목록</strong>을 만들고, 공격자는 그 목록의 이름 중 <strong>하나만</strong> 그날 등록하면 C2 접속이 성립합니다. 악성코드 무리 전체가 유지되는 거죠.</p>
+<p><strong>DGA(Domain Generation Algorithm)</strong>​는 아주 새롭지는 않지만 여전히 효과적인 기법입니다. 악성코드가 C2 접속에 쓸 수 있는 도메인 이름 후보를 <strong>수백, 수천 개</strong> 만들어 냅니다. 알고리즘에는 보통 <strong>날짜</strong> 같은 씨앗(seed)을 넣어요. 같은 날이면 모든 감염 PC가 <strong>같은 목록</strong>을 만들고, 공격자는 그 목록의 이름 중 <strong>하나만</strong> 그날 등록하면 C2 접속이 성립합니다. 악성코드 무리 전체가 유지되는 거죠.</p>
 <p>DGA를 막기 어려운 이유는 <strong>규모</strong>입니다. 2008년의 Conficker.A는 하루 250개의 이름을 만들었습니다. 대응 쪽 연합(Conficker Working Group)이 알고리즘을 역분석해 목록을 미리 계산하고, 등록 기관과 협력해 공격자가 그 이름들을 등록하지 못하게 막았어요. 그러자 후속 변종은 하루 후보를 <strong>5만 개</strong>로 늘려, 다시 대응하는 쪽이 불리해졌습니다. CryptoLocker 랜섬웨어 계열도 연·월·일을 씨앗으로 매일 많은 후보 도메인을 만들었고, 변종에 따라 알고리즘과 키가 달랐습니다.</p>
 <p>이 원리를 보려고 <strong>연습용 생성기</strong>(<code>dga_lab.py</code>)를 직접 만들었습니다. 날짜와 순번을 SHA-256으로 섞어 10~16글자의 소문자 이름 20개를 만듭니다. <strong>실제 어떤 악성코드의 알고리즘도 아닙니다.</strong></p>
 <p><strong>(직접 실행 결과)</strong></p>
@@ -12224,7 +12224,7 @@
 </ul>
 </div>
 <h2 id="punycode">7. 퓨니코드와 닮은꼴 글자<a class="headerlink" href="#punycode" title="Permanent link">¶</a></h2>
-<p>DNS가 만들어졌을 때는 ASCII로 충분했습니다(유니코드는 아직 없었어요). 하지만 모든 프로토콜에서 ASCII 아닌 글자를 써야 할 일이 늘면서, DNS에서도 **국제화 도메인 이름(IDN)**을 ASCII만으로 나타낼 방법이 필요했습니다. 그렇게 만든 것이 **퓨니코드(punycode, RFC 3492)**입니다.</p>
+<p>DNS가 만들어졌을 때는 ASCII로 충분했습니다(유니코드는 아직 없었어요). 하지만 모든 프로토콜에서 ASCII 아닌 글자를 써야 할 일이 늘면서, DNS에서도 <strong>국제화 도메인 이름(IDN)</strong>​을 ASCII만으로 나타낼 방법이 필요했습니다. 그렇게 만든 것이 <strong>퓨니코드(punycode, RFC 3492)</strong>​입니다.</p>
 <p>퓨니코드로 바꾼 조각은 <code>xn--</code>로 시작하고, 그 뒤에 원래 조각의 <strong>ASCII 글자들</strong>, 그다음 <code>-</code>, 마지막으로 ASCII 아닌 글자의 <strong>위치와 종류를 인코딩한 부분</strong>이 옵니다. 알고리즘 자체는 꽤 복잡해서 여기서 다루지 않지만, <strong>알아보는 것</strong>과 <strong>풀어 보는 것</strong>은 조사자에게 중요한 기술이에요. 도구(라이브러리, 변환기)로 할 수 있습니다.</p>
 <p><strong>(직접 실행 결과, Python 3.13의 <code>idna</code> 코덱)</strong></p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>'bücher.example'           -&gt; xn--bcher-kva.example

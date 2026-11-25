@@ -11874,7 +11874,7 @@
 </div>
 <div class="admonition note">
 <p class="admonition-title">실습 환경과 표기</p>
-<p>**(직접 실행 결과)**는 이 작업 환경에서 얻었습니다. 브라우저 요청은 내장 Chromium(헤드리스, 버전 153.0.8010.12)을 Playwright로 움직여 루프백의 연습용 웹 서버(파이썬 <code>http.server</code>)에 실제로 보낸 것이고, 서버가 받은 헤더를 그대로 기록하는 동시에 tcpdump로 수집했습니다. 명령줄 도구의 요청은 <code>curl</code> 8.5.0으로 보냈습니다. 사례에 나오는 사람과 계정은 가상이며, 외부 주소는 문서용 대역만 씁니다.</p>
+<p><strong>(직접 실행 결과)</strong>​는 이 작업 환경에서 얻었습니다. 브라우저 요청은 내장 Chromium(헤드리스, 버전 153.0.8010.12)을 Playwright로 움직여 루프백의 연습용 웹 서버(파이썬 <code>http.server</code>)에 실제로 보낸 것이고, 서버가 받은 헤더를 그대로 기록하는 동시에 tcpdump로 수집했습니다. 명령줄 도구의 요청은 <code>curl</code> 8.5.0으로 보냈습니다. 사례에 나오는 사람과 계정은 가상이며, 외부 주소는 문서용 대역만 씁니다.</p>
 </div>
 <h2 id="why-http">1. 디스크에는 없는데 회선에는 있다<a class="headerlink" href="#why-http" title="Permanent link">¶</a></h2>
 <p><strong>(가상 사례)</strong> 1.4강의 연구 기관에서 또 한 명의 직원이 조사 대상이 됐습니다. 그런데 이번에는 노트북이 전체 디스크 암호화로 잠겨 있고, 직원은 브라우저를 <strong>비공개 모드</strong>로만 썼다고 합니다. USB에 넣어 다니는 휴대용 브라우저를 썼을 가능성도 있고요. 디스크 포렌식으로 웹 활동을 복원하기는 어려워 보입니다.</p>
@@ -12066,14 +12066,14 @@
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="na">User-Agent</span><span class="o">:</span> <span class="l">curl/8.5.0</span>
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="na">Accept</span><span class="o">:</span> <span class="l">*/*</span>
 </span></code></pre></div>
-<p>같은 서버에 Chromium이 보낸 요청(3절)은 헤더가 열네 개(Referer 포함)였어요. 이렇게 <strong>헤더의 개수와 순서, 조합</strong>은 User-Agent 문자열보다 꾸미기가 번거로워, 사람의 브라우저인지 자동화 도구인지 가늠하는 보조 단서가 됩니다(2.4강). 그리고 이번 실습의 헤드리스 Chromium은 User-Agent에 <code>HeadlessChrome</code>이라는 글자를 그대로 넣었습니다**(직접 실행 결과)**. 자동화 도구가 이 부분을 고치지 않았다면 바로 드러나는 흔적이에요.</p>
+<p>같은 서버에 Chromium이 보낸 요청(3절)은 헤더가 열네 개(Referer 포함)였어요. 이렇게 <strong>헤더의 개수와 순서, 조합</strong>은 User-Agent 문자열보다 꾸미기가 번거로워, 사람의 브라우저인지 자동화 도구인지 가늠하는 보조 단서가 됩니다(2.4강). 그리고 이번 실습의 헤드리스 Chromium은 User-Agent에 <code>HeadlessChrome</code>이라는 글자를 그대로 넣었습니다​<strong>(직접 실행 결과)</strong>. 자동화 도구가 이 부분을 고치지 않았다면 바로 드러나는 흔적이에요.</p>
 <div class="admonition info">
 <p class="admonition-title">[변경됨] User-Agent는 줄어들고, Client Hints가 생겼다</p>
 <p>교재 시절의 User-Agent에는 운영체제의 세부 버전과 브라우저의 전체 버전이 들어 있었습니다. Chromium 계열 브라우저는 2022년(Chrome 101)부터 <strong>User-Agent 줄이기</strong>를 단계적으로 적용해, 부 버전 번호를 <code>0.0.0</code>으로 고정하고 운영체제 버전도 고정값으로 보냅니다. 대신 더 자세한 정보는 서버가 요청할 때만 보내는 <strong>Client Hints</strong>(<code>Sec-CH-UA-*</code> 헤더)로 옮겼어요. 기본으로는 위 요청의 <code>sec-ch-ua</code>, <code>sec-ch-ua-mobile</code>, <code>sec-ch-ua-platform</code> 세 가지만 갑니다. 그래서 지금은 "User-Agent에 Windows 10이라고 적혀 있으니 Windows 10이다"라고 읽으면 틀릴 수 있습니다(Windows 11도 같은 값을 보낼 수 있어요). 참고로 이번 실습의 헤드리스 Chromium은 전체 버전(<code>153.0.8010.12</code>)을 그대로 보냈습니다. 일반 데스크톱 브라우저와 다르게 동작했을 수 있으니, 실제 사건에서는 <strong>그 버전의 그 브라우저</strong>로 직접 시험해 보고 해석하세요.</p>
 </div>
 <h3 id="accept">6.3 <code>Accept</code>, <code>Accept-Language</code>, <code>Accept-Encoding</code><a class="headerlink" href="#accept" title="Permanent link">¶</a></h3>
 <p>클라이언트가 <strong>어떤 응답을 받고 싶은지</strong>를 알립니다. <code>Accept</code>는 내용 형식(MIME 유형), <code>Accept-Language</code>는 언어, <code>Accept-Encoding</code>은 압축 방식이에요. 값 뒤의 <code>q=0.9</code>는 선호도(0~1)입니다.</p>
-<p>조사에서는 이것도 <strong>프로필</strong>의 재료입니다. 예를 들어 <code>Accept-Language: ko-KR,ko;q=0.9,en-US;q=0.8</code>이면 한국어를 먼저 원하는 사용자 환경이겠죠. 이번 실습의 헤드리스 Chromium은 <code>Accept-Language</code>를 아예 보내지 않았고, <code>Accept-Encoding</code>에는 교재 시절에는 없던 <code>zstd</code>가 들어 있었습니다**(직접 실행 결과)**. 같은 PC에서 갑자기 다른 조합의 요청이 나타난다면, 다른 프로그램이 HTTP를 쓰기 시작했다는 신호일 수 있어요.</p>
+<p>조사에서는 이것도 <strong>프로필</strong>의 재료입니다. 예를 들어 <code>Accept-Language: ko-KR,ko;q=0.9,en-US;q=0.8</code>이면 한국어를 먼저 원하는 사용자 환경이겠죠. 이번 실습의 헤드리스 Chromium은 <code>Accept-Language</code>를 아예 보내지 않았고, <code>Accept-Encoding</code>에는 교재 시절에는 없던 <code>zstd</code>가 들어 있었습니다​<strong>(직접 실행 결과)</strong>. 같은 PC에서 갑자기 다른 조합의 요청이 나타난다면, 다른 프로그램이 HTTP를 쓰기 시작했다는 신호일 수 있어요.</p>
 <h3 id="cookie">6.4 <code>Cookie</code>: 상태 없는 프로토콜에 붙인 기억<a class="headerlink" href="#cookie" title="Permanent link">¶</a></h3>
 <p>2.1절에서 말했듯 HTTP 자체는 앞의 요청을 기억하지 못합니다. 그래서 서버는 응답의 <code>Set-Cookie</code>로 작은 값을 클라이언트에 맡겨 두고, 클라이언트는 다음 요청마다 그 값을 <code>Cookie</code> 헤더로 돌려줍니다. 로그인 상태, 장바구니, 사용자 식별이 이렇게 유지돼요.</p>
 <ul>
@@ -12097,7 +12097,7 @@
 </ul>
 <h3 id="xff">6.6 <code>X-Forwarded-For</code>: 누구나 쓸 수 있는 "원래 주소"<a class="headerlink" href="#xff" title="Permanent link">¶</a></h3>
 <p>프록시나 부하 분산 장비가 요청을 대신 전달할 때, 원래 클라이언트의 주소를 알려 주려고 붙이는 헤더입니다. 여러 단계를 거치면 <code>원래 클라이언트, 첫 프록시, ...</code> 순서로 주소가 쌓여요.</p>
-<p>문제는 <strong>클라이언트가 처음부터 직접 넣을 수 있다</strong>는 것입니다. 이번 실습에서 <code>curl -H "X-Forwarded-For: 10.10.4.3"</code>으로 보내자, 서버는 이 헤더를 그대로 받았습니다. 실제로 연결을 맺은 주소는 <code>127.0.0.1</code>이었는데도요**(직접 실행 결과)**.</p>
+<p>문제는 <strong>클라이언트가 처음부터 직접 넣을 수 있다</strong>는 것입니다. 이번 실습에서 <code>curl -H "X-Forwarded-For: 10.10.4.3"</code>으로 보내자, 서버는 이 헤더를 그대로 받았습니다. 실제로 연결을 맺은 주소는 <code>127.0.0.1</code>이었는데도요​<strong>(직접 실행 결과)</strong>.</p>
 <div class="language-http highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="err">X-Forwarded-For: 10.10.4.3</span>
 </span></code></pre></div>
 <p><code>10.10.4.3</code>은 1.1강의 사내 프록시 주소입니다. 만약 웹 앱이 "사내 프록시에서 온 요청은 관리 화면 허용"처럼 이 헤더를 믿는다면, 공격자는 헤더 한 줄로 그 통제를 넘을 수 있습니다. 교재가 경고하는 그대로예요.</p>
@@ -12141,7 +12141,7 @@
 <p>그러니 <code>Referer</code>가 없다고 "주소를 직접 쳐서 들어왔다"고 단정하면 안 됩니다. HTTPS 페이지의 링크였을 수도, 페이지가 정책을 <code>no-referrer</code>로 정했을 수도 있으니까요.</p>
 <div class="admonition info">
 <p class="admonition-title">[보충] <code>Sec-Fetch-*</code>: 브라우저가 알려 주는 \"요청의 사정\"</p>
-<p>지금의 브라우저는 <code>Sec-Fetch-Site</code>, <code>Sec-Fetch-Mode</code>, <code>Sec-Fetch-User</code>, <code>Sec-Fetch-Dest</code>라는 헤더로 요청이 어떤 상황에서 생겼는지 알려 줍니다(W3C Fetch Metadata). 이번 실습에서 <code>Sec-Fetch-Site</code>는 주소를 직접 열었을 때 <code>none</code>, 같은 출처 링크에서 <code>same-origin</code>, 다른 출처 링크에서 <code>cross-site</code>였고, 링크를 <strong>눌러서</strong> 이동할 때는 <code>Sec-Fetch-User: ?1</code>이 붙었습니다**(직접 실행 결과)**. 페이지 본문(<code>Sec-Fetch-Dest: document</code>)인지, 이미지나 스크립트인지도 구별돼요. <code>Referer</code>가 줄어든 지금, 이 헤더들은 "사람이 클릭한 탐색인가, 페이지가 알아서 불러온 자원인가"를 가르는 좋은 보조 단서입니다. 단, 이것도 브라우저가 붙이는 값이라 브라우저가 아닌 도구는 보내지 않거나 꾸며서 보낼 수 있습니다.</p>
+<p>지금의 브라우저는 <code>Sec-Fetch-Site</code>, <code>Sec-Fetch-Mode</code>, <code>Sec-Fetch-User</code>, <code>Sec-Fetch-Dest</code>라는 헤더로 요청이 어떤 상황에서 생겼는지 알려 줍니다(W3C Fetch Metadata). 이번 실습에서 <code>Sec-Fetch-Site</code>는 주소를 직접 열었을 때 <code>none</code>, 같은 출처 링크에서 <code>same-origin</code>, 다른 출처 링크에서 <code>cross-site</code>였고, 링크를 <strong>눌러서</strong> 이동할 때는 <code>Sec-Fetch-User: ?1</code>이 붙었습니다​<strong>(직접 실행 결과)</strong>. 페이지 본문(<code>Sec-Fetch-Dest: document</code>)인지, 이미지나 스크립트인지도 구별돼요. <code>Referer</code>가 줄어든 지금, 이 헤더들은 "사람이 클릭한 탐색인가, 페이지가 알아서 불러온 자원인가"를 가르는 좋은 보조 단서입니다. 단, 이것도 브라우저가 붙이는 값이라 브라우저가 아닌 도구는 보내지 않거나 꾸며서 보낼 수 있습니다.</p>
 </div>
 <div class="admonition info">
 <p class="admonition-title">[보충] 교재 예시의 <code>DNT: 1</code></p>
@@ -12192,7 +12192,7 @@
 <p><strong>문제 4. (디코딩)</strong> 프록시 로그에 <code>GET /search?q=%EC%9C%A0%EC%B6%9C+%EB%B0%A9%EB%B2%95</code> 요청이 있습니다. 검색어는 무엇이고, 이 값을 로그에서 찾으려면 어떤 문자열로 검색해야 하나요?</p>
 <details class="success">
 <summary>정답과 해설</summary>
-<p><code>%EC%9C%A0</code>은 "유", <code>%EC%B6%9C</code>는 "출", <code>+</code>는 공백, <code>%EB%B0%A9</code>은 "방", <code>%EB%B2%95</code>은 "법"이니 검색어는 **"유출 방법"**입니다(UTF-8 기준. 셸에서는 <code>printf '%b' "$(echo '...' | sed 's/+/ /g; s/%/\\x/g')"</code> 같은 방법이나 파이썬의 <code>urllib.parse.unquote_plus</code>로 풀 수 있습니다). 로그에서 찾을 때는 한글 "유출"로 검색하면 안 걸리고, <code>%EC%9C%A0%EC%B6%9C</code>로 찾아야 합니다. 소문자 16진수(<code>%ec%9c%a0...</code>)로 적힌 기록이 섞여 있을 수 있으니 대소문자를 무시하고 찾는 게 안전합니다.</p>
+<p><code>%EC%9C%A0</code>은 "유", <code>%EC%B6%9C</code>는 "출", <code>+</code>는 공백, <code>%EB%B0%A9</code>은 "방", <code>%EB%B2%95</code>은 "법"이니 검색어는 <strong>"유출 방법"</strong>​입니다(UTF-8 기준. 셸에서는 <code>printf '%b' "$(echo '...' | sed 's/+/ /g; s/%/\\x/g')"</code> 같은 방법이나 파이썬의 <code>urllib.parse.unquote_plus</code>로 풀 수 있습니다). 로그에서 찾을 때는 한글 "유출"로 검색하면 안 걸리고, <code>%EC%9C%A0%EC%B6%9C</code>로 찾아야 합니다. 소문자 16진수(<code>%ec%9c%a0...</code>)로 적힌 기록이 섞여 있을 수 있으니 대소문자를 무시하고 찾는 게 안전합니다.</p>
 </details>
 <p><strong>문제 5. (해석)</strong> 6.2절에서 <code>curl</code>의 요청은 헤더가 3개, Chromium은 14개였습니다. 어느 PC에서 <code>User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) ... Chrome/...</code>이면서 헤더는 <code>Host</code>, <code>User-Agent</code>, <code>Accept: */*</code> 셋뿐인 요청이 5분마다 나갑니다. 무엇을 의심할 수 있고, 무엇은 단정할 수 없나요?</p>
 <details class="success">

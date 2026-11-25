@@ -11791,7 +11791,7 @@
 </div>
 <div class="admonition note">
 <p class="admonition-title">실습 환경과 표기</p>
-<p>**(직접 실행 결과)**는 이 작업 환경에서 공식 Docker 이미지로 띄운 <strong>Elasticsearch, Logstash, Kibana 9.4.3</strong>(단일 노드)으로 얻었습니다. 현재 SOF-ELK 배포판과 같은 버전입니다. 넣은 데이터는 직접 만든 작은 연습용 syslog(문서용 주소), 2.5강의 Apache 연습 서버 로그, 2.8강의 Zeek <code>http.log</code>입니다. 이 환경의 디스크 사용률이 Elasticsearch의 기본 한도(90%)를 넘어서, <strong>실습용으로만</strong> 디스크 한도 검사를 껐습니다. <strong>SOF-ELK 가상 머신 자체는 이 환경에서 돌려 보지 못했습니다</strong>. SOF-ELK에 대한 내용은 공식 위키(2026-11-05 확인)를 바탕으로 합니다.</p>
+<p><strong>(직접 실행 결과)</strong>​는 이 작업 환경에서 공식 Docker 이미지로 띄운 <strong>Elasticsearch, Logstash, Kibana 9.4.3</strong>(단일 노드)으로 얻었습니다. 현재 SOF-ELK 배포판과 같은 버전입니다. 넣은 데이터는 직접 만든 작은 연습용 syslog(문서용 주소), 2.5강의 Apache 연습 서버 로그, 2.8강의 Zeek <code>http.log</code>입니다. 이 환경의 디스크 사용률이 Elasticsearch의 기본 한도(90%)를 넘어서, <strong>실습용으로만</strong> 디스크 한도 검사를 껐습니다. <strong>SOF-ELK 가상 머신 자체는 이 환경에서 돌려 보지 못했습니다</strong>. SOF-ELK에 대한 내용은 공식 위키(2026-11-05 확인)를 바탕으로 합니다.</p>
 </div>
 <h2 id="components">1. Elastic Stack: 세 부품과 Beats<a class="headerlink" href="#components" title="Permanent link">¶</a></h2>
 <p>Elastic Stack은 널리 쓰이는 "빅데이터" 플랫폼이고, 점점 SIEM 시장을 겨냥하고 있습니다. 흔히 부르는 "ELK"는 세 부품의 머리글자예요.</p>
@@ -11912,7 +11912,7 @@
 <p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../../../../assets/network-forensics/kibana-kql.png" data-desc-position="bottom"><img alt="Kibana Discover: KQL로 거른 결과와 히스토그램. 같은 Dec 31 로그가 2025년과 2026년 두 곳에 나뉘어 보인다" loading="lazy" src="../../../../assets/network-forensics/kibana-kql.png"></a></p>
 <p><strong>그림 2-1. Kibana 9.4.3의 Discover(직접 실행 결과).</strong> 위쪽의 검색창이 KQL, 오른쪽이 시간 범위, 가운데가 시간별 문서 수 히스토그램, 아래가 문서 목록입니다. 왼쪽 필드 목록의 <code>host</code> 옆 경고 표시는, 여러 색인을 함께 볼 때 같은 이름의 필드가 색인마다 다른 형식(Zeek의 글자 필드 대 Logstash의 <code>host.name</code> 객체)이라 생긴 <strong>형식 충돌</strong>입니다. 그림은 누르면 커집니다.</p>
 <h2 id="kibana-kql">3. Kibana와 KQL<a class="headerlink" href="#kibana-kql" title="Permanent link">¶</a></h2>
-<p>Kibana로 Elasticsearch에 저장된 데이터를 검색하고, 거르고, 탐색합니다. 검색과 거르기에는 **KQL(Kibana Query Language)**을 씁니다. 사람이 직관적으로 쓸 수 있으면서도 정밀한 검색도 가능하게 만든 언어예요.</p>
+<p>Kibana로 Elasticsearch에 저장된 데이터를 검색하고, 거르고, 탐색합니다. 검색과 거르기에는 <strong>KQL(Kibana Query Language)</strong>​을 씁니다. 사람이 직관적으로 쓸 수 있으면서도 정밀한 검색도 가능하게 만든 언어예요.</p>
 <p>교재의 예와 같은 모양의 질의를 이 실습 데이터에 맞춰 돌렸습니다. Kibana 화면에서도 썼고(그림 2-1), 같은 KQL을 Elasticsearch의 ES|QL 안에서 <code>KQL()</code> 함수로도 실행할 수 있었어요.</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>FROM lab-httpd
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>| WHERE KQL("url.original:*zip* or (http.response.status_code &gt;= 400 and http.response.status_code &lt; 500)")
@@ -11980,7 +11980,7 @@
 <div class="admonition warning">
 <p class="admonition-title">[변경됨] 현재 배포판(공식 위키, 2026-11-05 확인)</p>
 <ul>
-<li>최신 배포판: <strong>2026-07-06판</strong>. Ubuntu 26.04 기반, <strong>Elastic Stack 9.4.3</strong>, 설정 파일은 저장소의 <code>public/v20260706</code> 가지(branch). **x86용과 ARM용(Apple M 시리즈 등)**이 따로 있습니다. 내려받은 파일은 위키에 적힌 SHA-256과 맞춰 확인하세요.</li>
+<li>최신 배포판: <strong>2026-07-06판</strong>. Ubuntu 26.04 기반, <strong>Elastic Stack 9.4.3</strong>, 설정 파일은 저장소의 <code>public/v20260706</code> 가지(branch). <strong>x86용과 ARM용(Apple M 시리즈 등)</strong>​이 따로 있습니다. 내려받은 파일은 위키에 적힌 SHA-256과 맞춰 확인하세요.</li>
 <li>구성: Elasticsearch, Logstash, Kibana, 그리고 Filebeat(파일 입력을 맡음).</li>
 <li>업데이트: 설정 파일은 GitHub에서 갱신하는 스크립트로 올리고, 운영체제나 Elastic Stack의 큰 변경이 있을 때만 가상 머신을 새로 받습니다.</li>
 <li>GeoIP: MaxMind의 라이선스가 바뀌어 최신 GeoIP 데이터베이스는 함께 배포하지 않습니다. 무료 MaxMind 계정과 라이선스 키를 만든 뒤 <code>geoip_bootstrap.sh</code>로 넣고, 원하면 정기 갱신도 켭니다(교재와 같음).</li>
@@ -12047,7 +12047,7 @@
 <p>교재는 SOF-ELK를 실시간 수집기로도 쓸 수 있다고 하며 syslog(TCP·UDP 5514), HTTPD 로그(5515), RELP·Filebeat(TCP 5516), NetFlow v5(UDP 9995) 같은 포트를 소개합니다. 방화벽 포트를 열고 가상 머신의 네트워크를 NAT에서 브리지로 바꿔야 하는 경우가 많아요.</p>
 <div class="admonition info">
 <p class="admonition-title">[변경됨] 현재 위키에 적힌 네트워크 입력</p>
-<p>2026-11-05에 확인한 공식 위키의 입력 문서에는 네트워크 입력으로 **NetFlow v5·v9·IPFIX(UDP 9995)**만 적혀 있고, 먼저 방화벽 포트를 열어야 한다고 합니다. 교재의 syslog·HTTPD·RELP 포트가 현재 배포판에서 어떻게 되는지는 이 문서로 확인되지 않았으니, 쓰려는 배포판의 소개 대시보드와 문서로 확인하세요.</p>
+<p>2026-11-05에 확인한 공식 위키의 입력 문서에는 네트워크 입력으로 <strong>NetFlow v5·v9·IPFIX(UDP 9995)</strong>​만 적혀 있고, 먼저 방화벽 포트를 열어야 한다고 합니다. 교재의 syslog·HTTPD·RELP 포트가 현재 배포판에서 어떻게 되는지는 이 문서로 확인되지 않았으니, 쓰려는 배포판의 소개 대시보드와 문서로 확인하세요.</p>
 </div>
 <h3 id="sof-elk-dashboards">4.3 기본 대시보드<a class="headerlink" href="#sof-elk-dashboards" title="Permanent link">¶</a></h3>
 <p>SOF-ELK는 넣는 데이터와 해석 설정이 정해져 있으니, 기본 대시보드도 함께 제공합니다.</p>
@@ -12089,12 +12089,12 @@
 <p><strong>문제 3. (변경된 조건)</strong> 2024년 연말에 일어난 사건의 리눅스 서버 <code>auth.log</code>(전통 syslog 형식) 사본을 2026년에 받았습니다. SOF-ELK에 넣으려면 어디에 두어야 하고, 그렇게 하지 않으면 무엇이 일어날까요?</p>
 <details class="success">
 <summary>정답과 해설</summary>
-<p><code>/logstash/syslog/2024/</code> 처럼 <strong>경로에 연도를 넣은 디렉터리</strong>에 둡니다(4.1절). 연도 없는 시각에 경로의 연도가 붙어 2024년으로 들어가요. 그렇게 하지 않으면 2.3절의 실험처럼 **넣는 시점의 연도(2026)**가 붙어, 사건이 2026년 12월처럼 엉뚱한 때(때로는 미래)로 들어갑니다. 파일에 1월 기록이 섞여 있다면(연말연시에 걸친 로그) 그 부분은 2025년이어야 하므로, 파일을 날짜 경계에서 나눠 각각의 연도 디렉터리에 두는 것도 생각해야 해요. 그리고 원래 서버의 시간대도 확인합니다.</p>
+<p><code>/logstash/syslog/2024/</code> 처럼 <strong>경로에 연도를 넣은 디렉터리</strong>에 둡니다(4.1절). 연도 없는 시각에 경로의 연도가 붙어 2024년으로 들어가요. 그렇게 하지 않으면 2.3절의 실험처럼 <strong>넣는 시점의 연도(2026)</strong>​가 붙어, 사건이 2026년 12월처럼 엉뚱한 때(때로는 미래)로 들어갑니다. 파일에 1월 기록이 섞여 있다면(연말연시에 걸친 로그) 그 부분은 2025년이어야 하므로, 파일을 날짜 경계에서 나눠 각각의 연도 디렉터리에 두는 것도 생각해야 해요. 그리고 원래 서버의 시간대도 확인합니다.</p>
 </details>
 <p><strong>문제 4. (흔한 오해)</strong> "grok이 실패하면 <code>_grokparsefailure</code>가 붙으니, 그 표시가 없는 문서는 제대로 해석된 것이다." 2.2절의 결과로 반박해 보세요.</p>
 <details class="success">
 <summary>정답과 해설</summary>
-<p>2.2절에서 <code>COMBINEDAPACHELOG</code>은 <code>\"</code>가 든 User-Agent를 <strong>중간에서 잘랐지만</strong> 실패 표시는 0건이었습니다. 패턴 자체는 "맞았다"고 판단했기 때문이에요(뒷부분은 다른 필드나 버려짐). 또 크기 필드는 해석은 됐지만 **이름(<code>http.response.body.bytes</code>)과 실제 뜻(Ubuntu의 <code>%O</code>, 헤더 포함)**이 달랐습니다. 실패 표시가 없다는 건 "패턴이 맞았다"일 뿐 "값이 맞다"는 뜻이 아니에요. 이상한 글자가 든 줄, 중요한 줄은 원본(<code>event.original</code>)과 맞대어 확인합니다.</p>
+<p>2.2절에서 <code>COMBINEDAPACHELOG</code>은 <code>\"</code>가 든 User-Agent를 <strong>중간에서 잘랐지만</strong> 실패 표시는 0건이었습니다. 패턴 자체는 "맞았다"고 판단했기 때문이에요(뒷부분은 다른 필드나 버려짐). 또 크기 필드는 해석은 됐지만 <strong>이름(<code>http.response.body.bytes</code>)과 실제 뜻(Ubuntu의 <code>%O</code>, 헤더 포함)</strong>​이 달랐습니다. 실패 표시가 없다는 건 "패턴이 맞았다"일 뿐 "값이 맞다"는 뜻이 아니에요. 이상한 글자가 든 줄, 중요한 줄은 원본(<code>event.original</code>)과 맞대어 확인합니다.</p>
 </details>
 <p><strong>문제 5. (적용)</strong> pcap에서 만든 Zeek 로그(JSON)를 SOF-ELK에 넣으려고 합니다. 넣기 전과 후에 확인할 것을 순서대로 말해 보세요.</p>
 <details class="success">

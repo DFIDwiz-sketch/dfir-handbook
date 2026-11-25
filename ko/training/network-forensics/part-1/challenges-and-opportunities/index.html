@@ -11909,7 +11909,7 @@
 </div>
 <div class="admonition note">
 <p class="admonition-title">실습 환경과 표기</p>
-<p>**(직접 실행 결과)**는 이 작업 환경의 tshark 4.2.2, tcpdump 4.99.4, OpenSSL 3.0.13으로 얻었습니다. TLS 실험은 루프백에서 <code>openssl s_server</code>와 <code>s_client</code>로 실제 연결을 맺어 수집했고, 인증서는 직접 만든 자체 서명 인증서(<code>files.lab.example</code>)입니다. NAT와 터널 실험의 pcap은 파이썬으로 조립했습니다(사설·문서용 주소만 사용). 조립한 pcap은 <strong>동작 원리를 보이기 위한 것</strong>이라, 실제 장비가 만드는 트래픽과 세부가 다를 수 있습니다.</p>
+<p><strong>(직접 실행 결과)</strong>​는 이 작업 환경의 tshark 4.2.2, tcpdump 4.99.4, OpenSSL 3.0.13으로 얻었습니다. TLS 실험은 루프백에서 <code>openssl s_server</code>와 <code>s_client</code>로 실제 연결을 맺어 수집했고, 인증서는 직접 만든 자체 서명 인증서(<code>files.lab.example</code>)입니다. NAT와 터널 실험의 pcap은 파이썬으로 조립했습니다(사설·문서용 주소만 사용). 조립한 pcap은 <strong>동작 원리를 보이기 위한 것</strong>이라, 실제 장비가 만드는 트래픽과 세부가 다를 수 있습니다.</p>
 </div>
 <h2 id="change">1. 변화는 피할 수 없고, 대개 어렵다<a class="headerlink" href="#change" title="Permanent link">¶</a></h2>
 <p><strong>(가상 사례)</strong> 사고 대응 회의에서 망 담당자가 구성도를 띄웁니다. "연구소는 이 방화벽 뒤에 있고, 모든 웹 트래픽은 프록시로 갑니다." 그런데 막상 패킷을 떠 보니, 석 달 전 새로 들인 장비 때문에 일부 트래픽이 전혀 다른 경로로 나가고 있습니다. 구성도에는 그 장비가 없어요.</p>
@@ -11964,7 +11964,7 @@
 <p>그래도 암호화는 결국 <strong>신뢰</strong> 위에 서 있고, 신뢰 관계는 복잡합니다. 기업 환경에서는 1.2강에서 본 TLS 가로채기(프록시가 조직의 인증 기관으로 인증서를 다시 만들어 주는 방식)로 대부분의 TLS를 평문으로 검사하고 수집할 수 있습니다.</p>
 <h3 id="decrypt-later">3.2 [변경됨] "지금 떠 두고, 나중에 키로 푼다"는 이제 거의 안 된다<a class="headerlink" href="#decrypt-later" title="Permanent link">¶</a></h3>
 <p>교재는 수사기관 관점에서 "나중에 개인 키를 확보할 수 있다면(예: 압수수색), 지금 암호화된 트래픽을 떠 두는 것이 유용하고, 키를 얻으면 Wireshark 같은 도구로 풀 수 있다"고 설명합니다. 지금의 TLS에서 이 설명이 얼마나 맞는지 직접 시험했습니다.</p>
-<p>같은 서버 인증서와 개인 키로 세 가지 연결을 맺고, 각각 <code>GET /secret-report.txt</code> 요청을 보냈습니다. 그리고 tshark에 ① 아무 키도 주지 않고, ② <strong>서버 개인 키</strong>를 주고, ③ 클라이언트가 남긴 **세션 키 기록(key log)**을 줘서 요청 경로가 보이는지 확인했습니다.</p>
+<p>같은 서버 인증서와 개인 키로 세 가지 연결을 맺고, 각각 <code>GET /secret-report.txt</code> 요청을 보냈습니다. 그리고 tshark에 ① 아무 키도 주지 않고, ② <strong>서버 개인 키</strong>를 주고, ③ 클라이언트가 남긴 <strong>세션 키 기록(key log)</strong>​을 줘서 요청 경로가 보이는지 확인했습니다.</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># ② 서버 개인 키로 풀기</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>tshark<span class="w"> </span>-n<span class="w"> </span>-r<span class="w"> </span>t13.pcap<span class="w"> </span>-d<span class="w"> </span>tcp.port<span class="o">==</span><span class="m">8444</span>,tls<span class="w"> </span>-o<span class="w"> </span><span class="s1">'uat:rsa_keys:"srv.key",""'</span><span class="w"> </span>-Y<span class="w"> </span>http.request<span class="w"> </span>-T<span class="w"> </span>fields<span class="w"> </span>-e<span class="w"> </span>http.request.uri
 </span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="c1"># ③ 세션 키 기록으로 풀기</span>
@@ -12023,7 +12023,7 @@
 <p>교재는 SSHv2의 복호화된 내용에는 현재 접근할 수 없다고 적었습니다. SSHv2의 키 교환도 Diffie-Hellman 계열이라 같은 이유로 사후 복호화가 사실상 어렵습니다. 단말에서 키를 뽑아내는 연구와 도구는 있지만, 그건 단말 포렌식의 영역입니다.</p>
 </div>
 <h3 id="flow-analysis">3.3 기회: 플로우 분석은 암호화된 트래픽에도 그대로 통한다<a class="headerlink" href="#flow-analysis" title="Permanent link">¶</a></h3>
-<p>내용을 못 본다면 <strong>내용이 필요 없는 분석</strong>을 합니다. 이것이 <strong>플로우 분석</strong>입니다. 주소와 포트뿐 아니라 <strong>패킷 크기와 시간 간격</strong>만으로도 단서를 만들고 가설을 세울 수 있습니다. 1.11강에서 5분 간격의 같은 크기(717바이트) 연결과 20MB 업로드를 내용 없이 찾아낸 것처럼요. 그리고 TLS 1.3이라도 Client Hello는 여전히 대부분 평문이라, ECH를 쓰지 않는 한 **접속하려는 서버 이름(SNI)**이 보입니다(1.2강).</p>
+<p>내용을 못 본다면 <strong>내용이 필요 없는 분석</strong>을 합니다. 이것이 <strong>플로우 분석</strong>입니다. 주소와 포트뿐 아니라 <strong>패킷 크기와 시간 간격</strong>만으로도 단서를 만들고 가설을 세울 수 있습니다. 1.11강에서 5분 간격의 같은 크기(717바이트) 연결과 20MB 업로드를 내용 없이 찾아낸 것처럼요. 그리고 TLS 1.3이라도 Client Hello는 여전히 대부분 평문이라, ECH를 쓰지 않는 한 <strong>접속하려는 서버 이름(SNI)</strong>​이 보입니다(1.2강).</p>
 <h2 id="tunnels">4. 터널: 트래픽 안의 트래픽<a class="headerlink" href="#tunnels" title="Permanent link">¶</a></h2>
 <h3 id="tunnel-what">4.1 터널이란<a class="headerlink" href="#tunnel-what" title="Permanent link">¶</a></h3>
 <p>터널은 한 트래픽 흐름이 다른 트래픽 흐름의 <strong>내용물</strong>이 되는 구조입니다. 처음부터 터널용으로 만든 <strong>GRE</strong>(IP 프로토콜 번호 47) 같은 것도 있고, HTTP, DNS, ICMP처럼 다른 목적의 프로토콜을 <strong>터널로 재활용</strong>하기도 합니다. IPv4 망을 사이에 둔 두 IPv6 구역을 잇는 <strong>6in4</strong>(IP 프로토콜 번호 41), 프록시와 터널의 중간쯤인 <strong>SOCKS</strong>, SSH 터널도 있습니다.</p>
@@ -12078,7 +12078,7 @@
 </tbody>
 </table>
 <p>BPF의 <code>tcp port 80</code>은 <strong>바깥 헤더</strong>만 봅니다(1.7강). GRE 패킷의 바깥은 "IP 프로토콜 47"이고, 6in4 패킷의 바깥은 "IP 프로토콜 41"이라 TCP로 보이지 않아요. 그래서 수집 필터로 <code>tcp port 80</code>을 걸었다면 <strong>터널 안의 웹 트래픽은 저장조차 되지 않았을 것</strong>입니다. 반면 Wireshark의 해석기는 터널을 벗겨 안쪽까지 해석하므로 디스플레이 필터는 셋 다 찾았습니다.</p>
-<p>하나 더 볼 것이 있습니다. GRE 패킷의 <code>ip.src</code>를 출력하니 <code>192.0.2.1,10.20.1.5</code>처럼 <strong>값이 두 개</strong> 나왔습니다**(직접 실행 결과)**. 바깥 IP와 안쪽 IP 헤더가 모두 있기 때문이에요. 1.9강에서 본 "여러 값을 가진 필드"가 터널에서는 <code>ip.src</code> 같은 평범한 필드에서도 생깁니다. <code>ip.src != 10.20.1.5</code> 같은 필터는 이런 패킷에서 예상과 다르게 동작할 수 있습니다.</p>
+<p>하나 더 볼 것이 있습니다. GRE 패킷의 <code>ip.src</code>를 출력하니 <code>192.0.2.1,10.20.1.5</code>처럼 <strong>값이 두 개</strong> 나왔습니다​<strong>(직접 실행 결과)</strong>. 바깥 IP와 안쪽 IP 헤더가 모두 있기 때문이에요. 1.9강에서 본 "여러 값을 가진 필드"가 터널에서는 <code>ip.src</code> 같은 평범한 필드에서도 생깁니다. <code>ip.src != 10.20.1.5</code> 같은 필터는 이런 패킷에서 예상과 다르게 동작할 수 있습니다.</p>
 <p><strong>기회:</strong> GRE나 6in4처럼 <strong>설계된 터널</strong>은 어디서 감싸고 어디서 벗기는지가 정해져 있습니다. 그 지점을 확인하고 <strong>벗겨진 뒤의 위치</strong>에 수집 장비를 두면, 번거로운 전처리 없이 원래 모양의 트래픽을 받을 수 있어요.</p>
 <h3 id="doh-ech">4.3 HTTPS 위의 모든 것: DoH와 ECH<a class="headerlink" href="#doh-ech" title="Permanent link">¶</a></h3>
 <p>최근에는 HTTPS를 온갖 새로운 용도로 재활용하는 흐름이 강합니다. 네트워크 행동을 보기는 더 어려워지고, 암호화된 통신을 가로채는 일의 중요성은 커졌어요.</p>

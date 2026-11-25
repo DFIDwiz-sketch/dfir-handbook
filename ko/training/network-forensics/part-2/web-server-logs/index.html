@@ -11802,7 +11802,7 @@
 </div>
 <div class="admonition note">
 <p class="admonition-title">실습 환경과 표기</p>
-<p>**(직접 실행 결과)**는 이 작업 환경에 설치한 **Apache 2.4.58(Ubuntu 패키지)**로 얻었습니다. 연습용 가상 호스트(<code>www.lab.example</code>, 별칭 <code>portal.lab.example</code>)를 8080번 포트에 만들고, 같은 요청을 여러 로그 형식으로 동시에 남기도록 설정했습니다. 검색 기능을 흉내 내는 CGI는 따옴표가 들어오면 일부러 500을 돌려주도록 만든 <strong>연습용 스크립트</strong>이고, 실제 데이터베이스는 없습니다. 요청은 모두 같은 컴퓨터의 <code>curl</code>로 보냈기 때문에 출발지가 <code>127.0.0.1</code>로 찍혀 있습니다. IIS는 이 환경에서 돌릴 수 없어 문서로만 확인했습니다.</p>
+<p><strong>(직접 실행 결과)</strong>​는 이 작업 환경에 설치한 <strong>Apache 2.4.58(Ubuntu 패키지)</strong>​로 얻었습니다. 연습용 가상 호스트(<code>www.lab.example</code>, 별칭 <code>portal.lab.example</code>)를 8080번 포트에 만들고, 같은 요청을 여러 로그 형식으로 동시에 남기도록 설정했습니다. 검색 기능을 흉내 내는 CGI는 따옴표가 들어오면 일부러 500을 돌려주도록 만든 <strong>연습용 스크립트</strong>이고, 실제 데이터베이스는 없습니다. 요청은 모두 같은 컴퓨터의 <code>curl</code>로 보냈기 때문에 출발지가 <code>127.0.0.1</code>로 찍혀 있습니다. IIS는 이 환경에서 돌릴 수 없어 문서로만 확인했습니다.</p>
 </div>
 <h2 id="why-server-logs">1. 웹 서버 로그가 특별한 이유<a class="headerlink" href="#why-server-logs" title="Permanent link">¶</a></h2>
 <p>웹 서버 로그는 웹 서버만큼 오래됐습니다. 원래 목적은 지금도 같아요. 사이트 사용량 보고(얼마나 전송했나, 몇 페이지를 보여 줬나), 그리고 서버와 내용의 오류를 고치기 위한 기록입니다. 그런데 이 로그가 웹 서버가 얽힌 사건에서는 가장 중요한 증거가 되곤 합니다. 자동·수동 <strong>정찰</strong>부터 <strong>공격</strong> 자체, <strong>장악의 순간</strong>(SQL 주입 같은), <strong>장악 이후의 작업</strong>까지 한 줄씩 남기 때문입니다. 원격 관리 도구(RAT)를 쓰는 공격이라면, 공격자의 모든 명령이 요청 한 줄씩으로 남는 경우도 있어요.</p>
@@ -11955,7 +11955,7 @@
 <div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>127.0.0.1 - jdoe [05/Nov/2026:07:03:23 +0000] "GET /admin/ HTTP/1.1" 200 11
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>127.0.0.1 - admin [05/Nov/2026:07:03:23 +0000] "GET /admin/ HTTP/1.1" 401 462
 </span></code></pre></div>
-<p>두 번째 줄의 <code>%u</code>는 <code>admin</code>인데 상태 코드는 <strong>401</strong>입니다. 즉 <code>%u</code>는 "인증에 성공한 사용자"가 아니라 <strong>클라이언트가 보낸 사용자 이름</strong>이고, 실패해도 남습니다. 오류 로그에는 같은 시각에 <code>AH01618: user admin not found: /admin/</code>이 남았어요**(직접 실행 결과)**. 그러니 "<code>%u</code>에 <code>admin</code>이 있으니 관리자가 접속했다"고 읽으면 안 되고, 반드시 상태 코드와 함께 읽습니다. 반대로 401이 쌓인 <code>%u</code> 목록은 <strong>무차별 대입에 쓰인 계정 이름 목록</strong>이 됩니다.</p>
+<p>두 번째 줄의 <code>%u</code>는 <code>admin</code>인데 상태 코드는 <strong>401</strong>입니다. 즉 <code>%u</code>는 "인증에 성공한 사용자"가 아니라 <strong>클라이언트가 보낸 사용자 이름</strong>이고, 실패해도 남습니다. 오류 로그에는 같은 시각에 <code>AH01618: user admin not found: /admin/</code>이 남았어요​<strong>(직접 실행 결과)</strong>. 그러니 "<code>%u</code>에 <code>admin</code>이 있으니 관리자가 접속했다"고 읽으면 안 되고, 반드시 상태 코드와 함께 읽습니다. 반대로 401이 쌓인 <code>%u</code> 목록은 <strong>무차별 대입에 쓰인 계정 이름 목록</strong>이 됩니다.</p>
 <h2 id="mod-log-forensic">5. Apache <code>mod_log_forensic</code>: 모든 헤더를 남긴다<a class="headerlink" href="#mod-log-forensic" title="Permanent link">¶</a></h2>
 <p><code>mod_log_forensic</code>은 이름과 달리 디지털 포렌식을 위해 만든 건 아니지만, 요청마다 <strong>모든 요청 헤더</strong>를 남겨 줍니다. 서버가 TLS의 끝점이니 HTTPS 요청도 복호화된 상태로 남아요. 직접 켜서 본 결과입니다.</p>
 <p><strong>(직접 실행 결과, 한 요청의 시작 줄)</strong></p>
@@ -11963,13 +11963,13 @@
 </span></code></pre></div>
 <ul>
 <li>줄은 <code>+고유 ID|요청 줄|헤더:값|헤더:값|...</code> 모양입니다. 고유 ID는 <code>mod_unique_id</code>가 요청마다 붙이는 값이에요.</li>
-<li>요청 처리가 <strong>끝나면</strong> <code>-고유 ID</code> 줄이 따로 남습니다. 이번 실습에서는 <code>+</code> 17줄, <code>-</code> 17줄이었습니다**(직접 실행 결과)**. 처리 도중 서버가 죽거나 끊긴 요청은 <code>+</code>만 있고 <code>-</code>가 없어, 서버를 쓰러뜨린 요청을 찾는 데 쓸 수 있습니다.</li>
+<li>요청 처리가 <strong>끝나면</strong> <code>-고유 ID</code> 줄이 따로 남습니다. 이번 실습에서는 <code>+</code> 17줄, <code>-</code> 17줄이었습니다​<strong>(직접 실행 결과)</strong>. 처리 도중 서버가 죽거나 끊긴 요청은 <code>+</code>만 있고 <code>-</code>가 없어, 서버를 쓰러뜨린 요청을 찾는 데 쓸 수 있습니다.</li>
 <li>4.1절에서 본 것처럼 <strong>실제로 요청한 <code>Host</code></strong>(<code>portal.lab.example</code>)가 남아 있습니다.</li>
 <li>헤더 값 안의 특별한 글자는 퍼센트 인코딩으로 바뀝니다(<code>Referer:https%3a//...</code>의 <code>%3a</code>).</li>
 </ul>
 <div class="admonition warning">
 <p class="admonition-title">[주의] 포렌식 로그는 비밀번호까지 남긴다</p>
-<p><code>/admin/</code> 요청의 줄에는 <code>Authorization:Basic amRvZTpTcHJpbmcyMDI2IQ==</code>가 그대로 남았습니다**(직접 실행 결과)**. 2.1강에서 본 대로 Base64는 바로 풀리니, 이 로그에는 <strong>평문 비밀번호</strong>(<code>jdoe:Spring2026!</code>)가 들어 있는 셈입니다. 세션 쿠키도 마찬가지고요. 조사에는 귀한 자료지만, 이 로그 자체가 공격자에게는 보물 창고입니다. 켤 때는 필요한 가상 호스트나 경로로 범위를 좁히고(교재가 권하듯 성능과 디스크 부담도 줄어듭니다), 접근 권한과 보관 기간을 엄격히 정합니다.</p>
+<p><code>/admin/</code> 요청의 줄에는 <code>Authorization:Basic amRvZTpTcHJpbmcyMDI2IQ==</code>가 그대로 남았습니다​<strong>(직접 실행 결과)</strong>. 2.1강에서 본 대로 Base64는 바로 풀리니, 이 로그에는 <strong>평문 비밀번호</strong>(<code>jdoe:Spring2026!</code>)가 들어 있는 셈입니다. 세션 쿠키도 마찬가지고요. 조사에는 귀한 자료지만, 이 로그 자체가 공격자에게는 보물 창고입니다. 켤 때는 필요한 가상 호스트나 경로로 범위를 좁히고(교재가 권하듯 성능과 디스크 부담도 줄어듭니다), 접근 권한과 보관 기간을 엄격히 정합니다.</p>
 </div>
 <h2 id="iis">6. IIS의 로그<a class="headerlink" href="#iis" title="Permanent link">¶</a></h2>
 <p>IIS는 이 환경에서 돌릴 수 없어 문서로 확인한 내용입니다.</p>
@@ -11977,7 +11977,7 @@
 <li><strong>W3C 확장 형식이 기본입니다.</strong> <code>#Fields:</code> 줄로 남길 필드를 고를 수 있고(<code>date time s-ip cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs(User-Agent) sc-status sc-bytes cs-bytes time-taken</code> 등), Microsoft의 IIS 6 시절 문서에 따르면 시각을 <strong>UTC</strong>로 적습니다. 1.5강의 ELFF와 같은 방식으로 <code>#Fields:</code>를 읽어 열 이름으로 다룹니다.</li>
 <li><strong>IIS 형식</strong>은 필드가 고정된 쉼표 구분 형식으로, 교재가 정리한 순서는 요청자 주소, 인증 사용자, 날짜(두 자리 연도), 시각, 서비스 이름과 인스턴스(<code>W3SVC2</code> 등), 서버 이름, 서버 IP, 처리 시간(밀리초), 받은 바이트, 보낸 바이트, 상태 코드, Windows 오류 코드, 메서드, 요청 자원, 쿼리입니다. 줄 끝에도 쉼표가 붙어요. 이 형식은 <strong>지역 시각</strong>을 쓴다고 IIS 6 문서에 적혀 있으니, W3C 형식 로그와 섞어 볼 때 시간대를 꼭 맞춥니다.</li>
 <li><strong>받은 바이트(<code>cs-bytes</code>)와 처리 시간</strong>을 기본으로 남길 수 있다는 점이 Apache의 기본 형식과 다릅니다. 1.4강에서 "올린 양"이 로그에 없어 아쉬웠던 그 값이에요.</li>
-<li>부하가 큰 서버를 위한 **중앙 집중식 이진 로그(CBL)**와 <strong>ODBC</strong>(SQL Server 같은 데이터베이스에 기록)도 있습니다. 둘 다 바로 읽을 수 없어 질의 도구가 필요하고, Microsoft의 오래된 무료 도구 <strong>Log Parser</strong>(SQL 비슷한 질의로 여러 로그 형식을 읽음)와 그 화면 도구 <strong>Log Parser Studio</strong>가 흔히 쓰였습니다. 문서에 따르면 ODBC 기록은 커널 모드 캐시를 끄게 되어 성능 부담이 크다는 경고도 있어요.</li>
+<li>부하가 큰 서버를 위한 <strong>중앙 집중식 이진 로그(CBL)</strong>​와 <strong>ODBC</strong>(SQL Server 같은 데이터베이스에 기록)도 있습니다. 둘 다 바로 읽을 수 없어 질의 도구가 필요하고, Microsoft의 오래된 무료 도구 <strong>Log Parser</strong>(SQL 비슷한 질의로 여러 로그 형식을 읽음)와 그 화면 도구 <strong>Log Parser Studio</strong>가 흔히 쓰였습니다. 문서에 따르면 ODBC 기록은 커널 모드 캐시를 끄게 되어 성능 부담이 크다는 경고도 있어요.</li>
 </ul>
 <h2 id="shell-analysis">7. 셸로 분석하기<a class="headerlink" href="#shell-analysis" title="Permanent link">¶</a></h2>
 <p>글자 파일인 로그는 셸 도구로 바로, 그리고 대용량에도 다룰 수 있습니다. 교재가 예로 드는 네 가지 명령을 실습 로그(Ubuntu의 <code>combined</code>)에 맞춰 돌렸습니다. 필드 번호는 공백으로 나눈 위치이니, Combined 형식에서 <code>$1</code>은 주소, <code>$4</code>는 시각, <code>$7</code>은 요청 대상, <code>$9</code>는 상태 코드입니다.</p>

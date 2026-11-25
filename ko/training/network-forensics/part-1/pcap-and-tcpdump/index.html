@@ -11820,7 +11820,7 @@
 </div>
 <div class="admonition note">
 <p class="admonition-title">실습 환경과 표기</p>
-<p>이번 회차의 **(직접 실행 결과)**는 이 작업 환경에 설치한 Ubuntu 패키지 **tcpdump 4.99.4(libpcap 1.10.4)**와 <strong>tshark 4.2.2</strong>로, 같은 PC 안의 루프백 인터페이스(<code>lo</code>)에서 시험용 웹 서버(<code>127.0.0.1:8082</code>)와 주고받은 트래픽을 실제로 수집해 얻은 출력입니다. 2026-11-05 기준 각 프로젝트의 최신 태그는 tcpdump 4.99.7, libpcap 1.11.0, Wireshark 안정판 4.6.16입니다(저장소 태그로 확인). 버전은 계속 올라가니 "최신"은 이 날짜 기준입니다.</p>
+<p>이번 회차의 <strong>(직접 실행 결과)</strong>​는 이 작업 환경에 설치한 Ubuntu 패키지 <strong>tcpdump 4.99.4(libpcap 1.10.4)</strong>​와 <strong>tshark 4.2.2</strong>로, 같은 PC 안의 루프백 인터페이스(<code>lo</code>)에서 시험용 웹 서버(<code>127.0.0.1:8082</code>)와 주고받은 트래픽을 실제로 수집해 얻은 출력입니다. 2026-11-05 기준 각 프로젝트의 최신 태그는 tcpdump 4.99.7, libpcap 1.11.0, Wireshark 안정판 4.6.16입니다(저장소 태그로 확인). 버전은 계속 올라가니 "최신"은 이 날짜 기준입니다.</p>
 </div>
 <h2 id="a-pcap-file">1. 누가 건넨 pcap 파일 하나<a class="headerlink" href="#a-pcap-file" title="Permanent link">¶</a></h2>
 <p><strong>(가상 사례)</strong> 1.4강 사건의 다음 날, 네트워크 팀이 "사건 시간대에 연구 구간 탭에서 떠 둔 패킷"이라며 <code>research-1014.pcap</code> 파일을 건넵니다. 바로 Wireshark로 열고 싶겠지만, 그 전에 물어야 할 게 있습니다.</p>
@@ -11917,7 +11917,7 @@
 </table>
 <p><strong>매직 넘버와 바이트 순서.</strong> 표의 "바이트" 칸과 "값" 칸이 거꾸로인 게 보이시죠? 컴퓨터마다 여러 바이트로 된 숫자를 <strong>작은 자리부터</strong> 저장하는 방식(리틀 엔디언)과 <strong>큰 자리부터</strong> 저장하는 방식(빅 엔디언)이 있습니다. 오늘날 인텔·AMD의 x86·x86-64는 리틀 엔디언이라, 0xa1b2c3d4라는 값이 파일에는 <code>d4 c3 b2 a1</code>로 적혀요. 그래서 가장 흔한 pcap 파일의 첫 네 바이트가 <code>d4 c3 b2 a1</code>입니다. 아주 오래된 빅 엔디언 기계에서 만든 파일이라면 <code>a1 b2 c3 d4</code>로 보입니다. 이 네 바이트로 프로그램이 "이 파일의 숫자들을 어느 순서로 읽어야 하는지"까지 알게 되는 셈이에요. <code>file</code> 명령이 <code>(little-endian)</code>이라고 알려 준 것도 이 때문입니다.</p>
 <p>또 하나, 매직 넘버가 <strong>0xa1b23c4d</strong>(파일에는 <code>4d 3c b2 a1</code>)라면, 형식은 같지만 패킷 시각의 소수 부분이 마이크로초가 아니라 <strong>나노초</strong>라는 뜻입니다. 같은 pcap이라도 매직 넘버를 보고 시각을 해석해야 해요.</p>
-<p><strong>[변경됨] 시간대·정확도 칸.</strong> 교재는 이 두 칸을 "시간대는 늘 UTC라 0, 정확도도 0"이라고 설명합니다. 지금 libpcap의 파일 형식 문서는 두 칸을 아예 **"쓰지 않음"**으로 정의합니다. 쓰는 쪽은 0으로 채워야 하고, 읽는 쪽은 <strong>무시해야</strong> 하며, 예전 일부 프로그램은 0이 아닌 값을 넣기도 했다고 적혀 있어요(2026-11-05, libpcap 1.10 브랜치의 <code>pcap-savefile</code> 문서로 확인). 실질적인 결론은 같습니다. pcap의 패킷 시각은 <strong>1970년 1월 1일 UTC부터 센 시간</strong>이라 시간대가 없고, 이 칸에 무슨 값이 있든 시각을 고치는 데 쓰면 안 됩니다.</p>
+<p><strong>[변경됨] 시간대·정확도 칸.</strong> 교재는 이 두 칸을 "시간대는 늘 UTC라 0, 정확도도 0"이라고 설명합니다. 지금 libpcap의 파일 형식 문서는 두 칸을 아예 <strong>"쓰지 않음"</strong>​으로 정의합니다. 쓰는 쪽은 0으로 채워야 하고, 읽는 쪽은 <strong>무시해야</strong> 하며, 예전 일부 프로그램은 0이 아닌 값을 넣기도 했다고 적혀 있어요(2026-11-05, libpcap 1.10 브랜치의 <code>pcap-savefile</code> 문서로 확인). 실질적인 결론은 같습니다. pcap의 패킷 시각은 <strong>1970년 1월 1일 UTC부터 센 시간</strong>이라 시간대가 없고, 이 칸에 무슨 값이 있든 시각을 고치는 데 쓰면 안 됩니다.</p>
 <p><strong>스냅샷 길이.</strong> 패킷당 최대 몇 바이트를 저장했는지입니다. 262,144는 tcpdump 4.99의 기본값이에요(tcpdump 문서로 확인). 교재가 드는 예가 좋습니다. 어떤 IPv4 pcap 파일의 모든 패킷이 40바이트 이하라면, 네트워크 오류로 잘린 걸까요, 아니면 누가 40바이트만 담도록 떴을까요? <strong>이 칸이 그 답을 줍니다.</strong> 기본값은 도구 버전과 운영체제마다 크게 달랐기 때문에(예전 tcpdump는 68이나 96바이트였던 적도 있습니다), 도구를 쓰기 전에 직접 시험하고 확인해야 합니다.</p>
 <p><strong>링크 계층 형식.</strong> 어떤 종류의 매체에서 떴는지입니다. 1은 이더넷이고, 그 밖에 무선(802.11), 리눅스의 "any" 의사 인터페이스(LINUX_SLL), 원시 IP 등 수많은 값이 있습니다. 전체 목록은 <code>pcap-linktype</code> 문서에 있어요. 이 값이 틀리면 프로그램이 패킷의 첫 바이트를 엉뚱하게 해석합니다. 이번 실습은 루프백인데도 1(이더넷)로 나왔는데, 리눅스가 루프백을 이더넷 모양으로 보여 주기 때문입니다.</p>
 <h3 id="record-header">4.2 기록 머리말: 패킷마다 16바이트<a class="headerlink" href="#record-header" title="Permanent link">¶</a></h3>
