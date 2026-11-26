@@ -18,9 +18,10 @@ tags:
 | # | Page | Key points |
 | --- | --- | --- |
 | 1 | [Starting an Investigation — The Question, the Data, Where It Lives and How to Get It Out](questions-and-data.md) | The Alexiou Principle as four questions and why it is decomposition; four invented alerts (credential-phishing landing page, VNC authentication failures, RAT check-in, PowerShell in a DNS TXT answer) with validation and follow-up questions (T1566.002, T1598.003, T1110.001, T1021.005, T1133, T1071.001, T1571, T1071.004, T1059.001); best data per question; every place one web connection is logged, with a Mermaid chart and `ipconfig /displaydns` read line by line; what ran, why it ran and the Windows artefacts (Prefetch, Shimcache, Amcache, MUICache, UserAssist, MRU lists, memory) with caveats; alert C confirmed by Prefetch, Amcache and a Run key (T1547.001); primary vs alternative sources table incl. 4624, 4768/4769, 4776; OSINT and closed-source intelligence, the submission catch; which console for which question and query languages; alert D end to end — Zeek `dns.log`, Sysmon 22, 4688 and 4104 field by field (T1204.002, T1027); 2026 view (identity-first evidence, less PCAP, AI-drafted queries, ATT&CK v19 split and v20); practice questions |
+| 2 | [Analysing Network Events Layer by Layer — IP and Domain, Ports, TLS Certificates, Application Metadata and Content](analysing-network-events.md) | Interpreting evidence: all hypotheses, fresh eyes, try to disprove; encapsulation and why badness may show at one layer only (SSH upload, malware on trusted file sharing); five invented events; Layer 3 — attackers' own infrastructure, intel, prevalence, history, reverse/passive DNS, ASN, domain age, randomness, rank, length, subdomains; N1 SSH exfiltration read from `conn.log` and `ssh.log` with a `zeek-cut` prevalence check line by line (T1048.002); Layer 4 — ports and services, mismatches, non-standard, 4444/6667, random ports, why the destination port matters, port table; N2 IRC on port 80 (`service=irc`, `history`) (T1071); Layer 5 — SNI, suspicious/self-signed/expired certificates, JA3/JA3S and JA4 decoded, never-seen certificates, name mismatches; N3 self-signed C2 from `ssl.log`/`x509.log` (T1573.002, T1571, T1587.003); N4 SNI ≠ Host domain fronting (T1090.004) and CDN blocking; Layer 7 — metadata vs content; N5 ISO from cloud file sharing via `http.log`/`files.log` and Arkime extraction (T1566.002, T1608.001, T1204.002); five-event layer check-list; 2026 view (JA4+, TLS 1.3 and ECH (RFC 9849), free certificates and shorter lifetimes, AI scoring); practice questions |
 
 !!! info "Coming next"
-    Analysing network events layer by layer (IP and domain, ports, TLS certificates, application metadata and content), then email links and phishing, then targeted attacks and business email compromise.
+    Email-based attacks and assessing links — hacked sites, "safe" sites hosting bad downloads, previewing shortened links — then targeted vs opportunistic attacks, tracking clicks, where a password box really goes, and business email compromise.
 
 ## Things to remember { #must-know }
 
@@ -30,6 +31,8 @@ tags:
 4. One connection is logged in many places; when the primary source is missing, use the others — and know their retention.
 5. On the host, ask what ran, why it ran, and when it first ran.
 6. Every lookup or upload to an outside service is also a disclosure.
+7. Check every layer: destination, port, TLS wrapper and content — an attacker only needs one of them to lie.
+8. Rare destinations deserve a look; trusted services can still carry bad content, and only the bytes prove it.
 
 ## Related { #related }
 
