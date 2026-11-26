@@ -110,10 +110,18 @@ tags:
 
     [:octicons-arrow-right-24: File Analysis](file-analysis/index.md)
 
+-   :material-alert-decagram:{ .lg .middle } **Alert Triage**
+
+    ---
+
+    The start of the analysis part: what "dangerous" means in practice, attacks nearing completion and distance to the attacker's goal on the Kill Chain and attack life cycle, spotting exfiltration, destruction, sensitive targets and targeted attackers, and prioritising a real alert queue.
+
+    [:octicons-arrow-right-24: Alert Triage](alert-triage/index.md)
+
 </div>
 
 !!! info "Next topic"
-    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols), and so is the host part (endpoint attacks, endpoint defence, Windows logging, Linux logging, important events, log pipeline & SIEM, file analysis). The analysis part follows.
+    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols), and so is the host part (endpoint attacks, endpoint defence, Windows logging, Linux logging, important events, log pipeline & SIEM, file analysis). The analysis part has started with alert triage; analyst perception and memory, mental models, structured analysis, investigation questions, analysis OPSEC, reacting to intrusions and case review follow.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.
