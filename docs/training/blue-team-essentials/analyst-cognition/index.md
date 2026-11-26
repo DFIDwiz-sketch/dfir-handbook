@@ -21,7 +21,7 @@ tags:
 | 2 | [Memory and Experience — Working Memory Limits, Decomposition and Externalisation, Assimilation, and Mental Ruts](memory-experience.md) | Sensory store, short-term and long-term memory; encoding and retrieval; 7 ± 2 and the newer ~4-chunk estimate; chunking; why relationships (n(n−1)/2) overflow working memory; decomposition and externalisation, six formats; a service-install case worked in the head and then as full case notes (7045, 4624 + 4672, 4688, Zeek conn/dns, T1543.003, T1569.002, T1036.004, T1071.001, T1133, T1078, T1021.002); the parked/dismissed list; mind map; assimilation vs mnemonics; learning `auditd` by mapping it to 4688; pros and cons of experience, mental ruts and five SOC examples; hardened mindsets and failing to re-evaluate earlier evidence; practice questions |
 
 !!! success "Section complete"
-    The perception and memory section is complete. Next: **Mental Models** — encapsulation, the OODA loop, the Kill Chain, defence in depth, NIST CSF, the incident response cycle, threat-intelligence cycles, the Diamond Model, attack trees, the Pyramid of Pain and MITRE ATT&CK — the models this section says you should collect.
+    The perception and memory section is complete. Next: [**Mental Models**](../mental-models/index.md) — encapsulation, the OODA loop, the Kill Chain, defence in depth, NIST CSF, the incident response cycle, threat-intelligence cycles, the Diamond Model, attack trees, the Pyramid of Pain and MITRE ATT&CK — the models this section says you should collect.
 
 ## Things to remember { #must-know }
 

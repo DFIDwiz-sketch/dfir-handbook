@@ -126,10 +126,18 @@ tags:
 
     [:octicons-arrow-right-24: Perception & Memory](analyst-cognition/index.md)
 
+-   :material-sitemap:{ .lg .middle } **Mental Models**
+
+    ---
+
+    The analyst's toolbox of models: encapsulation and the OODA loop, the Cyber Kill Chain and campaigns, defence in depth, NIST CSF and the incident response cycle, threat-intelligence levels, cycles and F3EAD, the Diamond Model, attack trees, threat modelling, the Pyramid of Pain and MITRE ATT&CK.
+
+    [:octicons-arrow-right-24: Mental Models](mental-models/index.md)
+
 </div>
 
 !!! info "Next topic"
-    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols), and so is the host part (endpoint attacks, endpoint defence, Windows logging, Linux logging, important events, log pipeline & SIEM, file analysis). The analysis part continues with alert triage and analyst perception and memory (both complete); mental models (next), structured analysis, investigation questions, analysis OPSEC, reacting to intrusions and case review follow.
+    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols), and so is the host part (endpoint attacks, endpoint defence, Windows logging, Linux logging, important events, log pipeline & SIEM, file analysis). The analysis part continues with alert triage and analyst perception and memory (both complete), then mental models; structured analysis, investigation questions, analysis OPSEC, reacting to intrusions and case review follow.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.
