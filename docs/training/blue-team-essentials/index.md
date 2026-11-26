@@ -106,14 +106,14 @@ tags:
 
     ---
 
-    What a suspicious file really is, without trusting its name: bytes and hex dumps, the `file` command, magic bytes, nested files and carving, polyglots, Unicode and encodings, then `strings`, safe handling, dangerous file types (executables, scripts, Office, RTF, PDF), hashing and code signatures, and quick triage.
+    What a suspicious file really is, without trusting its name: bytes and hex dumps, the `file` command, magic bytes, nested files and carving, polyglots, Unicode and encodings, then `strings`, safe handling, dangerous file types (executables, scripts, Office, RTF, PDF), hashing and code signatures, quick triage, visual inspection, malicious scripts and data hidden in pictures.
 
     [:octicons-arrow-right-24: File Analysis](file-analysis/index.md)
 
 </div>
 
 !!! info "Next topic"
-    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols). On the host part, endpoint attacks, endpoint defence, Windows logging, Linux logging, important events and log pipeline & SIEM are complete; file analysis is in progress (file identification and strings so far), and it closes the host part.
+    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols), and so is the host part (endpoint attacks, endpoint defence, Windows logging, Linux logging, important events, log pipeline & SIEM, file analysis). The analysis part follows.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.
