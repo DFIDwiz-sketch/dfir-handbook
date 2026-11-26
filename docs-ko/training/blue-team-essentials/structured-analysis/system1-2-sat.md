@@ -39,7 +39,7 @@ tags:
 
 | 단계 | 질문 | 고쳐 주는 흔한 실수 | 페이지 |
 | --- | --- | --- | --- |
-| 가설 생성 | 무엇이 이걸 설명할 *수* 있나? | 설명을 하나만 생각함, 첫 생각에 닻을 내림 | 가설 세우기 |
+| 가설 생성 | 무엇이 이걸 설명할 *수* 있나? | 설명을 하나만 생각함, 첫 생각에 닻을 내림 | [가설 세우기](hypothesis-generation.md) |
 | 가설 평가 | 증거가 실제로 받쳐 주는 설명은 무엇인가? | 첫 그럴듯한 답에 만족, 확증 편향, 인기 있는 답 고르기 | 가설 세우기, 이어서 경쟁 가설 분석(ACH) |
 | 증거 정리 | 조각들이 어떻게 이어지고, 어떤 순서인가? | 작업 기억에서 개체와 시간을 놓침 | 링크 분석과 이벤트 매트릭스 |
 
@@ -302,7 +302,7 @@ ScriptBlockText:
 
 ## 관련 레퍼런스 { #related }
 
-- 가설 세우기, 평가의 실수, 확증 편향 — 다음 페이지(곧 추가)
+- [가설 세우기, 평가의 실수, 확증 편향](hypothesis-generation.md) — 다음 페이지
 - [지각](../analyst-cognition/perception.md) · [기억과 경험](../analyst-cognition/memory-experience.md) — 이 방법들이 고치는 문제
 - [고통의 피라미드, MITRE ATT&CK, 언제 어떤 모델을 쓰나](../mental-models/pyramid-attack-summary.md) — 이 방법들이 쓰는 모델
 - [프로세스 생성 이벤트](../important-events/process-creation.md) · [경보 분류: 민감한 호스트·사용자·데이터](../alert-triage/exfil-destruction-sensitive.md)

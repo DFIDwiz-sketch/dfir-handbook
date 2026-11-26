@@ -39,7 +39,7 @@ The methods in this section follow the order of an investigation:
 
 | Step | Question | Typical failure it fixes | Page |
 | --- | --- | --- | --- |
-| Hypothesis generation | What *could* explain this? | Only one explanation ever considered; anchoring on the first idea | Hypothesis generation |
+| Hypothesis generation | What *could* explain this? | Only one explanation ever considered; anchoring on the first idea | [Hypothesis generation](hypothesis-generation.md) |
 | Hypothesis evaluation | Which explanation does the evidence actually support? | Satisficing, confirmation bias, choosing the popular answer | Hypothesis generation, then Analysis of Competing Hypotheses (ACH) |
 | Evidence organisation | How do the pieces connect, and in what order? | Losing track of entities and time in working memory | Link analysis and the event matrix |
 
@@ -302,7 +302,7 @@ Name the four categories of structured analytic techniques, give one technique f
 
 ## Related { #related }
 
-- Hypothesis generation, evaluation mistakes and confirmation bias — next page (coming soon)
+- [Hypothesis generation, evaluation mistakes and confirmation bias](hypothesis-generation.md) — next page
 - [Perception](../analyst-cognition/perception.md) · [Memory and experience](../analyst-cognition/memory-experience.md) — the problems these methods fix
 - [The Pyramid of Pain, MITRE ATT&CK and when each model applies](../mental-models/pyramid-attack-summary.md) — the models these methods use
 - [Process creation events](../important-events/process-creation.md) · [Alert triage: sensitive hosts, users and data](../alert-triage/exfil-destruction-sensitive.md)
