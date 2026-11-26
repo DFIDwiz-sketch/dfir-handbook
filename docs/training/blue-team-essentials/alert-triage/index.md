@@ -21,7 +21,7 @@ tags:
 | 3 | [Prioritising Alerts — IDS and Exploit Alerts, Same-Stage Alerts, Unique Alerts and What Can Wait](prioritising-alerts.md) | A seven-alert IDS queue ranked from names and counts (sinkhole callbacks T1568/T1071.004, outbound TFTP T1048.003, internal `xp_cmdshell` T1190/T1059.003/T1505.001, packed download T1027.002, `.scr` mail T1566.001, camera probe T1595.002) with a Suricata `eve.json` alert read field by field; six questions for same-stage alerts applied to four exploit alerts; six exploit scenarios (Log4Shell, exploit kit T1189/T1203, Zerologon T1210 with 4742 and Netlogon 5827–5829, USB T1091/6416, HR-portal guessing T1110, macro to help desk T1204.002); long-tail analysis with `cut | sort | uniq -c | sort -n` and how rules count; lower-priority alert classes; 4625 sub-status codes, misconfigured printer vs spraying, 4740; the four-question triage card; practice questions |
 
 !!! success "Section complete"
-    The alert triage section is complete. Next: **Perception & Memory** — why validating the alert you picked is harder than it looks, and how perception, memory and SOC pressure lead analysts to the wrong answer.
+    The alert triage section is complete. Next: [**Perception & Memory**](../analyst-cognition/index.md) — why validating the alert you picked is harder than it looks, and how perception, memory and SOC pressure lead analysts to the wrong answer.
 
 ## Things to remember { #must-know }
 
