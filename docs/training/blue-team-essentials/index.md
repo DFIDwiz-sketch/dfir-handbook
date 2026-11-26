@@ -142,10 +142,18 @@ tags:
 
     [:octicons-arrow-right-24: Structured Analysis](structured-analysis/index.md)
 
+-   :material-magnify-scan:{ .lg .middle } **Investigation Questions**
+
+    ---
+
+    Starting an investigation from the right question: the four questions, choosing network, host and alternative data sources, OSINT, extracting the data, then analysing network events layer by layer, assessing email links and phishing, and spotting targeted attacks and business email compromise.
+
+    [:octicons-arrow-right-24: Investigation Questions](investigation/index.md)
+
 </div>
 
 !!! info "Next topic"
-    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols), and so is the host part (endpoint attacks, endpoint defence, Windows logging, Linux logging, important events, log pipeline & SIEM, file analysis). The analysis part continues: alert triage, analyst perception and memory, mental models and structured analysis are complete; investigation questions come next, followed by analysis OPSEC, reacting to intrusions and case review.
+    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols), and so is the host part (endpoint attacks, endpoint defence, Windows logging, Linux logging, important events, log pipeline & SIEM, file analysis). The analysis part continues: alert triage, analyst perception and memory, mental models and structured analysis are complete, and investigation questions are under way; next come analysis OPSEC, reacting to intrusions and case review.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.
