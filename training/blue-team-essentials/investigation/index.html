@@ -9436,6 +9436,8 @@
       
         
       
+        
+      
     
     
     
@@ -9505,6 +9507,34 @@
     
   
     Starting an Investigation — The Question, the Data, Where It Lives and How to Get It Out
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="analysing-network-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysing Network Events Layer by Layer — IP and Domain, Ports, TLS Certificates, Application Metadata and Content
   
 
     
@@ -12533,11 +12563,16 @@
 <td><a href="questions-and-data/">Starting an Investigation — The Question, the Data, Where It Lives and How to Get It Out</a></td>
 <td>The Alexiou Principle as four questions and why it is decomposition; four invented alerts (credential-phishing landing page, VNC authentication failures, RAT check-in, PowerShell in a DNS TXT answer) with validation and follow-up questions (T1566.002, T1598.003, T1110.001, T1021.005, T1133, T1071.001, T1571, T1071.004, T1059.001); best data per question; every place one web connection is logged, with a Mermaid chart and <code>ipconfig /displaydns</code> read line by line; what ran, why it ran and the Windows artefacts (Prefetch, Shimcache, Amcache, MUICache, UserAssist, MRU lists, memory) with caveats; alert C confirmed by Prefetch, Amcache and a Run key (T1547.001); primary vs alternative sources table incl. 4624, 4768/4769, 4776; OSINT and closed-source intelligence, the submission catch; which console for which question and query languages; alert D end to end — Zeek <code>dns.log</code>, Sysmon 22, 4688 and 4104 field by field (T1204.002, T1027); 2026 view (identity-first evidence, less PCAP, AI-drafted queries, ATT&amp;CK v19 split and v20); practice questions</td>
 </tr>
+<tr>
+<td>2</td>
+<td><a href="analysing-network-events/">Analysing Network Events Layer by Layer — IP and Domain, Ports, TLS Certificates, Application Metadata and Content</a></td>
+<td>Interpreting evidence: all hypotheses, fresh eyes, try to disprove; encapsulation and why badness may show at one layer only (SSH upload, malware on trusted file sharing); five invented events; Layer 3 — attackers' own infrastructure, intel, prevalence, history, reverse/passive DNS, ASN, domain age, randomness, rank, length, subdomains; N1 SSH exfiltration read from <code>conn.log</code> and <code>ssh.log</code> with a <code>zeek-cut</code> prevalence check line by line (T1048.002); Layer 4 — ports and services, mismatches, non-standard, 4444/6667, random ports, why the destination port matters, port table; N2 IRC on port 80 (<code>service=irc</code>, <code>history</code>) (T1071); Layer 5 — SNI, suspicious/self-signed/expired certificates, JA3/JA3S and JA4 decoded, never-seen certificates, name mismatches; N3 self-signed C2 from <code>ssl.log</code>/<code>x509.log</code> (T1573.002, T1571, T1587.003); N4 SNI ≠ Host domain fronting (T1090.004) and CDN blocking; Layer 7 — metadata vs content; N5 ISO from cloud file sharing via <code>http.log</code>/<code>files.log</code> and Arkime extraction (T1566.002, T1608.001, T1204.002); five-event layer check-list; 2026 view (JA4+, TLS 1.3 and ECH (RFC 9849), free certificates and shorter lifetimes, AI scoring); practice questions</td>
+</tr>
 </tbody>
 </table>
 <div class="admonition info">
 <p class="admonition-title">Coming next</p>
-<p>Analysing network events layer by layer (IP and domain, ports, TLS certificates, application metadata and content), then email links and phishing, then targeted attacks and business email compromise.</p>
+<p>Email-based attacks and assessing links — hacked sites, "safe" sites hosting bad downloads, previewing shortened links — then targeted vs opportunistic attacks, tracking clicks, where a password box really goes, and business email compromise.</p>
 </div>
 <h2 id="must-know">Things to remember<a class="headerlink" href="#must-know" title="Permanent link">¶</a></h2>
 <ol>
@@ -12547,6 +12582,8 @@
 <li>One connection is logged in many places; when the primary source is missing, use the others — and know their retention.</li>
 <li>On the host, ask what ran, why it ran, and when it first ran.</li>
 <li>Every lookup or upload to an outside service is also a disclosure.</li>
+<li>Check every layer: destination, port, TLS wrapper and content — an attacker only needs one of them to lie.</li>
+<li>Rare destinations deserve a look; trusted services can still carry bad content, and only the bytes prove it.</li>
 </ol>
 <h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">¶</a></h2>
 <ul>
