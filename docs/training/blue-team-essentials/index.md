@@ -134,10 +134,18 @@ tags:
 
     [:octicons-arrow-right-24: Mental Models](mental-models/index.md)
 
+-   :material-head-cog:{ .lg .middle } **Structured Analysis**
+
+    ---
+
+    Methods that make analysis reliable: System 1 and System 2 thinking, "do you need more data?" and diagnostic evidence, the four families of structured analytic techniques, hypothesis generation and confirmation bias, Analysis of Competing Hypotheses, link analysis and the event matrix.
+
+    [:octicons-arrow-right-24: Structured Analysis](structured-analysis/index.md)
+
 </div>
 
 !!! info "Next topic"
-    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols), and so is the host part (endpoint attacks, endpoint defence, Windows logging, Linux logging, important events, log pipeline & SIEM, file analysis). The analysis part has begun with alert triage, analyst perception and memory, and mental models (all complete); structured analysis comes next, followed by investigation questions, analysis OPSEC, reacting to intrusions and case review.
+    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols), and so is the host part (endpoint attacks, endpoint defence, Windows logging, Linux logging, important events, log pipeline & SIEM, file analysis). The analysis part continues: alert triage, analyst perception and memory, and mental models are complete, and structured analysis is in progress; investigation questions, analysis OPSEC, reacting to intrusions and case review follow.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.

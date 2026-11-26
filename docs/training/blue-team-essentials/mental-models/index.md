@@ -24,7 +24,7 @@ tags:
 | 5 | [The Pyramid of Pain, MITRE ATT&CK and When Each Model Applies — Making the Attacker's Life Hard and Choosing the Right Lens](pyramid-attack-summary.md) | Pyramid of Pain at every level for one campaign: a one-byte change and a new SHA-256 (`sha256sum`, `cmp`), IPs and domains, network/host artefacts in a Zeek `http.log` line, a YARA rule for the tool and a Sigma rule for the behaviour (4688, T1204.002, T1059.001, T1027) read line by line, what the attacker did after each block; IOA vs IOC; Detection Maturity Levels; ATT&CK tactics, techniques, sub-techniques, procedures, domains and technique pages, a correction on Credential Access examples, Incident C mapped with evidence, a Navigator layer read line by line and a gap hunt (T1114.003); which model for triage, IR, strategy, hunting, CTI and tempo, walked through one night shift; why models matter for Orient and why all models are wrong; 2026 view (ATT&CK v18–v20, cheap infrastructure and SaaS C2, JA4+, AI-assisted mapping); practice questions |
 
 !!! success "Section complete"
-    The mental models section is complete. Next: **Structured Analysis** — System 1 and System 2 thinking, structured analytic techniques, hypothesis generation, confirmation bias, Analysis of Competing Hypotheses (ACH), link analysis and the event matrix: the techniques that make your use of these models reliable.
+    The mental models section is complete. Next: **[Structured Analysis](../structured-analysis/index.md)** — System 1 and System 2 thinking, structured analytic techniques, hypothesis generation, confirmation bias, Analysis of Competing Hypotheses (ACH), link analysis and the event matrix: the techniques that make your use of these models reliable.
 
 ## Things to remember { #must-know }
 
