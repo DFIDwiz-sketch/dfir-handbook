@@ -158,10 +158,18 @@ tags:
 
     [:octicons-arrow-right-24: Analysis OPSEC](analysis-opsec/index.md)
 
+-   :material-shield-alert:{ .lg .middle } **Reacting to Intrusions**
+
+    ---
+
+    What to do once an intrusion is confirmed: dwell time, intrusion type, short-haul and long-haul backdoors, attacker motivation, business risk and what you know about the attacker, then choosing a response, opportunistic vs targeted reactions, common missteps and out-of-band communication.
+
+    [:octicons-arrow-right-24: Reacting to Intrusions](intrusion-response/index.md)
+
 </div>
 
 !!! info "Next topic"
-    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols), and so is the host part (endpoint attacks, endpoint defence, Windows logging, Linux logging, important events, log pipeline & SIEM, file analysis). The analysis part continues: alert triage, analyst perception and memory, mental models, structured analysis and investigation questions are complete, and so is analysis OPSEC; next come reacting to intrusions and case review.
+    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols), and so is the host part (endpoint attacks, endpoint defence, Windows logging, Linux logging, important events, log pipeline & SIEM, file analysis). The analysis part continues: alert triage, analyst perception and memory, mental models, structured analysis and investigation questions are complete, and so is analysis OPSEC; reacting to intrusions is under way, and case review comes after it.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.
