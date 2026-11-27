@@ -177,7 +177,7 @@ tags:
 </div>
 
 !!! info "Next topic"
-    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols), and so is the host part (endpoint attacks, endpoint defence, Windows logging, Linux logging, important events, log pipeline & SIEM, file analysis). The analysis part continues: alert triage, analyst perception and memory, mental models, structured analysis and investigation questions are complete, and so is analysis OPSEC; and so is reacting to intrusions; quality and case review is under way.
+    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols), and so is the host part (endpoint attacks, endpoint defence, Windows logging, Linux logging, important events, log pipeline & SIEM, file analysis). The analysis part continues: alert triage, analyst perception and memory, mental models, structured analysis and investigation questions are complete, and so is analysis OPSEC; and so are reacting to intrusions and quality and case review — the analysis part is complete. The continuous improvement part (alert tuning, analysis optimisation and automation) comes next.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.

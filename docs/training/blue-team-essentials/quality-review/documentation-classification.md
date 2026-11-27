@@ -45,7 +45,7 @@ Picture a seesaw with **speed** on one side and **quality** on the other. There 
 | Who notices | Everyone, immediately | Often nobody, for months |
 | Measured by default? | Yes — every ticketing system counts it | No — someone has to decide to measure it |
 
-So quality needs two deliberate steps. **Step one: define the standard** — write down what a well-handled case looks like. **Step two: measure against it regularly** — through self-checks before closing and through peer review of a sample of closed cases (covered on the next page). Without step one, reviewers argue about taste. Without step two, the standard is a poster on the wall.
+So quality needs two deliberate steps. **Step one: define the standard** — write down what a well-handled case looks like. **Step two: measure against it regularly** — through self-checks before closing and through peer review of a sample of closed cases (covered on the [next page](challenge-analysis.md)). Without step one, reviewers argue about taste. Without step two, the standard is a poster on the wall.
 
 ## Good documentation { #documentation }
 
@@ -332,6 +332,7 @@ A colleague's case notes say: "Attribution: APT group X (Russian state)", based 
 ## Related { #related }
 
 - [Quality & Case Review](index.md) — section overview
+- [Challenge Analysis and Peer Review](challenge-analysis.md) — the next page
 - [Choosing a Response](../intrusion-response/choosing-response.md) — the section before
 - [Kill Chain, NIST CSF and the IR cycle](../mental-models/kill-chain-did-nist-ir.md) — analytical completeness and lessons learned
 - [Threat intelligence and its cycles](../mental-models/threat-intel-cycles.md) — where closed-case data goes
