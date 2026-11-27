@@ -166,10 +166,18 @@ tags:
 
     [:octicons-arrow-right-24: Reacting to Intrusions](intrusion-response/index.md)
 
+-   :material-clipboard-check:{ .lg .middle } **Quality & Case Review**
+
+    ---
+
+    Finishing well and getting better: speed versus quality, good case documentation, analytical completeness, closed-case classification and honest attribution, then challenge analysis (premortem, structured self-critique, What If?, red team and Team A/B) and regular peer review.
+
+    [:octicons-arrow-right-24: Quality & Case Review](quality-review/index.md)
+
 </div>
 
 !!! info "Next topic"
-    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols), and so is the host part (endpoint attacks, endpoint defence, Windows logging, Linux logging, important events, log pipeline & SIEM, file analysis). The analysis part continues: alert triage, analyst perception and memory, mental models, structured analysis and investigation questions are complete, and so is analysis OPSEC; and so is reacting to intrusions; case review comes next.
+    The network part is complete (DNS, HTTP, HTTP(S) analysis, email, additional protocols), and so is the host part (endpoint attacks, endpoint defence, Windows logging, Linux logging, important events, log pipeline & SIEM, file analysis). The analysis part continues: alert triage, analyst perception and memory, mental models, structured analysis and investigation questions are complete, and so is analysis OPSEC; and so is reacting to intrusions; quality and case review is under way.
 
 !!! note "About these pages"
     Personal study notes. Not official guidance of any organisation.
