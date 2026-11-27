@@ -246,7 +246,7 @@ Reading it: execution, persistence and C2 are reasonably well understood. But in
 | Business risk | High, not immediate; would flip to "act now" on movement towards control systems | Watch closely, with a trigger to act |
 | Knowledge | Large gaps (initial access, credentials, exfiltration, cloud) | Not ready to evict yet |
 
-The answers point the same way: **watch, learn and prepare, with a clear trigger for immediate action** — and then evict everything at once. How to choose and carry out that response is the subject of the next page.
+The answers point the same way: **watch, learn and prepare, with a clear trigger for immediate action** — and then evict everything at once. How to choose and carry out that response is the subject of the [next page](choosing-response.md).
 
 ## The 2026 view { #trends }
 
@@ -301,6 +301,7 @@ For each situation, say whether the attacker's motivation is most likely strateg
 ## Related { #related }
 
 - [Reacting to Intrusions](index.md) — section overview
+- [Choosing a Response](choosing-response.md) — next page
 - [Common OPSEC failure 3: the premature block](../analysis-opsec/passive-osint-failures.md#premature-block) — the previous section's warning
 - [Kill Chain, NIST CSF and the IR Cycle](../mental-models/kill-chain-did-nist-ir.md) — the models used in the knowledge matrix
 - [Pyramid of Pain and ATT&CK](../mental-models/pyramid-attack-summary.md)
